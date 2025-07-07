@@ -32,35 +32,35 @@ fi
 # Start swww-daemon if not running
 if ! is_running "swww-daemon"; then
     swww-daemon &
-    notify_delayed 0.5 "Autostart" "启动 swww-daemon 壁纸守护进程"
+    notify_delayed 2 "Autostart" "启动 swww-daemon 壁纸守护进程"
 fi
 
 # Start swww_auto.sh script (check if already running by looking for the script process)
 if ! is_script_running "swww_auto.sh"; then
     sh /home/huai/.config/swww_auto.sh &
-    notify_delayed 1.0 "Autostart" "启动 swww_auto.sh 壁纸脚本"
+    notify_delayed 4 "Autostart" "启动 swww_auto.sh 壁纸脚本"
 fi
 
 # Start shutdown.sh script (check if already running by looking for the script process)
 if ! is_script_running "shutdown.sh"; then
     sh /home/huai/.config/shutdown.sh &
-    notify_delayed 1.5 "Autostart" "启动 shutdown.sh 关机脚本"
+    notify_delayed 6 "Autostart" "启动 shutdown.sh 关机脚本"
 fi
 
 # Start zen-browser if not running
 if ! is_running "zen-bin"; then
     zen-browser &
-    notify_delayed 2.0 "Autostart" "启动 Zen Browser 浏览器"
+    notify_delayed 8 "Autostart" "启动 Zen Browser 浏览器"
 fi
 
 # Start Telegram if not running (check for Telegram process)
 if ! is_running "Telegram"; then
     Telegram &
-    notify_delayed 2.5 "Autostart" "启动 Telegram 即时通讯"
+    notify_delayed 10 "Autostart" "启动 Telegram 即时通讯"
 fi
 
 # Start fcitx5 if not running
 if ! is_running "fcitx5"; then
     fcitx5 -d
-    notify_delayed 3.0 "Autostart" "启动 fcitx5 输入法"
+    notify_delayed 12 "Autostart" "启动 fcitx5 输入法"
 fi
