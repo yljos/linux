@@ -39,17 +39,7 @@ connect_to_host() {
     if kill -0 "$RDP_PID" 2>/dev/null; then
         # 进程仍在运行，可能连接成功
         notify-send "连接成功" "RDP 会话已建立" && play ~/.config/dunst/success.mp3 >/dev/null 2>&1
-        
-        # 监控连接状态（可选）
-        (
-            wait "$RDP_PID"
-            exit_code=$?
-            if [ $exit_code -eq 0 ]; then
-                notify-send "会话结束" "RDP 连接正常断开"
-            else
-                notify-send "连接断开" "RDP 连接异常结束" && play ~/.config/dunst/error.mp3 >/dev/null 2>&1
-            fi
-        ) &
+       
     else
         # 进程已退出，连接失败
         notify-send "连接失败" "RDP 连接建立失败" && play ~/.config/dunst/error.mp3 >/dev/null 2>&1
