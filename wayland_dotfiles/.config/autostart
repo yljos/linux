@@ -1,9 +1,13 @@
 #!/usr/bin/sh
-# Auto-start applications for River WM (optimized for performance)
 
 # Function to check if a process is running
 is_running() {
     pgrep -x "$1" > /dev/null 2>&1
+}
+
+# Function to check if a script is running
+is_script_running() {
+    pgrep -f "$1" > /dev/null 2>&1
 }
 
 # Start dunst if not running
@@ -22,12 +26,12 @@ if ! is_running "swww-daemon"; then
 fi
 
 # Start swww_auto.sh script (check if already running by looking for the script process)
-if ! pgrep -f "swww_auto.sh" > /dev/null 2>&1; then
+if ! is_script_running "swww_auto.sh"; then
     sh /home/huai/.config/swww_auto.sh &
 fi
 
 # Start shutdown.sh script (check if already running by looking for the script process)
-if ! pgrep -f "shutdown.sh" > /dev/null 2>&1; then
+if ! is_script_running "shutdown.sh"; then
     sh /home/huai/.config/shutdown.sh &
 fi
 
