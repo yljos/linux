@@ -1,10 +1,47 @@
 #!/usr/bin/sh
 # Auto-start applications for River WM (optimized for performance)
-dunst &
-# waybar &
-swww-daemon &
-sh /home/huai/.config/swww_auto.sh &
-sh /home/huai/.config/shutdown.sh &
-zen-browser &
-Telegram &
-fcitx5 -d
+
+# Function to check if a process is running
+is_running() {
+    pgrep -x "$1" > /dev/null 2>&1
+}
+
+# Start dunst if not running
+if ! is_running "dunst"; then
+    dunst &
+fi
+
+# waybar is commented out
+# if ! is_running "waybar"; then
+#     waybar &
+# fi
+
+# Start swww-daemon if not running
+if ! is_running "swww-daemon"; then
+    swww-daemon &
+fi
+
+# Start swww_auto.sh script (check if already running by looking for the script process)
+if ! pgrep -f "swww_auto.sh" > /dev/null 2>&1; then
+    sh /home/huai/.config/swww_auto.sh &
+fi
+
+# Start shutdown.sh script (check if already running by looking for the script process)
+if ! pgrep -f "shutdown.sh" > /dev/null 2>&1; then
+    sh /home/huai/.config/shutdown.sh &
+fi
+
+# Start zen-browser if not running
+if ! is_running "zen-bin"; then
+    zen-browser &
+fi
+
+# Start Telegram if not running (check for Telegram process)
+if ! is_running "Telegram"; then
+    Telegram &
+fi
+
+# Start fcitx5 if not running
+if ! is_running "fcitx5"; then
+    fcitx5 -d
+fi
