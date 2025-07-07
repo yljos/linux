@@ -1,6 +1,4 @@
-#!/usr/bin/env sh
-# filepath: c:\Users\huai\Desktop\workspace\linux\wayland_dotfiles\.config\windows.sh
-
+#!/usr/bin/sh
 # 将整个脚本逻辑放入后台执行
 (
 # 目标主机信息
