@@ -158,7 +158,7 @@ install_packages_nas() {
     pacman-key --populate archlinux
 
     pacstrap /mnt base base-devel iptables-nft nfs-utils linux-lts linux-lts-headers linux-firmware vim dhcpcd git \
-    rsync openssh polkit p7zip ranger curl samba mdadm unzip ufw podman podman-compose
+    rsync openssh polkit p7zip ranger curl samba mdadm unzip ufw podman
 
     echo ">> Generating fstab"
     genfstab -U /mnt >> /mnt/etc/fstab
