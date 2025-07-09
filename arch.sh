@@ -258,6 +258,7 @@ configure_system_nas() {
     echo ">> Enabling system services"
     systemctl enable dhcpcd
     systemctl enable sshd
+    loginctl enable-linger $USERNAME
     '
 }
 
