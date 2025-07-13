@@ -18,6 +18,11 @@ noblacklist /usr/share/themes
 noblacklist /usr/share/icons
 noblacklist ${HOME}/.fonts
 noblacklist ${HOME}/.local/share/fonts
+whitelist /usr/share/fonts
+whitelist /usr/share/themes
+whitelist /usr/share/icons
+whitelist ${HOME}/.fonts
+whitelist ${HOME}/.local/share/fonts
 
 # 允许访问音频相关文件和设备 - PipeWire
 whitelist ${HOME}/.config/pulse
@@ -45,11 +50,15 @@ whitelist /tmp/.X11-unix
 
 # X11 键盘布局支持
 noblacklist /usr/share/X11
+whitelist /usr/share/X11
 
 # 修复 GLib spawn 问题
 noblacklist /dev/null
 noblacklist /dev/zero
 noblacklist /dev/urandom
+whitelist /dev/null
+whitelist /dev/zero
+whitelist /dev/urandom
 
 # 音频系统权限
 # caps.keep sys_admin,sys_chroot  # 禁用以解决音频问题
