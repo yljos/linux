@@ -2,6 +2,14 @@ blacklist ${HOME}/下载
 blacklist ${HOME}/Documents
 blacklist ${HOME}/Desktop
 
+# 阻止创建标准目录
+read-only ${HOME}
+mkdir ${HOME}/.zen
+mkdir ${HOME}/.cache/zen
+whitelist ${HOME}/.zen
+whitelist ${HOME}/.cache/zen
+whitelist ${HOME}/Downloads
+
 # 音频支持配置
 noblacklist ${HOME}/.config/pulse
 noblacklist ${HOME}/.pulse
