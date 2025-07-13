@@ -2,13 +2,15 @@ blacklist ${HOME}/下载
 blacklist ${HOME}/Documents
 blacklist ${HOME}/Desktop
 
-# 音频支持配置
+# 音频支持配置 - PipeWire
 noblacklist ${HOME}/.config/pulse
 noblacklist ${HOME}/.pulse
 noblacklist ${HOME}/.pulse-cookie
+noblacklist ${HOME}/.config/pipewire
 noblacklist /dev/snd
 noblacklist /usr/share/alsa
 noblacklist /usr/share/pulseaudio
+noblacklist /usr/share/pipewire
 
 # 字体和主题支持
 noblacklist /usr/share/fonts
@@ -17,16 +19,29 @@ noblacklist /usr/share/icons
 noblacklist ${HOME}/.fonts
 noblacklist ${HOME}/.local/share/fonts
 
-# 允许访问音频相关文件和设备
+# 允许访问音频相关文件和设备 - PipeWire
 whitelist ${HOME}/.config/pulse
 whitelist ${HOME}/.pulse
 whitelist ${HOME}/.pulse-cookie
+whitelist ${HOME}/.config/pipewire
+whitelist /dev/snd
+whitelist /usr/share/alsa
+whitelist /usr/share/pulseaudio
+whitelist /usr/share/pipewire
+
+# 添加音频运行时目录 - PipeWire
+noblacklist ${RUNUSER}/pulse
+noblacklist ${RUNUSER}/pipewire*
+whitelist ${RUNUSER}/pulse
+whitelist ${RUNUSER}/pipewire*
 
 # Wayland 支持
 noblacklist ${RUNUSER}/wayland-*
+whitelist ${RUNUSER}/wayland-*
 
 # X11 后备支持
 noblacklist /tmp/.X11-unix
+whitelist /tmp/.X11-unix
 
 # X11 键盘布局支持
 noblacklist /usr/share/X11
@@ -37,9 +52,9 @@ noblacklist /dev/zero
 noblacklist /dev/urandom
 
 # 音频系统权限
-caps.keep sys_admin,sys_chroot
+# caps.keep sys_admin,sys_chroot  # 禁用以解决音频问题
 protocol unix,inet,inet6,netlink
-netfilter
+# netfilter  # 禁用以解决音频问题
 
 # 禁用有问题的 dbus 过滤 (因为缺少 xdg-dbus-proxy)
 ignore dbus-user filter
