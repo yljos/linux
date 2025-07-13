@@ -3,11 +3,13 @@ blacklist ${HOME}/Documents
 blacklist ${HOME}/Desktop
 
 # 阻止创建标准目录
-read-only ${HOME}
+# read-only ${HOME}  # 暂时禁用以测试启动
 mkdir ${HOME}/.zen
 mkdir ${HOME}/.cache/zen
+mkdir ${HOME}/.config
 whitelist ${HOME}/.zen
 whitelist ${HOME}/.cache/zen
+whitelist ${HOME}/.config
 whitelist ${HOME}/Downloads
 
 # 音频支持配置
@@ -51,6 +53,10 @@ whitelist /tmp/.X11-unix
 # X11 键盘布局支持
 noblacklist /usr/share/X11
 whitelist /usr/share/X11
+noblacklist /usr/lib/xkb
+whitelist /usr/lib/xkb
+noblacklist /etc/X11
+whitelist /etc/X11
 
 # 修复 GLib spawn 问题
 noblacklist /dev/null
