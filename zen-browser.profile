@@ -19,24 +19,20 @@ ignore read-only ${HOME}/.zen/profiles.ini
 
 noblacklist ${HOME}/.cache/zen
 noblacklist ${HOME}/.zen
+noblacklist ${HOME}/Downloads
 noblacklist ${RUNUSER}/*zen*
 noblacklist ${RUNUSER}/psd/*zen*
 
+# Security: Block access to sensitive directories
 blacklist /usr/libexec
 
-mkdir ${HOME}/.cache/mozilla/firefox
-mkdir ${HOME}/.mozilla
 mkdir ${HOME}/.cache/zen  
 mkdir ${HOME}/.zen
-whitelist ${HOME}/.cache/mozilla/firefox
-whitelist ${HOME}/.mozilla
+mkdir ${HOME}/Downloads
 whitelist ${HOME}/.cache/zen
 whitelist ${HOME}/.zen
-
-whitelist /usr/share/firefox
-whitelist /usr/share/gnome-shell/search-providers/firefox-search-provider.ini
-whitelist ${RUNUSER}/*firefox*
-whitelist ${RUNUSER}/psd/*firefox*
+whitelist ${HOME}/Downloads
+whitelist ${HOME}/downloads
 whitelist ${RUNUSER}/*zen*
 whitelist ${RUNUSER}/psd/*zen*
 
