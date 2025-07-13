@@ -2,3 +2,25 @@ blacklist ${HOME}/下载
 blacklist ${HOME}/Documents
 blacklist ${HOME}/Desktop
 
+# 禁止创建新文件和目录
+read-only ${HOME}
+
+# 只允许写入必要的目录
+mkdir ${HOME}/.cache/zen
+mkdir ${HOME}/.zen
+whitelist ${HOME}/.cache/zen
+whitelist ${HOME}/.zen
+whitelist ${HOME}/Downloads
+
+# 音频支持
+noblacklist ${HOME}/.config/pulse
+noblacklist ${HOME}/.config/pipewire
+noblacklist ${RUNUSER}/pulse
+noblacklist ${RUNUSER}/pipewire*
+
+# 禁用一些可能绕过限制的功能
+ignore private-etc
+ignore private-bin
+ignore dbus-user filter
+ignore dbus-user.own
+
