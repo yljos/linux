@@ -2,4 +2,25 @@ blacklist ${HOME}/下载
 blacklist ${HOME}/Documents
 blacklist ${HOME}/Desktop
 
+# 音频支持配置
+noblacklist ${HOME}/.config/pulse
+noblacklist ${HOME}/.pulse
+noblacklist ${HOME}/.pulse-cookie
+noblacklist /dev/snd
+noblacklist /usr/share/alsa
+noblacklist /usr/share/pulseaudio
+
+# 允许访问音频相关文件和设备
+whitelist ${HOME}/.config/pulse
+whitelist ${HOME}/.pulse
+whitelist ${HOME}/.pulse-cookie
+whitelist /dev/snd
+whitelist /usr/share/alsa
+whitelist /usr/share/pulseaudio
+
+# 音频系统权限
+caps.keep sys_admin,sys_chroot
+protocol unix,inet,inet6,netlink
+netfilter
+
 
