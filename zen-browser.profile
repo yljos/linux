@@ -48,3 +48,4 @@ ignore dbus-user none
 
 # Custom configuration for zen-browser only
 # Do not include firefox-common.profile to avoid security bypass
+include firefox-common.profile
