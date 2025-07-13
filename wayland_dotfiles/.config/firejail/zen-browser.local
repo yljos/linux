@@ -18,9 +18,29 @@ whitelist /dev/snd
 whitelist /usr/share/alsa
 whitelist /usr/share/pulseaudio
 
+# Wayland 支持
+noblacklist ${RUNUSER}/wayland-*
+whitelist ${RUNUSER}/wayland-*
+
+# X11 后备支持
+noblacklist /tmp/.X11-unix
+whitelist /tmp/.X11-unix
+
+# 修复 GLib spawn 问题
+noblacklist /dev/null
+noblacklist /dev/zero
+noblacklist /dev/urandom
+whitelist /dev/null
+whitelist /dev/zero  
+whitelist /dev/urandom
+
 # 音频系统权限
 caps.keep sys_admin,sys_chroot
 protocol unix,inet,inet6,netlink
 netfilter
+
+# 禁用有问题的 dbus 过滤 (因为缺少 xdg-dbus-proxy)
+ignore dbus-user filter
+ignore dbus-user.own
 
 
