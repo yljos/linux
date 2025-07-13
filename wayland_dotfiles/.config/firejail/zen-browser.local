@@ -2,16 +2,6 @@ blacklist ${HOME}/下载
 blacklist ${HOME}/Documents
 blacklist ${HOME}/Desktop
 
-# 阻止创建标准目录
-# read-only ${HOME}  # 暂时禁用以测试启动
-mkdir ${HOME}/.zen
-mkdir ${HOME}/.cache/zen
-mkdir ${HOME}/.config
-whitelist ${HOME}/.zen
-whitelist ${HOME}/.cache/zen
-whitelist ${HOME}/.config
-whitelist ${HOME}/Downloads
-
 # 音频支持配置
 noblacklist ${HOME}/.config/pulse
 noblacklist ${HOME}/.pulse
@@ -31,40 +21,20 @@ noblacklist ${HOME}/.local/share/fonts
 whitelist ${HOME}/.config/pulse
 whitelist ${HOME}/.pulse
 whitelist ${HOME}/.pulse-cookie
-whitelist /dev/snd
-whitelist /usr/share/alsa
-whitelist /usr/share/pulseaudio
-
-# 允许访问字体和主题
-whitelist /usr/share/fonts
-whitelist /usr/share/themes
-whitelist /usr/share/icons
-whitelist ${HOME}/.fonts
-whitelist ${HOME}/.local/share/fonts
 
 # Wayland 支持
 noblacklist ${RUNUSER}/wayland-*
-whitelist ${RUNUSER}/wayland-*
 
 # X11 后备支持
 noblacklist /tmp/.X11-unix
-whitelist /tmp/.X11-unix
 
 # X11 键盘布局支持
 noblacklist /usr/share/X11
-whitelist /usr/share/X11
-noblacklist /usr/lib/xkb
-whitelist /usr/lib/xkb
-noblacklist /etc/X11
-whitelist /etc/X11
 
 # 修复 GLib spawn 问题
 noblacklist /dev/null
 noblacklist /dev/zero
 noblacklist /dev/urandom
-whitelist /dev/null
-whitelist /dev/zero  
-whitelist /dev/urandom
 
 # 音频系统权限
 caps.keep sys_admin,sys_chroot
