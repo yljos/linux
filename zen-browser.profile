@@ -47,5 +47,5 @@ dbus-user.own org.mozilla.*
 dbus-user.own org.mpris.MediaPlayer2.firefox.*
 ignore dbus-user none
 
-# Redirect
-include firefox-common.profile
+# Custom configuration for zen-browser only
+# Do not include firefox-common.profile to avoid security bypass
