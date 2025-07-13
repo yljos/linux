@@ -32,7 +32,6 @@ mkdir ${HOME}/Downloads
 whitelist ${HOME}/.cache/zen
 whitelist ${HOME}/.zen
 whitelist ${HOME}/Downloads
-whitelist ${HOME}/downloads
 whitelist ${RUNUSER}/*zen*
 whitelist ${RUNUSER}/psd/*zen*
 
