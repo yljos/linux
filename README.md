@@ -1,1 +1,1 @@
-archlinux 配置备份
+archlinux backup
