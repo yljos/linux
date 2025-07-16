@@ -5,19 +5,19 @@
 sudo ufw reset
 
 # SSH 访问
-sudo ufw allow proto tcp from 192.168.8.25 to any port 22
+sudo ufw allow proto tcp from 192.168.31.25 to any port 22
 
 # Samba UDP 端口
-sudo ufw allow proto udp from 192.168.8.15 to any port 137
-sudo ufw allow proto udp from 192.168.8.15 to any port 138
-sudo ufw allow proto udp from 192.168.8.8 to any port 137
-sudo ufw allow proto udp from 192.168.8.8 to any port 138
+sudo ufw allow proto udp from 192.168.31.15 to any port 137
+sudo ufw allow proto udp from 192.168.31.15 to any port 138
+sudo ufw allow proto udp from 192.168.31.8 to any port 137
+sudo ufw allow proto udp from 192.168.31.8 to any port 138
 
 # Samba TCP 端口
-sudo ufw allow proto tcp from 192.168.8.15 to any port 139
-sudo ufw allow proto tcp from 192.168.8.15 to any port 445
-sudo ufw allow proto tcp from 192.168.8.8 to any port 139
-sudo ufw allow proto tcp from 192.168.8.8 to any port 445
+sudo ufw allow proto tcp from 192.168.31.15 to any port 139
+sudo ufw allow proto tcp from 192.168.31.15 to any port 445
+sudo ufw allow proto tcp from 192.168.31.8 to any port 139
+sudo ufw allow proto tcp from 192.168.31.8 to any port 445
 
 # Docker/Podman 网络
 sudo ufw allow in on podman0
@@ -27,10 +27,10 @@ sudo ufw allow proto tcp to any port 80    # HTTP
 sudo ufw allow proto tcp to any port 443   # HTTPS
 
 # NFSv4 端口
-sudo ufw allow proto tcp from 192.168.8.25 to any port 111    # rpcbind TCP
-sudo ufw allow proto udp from 192.168.8.25 to any port 111    # rpcbind UDP
-sudo ufw allow proto tcp from 192.168.8.25 to any port 2049   # NFSv4 主端口
-sudo ufw allow proto tcp from 192.168.8.25 to any port 20049  # NFS RDMA 端口
+sudo ufw allow proto tcp from 192.168.31.25 to any port 111    # rpcbind TCP
+sudo ufw allow proto udp from 192.168.31.25 to any port 111    # rpcbind UDP
+sudo ufw allow proto tcp from 192.168.31.25 to any port 2049   # NFSv4 主端口
+sudo ufw allow proto tcp from 192.168.31.25 to any port 20049  # NFS RDMA 端口
 
 # Podman 容器 TCP 端口
 sudo ufw allow proto tcp to any port 8096   # Emby Media Server
