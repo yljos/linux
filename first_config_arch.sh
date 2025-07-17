@@ -160,7 +160,7 @@ if [ -f ~/data/linux/.ssh/id_ed25519 ]; then
     check_command "Failed to copy SSH key"
     
     if cd ~/.ssh; then
-        chmod 600 id_ed25519
+        chmod 400 id_ed25519
         check_command "Failed to set permissions on SSH key"
         cd ~ || handle_error "Cannot navigate back to home directory"
         echo -e "${GREEN}SSH configuration completed.${NC}"
