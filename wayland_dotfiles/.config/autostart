@@ -18,10 +18,14 @@ notify_delayed() {
     (sleep "$delay" && notify-send "$title" "$message") &
 }
 
+
 # Start dunst if not running
 if ! is_running "dunst"; then
     dunst &
-    notify_delayed 0 "Autostart" "启动 dunst 通知守护进程"
+    sleep 0.5
+    if is_running "dunst"; then
+        notify_delayed 0 "Autostart" "启动 dunst 通知守护进程"
+    fi
 fi
 
 # waybar is commented out
@@ -29,38 +33,62 @@ fi
 #     waybar &
 # fi
 
+
 # Start swww-daemon if not running
 if ! is_running "swww-daemon"; then
     swww-daemon &
-    notify_delayed 2 "Autostart" "启动 swww-daemon 壁纸守护进程"
+    sleep 0.5
+    if is_running "swww-daemon"; then
+        notify_delayed 2 "Autostart" "启动 swww-daemon 壁纸守护进程"
+    fi
 fi
+
 
 # Start swww_auto.sh script (check if already running by looking for the script process)
 if ! is_script_running "swww_auto.sh"; then
     sh /home/huai/.config/swww_auto.sh &
-    notify_delayed 4 "Autostart" "启动 swww_auto.sh 壁纸脚本"
+    sleep 0.5
+    if is_script_running "swww_auto.sh"; then
+        notify_delayed 4 "Autostart" "启动 swww_auto.sh 壁纸脚本"
+    fi
 fi
+
 
 # Start shutdown.sh script (check if already running by looking for the script process)
 if ! is_script_running "shutdown.sh"; then
     sh /home/huai/.config/shutdown.sh &
-    notify_delayed 6 "Autostart" "启动 shutdown.sh 关机脚本"
+    sleep 0.5
+    if is_script_running "shutdown.sh"; then
+        notify_delayed 6 "Autostart" "启动 shutdown.sh 关机脚本"
+    fi
 fi
 
-# Start zen-browser if not running
-if ! is_running "zen-bin"; then
-    zen-browser &
-    notify_delayed 8 "Autostart" "启动 Zen Browser 浏览器"
+
+# Start firefox if not running
+if ! is_running "firefox"; then
+    firefox &
+    sleep 0.5
+    if is_running "firefox"; then
+        notify_delayed 8 "Autostart" "启动 Firefox 浏览器"
+    fi
 fi
+
 
 # Start Telegram if not running (check for Telegram process)
 if ! is_running "Telegram"; then
     Telegram &
-    notify_delayed 10 "Autostart" "启动 Telegram 即时通讯"
+    sleep 0.5
+    if is_running "Telegram"; then
+        notify_delayed 10 "Autostart" "启动 Telegram 即时通讯"
+    fi
 fi
+
 
 # Start fcitx5 if not running
 if ! is_running "fcitx5"; then
     fcitx5 -d
-    notify_delayed 12 "Autostart" "启动 fcitx5 输入法"
+    sleep 0.5
+    if is_running "fcitx5"; then
+        notify_delayed 12 "Autostart" "启动 fcitx5 输入法"
+    fi
 fi
