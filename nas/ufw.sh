@@ -34,6 +34,7 @@ sudo ufw allow proto tcp from 192.168.31.25 to any port 20049  # NFS RDMA 端口
 
 # Podman 容器 TCP 端口
 sudo ufw allow proto tcp to any port 8096   # Emby Media Server
+sudo ufw allow proto tcp to any port 8097   # Jellyfin Media Server 
 sudo ufw allow proto tcp to any port 6800   # aria2-pro
 sudo ufw allow proto tcp to any port 6888   # aria2-pro
 sudo ufw allow proto tcp to any port 6880   # ariang
