@@ -1,8 +1,9 @@
 #!/usr/bin/sh
 # 将整个脚本逻辑放入后台执行
 (
-# 目标主机信息
-TARGET_HOST="huai-PC"
+
+# 目标主机信息（直接使用IP地址）
+TARGET_IP="192.168.31.15"
 MAC_ADDRESS="00:23:24:67:DF:14"
 INTERFACE="enp0s31f6"
 MAX_TRIES=30
@@ -15,19 +16,12 @@ for cmd in arping wakeonlan xfreerdp3 notify-send; do
     fi
 done
 
-# 通过主机名获取 IP 地址（仅用于 arping 检测）
-TARGET_IP=$(getent hosts "$TARGET_HOST" | awk '{ print $1 }')
-if [ -z "$TARGET_IP" ]; then
-    notify-send "错误" "无法解析主机名"
-    exit 1
-fi
-
 # 连接函数
 connect_to_host() {
     notify-send "连接中" "启动 RDP..." && play ~/.config/dunst/connecting.mp3 >/dev/null 2>&1
     
     # 启动 RDP 连接并获取进程 ID
-    xfreerdp3 /v:"$TARGET_HOST" /u:huai /p:110 /sound /dynamic-resolution /cert:ignore >/dev/null 2>&1 &
+    xfreerdp3 /v:"$TARGET_IP" /u:huai /p:110 /sound /dynamic-resolution /cert:ignore >/dev/null 2>&1 &
     RDP_PID=$!
     
     # 等待几秒钟检查连接状态
@@ -45,7 +39,7 @@ connect_to_host() {
     fi
 }
 
-# 检查目标主机是否在线
+ # 检查目标主机是否在线
 if sudo arping -c 1 -w 1 -q -I "$INTERFACE" "$TARGET_IP" >/dev/null 2>&1; then
     notify-send "已在线" "正在连接..." && play ~/.config/dunst/system_online.mp3 >/dev/null 2>&1
     connect_to_host
@@ -56,9 +50,9 @@ else
         notify-send "唤醒失败" "检查网络连接" && play ~/.config/dunst/error.mp3 >/dev/null 2>&1
         exit 1
     fi
-    
+
     notify-send "等待启动" "检测中..." && play ~/.config/dunst/starting.mp3 >/dev/null 2>&1
-    
+
     # 等待主机上线
     i=1
     while [ $i -le $MAX_TRIES ]; do
@@ -67,7 +61,7 @@ else
             connect_to_host
             exit 0
         fi
-        
+
         # 每5秒显示一次进度通知
         if [ $((i % 5)) -eq 0 ]; then
             notify-send "等待中" "$i/$MAX_TRIES 秒"
