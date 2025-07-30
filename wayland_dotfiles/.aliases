@@ -57,10 +57,10 @@ alias openwrt="ssh root@openwrt"
 alias ax6s="ssh root@ax6s"
 
 # Git相关
-# alias gaa='git add -A'
-# alias gc='git commit -v'
-# alias ggpush='git push origin main'
-# alias gpull='git pull'
+alias gaa='git add -A'
+alias gc='git commit -v'
+
+
 
 # 脚本和程序
 alias x="sh /home/huai/.config/dwl/dwl_status.sh | dwl"
