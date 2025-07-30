@@ -142,7 +142,7 @@ install_packages() {
     pacman-key --populate archlinux
 
     pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim dhcpcd git less \
-        river fuzzel waybar swww dunst foot feh polkit \
+        fuzzel swww dunst foot polkit \
         nfs-utils fastfetch btop pipewire pipewire-jack pipewire-alsa pipewire-pulse pavucontrol \
         fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip ranger reflector libnotify openssh \
         mpd mpc freerdp xf86-video-intel libva libva-intel-driver intel-media-driver vlc arp-scan unzip \
@@ -183,7 +183,7 @@ configure_system() {
 
     echo "$HOSTNAME" > /etc/hostname
     echo -e "127.0.0.1       localhost\n::1             localhost\n127.0.0.1       $HOSTNAME.localdomain  $HOSTNAME" > /etc/hosts
-    echo "nas:/mnt/user/data /home/$USERNAME/data nfs _netdev,noauto,x-systemd.automount,x-systemd.mount-timeout=10,timeo=14,x-systemd.idle-timeout=1min 0 0" >> /etc/fstab
+    echo "192.168.31.21:/mnt/user/data /home/$USERNAME/data nfs _netdev,noauto,x-systemd.automount,x-systemd.mount-timeout=10,timeo=14,x-systemd.idle-timeout=1min 0 0" >> /etc/fstab
 
     echo "root:1" | chpasswd
 
