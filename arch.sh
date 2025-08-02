@@ -183,7 +183,7 @@ configure_system() {
 
     echo "$HOSTNAME" > /etc/hostname
     echo -e "127.0.0.1       localhost\n::1             localhost\n127.0.0.1       $HOSTNAME.localdomain  $HOSTNAME" > /etc/hosts
-    echo "192.168.31.21:/mnt/user/data /home/$USERNAME/data nfs _netdev,noauto,x-systemd.automount,x-systemd.mount-timeout=10,timeo=14,x-systemd.idle-timeout=1min 0 0" >> /etc/fstab
+    echo "192.168.31.21:/data /home/$USERNAME/data nfs4 _netdev,auto,noatime,nodiratime,rsize=1M,wsize=1M,hard,timeo=600,retrans=2 0 0" >> /etc/fstab
 
     echo "root:1" | chpasswd
 
