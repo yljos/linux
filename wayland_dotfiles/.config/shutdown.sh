@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 监测文件内容是否为1，是则关机，否则5分钟后再检测
-SHUTDOWN_FILE="http://nas/shutdown"
+SHUTDOWN_FILE="http://192.168.31.21/shutdown"
 
 while true; do
     # 获取文件内容
