@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/sh
 # 通用别名配置文件
 # 可以被 .bashrc 和 .zshrc 同时引用
 
@@ -18,18 +18,16 @@ alias rsyncdir="rsync -avzh --delete"  # 同步目录，删除目标端多余文
 # 配置文件编辑
 alias zshconfig="vim ~/.zshrc"
 alias bashconfig="vim ~/.bashrc"
-alias hyprconfig="vim ~/.config/hypr/hyprland.conf"
+
 # 目录导航
 alias cdconfig="cd /home/huai/.config"
 alias cdfree="cd /home/huai/free"
 alias cdlinux="cd /home/huai/linux"
-alias cdstacks="cd /home/huai/stacks"
 alias cddata="cd /home/huai/data"
 alias cdappdata="cd /home/huai/data/appdata"
 alias cdusb="cd /home/huai/usb"
 alias cdwww="cd /home/huai/data/www"
-alias cdsingbox="cd /home/huai/data/appdata/singbox"
-alias cdclash="cd /home/huai/data/appdata/clash"
+
 
 # 音频控制
 alias 0="pactl set-default-sink alsa_output.usb-DeSheng_Electronics_Inc._Star_Y360-00.analog-stereo"
@@ -64,7 +62,6 @@ alias gc='git commit -v'
 
 # 脚本和程序
 alias x="sh /home/huai/.config/dwl/dwl_status.sh | dwl"
-alias pve="sh /home/huai/.config/pve.sh"
 alias win="sh /home/huai/.config/windows.sh"
 alias repo="sh /home/huai/.config/repo.sh"
 alias np="sh /home/huai/.config/swww.sh"
