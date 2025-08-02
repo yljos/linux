@@ -10,12 +10,8 @@ sudo ufw allow proto tcp to any port 22
 # Samba UDP 端口
 sudo ufw allow proto udp to any port 137
 sudo ufw allow proto udp to any port 138
-sudo ufw allow proto udp to any port 137
-sudo ufw allow proto udp to any port 138
 
 # Samba TCP 端口
-sudo ufw allow proto tcp to any port 139
-sudo ufw allow proto tcp to any port 445
 sudo ufw allow proto tcp to any port 139
 sudo ufw allow proto tcp to any port 445
 
@@ -30,7 +26,6 @@ sudo ufw allow proto tcp to any port 443   # HTTPS
 sudo ufw allow proto tcp from 192.168.31.25 to any port 111    # rpcbind TCP
 sudo ufw allow proto udp from 192.168.31.25 to any port 111    # rpcbind UDP
 sudo ufw allow proto tcp from 192.168.31.25 to any port 2049   # NFSv4 主端口
-sudo ufw allow proto tcp from 192.168.31.25 to any port 20049  # NFS RDMA 端口
 
 # Podman 容器 TCP 端口
 sudo ufw allow proto tcp to any port 8096   # jellyfin server
@@ -48,10 +43,9 @@ sudo ufw allow proto tcp to any port 3000   # homepage
 sudo ufw allow proto tcp to any port 8123   # homeassistant
 sudo ufw allow proto tcp to any port 6065   # webdav-server
 sudo ufw allow proto tcp to any port 8081   # calibre
-sudo ufw allow proto tcp to any port 32400  # Plex Media Server
 # Podman 容器 UDP 端口
 sudo ufw allow proto udp to any port 1900   # homeassistant
 sudo ufw allow proto udp to any port 5353   # homeassistant
 sudo ufw allow proto udp to any port 6888   # aria2-pro
-sudo ufw allow proto udp to any port 7359   # Emby 客户端发现
+
 
