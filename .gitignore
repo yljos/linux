@@ -1,0 +1,5 @@
+__pycache__
+wayland_dotfiles/.config/mpd/log
+wayland_dotfiles/.config/mpd/state
+wayland_dotfiles/.config/mpd/socket
+wayland_dotfiles/.config/mpd/sticker.sql

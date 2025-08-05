@@ -1,0 +1,3 @@
+blacklist ${HOME}/下载
+blacklist ${HOME}/Documents
+blacklist ${HOME}/Desktop

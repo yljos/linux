@@ -1,0 +1,97 @@
+! B站弹幕相关元素屏蔽规则 - 高性能优化版
+! 更新时间：2025-06-22
+! 优化说明：高性能选择器 + 全覆盖拦截
+
+! === 核心交互式弹幕拦截 ===
+! 投票弹幕 - 多层级拦截
+bilibili.com##.bili-danmaku-x-vote
+bilibili.com##.bili-danmaku-x-vote.bili-danmaku-x-show
+bilibili.com##[class*="bili-danmaku-x-vote"]
+
+! 引导弹幕 - 全类型拦截
+bilibili.com##.bili-danmaku-x-guide
+bilibili.com##.bili-danmaku-x-guide-all
+bilibili.com##.bili-danmaku-x-guide-all.bili-danmaku-x-guide.bili-danmaku-x-show
+bilibili.com##.bili-danmaku-x-guide-three
+bilibili.com##.bpx-player-cmd-dm-wrap .bili-danmaku-x-guide-three:nth-of-type(1)
+bilibili.com##[class*="bili-danmaku-x-guide"]
+
+! 评分弹幕 - 完整拦截
+bilibili.com##.bili-danmaku-x-score
+bilibili.com##.bili-danmaku-x-score.bili-danmaku-x-show
+bilibili.com##[class*="bili-danmaku-x-score"]
+
+! 链接弹幕 - 多容器拦截
+bilibili.com##.bili-danmaku-x-link
+bilibili.com##.bili-danmaku-x-link.bili-danmaku-x-show
+bilibili.com##.bpx-player-cmd-dm-wrap .bili-danmaku-x-link
+bilibili.com##.bpx-player-cmd-dm-wrap .bili-danmaku-x-link.bili-danmaku-x-show
+bilibili.com##[class*="bili-danmaku-x-link"]
+
+! 预约弹幕 - 全场景拦截
+bilibili.com##.bili-danmaku-x-reserve
+bilibili.com##.bili-danmaku-x-reserve.bili-danmaku-x-show
+bilibili.com##.bpx-player-cmd-dm-inside .bili-danmaku-x-reserve
+bilibili.com##.bpx-player-cmd-dm-inside .bili-danmaku-x-reserve.bili-danmaku-x-show
+bilibili.com##[class*="bili-danmaku-x-reserve"]
+
+! === 高级交互弹幕拦截 ===
+! UP主互动弹幕
+bilibili.com##.bili-danmaku-x-up-vote
+bilibili.com##.bili-danmaku-x-up
+bilibili.com##[class*="bili-danmaku-x-up"]
+
+! 命令式弹幕
+bilibili.com##.bili-danmaku-x-command-dm
+bilibili.com##.bili-danmaku-x-command
+bilibili.com##[class*="bili-danmaku-x-command"]
+
+! 商品弹幕
+bilibili.com##.bili-danmaku-x-goods
+bilibili.com##[class*="bili-danmaku-x-goods"]
+
+! 活动弹幕
+bilibili.com##.bili-danmaku-x-activity
+bilibili.com##[class*="bili-danmaku-x-activity"]
+
+! === 数据属性拦截（高性能） ===
+bilibili.com##[data-type="vote"]
+bilibili.com##[data-type="up"]
+bilibili.com##[data-type="link"]
+bilibili.com##[data-type="guide"]
+bilibili.com##[data-type="score"]
+bilibili.com##[data-type="reserve"]
+bilibili.com##[data-type="goods"]
+bilibili.com##[data-type="activity"]
+
+! === 容器级别拦截 ===
+bilibili.com##.bpx-player-cmd-dm-wrap [class*="bili-danmaku-x-"]:not([class*="bili-danmaku-x-normal"])
+bilibili.com##.bpx-player-cmd-dm-inside [class*="bili-danmaku-x-"]:not([class*="bili-danmaku-x-normal"])
+
+! === 通用拦截规则 ===
+! 所有显示状态的交互弹幕
+bilibili.com##.bili-danmaku-x-show:not(.bili-danmaku-x-normal)
+
+! 包含交互元素的弹幕容器
+bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-vote)
+bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-guide)
+bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-score)
+bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-link)
+bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-reserve)
+
+! === 广告和提示拦截 ===
+bilibili.com##.adblock-tips
+bilibili.com##.adblock-tip
+bilibili.com##[class*="adblock"]
+bilibili.com##.anti-adblock
+
+! === 性能优化选择器 ===
+! 使用 ID 选择器提升性能（如果存在）
+bilibili.com###bili-danmaku-interactive
+bilibili.com###danmaku-interactive-container
+
+! 阻止交互弹幕的 JavaScript 执行
+bilibili.com#%#//scriptlet('abort-on-property-read', 'danmakuInteractive')
+bilibili.com#%#//scriptlet('abort-on-property-read', 'interactiveDanmaku')
+
+
