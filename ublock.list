@@ -1,3 +1,7 @@
+bilibili.com##.adblock-tips
+
+! Outlook 屏蔽规则
+outlook.live.com##div[id^="MainModule"] div:last-child.GssDD
 ! B站弹幕相关元素屏蔽规则 - 优化版
 
 ! 屏蔽投票弹幕
