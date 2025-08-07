@@ -1,5 +1,6 @@
 // 屏蔽 CSDN 主域名及其子域名
 *://*.csdn.net/*
+*://www.csdn.net/*
 *://*.csdn.com/*
 *://*.csdnimg.cn/*
 *://*.csdn.cn/*
