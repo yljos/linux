@@ -1,43 +1,50 @@
-case $- in # check shell options
-    *i*) ;; # interactive shell
-      *) return;; # don't do anything
+# 1. Exit if not an interactive shell.
+case $- in
+    *i*) ;;
+      *) return;;
 esac
+
+# ===================================================================
+# 2. Common Configuration (loaded by both TTY and GUI terminals)
+# ===================================================================
+
+# Environment Variables
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 export MAILCAPS="$HOME/.config/mutt/mailcap"
 export GPG_TTY=$(tty)
 export LANG=en_US.UTF-8
 export VISUAL=vim
 export EDITOR=vim
-#export TERM=xterm-256color
 umask 022
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
 
-export ZSH="$HOME/.oh-my-zsh"
-
-
-# Uncomment the following line to use case-sensitive completion.
-CASE_SENSITIVE="true"
-
-# HYPHEN_INSENSITIVE="true"
-
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
-
-
-# User configuration
-
-# 加载通用别名
+# Aliases
 if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+# ===================================================================
+# 3. Handle TTY Environment
+# ===================================================================
+
+# If in a TTY, stop here after loading the common configuration.
 if [[ "$TERM" = "linux" ]]; then
-  ZSH_THEME="robbyrussell"  
-else
-  ZSH_THEME="powerlevel10k/powerlevel10k"
-  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+  return
 fi
 
+# ===================================================================
+# 4. GUI Terminal-Only Configuration (not loaded in TTY)
+# ===================================================================
+
+# Powerlevel10k Instant Prompt
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Oh My Zsh & Powerlevel10k Theme Configuration
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 source $ZSH/oh-my-zsh.sh
+
+# Powerlevel10k Specific Configuration File
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
