@@ -6,7 +6,7 @@ export GPG_TTY=$(tty)
 export LANG=en_US.UTF-8
 export VISUAL=vim
 export EDITOR=vim
-export TERM=xterm-256color
+# export TERM=xterm-256color
 umask 022
 [[ -r /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
 
