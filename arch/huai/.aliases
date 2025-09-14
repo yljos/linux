@@ -68,6 +68,8 @@ alias gaa='git add -A'
 alias gc='git commit -v'
 alias gpl='ssh_add_check; git pull'
 alias gcl='ssh_add_check; git clone'
+alias gst='git status'
+alias gl='git log'
 # 用于 codeberg 的推送函数
 codeberg() {
   # 首先执行 ssh_add_check 命令

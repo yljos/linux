@@ -17,10 +17,6 @@ export VISUAL=vim
 export EDITOR=vim
 umask 022
 
-# Aliases
-if [ -f ~/.aliases ]; then
-    source ~/.aliases
-fi
 
 # ===================================================================
 # 3. Handle TTY Environment
@@ -48,3 +44,8 @@ source $ZSH/oh-my-zsh.sh
 
 # Powerlevel10k Specific Configuration File
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Aliases
+if [ -f ~/.aliases ]; then
+    source ~/.aliases
+fi
