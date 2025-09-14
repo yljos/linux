@@ -8,7 +8,7 @@ export GPG_TTY=$(tty)
 export LANG=en_US.UTF-8
 export VISUAL=vim
 export EDITOR=vim
-export TERM=xterm-256color
+#export TERM=xterm-256color
 umask 022
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -16,7 +16,6 @@ fi
 
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Uncomment the following line to use case-sensitive completion.
 CASE_SENSITIVE="true"
@@ -25,7 +24,6 @@ CASE_SENSITIVE="true"
 
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 
-source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
@@ -35,5 +33,11 @@ if [ -f ~/.aliases ]; then
 fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+if [[ "$TERM" = "linux" ]]; then
+  ZSH_THEME="robbyrussell"  
+else
+  ZSH_THEME="powerlevel10k/powerlevel10k"
+  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+fi
 
+source $ZSH/oh-my-zsh.sh
