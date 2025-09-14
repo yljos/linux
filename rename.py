@@ -1,12 +1,13 @@
 import os
 import sys
-
+import re  # 导入正则表达式模块
 
 def smart_rename_webm_files_custom_prefix(root_directory):
     """
     (全自动版 - 仅处理.webm文件，自定义前缀)
     遍历目录及子目录，为每个目录内的 .webm 文件独立添加 "E01_" 起始的格式前缀。
     - 如果文件已存在 "数字_" 或 "E+数字_" 格式的前缀，会先移除旧前缀再添加新前缀。
+    - (新增) 将文件名中的所有符号和空格替换为下划线 "_"。
     - 自动跳过所有非 ".webm" 结尾的文件。
     """
     # 将 '.' 转换为绝对路径，以便打印更清晰的日志
@@ -51,9 +52,28 @@ def smart_rename_webm_files_custom_prefix(root_directory):
 
             old_file_path = os.path.join(dirpath, filename)
 
-            # --- 主要修改在这里 ---
+            # --- 新增的修改：清理文件名中的符号和空格 ---
+            # 分离文件名和扩展名，以便安全地处理文件名而不影响扩展名
+            name_part, extension = os.path.splitext(base_filename)
+            
+            # 1. 将所有非字母、非数字、非下划线的字符替换为下划线
+            #    \w 匹配任何字母数字字符（等同于 [a-zA-Z0-9_]）
+            #    [^\w] 匹配任何非字母数字字符，也就是我们需要替换的符号和空格
+            cleaned_name_part = re.sub(r'[^\w]', '_', name_part)
+            
+            # 2. 将连续的多个下划线替换为单个下划线
+            cleaned_name_part = re.sub(r'__+', '_', cleaned_name_part)
+
+            # 3. 重新组合成最终的基础文件名
+            cleaned_base_filename = cleaned_name_part + extension
+            
+            if base_filename != cleaned_base_filename:
+                print(f"   清理文件名: '{base_filename}' -> '{cleaned_base_filename}'")
+            # --- 清理文件名结束 ---
+
+
             # 使用f-string格式化，:02d 表示一个至少2位的整数，不足则用0填充
-            new_filename = f"E{counter:02d}_{base_filename}"
+            new_filename = f"E{counter:02d}_{cleaned_base_filename}"
             new_file_path = os.path.join(dirpath, new_filename)
 
             if old_file_path != new_file_path:
