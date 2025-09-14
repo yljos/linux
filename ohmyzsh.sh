@@ -60,6 +60,13 @@ if [ -d ~/.oh-my-zsh ]; then
 	rm -rf ~/.oh-my-zsh/.git
 	echo -e "${GREEN}>> oh-my-zsh is already installed${NC}"
 	sleep 3
+else
+	echo -e "${YELLOW}>> Installing oh-my-zsh${NC}"
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
+	sleep 3
+	rm -rf ~/.oh-my-zsh/.git
+	echo -e "${GREEN}>> oh-my-zsh installation completed${NC}"
+	sleep 3
 fi
 
 # Install powerlevel10k theme
@@ -70,6 +77,11 @@ if [ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k ]; then
 	git clone https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k/.git
 	sleep 3
 	echo -e "${GREEN}>> powerlevel10k theme is already installed${NC}"
+else
+	echo -e "${YELLOW}>> Installing powerlevel10k theme${NC}"
+	git clone https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k/.git
+	sleep 3
+	echo -e "${GREEN}>> powerlevel10k theme installation completed${NC}"
 fi
 
 # Install zsh-autosuggestions plugin
@@ -80,6 +92,11 @@ if [ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions ]; then
 	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git
 	sleep 3
 	echo -e "${GREEN}>> zsh-autosuggestions plugin is already installed${NC}"
+else
+	echo -e "${YELLOW}>> Installing zsh-autosuggestions plugin${NC}"
+	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git
+	sleep 3
+	echo -e "${GREEN}>> zsh-autosuggestions plugin installation completed${NC}"
 fi
 
 # Install zsh-syntax-highlighting plugin
@@ -90,6 +107,11 @@ if [ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting ]; th
 	git clone https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git
 	sleep 3
 	echo -e "${GREEN}>> zsh-syntax-highlighting plugin is already installed${NC}"
+else
+	echo -e "${YELLOW}>> Installing zsh-syntax-highlighting plugin${NC}"
+	git clone https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git
+	sleep 3
+	echo -e "${GREEN}>> zsh-syntax-highlighting plugin installation completed${NC}"
 fi
 
 # Configure oh-my-zsh
