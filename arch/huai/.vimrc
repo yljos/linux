@@ -13,3 +13,5 @@ Plug 'psf/black'
 call plug#end()
 " 自动格式化 Python 代码
 autocmd BufWritePre *.py Black
+" 自动格式化 Shell 脚本
+autocmd BufWritePre *.sh silent %!shfmt
