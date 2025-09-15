@@ -49,3 +49,7 @@ source $ZSH/oh-my-zsh.sh
 # Powerlevel10k Specific Configuration File
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Aliases
+if [ -f ~/.aliases ]; then
+    source ~/.aliases
+fi
