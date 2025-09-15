@@ -67,34 +67,47 @@ alias gpl='ssh_add_check; git pull'
 alias gcl='ssh_add_check; git clone'
 alias gst='git status'
 alias gl='git log'
+# 通用的推送辅助函数
+_git_push_helper() {
+  # 第一个参数是远程仓库的名称 (e.g., "codeberg" or "github")
+  local remote_name="$1"
+  # 'shift' 命令会移除第一个参数, 剩下的参数 ($@) 就是用户可能附加的 git push 选项
+  shift
+
+  # 你的 ssh-agent 检查
+  ssh_add_check
+
+  # 检查用户是否提供了自定义参数 (比如指定了其他分支名或 --force)
+  if [ $# -eq 0 ]; then
+    # 如果没有参数, 自动获取当前分支名
+    local current_branch
+    current_branch=$(git branch --show-current)
+
+    # 检查是否成功获取了分支名 (比如在一个 detached HEAD 状态下, 这条命令会返回空)
+    if [ -n "$current_branch" ]; then
+      echo "检测到当前分支: ${current_branch}. 推送到 ${remote_name}..."
+      git push "$remote_name" "$current_branch"
+    else
+      echo "错误: 无法检测到当前 Git 分支."
+      return 1
+    fi
+  else
+    # 如果用户提供了参数, 则原封不动地传递给 git push
+    echo "使用自定义参数推送到 ${remote_name}..."
+    git push "$remote_name" "$@"
+  fi
+}
+
 # 用于 codeberg 的推送函数
 codeberg() {
-  # 首先执行 ssh_add_check 命令
-  ssh_add_check
-  
-  # 检查函数调用时是否附加了参数
-  if [ $# -eq 0 ]; then
-    # 如果没有参数 ($# 等于 0), 则默认推送 'main' 分支
-    git push codeberg main
-  else
-    # 如果有参数, 则将所有参数 ("$@") 传递给 git push 命令
-    git push codeberg "$@"
-  fi
+  # 调用辅助函数, 并将 "codeberg" 和所有接收到的参数传递给它
+  _git_push_helper codeberg "$@"
 }
 
 # 用于 github 的推送函数
 github() {
-  # 首先执行 ssh_add_check 命令
-  ssh_add_check
-  
-  # 检查函数调用时是否附加了参数
-  if [ $# -eq 0 ]; then
-    # 如果没有参数 ($# 等于 0), 则默认推送 'main' 分支
-    git push github main
-  else
-    # 如果有参数, 则将所有参数 ("$@") 传递给 git push 命令
-    git push github "$@"
-  fi
+  # 调用辅助函数, 并将 "github" 和所有接收到的参数传递给它
+  _git_push_helper github "$@"
 }
 # 检查 SSH 代理并自动添加密钥
 ssh_add_check() {
