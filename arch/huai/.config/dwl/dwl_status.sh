@@ -121,7 +121,6 @@ update_ime() {
 }
 
 update_time() {
-    # Shell 内置 printf，效率最高
     TIME_STATUS=$(printf "%(%a %b %d %H:%M)T" -1)
 }
 
