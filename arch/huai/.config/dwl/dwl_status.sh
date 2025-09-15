@@ -20,13 +20,15 @@ ICON_VOL=""
 ICON_NET_DOWN=""
 ICON_NET_UP=""
 ICON_TIME="󰃰"
+CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
 # --- 颜色定义 (Color Definitions for Bar Patch) ---
 C_NORM="^fg(00ff00)" # 绿色 (正常)
 C_WARN="^fg(ffff00)" # 黄色 (警告)
 C_CRIT="^fg(ff0000)" # 红色 (严重)
 C_RESET="^fg()"      # 重置颜色
 # --- 初始化 (Initialization) ---
-ARCH="${C_NORM}$(uname -r | cut -d'-' -f1)${C_RESET}"
+kernel_version=$(uname -r)
+ARCH="${C_NORM}${kernel_version%%-*}${C_RESET}"
 INTERFACE=enp0s31f6 # 请根据实际情况修改为你的网络接口名称
 
 NET_RX_FILE="/sys/class/net/$INTERFACE/statistics/rx_bytes"
@@ -84,45 +86,43 @@ update_cpu() {
 update_mem() {
 	MEM_STATUS=$(awk '/^MemTotal:/ {t=$2/1024} /^MemAvailable:/ {a=$2/1024} END {printf "%d/%dMB", (t-a), t}' /proc/meminfo)
 }
+
+
 update_temp() {
-	local temp_val
-	temp_val=$(sensors 2>/dev/null | awk '/Core 0|Package id 0|CPU/ {for(i=1;i<=NF;i++) if($i~/\+[0-9]+\.[0-9]+°C/) {gsub(/\+|°C/,"",$i); print $i; exit}}')
+    if [[ -r "$CPU_TEMP_FILE" ]]; then
+        # 读取的值是毫摄氏度 (e.g., 65000)，需除以1000
+        local temp_val=$(($(<$CPU_TEMP_FILE) / 1000))
+        local color_code="$C_NORM"
 
-	if [[ -z "$temp_val" ]]; then
-		TEMP_STATUS="N/A"
-		return
-	fi
-
-	local temp_int=${temp_val%.*}
-
-	# 1. 设置默认颜色为“正常”
-	local color_code="$C_NORM"
-
-	# 2. 根据温度阈值（65°C 和 80°C）更新颜色
-	if ((temp_int >= 80)); then
-		color_code="$C_CRIT" # 严重 (>= 80°C)：红色
-	elif ((temp_int >= 65)); then
-		color_code="$C_WARN" # 警告 (>= 65°C)：黄色
-	fi
-
-	# 3. 使用最终的颜色代码组合输出字符串
-	TEMP_STATUS="${ICON_TEMP} ${color_code}${temp_int}°C${C_RESET}"
+        if ((temp_val >= 80)); then # 使用数字 80
+            color_code="$C_CRIT"
+        elif ((temp_val >= 65)); then # 使用数字 65
+            color_code="$C_WARN"
+        fi
+        TEMP_STATUS="${ICON_TEMP} ${color_code}${temp_val}°C${C_RESET}"
+    else
+        TEMP_STATUS="${ICON_TEMP} N/A"
+    fi
 }
+# 获取音量百分比，默认值为 50%（如果无法获取）}
 update_volume() {
 	local vol
 	vol=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk -F'/' '/Volume:/ {gsub(/%| /,""); print $2; exit}')
 	VOL_STATUS=$(printf "%02d%%" "${vol:-50}")
 }
 update_music() {
-    # 使用 awk 判断状态并捕获输出，减少一次 grep
-    local status
-    status=$(mpc status)
-    if [[ "$status" == *"[playing]"* ]]; then
-        # 使用 sed 一次性提取艺术家/标题部分，替换 cut | sed
+    # 只调用一次 mpc，捕获其所有输出
+    local mpc_output
+    mpc_output=$(mpc) # mpc 不带参数默认等同于 mpc status
+
+    # 检查输出中是否包含播放状态
+    if [[ "$mpc_output" == *"[playing]"* ]]; then
+        # 如果在播放，从输出的第一行提取歌曲名
         local music
-        music=$(mpc current 2>/dev/null | sed -n 's/.* - //p')
+        music=$(printf "%s" "$mpc_output" | head -n 1 | sed -n 's/.* - //p')
         MUSIC_STATUS="[${music:-Off}]"
     else
+        # 如果未播放，则清空状态
         MUSIC_STATUS=""
     fi
 }
