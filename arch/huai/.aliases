@@ -44,7 +44,7 @@ alias volup="vol +10%"
 alias voldown="vol -10%"
 alias volmute="pactl set-sink-mute @DEFAULT_SINK@ toggle"
 
-# MPD控制
+# MPC控制
 alias s="mpc stop"
 alias p="mpc play"
 alias nm="mpc next"
@@ -67,7 +67,6 @@ alias gpl='ssh_add_check; git pull'
 alias gcl='ssh_add_check; git clone'
 alias gst='git status'
 alias gl='git log'
-# 通用的推送辅助函数
 _git_push_helper() {
   # 第一个参数是远程仓库的名称 (e.g., "codeberg" or "github")
   local remote_name="$1"
