@@ -6,8 +6,11 @@ export GPG_TTY=$(tty)
 export LANG=en_US.UTF-8
 export VISUAL=vim
 export EDITOR=vim
-alias x="sh /home/huai/.config/dwl/dwl_status.sh | dwl"
-# export TERM=xterm-256color
+# If in a TTY, stop here after loading the common configuration.
+if [[ "$TERM" = "linux" ]]; then
+  alias x="sh /home/huai/.config/dwl/dwl_status.sh | dwl"
+  return
+fi
 umask 022
 [[ -r /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
 
