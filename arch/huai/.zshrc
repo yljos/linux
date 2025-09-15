@@ -19,12 +19,9 @@ if [[ "$TERM" = "linux" ]]; then
 fi
 
 
-
 # Powerlevel10k Instant Prompt
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
+local p10k_cache_file="${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+[[ -r "$p10k_cache_file" ]] && source "$p10k_cache_file"
 # Oh My Zsh & Powerlevel10k Theme Configuration
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
@@ -32,9 +29,7 @@ plugins=(zsh-autosuggestions zsh-syntax-highlighting)
 source $ZSH/oh-my-zsh.sh
 
 # Powerlevel10k Specific Configuration File
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
 # Aliases
-if [ -f ~/.aliases ]; then
-    source ~/.aliases
-fi
+[[ -f ~/.aliases ]] && source ~/.aliases
