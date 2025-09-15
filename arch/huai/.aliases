@@ -12,8 +12,8 @@ alias R="systemctl reboot"
 alias rsyncdir="rsync -avzh --delete" 
 
 # 配置文件编辑
-alias zshconfig="vim ~/.zshrc"
-alias bashconfig="vim ~/.bashrc"
+alias zshconfig="vim /workspace/linux/arch/huai/.zshrc"
+alias bashconfig="vim /workspace/linux/arch/huai/.bashrc"
 
 # 目录导航
 alias cdconfig="cd /home/huai/.config"
