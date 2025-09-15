@@ -1,8 +1,3 @@
-#!/bin/bash
-
-# 通用别名配置文件
-# 可以被 .bashrc 和 .zshrc 同时引用
-
 # 基础系统命令
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
@@ -14,7 +9,7 @@ alias ~='cd ~'
 alias update="sudo pacman -Syyu"
 alias P="sleep 60 && shutdown now"
 alias R="systemctl reboot"
-alias rsyncdir="rsync -avzh --delete"  # 同步目录，删除目标端多余文件
+alias rsyncdir="rsync -avzh --delete" 
 
 # 配置文件编辑
 alias zshconfig="vim ~/.zshrc"
