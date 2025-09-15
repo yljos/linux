@@ -2,6 +2,7 @@ import os
 import sys
 import re  # 导入正则表达式模块
 
+
 def smart_rename_webm_files_custom_prefix(root_directory):
     """
     (全自动版 - 仅处理.webm文件，自定义前缀)
@@ -55,22 +56,21 @@ def smart_rename_webm_files_custom_prefix(root_directory):
             # --- 新增的修改：清理文件名中的符号和空格 ---
             # 分离文件名和扩展名，以便安全地处理文件名而不影响扩展名
             name_part, extension = os.path.splitext(base_filename)
-            
+
             # 1. 将所有非字母、非数字、非下划线的字符替换为下划线
             #    \w 匹配任何字母数字字符（等同于 [a-zA-Z0-9_]）
             #    [^\w] 匹配任何非字母数字字符，也就是我们需要替换的符号和空格
-            cleaned_name_part = re.sub(r'[^\w]', '_', name_part)
-            
+            cleaned_name_part = re.sub(r"[^\w]", "_", name_part)
+
             # 2. 将连续的多个下划线替换为单个下划线
-            cleaned_name_part = re.sub(r'__+', '_', cleaned_name_part)
+            cleaned_name_part = re.sub(r"__+", "_", cleaned_name_part)
 
             # 3. 重新组合成最终的基础文件名
             cleaned_base_filename = cleaned_name_part + extension
-            
+
             if base_filename != cleaned_base_filename:
                 print(f"   清理文件名: '{base_filename}' -> '{cleaned_base_filename}'")
             # --- 清理文件名结束 ---
-
 
             # 使用f-string格式化，:02d 表示一个至少2位的整数，不足则用0填充
             new_filename = f"E{counter:02d}_{cleaned_base_filename}"
