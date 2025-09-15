@@ -16,11 +16,7 @@ export LANG=en_US.UTF-8
 export VISUAL=vim
 export EDITOR=vim
 umask 022
-
-# Aliases
-if [ -f ~/.aliases ]; then
-    source ~/.aliases
-fi
+alias x="sh /home/huai/.config/dwl/dwl_status.sh | dwl"
 
 # ===================================================================
 # 3. Handle TTY Environment
