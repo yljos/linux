@@ -64,6 +64,7 @@ alias xiaoai="ssh_add_check; ssh u0_a69@192.168.31.18 -p 8022"
 alias gaa='git add -A'
 alias gc='git commit -v'
 alias gpl='ssh_add_check; git pull'
+alias gpu='github && codeberg'
 alias gcl='ssh_add_check; git clone'
 alias gst='git status'
 alias gl='git log'
