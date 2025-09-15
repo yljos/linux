@@ -114,16 +114,17 @@ update_volume() {
 	VOL_STATUS=$(printf "%02d%%" "${vol:-50}")
 }
 update_music() {
-	# 检查 mpc (Music Player Client) 进程是否正在运行
-	if mpc status | grep -q "\[playing\]"; then
-		local music
-		music=$(mpc current 2>/dev/null | cut -d'-' -f2 | sed 's/^ *//')
-		# 如果进程在运行，则获取状态
-		MUSIC_STATUS="[${music:-Off}]"
-	else
-		# 如果进程未运行，则状态为空
-		MUSIC_STATUS=""
-	fi
+    # 使用 awk 判断状态并捕获输出，减少一次 grep
+    local status
+    status=$(mpc status)
+    if [[ "$status" == *"[playing]"* ]]; then
+        # 使用 sed 一次性提取艺术家/标题部分，替换 cut | sed
+        local music
+        music=$(mpc current 2>/dev/null | sed -n 's/.* - //p')
+        MUSIC_STATUS="[${music:-Off}]"
+    else
+        MUSIC_STATUS=""
+    fi
 }
 update_ime() {
 	case $(fcitx5-remote 2>/dev/null) in
