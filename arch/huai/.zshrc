@@ -12,13 +12,6 @@ export VISUAL=vim
 export EDITOR=vim
 umask 022
 
-# If in a TTY, stop here after loading the common configuration.
-if [[ "$TERM" = "linux" ]]; then
-  alias x="sh /home/huai/.config/dwl/dwl_status.sh | dwl"
-  return
-fi
-
-
 # Powerlevel10k Instant Prompt
 local p10k_cache_file="${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 [[ -r "$p10k_cache_file" ]] && source "$p10k_cache_file"
