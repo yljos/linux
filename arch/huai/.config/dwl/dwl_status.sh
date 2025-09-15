@@ -3,7 +3,7 @@
 # --- INI ---
 PID_FILE="${XDG_RUNTIME_DIR}/dwl_status.pid"
 if [ -f "$PID_FILE" ] && ps -p "$(cat "$PID_FILE")" >/dev/null 2>&1; then
-    exit 0
+	exit 0
 fi
 printf "%s\n" "$$" >"$PID_FILE"
 trap 'rm -f "$PID_FILE"' EXIT INT TERM
@@ -34,10 +34,10 @@ NET_RX_FILE="/sys/class/net/$INTERFACE/statistics/rx_bytes"
 NET_TX_FILE="/sys/class/net/$INTERFACE/statistics/tx_bytes"
 
 if [[ -r "$NET_RX_FILE" ]]; then
-    RX1=$(<"$NET_RX_FILE")
-    TX1=$(<"$NET_TX_FILE")
+	RX1=$(<"$NET_RX_FILE")
+	TX1=$(<"$NET_TX_FILE")
 else
-    NET_STATUS_STR="N/A"
+	NET_STATUS_STR="N/A"
 fi
 
 read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
@@ -51,109 +51,109 @@ NET_STATUS_STR=${NET_STATUS_STR:-""}
 
 # --- 函数定义 (Functions) ---
 update_cpu() {
-    read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
-    local curr_cpu=$((cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iowait + cpu_irq + cpu_softirq))
-    local curr_idle=$cpu_idle
-    local total_diff=$((curr_cpu - prev_cpu))
-    local idle_diff=$((curr_idle - prev_idle))
-    local usage=0
-    if ((total_diff > 0)); then
-        usage=$(((100 * (total_diff - idle_diff)) / total_diff))
-    fi
-    prev_cpu=$curr_cpu
-    prev_idle=$curr_idle
+	read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
+	local curr_cpu=$((cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iowait + cpu_irq + cpu_softirq))
+	local curr_idle=$cpu_idle
+	local total_diff=$((curr_cpu - prev_cpu))
+	local idle_diff=$((curr_idle - prev_idle))
+	local usage=0
+	if ((total_diff > 0)); then
+		usage=$(((100 * (total_diff - idle_diff)) / total_diff))
+	fi
+	prev_cpu=$curr_cpu
+	prev_idle=$curr_idle
 
-    local color_code="$C_NORM"
-    if ((usage >= 90)); then
-        color_code="$C_CRIT"
-    elif ((usage >= 75)); then
-        color_code="$C_WARN"
-    fi
-    CPU_STATUS="${color_code}$(printf "%02d%%" "$usage")${C_RESET}"
+	local color_code="$C_NORM"
+	if ((usage >= 90)); then
+		color_code="$C_CRIT"
+	elif ((usage >= 75)); then
+		color_code="$C_WARN"
+	fi
+	CPU_STATUS="${color_code}$(printf "%02d%%" "$usage")${C_RESET}"
 }
 
 update_mem() {
-    # awk 对于此类任务极为高效，纯 shell 实现反而更慢
-    MEM_STATUS=$(awk '/^MemTotal:/ {t=$2/1024} /^MemAvailable:/ {a=$2/1024} END {printf "%d/%dMB", (t-a), t}' /proc/meminfo)
+	# awk 对于此类任务极为高效，纯 shell 实现反而更慢
+	MEM_STATUS=$(awk '/^MemTotal:/ {t=$2/1024} /^MemAvailable:/ {a=$2/1024} END {printf "%d/%dMB", (t-a), t}' /proc/meminfo)
 }
 
 update_temp() {
-    if [[ -r "$CPU_TEMP_FILE" ]]; then
-        local temp_val=$(($(<$CPU_TEMP_FILE) / 1000))
-        local color_code="$C_NORM"
-        if ((temp_val >= 80)); then
-            color_code="$C_CRIT"
-        elif ((temp_val >= 65)); then
-            color_code="$C_WARN"
-        fi
-        TEMP_STATUS="${ICON_TEMP} ${color_code}${temp_val}°C${C_RESET}"
-    else
-        TEMP_STATUS="${ICON_TEMP} N/A"
-    fi
+	if [[ -r "$CPU_TEMP_FILE" ]]; then
+		local temp_val=$(($(<$CPU_TEMP_FILE) / 1000))
+		local color_code="$C_NORM"
+		if ((temp_val >= 80)); then
+			color_code="$C_CRIT"
+		elif ((temp_val >= 65)); then
+			color_code="$C_WARN"
+		fi
+		TEMP_STATUS="${ICON_TEMP} ${color_code}${temp_val}°C${C_RESET}"
+	else
+		TEMP_STATUS="${ICON_TEMP} N/A"
+	fi
 }
 
 update_volume() {
-    # pactl 是数据源，无法移除。awk 已是最高效的处理方式
-    local vol
-    vol=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk -F'/' '/Volume:/ {gsub(/%| /,""); print $2; exit}')
-    VOL_STATUS=$(printf "%02d%%" "${vol:-50}")
+	# pactl 是数据源，无法移除。awk 已是最高效的处理方式
+	local vol
+	vol=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk -F'/' '/Volume:/ {gsub(/%| /,""); print $2; exit}')
+	VOL_STATUS=$(printf "%02d%%" "${vol:-50}")
 }
 
 update_music() {
-    local mpc_output
-    mpc_output=$(mpc)
-    if [[ "$mpc_output" == *"[playing]"* ]]; then
-        # **优化点**: 使用 read 和参数扩展代替 head 和 sed，实现零进程创建
-        local music_line music
-        read -r music_line <<< "$mpc_output" # 读取第一行
-        music="${music_line##* - }" # 从变量头部移除最长的 "艺术家 - " 部分
-        MUSIC_STATUS="[${music:-Off}]"
-    else
-        MUSIC_STATUS=""
-    fi
+	local mpc_output
+	mpc_output=$(mpc)
+	if [[ "$mpc_output" == *"[playing]"* ]]; then
+		# **优化点**: 使用 read 和参数扩展代替 head 和 sed，实现零进程创建
+		local music_line music
+		read -r music_line <<<"$mpc_output" # 读取第一行
+		music="${music_line##* - }"         # 从变量头部移除最长的 "艺术家 - " 部分
+		MUSIC_STATUS="[${music:-Off}]"
+	else
+		MUSIC_STATUS=""
+	fi
 }
 
 update_ime() {
-    case $(fcitx5-remote 2>/dev/null) in
-        2) IME_STATUS="${C_WARN}CN${C_RESET}" ;;
-        *) IME_STATUS="${C_NORM}EN${C_RESET}" ;;
-    esac
+	case $(fcitx5-remote 2>/dev/null) in
+	2) IME_STATUS="${C_WARN}CN${C_RESET}" ;;
+	*) IME_STATUS="${C_NORM}EN${C_RESET}" ;;
+	esac
 }
 
 update_time() {
-    TIME_STATUS=$(printf "%(%a %b %d %H:%M)T" -1)
+	TIME_STATUS=$(printf "%(%a %b %d %H:%M)T" -1)
 }
 
 update_net() {
-    if [[ -z "$RX1" ]]; then
-        NET_STATUS_STR=${NET_STATUS_STR:-"N/A"}
-        return
-    fi
-    local RX2 TX2 RX_DIFF TX_DIFF
-    RX2=$(<"$NET_RX_FILE")
-    TX2=$(<"$NET_TX_FILE")
-    RX_DIFF=$((RX2 - RX1))
-    TX_DIFF=$((TX2 - TX1))
-    RX1=$RX2
-    TX1=$TX2
-    NET_STATUS_STR=$(printf "%s %dMbps %s %dMbps" "$ICON_NET_DOWN" "$(((RX_DIFF * 8) / 1000000))" "$ICON_NET_UP" "$(((TX_DIFF * 8) / 1000000))")
+	if [[ -z "$RX1" ]]; then
+		NET_STATUS_STR=${NET_STATUS_STR:-"N/A"}
+		return
+	fi
+	local RX2 TX2 RX_DIFF TX_DIFF
+	RX2=$(<"$NET_RX_FILE")
+	TX2=$(<"$NET_TX_FILE")
+	RX_DIFF=$((RX2 - RX1))
+	TX_DIFF=$((TX2 - TX1))
+	RX1=$RX2
+	TX1=$TX2
+	NET_STATUS_STR=$(printf "%s %dMbps %s %dMbps" "$ICON_NET_DOWN" "$(((RX_DIFF * 8) / 1000000))" "$ICON_NET_UP" "$(((TX_DIFF * 8) / 1000000))")
 }
 
 print_status_bar() {
-    local parts=()
-    parts+=("${ICON_ARCH} ${ARCH}")
-    if [[ -n "$MUSIC_STATUS" ]]; then
-        parts+=("${ICON_MUSIC} ${MUSIC_STATUS}")
-    fi
-    parts+=("${TEMP_STATUS}")
-    parts+=("${ICON_CPU} ${CPU_STATUS}")
-    parts+=("${ICON_MEM} ${MEM_STATUS}")
-    parts+=("${ICON_VOL} ${VOL_STATUS}")
-    parts+=("${NET_STATUS_STR}")
-    parts+=("${ICON_TIME} ${TIME_STATUS}")
-    parts+=("${IME_STATUS}")
-    local IFS="|"
-    printf "%s\n" "${parts[*]}"
+	local parts=()
+	parts+=("${ICON_ARCH} ${ARCH}")
+	if [[ -n "$MUSIC_STATUS" ]]; then
+		parts+=("${ICON_MUSIC} ${MUSIC_STATUS}")
+	fi
+	parts+=("${TEMP_STATUS}")
+	parts+=("${ICON_CPU} ${CPU_STATUS}")
+	parts+=("${ICON_MEM} ${MEM_STATUS}")
+	parts+=("${ICON_VOL} ${VOL_STATUS}")
+	parts+=("${NET_STATUS_STR}")
+	parts+=("${ICON_TIME} ${TIME_STATUS}")
+	parts+=("${IME_STATUS}")
+	local IFS="|"
+	printf "%s\n" "${parts[*]}"
 }
 
 # --- 信号陷阱 ---
@@ -173,18 +173,18 @@ update_volume
 # --- 主循环 ---
 sec=0
 while true; do
-    update_cpu
-    update_temp
-    update_net
-    if ! ((sec % 5)); then
-        update_mem
-        update_music
-    fi
-    if ! ((sec % 60)); then
-        update_time
-    fi
+	update_cpu
+	update_temp
+	update_net
+	if ! ((sec % 5)); then
+		update_mem
+		update_music
+	fi
+	if ! ((sec % 60)); then
+		update_time
+	fi
 
-    print_status_bar
-    sleep 1
-    ((sec++))
+	print_status_bar
+	sleep 1
+	((sec++))
 done

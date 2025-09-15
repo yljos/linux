@@ -53,7 +53,7 @@ fi
 
 # Install oh-my-zsh
 if [ -d ~/.oh-my-zsh ]; then
-    rm -rf ~/.oh-my-zsh/
+	rm -rf ~/.oh-my-zsh/
 	echo -e "${YELLOW}>> Installing oh-my-zsh${NC}"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
 	sleep 1
@@ -71,7 +71,7 @@ fi
 
 # Install powerlevel10k theme
 if [ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k ]; then
-    rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k
+	rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k
 	sleep 1
 	echo -e "${YELLOW}>> Installing powerlevel10k theme${NC}"
 	git clone https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k/.git
@@ -86,7 +86,7 @@ fi
 
 # Install zsh-autosuggestions plugin
 if [ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions ]; then
-    rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+	rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 	sleep 1
 	echo -e "${YELLOW}>> Installing zsh-autosuggestions plugin${NC}"
 	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git
