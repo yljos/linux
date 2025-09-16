@@ -8,7 +8,7 @@ export VISUAL=vim
 export EDITOR=vim
 umask 022
 [[ -r /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
-[[ -f ~/.aliases ]] && source ~/.aliases
+[[ -f ~/.aliases ]] && . ~/.aliases
 # Bash specific prompt and environment
 PS1='\[\e[1;33m\]\h\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]\[\e[1;35m\]:\w\$\[\e[0m\] '
 
