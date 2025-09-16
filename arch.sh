@@ -147,7 +147,7 @@ install_packages() {
 		fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip ranger reflector libnotify openssh \
 		mpd mpc freerdp xf86-video-intel libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
 		ttf-liberation terminus-font fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
-		sox libva-utils telegram-desktop ufw bc firejail nodejs stow firefox w3m mutt black shfmt
+		sox libva-utils telegram-desktop ufw bc firejail nodejs stow firefox w3m mutt black shfmt dash zsh
 
 	echo ">> Generating fstab"
 	genfstab -U /mnt >>/mnt/etc/fstab
@@ -158,7 +158,7 @@ install_packages_nas() {
 	pacman-key --populate archlinux
 
 	pacstrap /mnt base base-devel iptables-nft nfs-utils linux-lts linux-lts-headers linux-firmware vim dhcpcd git \
-		rsync openssh polkit p7zip ranger curl samba mdadm unzip ufw podman
+		rsync openssh polkit p7zip ranger curl samba mdadm unzip ufw podman dash zsh
 
 	echo ">> Generating fstab"
 	genfstab -U /mnt >>/mnt/etc/fstab
