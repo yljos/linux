@@ -1,36 +1,50 @@
 #!/usr/bin/env bash
 # 将整个脚本逻辑放入后台执行
 (
-	# --- NEW: Check if password argument is provided ---
-	if [ -z "$1" ]; then
-		# Use notify-send for consistency, but also echo to stderr for command-line feedback
-		(notify-send "脚本错误" "请提供密码作为参数。")
-		echo "Usage: $0 <password>" >&2
-		exit 1
-	fi
-
-	# --- NEW: Store the password from the first argument ---
-	PASSWORD="$1"
-
-	# 目标主机信息（直接使用IP地址）
+	# 配置
+	CONFIG_GPG="$HOME/.config/mima.gpg"
 	TARGET_IP="192.168.31.15"
 	MAC_ADDRESS="00:23:24:67:DF:14"
 	INTERFACE="enp0s31f6"
 	MAX_TRIES=10
 
 	# 检查必要命令是否安装
-	for cmd in arping wakeonlan wlfreerdp3 notify-send; do
+	for cmd in arping wakeonlan wlfreerdp3 notify-send gpg play sdl-freerdp3; do
 		if ! command -v "$cmd" >/dev/null 2>&1; then
-			notify-send "错误" "$cmd 未安装"
+			# notify-send 可能不存在时直接 echo
+			if command -v notify-send >/dev/null 2>&1; then
+				notify-send "错误" "$cmd 未安装"
+			else
+				echo "错误: $cmd 未安装" >&2
+			fi
 			exit 1
 		fi
 	done
+
+	# --- 从 GPG 文件解密读取密码 ---
+	if [ ! -f "$CONFIG_GPG" ]; then
+		notify-send "脚本错误" "找不到 $CONFIG_GPG"
+		echo "Missing file: $CONFIG_GPG" >&2
+		exit 1
+	fi
+
+	# 尝试解密文件，解密失败则退出
+	# 使用 command substitution 将解密结果放到变量 PASSWORD 中
+	if ! PASSWORD=$(gpg --quiet --batch --decrypt "$CONFIG_GPG" 2>/dev/null); then
+		notify-send "脚本错误" "解密 $CONFIG_GPG 失败。"
+		echo "Failed to decrypt $CONFIG_GPG" >&2
+		exit 1
+	fi
+
+	# 去掉密码两端的换行（如果有）
+	PASSWORD=$(printf "%s" "$PASSWORD")
 
 	# 连接函数
 	connect_to_host() {
 		notify-send "连接中" "启动 RDP..." && play ~/.config/dunst/connecting.mp3 >/dev/null 2>&1
 
 		# 启动 RDP 连接并获取进程 ID
+		# 使用 sdl-freerdp3（你原本脚本里用的是 sdl-freerdp3）
 		sdl-freerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /w:1920 /h:1060 /sound /cert:ignore >/dev/null 2>&1 &
 		RDP_PID=$!
 
@@ -41,7 +55,6 @@
 		if kill -0 "$RDP_PID" 2>/dev/null; then
 			# 进程仍在运行，可能连接成功
 			notify-send "连接成功" "RDP 会话已建立" && play ~/.config/dunst/success.mp3 >/dev/null 2>&1
-
 		else
 			# 进程已退出，连接失败
 			notify-send "连接失败" "RDP 连接建立失败" && play ~/.config/dunst/error.mp3 >/dev/null 2>&1
