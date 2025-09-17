@@ -22,4 +22,4 @@ else
     echo "Error: reflector command failed." >&2
     exit 1
 fi
-fi
+
