@@ -38,5 +38,5 @@ bilibili.com##.adblock-tips
 ! Outlook 屏蔽规则
 outlook.live.com##div[id^="MainModule"] div:last-child.GssDD
 
-###neatDiv214478851
+div[id^="neatDiv"]
 
