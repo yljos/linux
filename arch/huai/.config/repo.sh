@@ -33,3 +33,4 @@ else
         --ipv4 \
         --save "$MIRRORLIST_PATH" >/dev/null 2>&1
 fi
+cat "$MIRRORLIST_PATH"
