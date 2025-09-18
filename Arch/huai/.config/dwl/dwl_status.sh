@@ -9,15 +9,24 @@ printf "%s\n" "$$" >"$PID_FILE"
 trap 'rm -f "$PID_FILE"' EXIT INT TERM
 
 # --- 配置 (Configuration) ---
-ICON_ARCH="󰣇"
-ICON_MUSIC="♫"
-ICON_TEMP=""
-ICON_CPU=""
-ICON_MEM="󰍛"
-ICON_VOL=""
-ICON_NET_DOWN=""
-ICON_NET_UP=""
-ICON_TIME="󰃰"
+# ICON_ARCH="󰣇"
+# ICON_MUSIC="♫"
+# ICON_TEMP=""
+# ICON_CPU=""
+# ICON_MEM="󰍛"
+# ICON_VOL=""
+# ICON_NET_DOWN=""
+# ICON_NET_UP=""
+# ICON_TIME="󰃰"
+ICON_ARCH="A:"
+# ICON_MUSIC="MU:"
+ICON_TEMP="T:"
+ICON_CPU="C:"
+ICON_MEM="M:"
+ICON_VOL="V:"
+ICON_NET_DOWN="D:"
+ICON_NET_UP="U:"
+# ICON_TIME="CL:"
 CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
 INTERFACE="enp0s31f6" # 请根据实际情况修改
 
@@ -107,7 +116,7 @@ update_music() {
 		local music_line music
 		read -r music_line <<<"$mpc_output" # 读取第一行
 		music="${music_line##* - }"         # 从变量头部移除最长的 "艺术家 - " 部分
-		MUSIC_STATUS="[${music:-Off}]"
+		MUSIC_STATUS="[${C_NORM}${music:-Off}${C_RESET}]"
 	else
 		MUSIC_STATUS=""
 	fi
@@ -143,14 +152,14 @@ print_status_bar() {
 	local parts=()
 	parts+=("${ICON_ARCH} ${ARCH}")
 	if [[ -n "$MUSIC_STATUS" ]]; then
-		parts+=("${ICON_MUSIC} ${MUSIC_STATUS}")
+		parts+=("${MUSIC_STATUS}")
 	fi
 	parts+=("${TEMP_STATUS}")
 	parts+=("${ICON_CPU} ${CPU_STATUS}")
 	parts+=("${ICON_MEM} ${MEM_STATUS}")
 	parts+=("${ICON_VOL} ${VOL_STATUS}")
 	parts+=("${NET_STATUS_STR}")
-	parts+=("${ICON_TIME} ${TIME_STATUS}")
+	parts+=("${TIME_STATUS}")
 	parts+=("${IME_STATUS}")
 	local IFS="|"
 	printf "%s\n" "${parts[*]}"
