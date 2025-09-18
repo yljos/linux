@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 # --- INI ---
 PID_FILE="${XDG_RUNTIME_DIR}/dwl_status.pid"
@@ -145,7 +145,7 @@ update_net() {
 	TX_DIFF=$((TX2 - TX1))
 	RX1=$RX2
 	TX1=$TX2
-	NET_STATUS_STR=$(printf "%s %dMbps %s %dMbps" "$ICON_NET_DOWN""$(((RX_DIFF * 8) / 1000000))" "$ICON_NET_UP""$(((TX_DIFF * 8) / 1000000))")
+	NET_STATUS_STR=$(printf "%s%dMbps %s%dMbps" "$ICON_NET_DOWN" "$(((RX_DIFF * 8) / 1000000))" "$ICON_NET_UP" "$(((TX_DIFF * 8) / 1000000))")
 }
 
 print_status_bar() {
