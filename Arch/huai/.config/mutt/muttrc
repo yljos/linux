@@ -10,6 +10,7 @@ set sort=reverse-date  # 最新邮件在前面
 set sort_aux = 'last-date-received'  # 辅助排序
 set postponed = "+Drafts" # 默认草稿文件夹
 set trash = "+Deleted"  # 默认垃圾箱
+color normal white default
 # --- 缓存设置 ---
 set header_cache = "~/.cache/mutt"
 set message_cachedir = "~/.cache/mutt"
