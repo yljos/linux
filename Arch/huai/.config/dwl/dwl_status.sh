@@ -95,9 +95,9 @@ update_temp() {
 		elif ((temp_val >= 65)); then
 			color_code="$C_WARN"
 		fi
-		TEMP_STATUS="${ICON_TEMP} ${color_code}${temp_val}°C${C_RESET}"
+		TEMP_STATUS="${ICON_TEMP}${color_code}${temp_val}°C${C_RESET}"
 	else
-		TEMP_STATUS="${ICON_TEMP} N/A"
+		TEMP_STATUS="${ICON_TEMP}N/A"
 	fi
 }
 
@@ -116,7 +116,7 @@ update_music() {
 		local music_line music
 		read -r music_line <<<"$mpc_output" # 读取第一行
 		music="${music_line##* - }"         # 从变量头部移除最长的 "艺术家 - " 部分
-		MUSIC_STATUS="[${C_NORM}${music:-Off}${C_RESET}]"
+		MUSIC_STATUS="${C_NORM}${music:-Off}${C_RESET}"
 	else
 		MUSIC_STATUS=""
 	fi
@@ -145,19 +145,19 @@ update_net() {
 	TX_DIFF=$((TX2 - TX1))
 	RX1=$RX2
 	TX1=$TX2
-	NET_STATUS_STR=$(printf "%s %dMbps %s %dMbps" "$ICON_NET_DOWN" "$(((RX_DIFF * 8) / 1000000))" "$ICON_NET_UP" "$(((TX_DIFF * 8) / 1000000))")
+	NET_STATUS_STR=$(printf "%s %dMbps %s %dMbps" "$ICON_NET_DOWN""$(((RX_DIFF * 8) / 1000000))" "$ICON_NET_UP""$(((TX_DIFF * 8) / 1000000))")
 }
 
 print_status_bar() {
 	local parts=()
-	parts+=("${ICON_ARCH} ${ARCH}")
+	parts+=("${ICON_ARCH}${ARCH}")
 	if [[ -n "$MUSIC_STATUS" ]]; then
 		parts+=("${MUSIC_STATUS}")
 	fi
 	parts+=("${TEMP_STATUS}")
-	parts+=("${ICON_CPU} ${CPU_STATUS}")
-	parts+=("${ICON_MEM} ${MEM_STATUS}")
-	parts+=("${ICON_VOL} ${VOL_STATUS}")
+	parts+=("${ICON_CPU}${CPU_STATUS}")
+	parts+=("${ICON_MEM}${MEM_STATUS}")
+	parts+=("${ICON_VOL}${VOL_STATUS}")
 	parts+=("${NET_STATUS_STR}")
 	parts+=("${TIME_STATUS}")
 	parts+=("${IME_STATUS}")
