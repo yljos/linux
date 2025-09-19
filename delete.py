@@ -1,5 +1,4 @@
 import os
-import sys
 import concurrent.futures
 import threading
 

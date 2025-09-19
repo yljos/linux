@@ -82,7 +82,7 @@ def process_videos_recursively():
 
                 # 执行命令
                 try:
-                    result = subprocess.run(
+                    subprocess.run(
                         command, check=True, text=True, stderr=subprocess.PIPE
                     )
                     print(f"[成功] ✓ 处理完成: {relative_path}")

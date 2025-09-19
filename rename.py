@@ -1,5 +1,4 @@
 import os
-import sys
 import re  # 导入正则表达式模块
 
 def format_folder_name(name):
