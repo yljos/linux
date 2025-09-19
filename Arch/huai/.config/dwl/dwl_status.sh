@@ -1,10 +1,24 @@
 #!/usr/bin/bash
-
 # --- INI ---
 PID_FILE="${XDG_RUNTIME_DIR}/dwl_status.pid"
-if [ -f "$PID_FILE" ] && ps -p "$(cat "$PID_FILE")" >/dev/null 2>&1; then
-	exit 0
+# 获取脚本自己的名字 (例如 "dwl_status.sh")
+SCRIPT_NAME=$(basename "$0")
+
+# --- 检查锁 ---
+if [ -f "$PID_FILE" ]; then
+	OLD_PID=$(cat "$PID_FILE")
+	# 1. 检查旧 PID 是否仍在运行
+	# 2. 并且，检查该 PID 对应的进程名是否和当前脚本名一致
+	if ps -p "$OLD_PID" >/dev/null 2>&1 &&
+		[ "$(ps -p "$OLD_PID" -o comm=)" = "$SCRIPT_NAME" ]; then
+		# 如果两个条件都满足，说明锁是有效的，直接退出
+		exit 0
+	fi
+	# 如果代码执行到这里，说明 PID 文件存在，但锁无效 (进程不存在或进程名不匹配)
+	# 脚本会继续执行，并用自己的新 PID 覆盖旧文件
 fi
+
+# --- 创建新锁 ---
 printf "%s\n" "$$" >"$PID_FILE"
 trap 'rm -f "$PID_FILE"' EXIT INT TERM
 
