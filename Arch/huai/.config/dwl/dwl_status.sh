@@ -23,15 +23,13 @@ trap 'rm -f "$PID_FILE"' EXIT INT TERM
 # --- 1. Icons ---
 # (所有模块的显示前缀)
 ICON_ARCH="A:"
-# ICON_MUSIC="MU:"
 ICON_TEMP="T:"
 ICON_CPU="C:"
 ICON_MEM="M:"
 ICON_VOL="V:"
-ICON_BT="B:" # <--- 1. 在这里添加蓝牙图标 ---
+ICON_BT="B:"
 ICON_NET_DOWN="D:"
 ICON_NET_UP="U:"
-# ICON_TIME="CL:"
 
 # --- 2. Colors ---
 # (状态栏文本颜色)
@@ -49,7 +47,7 @@ INTERFACE="enp0s31f6" # 网卡名称, 使用 `ip a` 命令查看
 # (脚本行为和格式)
 UPDATE_INTERVAL_MEDIUM=5 # 中等频率更新间隔(秒), 用于内存/音乐/蓝牙
 UPDATE_INTERVAL_LONG=60  # 长时间更新间隔(秒), 用于时钟
-SEPARATOR=" | "          # 各模块之间的分隔符
+SEPARATOR="|"            # 各模块之间的分隔符
 
 # =============================================================================
 # --- SCRIPT LOGIC (DO NOT EDIT BELOW THIS LINE) ---
