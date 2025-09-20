@@ -99,11 +99,23 @@ update_temp() {
 update_bluetooth() {
 	BLUETOOTH_STATUS=""
 	if ! pgrep -x 'bluetoothd' >/dev/null; then return; fi
+
+	# 尝试提取电池电量
 	local level
-	level="$(bluetoothctl info | grep -m1 'Battery Percentage' | awk -F'[()]' '{print $2}')"
+	level=$(bluetoothctl info | grep -m1 'Battery Percentage' | awk -F'[()]' '{print $2}')
+
+	# 只有在成功获取电量后才显示信息
 	if [ -n "$level" ]; then
-		# <--- 2. 在这里使用 ICON_BT 变量 ---
-		BLUETOOTH_STATUS="${ICON_BT}${level}%"
+		# 根据电量阈值选择颜色
+		local color_code="$C_NORM" # 默认使用正常颜色 (绿色)
+		if ((level <= 20)); then
+			color_code="$C_CRIT" # 电量低于等于 10% 使用严重颜色 (红色)
+		elif ((level <= 30)); then
+			color_code="$C_WARN" # 电量低于等于 20% 使用警告颜色 (黄色)
+		fi
+
+		# 组合最终的显示字符串，格式为 "图标:颜色+电量%+颜色重置"
+		BLUETOOTH_STATUS="${ICON_BT}${color_code}${level}%${C_RESET}"
 	fi
 }
 update_volume() {
