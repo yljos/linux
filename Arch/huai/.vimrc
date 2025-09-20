@@ -1,15 +1,8 @@
-" --- Section 1: Core Editor Settings ---
 set number
 set relativenumber
 set showmode
 set termguicolors
-set background=dark
-
-" --- Section 2: Enable Syntax Highlighting ---
 syntax on
-
-" --- Section 3: Manual Gruvbox "Mini-Theme" ---
-" This function defines our custom colors.
 function! SetManualGruvboxColors()
     " This ensures the settings are only applied when true color is available.
     if !&termguicolors
@@ -59,15 +52,14 @@ function! SetManualGruvboxColors()
     execute 'highlight Visual     guibg=' . s:bg1
 endfunction
 
-" Apply the custom colors when Vim starts
 call SetManualGruvboxColors()
 
-" --- Section 4: Your other plugins and settings can go here ---
+
 call plug#begin('~/.vim/plugged')
 Plug 'github/copilot.vim'
 Plug 'psf/black'
 call plug#end()
 
-" --- Section 5: Autocommands ---
+" Autocommands 
 autocmd BufWritePre *.py Black
 autocmd BufWritePre *.sh silent %!shfmt
