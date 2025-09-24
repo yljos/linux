@@ -1,0 +1,6 @@
+# /etc/systemd/network/20-enp1s0.network
+[Match]
+Name=enp1s0
+
+[Network]
+DHCP=yes

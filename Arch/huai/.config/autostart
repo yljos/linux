@@ -1,0 +1,94 @@
+#!/usr/bin/sh
+
+# Function to check if a process is running
+is_running() {
+    pgrep -x "$1" > /dev/null 2>&1
+}
+
+# Function to check if a script is running
+is_script_running() {
+    pgrep -f "$1" > /dev/null 2>&1
+}
+
+# Function to send delayed notification asynchronously
+notify_delayed() {
+    local delay=$1
+    local title=$2
+    local message=$3
+    (sleep "$delay" && notify-send "$title" "$message") &
+}
+
+
+# Start dunst if not running
+if ! is_running "dunst"; then
+    dunst &
+    sleep 0.5
+    if is_running "dunst"; then
+        notify_delayed 0 "Autostart" "启动 dunst 通知守护进程"
+    fi
+fi
+
+# waybar is commented out
+# if ! is_running "waybar"; then
+#     waybar &
+# fi
+
+
+# Start swww-daemon if not running
+if ! is_running "swww-daemon"; then
+    swww-daemon &
+    sleep 0.5
+    if is_running "swww-daemon"; then
+        notify_delayed 2 "Autostart" "启动 swww-daemon 壁纸守护进程"
+    fi
+fi
+
+
+# Start swww_auto.sh script (check if already running by looking for the script process)
+if ! is_script_running "swww_auto.sh"; then
+    sh /home/huai/.config/swww_auto.sh &
+    sleep 0.5
+    if is_script_running "swww_auto.sh"; then
+        notify_delayed 4 "Autostart" "启动 swww_auto.sh 壁纸脚本"
+    fi
+fi
+
+
+# Start shutdown.sh script (check if already running by looking for the script process)
+if ! is_script_running "shutdown.sh"; then
+    sh /home/huai/.config/shutdown.sh &
+    sleep 0.5
+    if is_script_running "shutdown.sh"; then
+        notify_delayed 6 "Autostart" "启动 shutdown.sh 关机脚本"
+    fi
+fi
+
+
+# Start firefox if not running
+if ! is_running "firefox"; then
+    firefox &
+    sleep 0.5
+    if is_running "firefox"; then
+        notify_delayed 8 "Autostart" "启动 Firefox 浏览器"
+    fi
+fi
+
+
+# Start Telegram if not running (check for Telegram process)
+if ! is_running "Telegram"; then
+    Telegram &
+    sleep 0.5
+    if is_running "Telegram"; then
+        notify_delayed 10 "Autostart" "启动 Telegram 即时通讯"
+    fi
+fi
+
+
+# Start fcitx5 if not running
+if ! is_running "fcitx5"; then
+    fcitx5 -d
+    sleep 0.5
+    if is_running "fcitx5"; then
+        notify_delayed 12 "Autostart" "启动 fcitx5 输入法"
+    fi
+fi

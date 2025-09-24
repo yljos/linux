@@ -1,0 +1,25 @@
+[Unit]
+Description=Jellyfin Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=unless-stopped
+
+# 核心启动命令
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name=jellyfin \
+  -e TZ=Asia/Shanghai \
+  -p 8096:8096 \
+  -v /data/appdata/jellyfin:/config:Z \
+  -v /data/media:/media:ro,z \
+  -v /data/MiSans:/usr/local/share/fonts/truetype/MiSans:Z \
+  --device=/dev/dri:/dev/dri \
+  docker.io/jellyfin/jellyfin:latest
+
+# 优雅地停止容器
+ExecStop=/usr/bin/podman stop -t 10 jellyfin
+
+[Install]
+WantedBy=default.target

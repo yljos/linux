@@ -1,0 +1,22 @@
+[Unit]
+Description=Power Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=unless-stopped
+
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name=power \
+  --workdir=/usr/src/myapp \
+  -e TZ=Asia/Shanghai \
+  -p 5008:5008 \
+  -v /data/www:/usr/src/myapp:z \
+  docker.io/library/python:3 \
+  /usr/src/myapp/start.sh
+
+ExecStop=/usr/bin/podman stop -t 10 power
+
+[Install]
+WantedBy=default.target

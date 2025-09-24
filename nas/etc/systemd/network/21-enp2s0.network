@@ -1,0 +1,7 @@
+# /etc/systemd/network/21-enp2s0.network
+[Match]
+Name=enp2s0
+[Link]
+ActivationPolicy=down
+#[Network]
+#DHCP=yes

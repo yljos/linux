@@ -1,0 +1,24 @@
+[Unit]
+Description=zhidunren_bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+# 启动命令
+ExecStart=/usr/bin/podman run \
+  --name zhidunren_bot \
+  --replace \
+  --workdir /usr/src/myapp \
+  -p 5006:5006 \
+  -v /root/zhidunren_bot:/usr/src/myapp:z \
+  docker.io/library/python:3 \
+  /usr/src/myapp/start.sh
+
+# 停止命令
+ExecStop=/usr/bin/podman stop -t 10 zhidunren_bot
+
+# 重启策略
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target

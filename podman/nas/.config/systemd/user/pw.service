@@ -1,0 +1,20 @@
+[Unit]
+Description=Vaultwarden Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=unless-stopped
+
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name=pw \
+  -e TZ=Asia/Shanghai \
+  -p 8181:80 \
+  -v /data/appdata/vaultwarden:/data:Z \
+  docker.io/vaultwarden/server:latest
+
+ExecStop=/usr/bin/podman stop -t 10 pw
+
+[Install]
+WantedBy=default.target

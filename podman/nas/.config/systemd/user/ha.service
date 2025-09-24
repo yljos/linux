@@ -1,0 +1,25 @@
+[Unit]
+Description=Home Assistant Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=unless-stopped
+
+# 核心启动命令
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name=ha \
+  -e TZ=Asia/Shanghai \
+  -p 8123:8123 \
+  -p 1900:1900/udp \
+  -p 5353:5353/udp \
+  -v /data/appdata/ha:/config:Z \
+  -v /etc/localtime:/etc/localtime:ro \
+  ghcr.io/home-assistant/home-assistant:stable
+
+# 优雅地停止容器
+ExecStop=/usr/bin/podman stop -t 10 ha
+
+[Install]
+WantedBy=default.target

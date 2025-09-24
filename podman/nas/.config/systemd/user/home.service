@@ -1,0 +1,26 @@
+[Unit]
+Description=Homepage Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=unless-stopped
+
+# 核心启动命令
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name=home \
+  --network=host \
+  -e TZ=Asia/Shanghai \
+  -e HOMEPAGE_ALLOWED_HOSTS=* \
+  -v /data/appdata/homepage:/app/config:Z \
+  -v /data/appdata/homepage/icons:/app/public/icons:Z \
+  -v /data/media/Pictures:/app/public/Pictures:Z \
+  -v /run/user/1000/podman/podman.sock:/var/run/docker.sock \
+  ghcr.io/gethomepage/homepage:latest
+
+# 优雅地停止容器
+ExecStop=/usr/bin/podman stop -t 10 home
+
+[Install]
+WantedBy=default.target

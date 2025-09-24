@@ -1,0 +1,27 @@
+[Unit]
+Description=Calibre Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=unless-stopped
+
+# -- ExecStart: 启动命令 --
+# 将您提供的配置转换为 podman run 命令
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name=calibre \
+  -e TZ=Asia/Shanghai \
+  -e PASSWORD=110 \
+  -e CLI_ARGS=abc \
+  -p 8081:8181 \
+  -v /data/appdata/calibre:/config:Z \
+  -v "/data/books:/config/calibre library:Z" \
+  -v /data/epub:/epub:Z \
+  lscr.io/linuxserver/calibre:latest
+
+# -- ExecStop: 停止命令 --
+ExecStop=/usr/bin/podman stop -t 10 calibre
+
+[Install]
+WantedBy=default.target

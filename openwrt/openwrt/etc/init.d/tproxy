@@ -1,0 +1,43 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=10
+USE_PROCD=1
+
+start_service() {
+    procd_open_instance
+    procd_set_param command /bin/sh -c '
+        # ---------- 插入 jump 规则（避免重复） ----------
+        nft list chain inet fw4 mangle_prerouting | grep -q "jump prerouting_sing_box" || \
+            nft insert rule inet fw4 mangle_prerouting jump prerouting_sing_box
+        nft list chain inet fw4 mangle_output | grep -q "jump output_sing_box" || \
+            nft insert rule inet fw4 mangle_output jump output_sing_box
+
+        # ---------- TPROXY 路由 ----------
+        ip route add local default dev lo table 100 2>/dev/null
+        ip rule add fwmark 0x1 table 100 2>/dev/null
+        ip -6 route add local default dev lo table 100 2>/dev/null
+        ip -6 rule add fwmark 0x1 table 100 2>/dev/null
+
+        echo "[singbox-tproxy] jump 规则已插入，TPROXY 路由已启用"
+    '
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+}
+
+stop_service() {
+    # 删除 jump 规则
+    h=$(nft --handle list chain inet fw4 mangle_prerouting | awk "/jump prerouting_sing_box/ {print \$(NF)}")
+    [ -n "$h" ] && nft delete rule inet fw4 mangle_prerouting handle "$h" 2>/dev/null
+    h=$(nft --handle list chain inet fw4 mangle_output | awk "/jump output_sing_box/ {print \$(NF)}")
+    [ -n "$h" ] && nft delete rule inet fw4 mangle_output handle "$h" 2>/dev/null
+
+    # 清理策略路由
+    ip route flush table 100 2>/dev/null
+    ip rule del fwmark 0x1 lookup 100 2>/dev/null
+    ip -6 route flush table 100 2>/dev/null
+    ip -6 rule del fwmark 0x1 lookup 100 2>/dev/null
+
+    echo "[singbox-tproxy] jump 规则已删除，TPROXY 路由已清理"
+}

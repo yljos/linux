@@ -1,0 +1,13 @@
+[Unit]
+Description=Daily timer to renew acme.sh certificates for user huai
+
+[Timer]
+# OnCalendar=daily 是每天 00:00:00 的简写，非常方便
+OnCalendar=daily
+# 建议增加一个随机延迟，以避免对 Let's Encrypt 服务器造成冲击
+RandomizedDelaySec=30m
+# 如果 NAS 在 21:02 处于关机状态，这能确保在下次开机后立即执行错过的任务
+Persistent=true
+
+[Install]
+WantedBy=timers.target
