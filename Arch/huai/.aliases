@@ -17,9 +17,9 @@ alias bashconfig="vim /workspace/linux/arch/huai/.bashrc"
 
 # 目录导航
 alias cdconfig="cd /home/huai/.config"
-alias cdfree="cd /workspace/free"
+alias cdfree="cd /workspace/linux/free"
 alias cdlinux="cd /workspace/linux"
-alias cdpodman="cd /workspace/podman"
+alias cdpodman="cd /workspace/linux/podman"
 alias cddwl="cd /workspace/dwl"
 alias cddata="mount-data; cd /data"
 alias cdappdata="mount-data; cd /data/appdata"
