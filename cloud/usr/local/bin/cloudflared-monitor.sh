@@ -10,6 +10,4 @@ CONNECTED=$(curl -s http://127.0.0.1:$METRICS_PORT/metrics | grep '^cloudflared_
 if [ "$CONNECTED" -eq 0 ]; then
 	echo "$(date): cloudflared 隧道未连接，重启服务器" >>/var/log/cloudflared-monitor.log
 	/usr/bin/systemctl reboot
-else
-	echo "$(date): cloudflared 隧道正常连接 ($CONNECTED)" >>/var/log/cloudflared-monitor.log
 fi
