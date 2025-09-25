@@ -1,6 +1,7 @@
 import os
 import re  # 导入正则表达式模块
 
+
 def format_folder_name(name):
     """
     辅助函数：应用文件夹的命名规则。
@@ -8,12 +9,13 @@ def format_folder_name(name):
     - 无"_" -> MYFOLDER
     """
     if "_" in name:
-        parts = name.split('_')
+        parts = name.split("_")
         capitalized_parts = [p.capitalize() for p in parts if p]
         return "_".join(capitalized_parts)
     else:
-        cleaned_name = re.sub(r'[^a-zA-Z0-9]+', '', name)
+        cleaned_name = re.sub(r"[^a-zA-Z0-9]+", "", name)
         return cleaned_name.upper()
+
 
 def format_file_name(name):
     """
@@ -22,7 +24,7 @@ def format_file_name(name):
     - 无"_" -> Myvideo
     """
     if "_" in name:
-        parts = name.split('_')
+        parts = name.split("_")
         capitalized_parts = [p.capitalize() for p in parts if p]
         return "_".join(capitalized_parts)
     else:
@@ -43,11 +45,11 @@ def smart_rename_all(root_directory):
         # --- 第一步: 应用【文件夹规则】重命名子文件夹 ---
         for i, dirname in enumerate(dirnames):
             cleaned_dirname = format_folder_name(dirname)
-            
+
             if dirname != cleaned_dirname and cleaned_dirname:
                 old_dir_path = os.path.join(dirpath, dirname)
                 new_dir_path = os.path.join(dirpath, cleaned_dirname)
-                
+
                 try:
                     os.rename(old_dir_path, new_dir_path)
                     print(f"  [文件夹] 已重命名: '{dirname}' -> '{cleaned_dirname}'")
@@ -64,7 +66,7 @@ def smart_rename_all(root_directory):
 
         for filename in webm_files:
             base_filename = filename
-            
+
             try:
                 prefix, rest_of_name = filename.split("_", 1)
                 is_old_prefix = prefix.isdigit()
@@ -75,17 +77,17 @@ def smart_rename_all(root_directory):
                 pass
 
             old_file_path = os.path.join(dirpath, filename)
-            
+
             name_part, extension = os.path.splitext(base_filename)
-            
+
             cleaned_name_part = format_file_name(name_part)
-            
+
             if not cleaned_name_part:
                 print(f"  跳过：'{filename}' 的文件名部分在清理后为空。")
                 continue
 
             cleaned_base_filename = cleaned_name_part + extension
-            
+
             new_filename = f"E{counter:02d}_{cleaned_base_filename}"
             new_file_path = os.path.join(dirpath, new_filename)
 
@@ -97,7 +99,7 @@ def smart_rename_all(root_directory):
                     print(f"  错误：重命名文件 '{filename}' 时出错: {e}")
             else:
                 print(f"  [文件] '{filename}' 无需更改。")
-            
+
             counter += 1
 
     print("\n处理完成！")
