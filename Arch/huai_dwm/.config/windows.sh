@@ -16,7 +16,7 @@ if ! PASSWORD=$(gpg -d "$CONFIG_GPG" 2>/dev/null); then
 fi
 PASSWORD=$(printf "%s" "$PASSWORD")
 # check dependencies
-for cmd in arping wakeonlan notify-send gpg play sdl-freerdp3; do
+for cmd in arping wakeonlan notify-send gpg play xfreerdp3; do
 	if ! command -v "$cmd" >/dev/null 2>&1; then
 		if command -v notify-send >/dev/null 2>&1; then
 			notify-send "错误" "$cmd 未安装"
@@ -30,7 +30,7 @@ done
 	# Function to connect to the host
 	connect_to_host() {
 		notify-send "连接中" "启动 RDP..." && play ~/.config/dunst/connecting.mp3 >/dev/null 2>&1
-		sdl-freerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /w:1920 /h:1060 /sound /cert:ignore >/dev/null 2>&1 &
+		xfreerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /w:1920 /h:1060 /sound /cert:ignore >/dev/null 2>&1 &
 		RDP_PID=$!
 		sleep 10
 		if kill -0 "$RDP_PID" 2>/dev/null; then
