@@ -125,6 +125,6 @@ mount-data() {
 # 脚本和程序
 alias win="sh /home/huai/.config/windows.sh"
 alias repo="sh /home/huai/.config/repo.sh"
-alias np="sh /home/huai/.config/swww.sh"
+alias np="sh /home/huai/.config/wallpaperautochange.sh"
 alias py="python3"
-alias dwl="/home/huai/.config/dwl/dwl_status.sh | dwl"
+alias x="startx"
