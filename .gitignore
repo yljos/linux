@@ -1,11 +1,10 @@
 
-Arch/huai/.config/mpd/log
-Arch/huai/.config/mpd/state
-Arch/huai/.config/mpd/socket
-Arch/huai/.config/mpd/sticker.sql
+**/.config/mpd/log
+**/.config/mpd/state
+**/.config/mpd/socket
+**/huai/.config/mpd/sticker.sql
 **/.idea/
 **/.venv/
-
 **/__pycache__/
-/clash/outputs/*
+
 
