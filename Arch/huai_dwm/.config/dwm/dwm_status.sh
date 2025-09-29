@@ -1,93 +1,162 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
+# --- INI ---
+PID_FILE="${XDG_RUNTIME_DIR}/dwl_status.pid"
+SCRIPT_NAME=$(basename "$0")
 
-# 获取网络接口名称（在循环外执行一次）
-INTERFACE=$(ip route | awk '/default/ {print $5; exit}')
-
-# 自动单位转换函数（移到循环外）
-get_speed() {
-	local bytes=$1
-	local mb=$(awk "BEGIN{printf \"%.2f\", $bytes/1048576}")
-	echo "${mb}MB/s"
-}
-
-# 缓存系统架构信息（移到循环外）
-ARCH=$(uname -r | cut -d'-' -f1)
-
-# 缓存文件路径
-NET_RX_FILE="/sys/class/net/$INTERFACE/statistics/rx_bytes"
-NET_TX_FILE="/sys/class/net/$INTERFACE/statistics/tx_bytes"
-
-# 初始化网速计算的变量
-NETWORK_ENABLED=false
-if [[ -n "$INTERFACE" && -r "$NET_RX_FILE" && -r "$NET_TX_FILE" ]]; then
-	RX1=$(<"$NET_RX_FILE")
-	TX1=$(<"$NET_TX_FILE")
-	NETWORK_ENABLED=true
+if [ -f "$PID_FILE" ]; then
+	OLD_PID=$(cat "$PID_FILE")
+	if ps -p "$OLD_PID" >/dev/null 2>&1 &&
+		[ "$(ps -p "$OLD_PID" -o comm=)" = "$SCRIPT_NAME" ]; then
+		exit 0
+	fi
 fi
 
-# 初始化CPU计算
-read cpu1 idle1 <<<$(awk '/^cpu / {print $2+$3+$4+$5+$6+$7+$8, $5; exit}' /proc/stat)
+printf "%s\n" "$$" >"$PID_FILE"
+trap 'rm -f "$PID_FILE"' EXIT INT TERM
 
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+ICON_ARCH="A:"
+ICON_TEMP="T:"
+ICON_CPU="C:"
+ICON_MEM="M:"
+ICON_VOL="V:"
+ICON_BT="B:"
+ICON_NET_DOWN="D:"
+ICON_NET_UP="U:"
+
+CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
+INTERFACE="enp0s31f6"
+
+UPDATE_INTERVAL_MEDIUM=5
+UPDATE_INTERVAL_LONG=60
+SEPARATOR="|"
+
+# =============================================================================
+# SCRIPT LOGIC
+# =============================================================================
+
+kernel_version=$(uname -r)
+ARCH="${kernel_version%%-*}"
+NET_RX_FILE="/sys/class/net/$INTERFACE/statistics/rx_bytes"
+NET_TX_FILE="/sys/class/net/$INTERFACE/statistics/tx_bytes"
+if [[ -r "$NET_RX_FILE" ]]; then
+	RX1=$(<"$NET_RX_FILE")
+	TX1=$(<"$NET_TX_FILE")
+else NET_STATUS_STR="N/A"; fi
+read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
+PREV_CPU=$((cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iowait + cpu_irq + cpu_softirq))
+PREV_IDLE=$cpu_idle
+
+CPU_STATUS="" MEM_STATUS="" TEMP_STATUS="" VOL_STATUS=""
+MUSIC_STATUS="" IME_STATUS="" TIME_STATUS=""
+NET_STATUS_STR=${NET_STATUS_STR:-""}
+BLUETOOTH_STATUS=""
+
+update_cpu() {
+	read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
+	local curr_cpu=$((cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iowait + cpu_irq + cpu_softirq))
+	local curr_idle=$cpu_idle
+	local total_diff=$((curr_cpu - PREV_CPU))
+	local idle_diff=$((curr_idle - PREV_IDLE))
+	local usage=0
+	if ((total_diff > 0)); then usage=$(((100 * (total_diff - idle_diff)) / total_diff)); fi
+	PREV_CPU=$curr_cpu
+	PREV_IDLE=$curr_idle
+	CPU_STATUS="$(printf "%02d%%" "$usage")"
+}
+update_mem() { MEM_STATUS=$(awk '/^MemTotal:/ {t=$2/1024} /^MemAvailable:/ {a=$2/1024} END {printf "%d/%dMB", (t-a), t}' /proc/meminfo); }
+update_temp() {
+	if [[ -r "$CPU_TEMP_FILE" ]]; then
+		local temp_val=$(($(<$CPU_TEMP_FILE) / 1000))
+		TEMP_STATUS="${ICON_TEMP}${temp_val}°C"
+	else TEMP_STATUS="${ICON_TEMP}N/A"; fi
+}
+update_bluetooth() {
+	BLUETOOTH_STATUS=""
+	if ! pgrep -x 'bluetoothd' >/dev/null; then return; fi
+	local level
+	level=$(bluetoothctl info | grep -m1 'Battery Percentage' | awk -F'[()]' '{print $2}')
+	[[ -n "$level" ]] && BLUETOOTH_STATUS="${ICON_BT}${level}%"
+}
+update_volume() {
+	local vol
+	vol=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk -F'/' '/Volume:/ {gsub(/%| /,""); print $2; exit}')
+	VOL_STATUS=$(printf "%02d%%" "${vol:-50}")
+}
+update_music() {
+	local mpc_output
+	mpc_output=$(mpc)
+	if [[ "$mpc_output" == *"[playing]"* ]]; then
+		local music_line music
+		read -r music_line <<<"$mpc_output"
+		music="${music_line##* - }"
+		MUSIC_STATUS="${music:-Off}"
+	else MUSIC_STATUS=""; fi
+}
+update_ime() { case $(fcitx5-remote 2>/dev/null) in 2) IME_STATUS="CN" ;; *) IME_STATUS="EN" ;; esac }
+update_time() { TIME_STATUS=$(printf "%(%a %b %d %H:%M)T" -1); }
+update_net() {
+	if [[ -z "$RX1" ]]; then
+		NET_STATUS_STR=${NET_STATUS_STR:-"N/A"}
+		return
+	fi
+	local RX2 TX2 RX_DIFF TX_DIFF
+	RX2=$(<"$NET_RX_FILE")
+	TX2=$(<"$NET_TX_FILE")
+	RX_DIFF=$((RX2 - RX1))
+	TX_DIFF=$((TX2 - TX1))
+	RX1=$RX2
+	TX1=$TX2
+	NET_STATUS_STR=$(printf "%s%dMbps %s%dMbps" "$ICON_NET_DOWN" "$(((RX_DIFF * 8) / 1000000))" "$ICON_NET_UP" "$(((TX_DIFF * 8) / 1000000))")
+}
+
+print_status_bar() {
+	local parts=()
+	parts+=("${ICON_ARCH}${ARCH}")
+	[[ -n "$MUSIC_STATUS" ]] && parts+=("${MUSIC_STATUS}")
+	parts+=("${TEMP_STATUS}")
+	parts+=("${ICON_CPU}${CPU_STATUS}")
+	parts+=("${ICON_MEM}${MEM_STATUS}")
+	[[ -n "$BLUETOOTH_STATUS" ]] && parts+=("${BLUETOOTH_STATUS}")
+	parts+=("${ICON_VOL}${VOL_STATUS}")
+	parts+=("${NET_STATUS_STR}")
+	parts+=("${TIME_STATUS}")
+	parts+=("${IME_STATUS}")
+	local IFS="$SEPARATOR"
+	xsetroot -name "${parts[*]}"
+}
+
+trap 'update_volume; print_status_bar' SIGRTMIN+2
+trap 'update_ime; print_status_bar' SIGRTMIN+3
+
+update_cpu
+update_mem
+update_temp
+update_music
+update_ime
+update_time
+update_net
+update_volume
+update_bluetooth
+
+SEC=0
 while true; do
+	update_cpu
+	update_temp
+	update_net
+	if ! ((SEC % UPDATE_INTERVAL_MEDIUM)); then
+		update_mem
+		update_music
+		update_bluetooth
+	fi
+	if ! ((SEC % UPDATE_INTERVAL_LONG)); then
+		update_time
+	fi
+
+	print_status_bar
 	sleep 1
-
-	# 实时CPU计算
-	read cpu2 idle2 <<<$(awk '/^cpu / {print $2+$3+$4+$5+$6+$7+$8, $5; exit}' /proc/stat)
-	total=$((cpu2 - cpu1))
-	idle=$((idle2 - idle1))
-	if ((total > 0)); then
-		usage=$(((100 * (total - idle)) / total))
-	else
-		usage=0
-	fi
-	cpu=$(printf "%02d%%" "$usage")
-	cpu1=$cpu2
-	idle1=$idle2
-
-	# 系统信息
-	mem=$(awk '/^MemTotal:|^MemAvailable:/ {
-        if ($1 == "MemTotal:") total = $2/1024
-        if ($1 == "MemAvailable:") avail = $2/1024
-    } END {printf "%d/%dMB", (total-avail), total}' /proc/meminfo)
-
-	temp=$(sensors 2>/dev/null | awk '/Core 0|Package id 0|CPU/ {for(i=1;i<=NF;i++) if($i~/\+[0-9]+\.[0-9]+°C/) {gsub(/\+|°C/,"",$i); printf "%.0f°C",$i; exit}}' || echo "N/A")
-	time=$(date "+%a %b %d %H:%M")
-
-	# 音频信息
-	volume=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null |
-		awk '{gsub(/%/, "", $5); printf "%02d%%", $5; exit}')
-
-	music=$(mpc current 2>/dev/null | awk -F' - ' '{print $2}')
-	music="[${music:-N/A}]"
-
-	# 输入法状态
-	fcitx5_status=$(fcitx5-remote 2>/dev/null)
-	case $fcitx5_status in
-	2) fcitx5_display="CN" ;;
-	1) fcitx5_display="EN" ;;
-	*) fcitx5_display="Er" ;;
-	esac
-
-	# 计算网速
-	if $NETWORK_ENABLED; then
-		RX2=$(<"$NET_RX_FILE")
-		TX2=$(<"$NET_TX_FILE")
-
-		RX_DIFF=$((RX2 - RX1))
-		TX_DIFF=$((TX2 - TX1))
-
-		RX_SPEED=$(get_speed $RX_DIFF)
-		TX_SPEED=$(get_speed $TX_DIFF)
-
-		RX1=$RX2
-		TX1=$TX2
-
-		net_speed=" $RX_SPEED  $TX_SPEED"
-	else
-		net_speed=" N/A"
-	fi
-
-	# 设置 xsetroot 显示
-	xsetroot -name "󰣇 $ARCH|♫ $music| $temp| $cpu| $mem| $volume|$net_speed|󰃰 $time|$fcitx5_display"
-
+	((SEC++))
 done

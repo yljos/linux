@@ -2,8 +2,8 @@
 
 play ~/.config/dunst/xp.wav &
 
-if ! pgrep -x "zen-browser" &>/dev/null; then
-	zen-browser &
+if ! pgrep -x "firefox" &>/dev/null; then
+	firefox &
 fi
 
 if ! pgrep -x "Telegram" &>/dev/null; then
