@@ -127,4 +127,11 @@ alias win="sh /home/huai/.config/windows.sh"
 alias repo="sh /home/huai/.config/repo.sh"
 alias np="sh /home/huai/.config/swww.sh"
 alias py="python3"
-alias dwl="/home/huai/.config/dwl/dwl_status.sh | dwl"
+x() {
+    if [ -f "$HOME/.xinitrc" ]; then
+        exec dwm
+    else
+        exec /home/huai/.config/dwl/dwl_status.sh | dwl
+    fi
+}
+
