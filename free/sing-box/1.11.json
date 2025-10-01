@@ -1,5 +1,5 @@
 {
-  "log": {"disabled": true, "level": "error", "timestamp": true},
+  "log": {"disabled": false, "level": "info", "timestamp": true},
   "dns": {
     "servers": [
       {"tag": "dns_resolver", "address": "223.5.5.5", "strategy": "ipv4_only", "detour": "D"},
@@ -10,7 +10,7 @@
       {"tag": "dns_fakeip", "address": "fakeip"}
     ],
     "rules": [
-      {"outbound": "direct", "server": "dns_direct"},
+      {"outbound": "D", "server": "dns_direct"},
       {"domain_suffix": ["jsdmirror.com", "ddns-link-b5.uk", "dexlos.com"], "server": "dns_direct"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "server": "dns_microsoft"},
       {"domain_keyword": "googleapis", "server": "dns_google"},
@@ -34,7 +34,7 @@
     "disable_cache": true
   },
   "inbounds": [
-    {"type": "mixed", "tag": "mixed-in", "users": [{"Username": "huai", "Password": "password12138"}], "listen": "::", "listen_port": 12138},
+    {"type": "mixed", "tag": "mixed-in",  "listen": "::", "listen_port": 12138},
     {
       "type": "tun",
       "tag": "tun-in",
@@ -43,7 +43,7 @@
       "auto_route": true,
       "strict_route": true,
       "stack": "system",
-      "mtu": 9000,
+      "mtu": 1500,
       "endpoint_independent_nat": true,
       "udp_timeout": "5m",
       "platform": {
