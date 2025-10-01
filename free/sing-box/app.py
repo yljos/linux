@@ -170,7 +170,7 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
                 400,
             )
 
-        config_path = os.path.join(os.path.dirname(__file__), "1.12.json")
+        config_path = os.path.join(os.path.dirname(__file__), "1.11.json")
         with open(config_path, "r", encoding="utf-8") as f:
             base_config = json.load(f)
 
