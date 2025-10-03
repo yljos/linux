@@ -189,8 +189,8 @@
       {"tag": "youtube", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/youtube.srs", "download_detour": "SG", "update_interval": "12h0m0s"}
     ],
     "final": "Default",
-    "auto_detect_interface": true,
-    "default_mark": "0x29a"
+    "auto_detect_interface": true
+    
   },
   "experimental": {"clash_api": {"external_controller": "0.0.0.0:9090", "external_ui": "ui", "secret": "101300", "external_ui_download_url": "https://github.com/yljos/rule-set/raw/refs/heads/main/dist.zip", "external_ui_download_detour": "SG", "default_mode": "rule"}}
 }
