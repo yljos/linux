@@ -16,7 +16,7 @@
 # =============================================================================
 
 # --- 全局变量 ---
-LOCK_DIR="${XDG_RUNTIME_DIR:-/tmp}"  # 锁文件目录，优先使用 XDG_RUNTIME_DIR
+LOCK_DIR="${XDG_RUNTIME_DIR:-/tmp}" # 锁文件目录，优先使用 XDG_RUNTIME_DIR
 
 # --- 函数：获取脚本锁 ---
 # 参数：
@@ -25,34 +25,34 @@ LOCK_DIR="${XDG_RUNTIME_DIR:-/tmp}"  # 锁文件目录，优先使用 XDG_RUNTIM
 #   0 - 成功获取锁
 #   1 - 锁已被其他进程持有
 acquire_script_lock() {
-    local lock_name="${1:-$(basename "$0" .sh)}"  # 默认使用脚本名作为锁名
-    local pid_file="${LOCK_DIR}/${lock_name}.pid"
-    local script_name="$(basename "$0")"
-    
-    # 检查是否已存在锁文件
-    if [ -f "$pid_file" ]; then
-        local old_pid
-        old_pid=$(cat "$pid_file" 2>/dev/null)
-        
-        # 验证进程是否仍在运行且为同名脚本
-        if [ -n "$old_pid" ] && \
-           ps -p "$old_pid" >/dev/null 2>&1 && \
-           [ "$(ps -p "$old_pid" -o comm= 2>/dev/null)" = "$script_name" ]; then
-            return 1  # 脚本已在运行
-        fi
-    fi
-    
-    # 创建新锁文件
-    printf "%s\n" "$$" > "$pid_file" || return 1
-    
-    # 设置退出时清理锁文件的陷阱
-    trap "cleanup_script_lock '$pid_file'" EXIT INT TERM
-    
-    return 0
+	local lock_name="${1:-$(basename "$0" .sh)}" # 默认使用脚本名作为锁名
+	local pid_file="${LOCK_DIR}/${lock_name}.pid"
+	local script_name="$(basename "$0")"
+
+	# 检查是否已存在锁文件
+	if [ -f "$pid_file" ]; then
+		local old_pid
+		old_pid=$(cat "$pid_file" 2>/dev/null)
+
+		# 验证进程是否仍在运行且为同名脚本
+		if [ -n "$old_pid" ] &&
+			ps -p "$old_pid" >/dev/null 2>&1 &&
+			[ "$(ps -p "$old_pid" -o comm= 2>/dev/null)" = "$script_name" ]; then
+			return 1 # 脚本已在运行
+		fi
+	fi
+
+	# 创建新锁文件
+	printf "%s\n" "$$" >"$pid_file" || return 1
+
+	# 设置退出时清理锁文件的陷阱
+	trap "cleanup_script_lock '$pid_file'" EXIT INT TERM
+
+	return 0
 }
 
 # --- 函数：清理脚本锁 ---
 cleanup_script_lock() {
-    local pid_file="$1"
-    [ -f "$pid_file" ] && rm -f "$pid_file"
+	local pid_file="$1"
+	[ -f "$pid_file" ] && rm -f "$pid_file"
 }

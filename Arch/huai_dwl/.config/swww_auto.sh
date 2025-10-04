@@ -4,7 +4,6 @@ source "$HOME/.config/script_lock.sh"
 # --- 检查脚本锁 ---
 acquire_script_lock || exit 0
 
-
 while true; do
 	/home/huai/.config/swww.sh
 	sleep 180
