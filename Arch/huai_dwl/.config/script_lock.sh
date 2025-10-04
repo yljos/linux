@@ -25,20 +25,23 @@ LOCK_DIR="${XDG_RUNTIME_DIR:-/tmp}" # 锁文件目录，优先使用 XDG_RUNTIME
 #   0 - 成功获取锁
 #   1 - 锁已被其他进程持有
 acquire_script_lock() {
-	local lock_name="${1:-$(basename "$0" .sh)}" # 默认使用脚本名作为锁名
+	# 使用真实文件路径作为锁名，解决软链接问题
+	local real_script=$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")
+	local lock_name="${1:-$(basename "$real_script" .sh)}"
 	local pid_file="${LOCK_DIR}/${lock_name}.pid"
-	local script_name="$(basename "$0")"
 
 	# 检查是否已存在锁文件
 	if [ -f "$pid_file" ]; then
 		local old_pid
 		old_pid=$(cat "$pid_file" 2>/dev/null)
 
-		# 验证进程是否仍在运行且为同名脚本
-		if [ -n "$old_pid" ] &&
-			ps -p "$old_pid" >/dev/null 2>&1 &&
-			[ "$(ps -p "$old_pid" -o comm= 2>/dev/null)" = "$script_name" ]; then
-			return 1 # 脚本已在运行
+		# 只验证进程是否仍在运行，不检查进程名（避免软链接问题）
+		if [ -n "$old_pid" ] && ps -p "$old_pid" >/dev/null 2>&1; then
+			# 进一步验证：检查进程的命令行是否包含相同的脚本路径
+			local old_cmdline=$(ps -p "$old_pid" -o args= 2>/dev/null | head -1)
+			if echo "$old_cmdline" | grep -q "$(basename "$real_script")"; then
+				return 1 # 脚本已在运行
+			fi
 		fi
 	fi
 
