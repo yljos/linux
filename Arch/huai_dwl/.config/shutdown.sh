@@ -1,4 +1,9 @@
-#!/usr/bin/dash
+#!/usr/bin/bash
+
+# --- 加载脚本锁库 ---
+source "$HOME/.config/script_lock.sh"
+# --- 检查脚本锁 ---
+acquire_script_lock || exit 0
 
 SHUTDOWN_FILE="http://192.168.31.21/shutdown"
 INTERVAL=300 # 循环间隔秒
