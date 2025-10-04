@@ -10,8 +10,6 @@ is_running() {
 	pgrep -x "$1" >/dev/null 2>&1
 }
 
-
-
 # Function to send delayed notification asynchronously
 notify_delayed() {
 	local delay=$1
@@ -42,7 +40,7 @@ fi
 sh /home/huai/.config/swww_auto.sh &
 notify_delayed 4 "Autostart" "启动 swww_auto.sh 壁纸脚本"
 
-# Start shutdown.sh script (has built-in script lock)  
+# Start shutdown.sh script (has built-in script lock)
 sh /home/huai/.config/shutdown.sh &
 notify_delayed 6 "Autostart" "启动 shutdown.sh 关机脚本"
 
