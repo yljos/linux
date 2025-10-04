@@ -1,14 +1,16 @@
 #!/bin/sh
 
+# --- 加载脚本锁库 ---
+. "$HOME/.config/script_lock.sh"
+# --- 检查脚本锁 ---
+acquire_script_lock || exit 0
+
 # Function to check if a process is running
 is_running() {
 	pgrep -x "$1" >/dev/null 2>&1
 }
 
-# Function to check if a script is running
-is_script_running() {
-	pgrep -f "$1" >/dev/null 2>&1
-}
+
 
 # Function to send delayed notification asynchronously
 notify_delayed() {
@@ -36,23 +38,13 @@ if ! is_running "swww-daemon"; then
 	fi
 fi
 
-# Start swww_auto.sh script (check if already running by looking for the script process)
-if ! is_script_running "swww_auto.sh"; then
-	sh /home/huai/.config/swww_auto.sh &
-	sleep 0.5
-	if is_script_running "swww_auto.sh"; then
-		notify_delayed 4 "Autostart" "启动 swww_auto.sh 壁纸脚本"
-	fi
-fi
+# Start swww_auto.sh script (has built-in script lock)
+sh /home/huai/.config/swww_auto.sh &
+notify_delayed 4 "Autostart" "启动 swww_auto.sh 壁纸脚本"
 
-# Start shutdown.sh script (check if already running by looking for the script process)
-if ! is_script_running "shutdown.sh"; then
-	sh /home/huai/.config/shutdown.sh &
-	sleep 0.5
-	if is_script_running "shutdown.sh"; then
-		notify_delayed 6 "Autostart" "启动 shutdown.sh 关机脚本"
-	fi
-fi
+# Start shutdown.sh script (has built-in script lock)  
+sh /home/huai/.config/shutdown.sh &
+notify_delayed 6 "Autostart" "启动 shutdown.sh 关机脚本"
 
 # Start firefox if not running
 if ! is_running "firefox"; then
