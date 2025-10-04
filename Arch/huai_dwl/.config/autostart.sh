@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/bash
 
 # --- 加载脚本锁库 ---
 . "$HOME/.config/script_lock.sh"
