@@ -3,7 +3,7 @@
 play ~/.config/dunst/xp.wav &
 
 if ! pgrep -f "firefox" &>/dev/null; then
-    sleep 3
+	sleep 3
 	/usr/local/bin/firefox >/tmp/firefox_startup.log 2>&1 &
 fi
 
