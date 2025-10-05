@@ -3,7 +3,7 @@
 play ~/.config/dunst/xp.wav &
 
 if ! pgrep -f "firefox" &>/dev/null; then
-	/usr/local/bin/firefox &
+	/usr/local/bin/firefox >/tmp/firefox_startup.log 2>&1 &
 fi
 
 if ! pgrep -x "Telegram" &>/dev/null; then
