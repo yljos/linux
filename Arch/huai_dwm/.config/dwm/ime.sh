@@ -7,7 +7,7 @@ fcitx5-remote -t
 
 # 2. 发送通知信号
 #    确保 PID_FILE 和 SIGNAL_NUM 与 dwl_status.sh 中的设置完全一致
-PID_FILE="${XDG_RUNTIME_DIR}/dwl_status.pid"
+PID_FILE="${XDG_RUNTIME_DIR}/dwm_status.pid"
 SIGNAL_NUM=37 # SIGRTMIN+3
 
 if [ -f "$PID_FILE" ]; then
