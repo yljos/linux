@@ -10,11 +10,11 @@ if ! pgrep -x "Telegram" &>/dev/null; then
 	Telegram &
 fi
 
-if [ -f ~/.config/wallpaperautochange.sh ] && ! pgrep -f "bash.*wallpaperautochange.sh" &>/dev/null; then
+if [ -f ~/.config/wallpaperautochange.sh ]; then
 	/bin/bash ~/.config/wallpaperautochange.sh &
 fi
 
-if [ -f ~/.config/shutdown.sh ] && ! pgrep -f "bash.*shutdown.sh" &>/dev/null; then
+if [ -f ~/.config/shutdown.sh ]; then
 	/bin/bash ~/.config/shutdown.sh &
 fi
 
