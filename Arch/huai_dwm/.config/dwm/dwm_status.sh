@@ -1,18 +1,9 @@
 #!/usr/bin/bash
 # --- INI ---
-PID_FILE="${XDG_RUNTIME_DIR}/dwl_status.pid"
-SCRIPT_NAME=$(basename "$0")
-
-if [ -f "$PID_FILE" ]; then
-	OLD_PID=$(cat "$PID_FILE")
-	if ps -p "$OLD_PID" >/dev/null 2>&1 &&
-		[ "$(ps -p "$OLD_PID" -o comm=)" = "$SCRIPT_NAME" ]; then
-		exit 0
-	fi
-fi
-
-printf "%s\n" "$$" >"$PID_FILE"
-trap 'rm -f "$PID_FILE"' EXIT INT TERM
+# --- 加载脚本锁库 ---
+source "$HOME/.config/script_lock.sh"
+# --- 检查脚本锁 ---
+acquire_script_lock || exit 0
 
 # =============================================================================
 # CONFIGURATION
