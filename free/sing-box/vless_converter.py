@@ -46,8 +46,8 @@ def parse_vless_url(url):
             "utls": {"enabled": False, "fingerprint": "chrome"},
             "reality": {"enabled": False},
         },
-        "transport": {"type": "tcp"},
         "packet_encoding": "xudp",
+        "flow": "xtls-rprx-vision",
     }
 
     # 处理security参数
@@ -71,15 +71,10 @@ def parse_vless_url(url):
             config["tls"]["reality"]["short_id"] = query["sid"][0]
     # 传输协议
     network_type = query.get("type", ["tcp"])[0]
-    config["transport"]["type"] = network_type
     if network_type == "grpc":
+        config["transport"] = {"type": "grpc"}
         if "serviceName" in query and query["serviceName"][0]:
             config["transport"]["service_name"] = query["serviceName"][0]
-    elif network_type == "ws":
-        if "path" in query and query["path"][0]:
-            config["transport"]["path"] = query["path"][0]
-        if "host" in query and query["host"][0]:
-            config["transport"]["host"] = query["host"][0]
     # packet_encoding
     if "packet_encoding" in query and query["packet_encoding"][0]:
         config["packet_encoding"] = query["packet_encoding"][0]
