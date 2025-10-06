@@ -122,7 +122,7 @@
     "rule_set": [
       {"tag": "ad-site", "type": "remote", "format": "binary", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/ad/ad-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "ad-ip", "type": "remote", "format": "binary", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/ad/ad-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "adguard", "type": "remote", "format": "binary", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/adguard.srs", "download_detour": "D", "update_interval": "12h0m0s"},
+      {"tag": "adguard", "type": "remote", "format": "binary", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/adguard.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "alibaba-site", "type": "remote", "format": "binary", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/alibaba/alibaba-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "alibaba-ip", "type": "remote", "format": "binary", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/alibaba/alibaba-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "apkpure", "type": "remote", "format": "binary", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/apkpure.srs", "download_detour": "D", "update_interval": "12h0m0s"},
