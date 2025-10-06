@@ -33,7 +33,10 @@
     "final": "dns_proxy",
     "disable_cache": true
   },
-  "inbounds": [{"type": "mixed", "tag": "mixed-in", "listen": "::", "listen_port": 12138}],
+  "inbounds": [
+    {"type": "mixed", "tag": "mixed-in", "listen": "::", "listen_port": 12138},
+    {"type": "tproxy", "tag": "tproxy-in", "listen": "::", "listen_port": 7893}
+  ],
   "outbounds": [
     {"tag": "D", "type": "direct"},
     {"tag": "Default", "type": "selector", "outbounds": ["HK", "SG", "JP", "US", "D"], "default": "SG"},
@@ -55,7 +58,7 @@
   ],
   "route": {
     "rules": [
-      {"inbound": ["mixed-in"], "action": "sniff", "timeout": "300ms"},
+      {"inbound": ["tproxy-in", "mixed-in"], "action": "sniff", "timeout": "300ms"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"protocol": "quic", "action": "reject"},
       {"rule_set": "ad-site", "action": "reject"},
@@ -172,7 +175,8 @@
       {"tag": "youtube", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/youtube.srs", "download_detour": "SG", "update_interval": "12h0m0s"}
     ],
     "final": "Default",
-    "auto_detect_interface": true
+    "auto_detect_interface": true,
+    "default_mark": "0x29a"
   },
   "experimental": {"clash_api": {"external_controller": "0.0.0.0:9090", "external_ui": "ui", "secret": "101300", "external_ui_download_url": "https://github.com/yljos/rule-set/raw/refs/heads/main/dist.zip", "external_ui_download_detour": "SG", "default_mode": "rule"}}
 }
