@@ -33,28 +33,7 @@
     "final": "dns_proxy",
     "disable_cache": true
   },
-  "inbounds": [
-    {"type": "mixed", "tag": "mixed-in",  "listen": "::", "listen_port": 12138},
-    {
-      "type": "tun",
-      "tag": "tun-in",
-      "interface_name": "sing-box",
-      "address": ["172.18.0.1/30"],
-      "auto_route": true,
-      "strict_route": true,
-      "stack": "system",
-      "mtu": 1500,
-      "endpoint_independent_nat": true,
-      "udp_timeout": "5m",
-      "platform": {
-        "http_proxy": {
-          "enabled": true,
-          "server": "127.0.0.1",
-          "server_port": 9527
-        }
-      }
-    }
-  ],
+  "inbounds": [{"type": "mixed", "tag": "mixed-in", "listen": "::", "listen_port": 12138}],
   "outbounds": [
     {"tag": "D", "type": "direct"},
     {"tag": "Default", "type": "selector", "outbounds": ["HK", "SG", "JP", "US", "D"], "default": "SG"},
@@ -76,7 +55,7 @@
   ],
   "route": {
     "rules": [
-      {"inbound": ["tun-in", "mixed-in"], "action": "sniff", "timeout": "300ms"},
+      {"inbound": ["mixed-in"], "action": "sniff", "timeout": "300ms"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"protocol": "quic", "action": "reject"},
       {"rule_set": "ad-site", "action": "reject"},
@@ -127,7 +106,7 @@
       {"rule_set": "cn-site", "outbound": "D"},
       {"rule_set": "direct-ip", "outbound": "D"},
       {"rule_set": "local-ip", "outbound": "D"},
-      {"rule_set":"cloudflare-ip","outbound":"M"},
+      {"rule_set": "cloudflare-ip", "outbound": "M"},
       {"rule_set": "pikpak-ip", "outbound": "PikPak"},
       {"rule_set": "alibaba-ip", "outbound": "D"},
       {"rule_set": "facebook-ip", "outbound": "US"},
@@ -148,8 +127,8 @@
       {"tag": "cn-site", "type": "remote", "format": "binary", "url": "https://github.com/yljos/rule-set/raw/refs/heads/main/sing-box/cn/cn-site.srs", "download_detour": "SG", "update_interval": "12h0m0s"},
       {"tag": "cn-ip", "type": "remote", "format": "binary", "url": "https://github.com/yljos/rule-set/raw/refs/heads/main/sing-box/cn/cn-ip.srs", "download_detour": "SG", "update_interval": "12h0m0s"},
       {"tag": "codeberg", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/codeberg.srs", "download_detour": "SG", "update_interval": "12h0m0s"},
-      {"tag":"cloudflare-site","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/cloudflare.srs","download_detour":"SG","update_interval":"12h0m0s"},
-      {"tag":"cloudflare-ip","type":"remote","format":"binary","url":"https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geoip/cloudflare.srs","download_detour":"SG","update_interval":"12h0m0s"},
+      {"tag": "cloudflare-site", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/cloudflare.srs", "download_detour": "SG", "update_interval": "12h0m0s"},
+      {"tag": "cloudflare-ip", "type": "remote", "format": "binary", "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geoip/cloudflare.srs", "download_detour": "SG", "update_interval": "12h0m0s"},
       {"tag": "direct-site", "type": "remote", "format": "binary", "url": "https://github.com/yljos/rule-set/raw/refs/heads/main/sing-box/direct/direct-site.srs", "download_detour": "SG", "update_interval": "12h0m0s"},
       {"tag": "direct-cf-site", "type": "remote", "format": "binary", "url": "https://github.com/yljos/rule-set/raw/refs/heads/main/sing-box/direct/direct-cf-site.srs", "download_detour": "SG", "update_interval": "12h0m0s"},
       {"tag": "direct-ip", "type": "remote", "format": "binary", "url": "https://github.com/yljos/rule-set/raw/refs/heads/main/sing-box//direct/direct-ip.srs", "download_detour": "SG", "update_interval": "12h0m0s"},
@@ -194,7 +173,6 @@
     ],
     "final": "Default",
     "auto_detect_interface": true
-    
   },
   "experimental": {"clash_api": {"external_controller": "0.0.0.0:9090", "external_ui": "ui", "secret": "101300", "external_ui_download_url": "https://github.com/yljos/rule-set/raw/refs/heads/main/dist.zip", "external_ui_download_detour": "SG", "default_mode": "rule"}}
 }
