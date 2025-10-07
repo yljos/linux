@@ -105,23 +105,23 @@
     },
     "pulseaudio": {
         // "scroll-step": 1, // %, can be a float
-        "format": "{icon} {volume}%",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {format_source}",
-        "format-source": "{volume}% ",
-        "format-source-muted": "",
+        "format": "V {volume}%",
+        "format-bluetooth": "B {volume}%",
+        "format-bluetooth-muted": "B M",
+        "format-muted": "V M",
+        "format-source": "{volume}% ",
+        "format-source-muted": "",
         "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
+            "headphone": "V",
+            "hands-free": "V",
+            "headset": "V",
+            "phone": "V",
+            "portable": "V",
+            "car": "V",
             "default": [
-                "",
-                "",
-                ""
+                "V",
+                "V",
+                "V"
             ]
         },
         "on-click": "pavucontrol"
