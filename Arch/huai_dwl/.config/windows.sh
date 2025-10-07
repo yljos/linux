@@ -30,7 +30,7 @@ done
 	# Function to connect to the host
 	connect_to_host() {
 		notify-send "连接中" "启动 RDP..." && play ~/.config/dunst/connecting.mp3 >/dev/null 2>&1
-		xfreerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /w:1906 /h:1036 /sound /cert:ignore >/dev/null 2>&1 &
+		xfreerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /w:1902 /h:1032 /sound /cert:ignore >/dev/null 2>&1 &
 		#xfreerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /dynamic-resolution /sound /cert:ignore >/dev/null 2>&1 &
 		RDP_PID=$!
 		sleep 10
