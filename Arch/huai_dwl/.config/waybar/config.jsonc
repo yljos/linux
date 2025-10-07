@@ -42,7 +42,7 @@
     "custom/arch": {
         "format": "A {}",
         "exec": "uname -r | cut -d '-' -f 1",
-        "interval": "60"
+        "interval": "86400"
     },
     "mpd": {
         "format": "{title} ⸨{songPosition}|{queueLength}⸩",
@@ -58,7 +58,7 @@
         "spacing": 10
     },
     "clock": {
-        "interval": 1,
+        "interval": 60,
         "timezone": "Asia/Shanghai",
         "tooltip": false,
         "format": "{:L%Y-%m-%d %H:%M %A}"
