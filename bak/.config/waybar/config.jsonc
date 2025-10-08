@@ -7,8 +7,8 @@
     "spacing": 1, // Gaps between modules (4px)
     // Choose the order of the modules
     "modules-left": [
-        "wlr/workspaces",
-        "wlr/window"
+        "hyprland/workspaces",
+        "hyprland/window"
     ],
     "modules-center": [],
     "modules-right": [
@@ -23,68 +23,49 @@
         "tray"
     ],
     // Modules configuration
-    "wlr/workspaces": {
+    "hyprland/workspaces": {
         "format": "{icon}",
         "format-icons": {
-            "1": "",
-            "2": "",
-            "3": "󰇄",
-            "4": "",
-            "5": "󰝚",
-            "6": "",
-            "7": ""
+            "1": "Firefox",
+            "2": "Telegram",
+            "3": "Windows",
+            "4": "Alacritty",
+            "5": "Music",
+            "6": "Steam",
+            "7": "Games"
         },
         "on-click": "activate"
     },
-    "wlr/window": {
+    "hyprland/window": {
         "format": "{}"
     },
     "custom/arch": {
-        "format": "󰣇 {}",
+        "format": "A {}",
         "exec": "uname -r | cut -d '-' -f 1",
-        "interval": "60"
+        "interval": "86400"
     },
     "mpd": {
-        //        "format": "{stateIcon} {consumeIcon}{randomIcon}{repeatIcon}{singleIcon}{artist} - {album} - {title} ({elapsedTime:%M:%S}/{totalTime:%M:%S}) ⸨{songPosition}|{queueLength}⸩ {volume}% ",
-        "format": "{stateIcon} {consumeIcon}{randomIcon}{repeatIcon}{singleIcon}{title} ⸨{songPosition}|{queueLength}⸩ ",
-        "format-disconnected": "Disconnected ",
-        "format-stopped": "",
+        "format": "{title} ⸨{songPosition}|{queueLength}⸩",
+        "format-disconnected": "",
+        "format-stopped": "",
+        "format-paused": "",
         "unknown-tag": "N/A",
         "interval": 5,
-        "consume-icons": {
-            "on": " "
-        },
-        "random-icons": {
-            "off": "",
-            "on": " "
-        },
-        "repeat-icons": {
-            "on": " "
-        },
-        "single-icons": {
-            "on": "1 "
-        },
-        "state-icons": {
-            "paused": "",
-            "playing": ""
-        },
-        "tooltip": false,
-        "tooltip-format": "MPD (connected)",
-        "tooltip-format-disconnected": "MPD (disconnected)"
+        "tooltip": false
     },
     "tray": {
         // "icon-size": 21,
         "spacing": 10
     },
     "clock": {
-        "interval": 1,
+        "interval": 60,
         "timezone": "Asia/Shanghai",
         "tooltip": false,
-        "format": "\uf133 {:L%Y-%m-%d %H:%M %A}"
+        "format": "{:L%Y-%m-%d %H:%M %A}"
     },
     "cpu": {
         "interval": 1,
-        "format": " {usage}%",
+        "format": "C {usage}%",
         "states": {
             "warning": 60,
             "critical": 85
@@ -93,7 +74,7 @@
     },
     "memory": {
         "interval": 1,
-        "format": " {}%"
+        "format": "M {}%"
     },
     "temperature": {
         // "thermal-zone": 2,
@@ -104,9 +85,9 @@
         "format-critical": "{temperatureC}°C",
         "format": "{temperatureC}°C",
         "format-icons": [
-            "",
-            "",
-            ""
+            "T",
+            "T",
+            "T"
         ]
     },
     "network": {
@@ -114,7 +95,7 @@
         "interval": 1,
         "format-wifi": " {essid} ({signalStrength}%)",
         //"format-ethernet": "󰛶 {bandwidthUpBits} 󰛴 {bandwidthDownBits}",
-        "format-ethernet": "󰛶 {bandwidthUpBytes} 󰛴 {bandwidthDownBytes}",
+        "format-ethernet": "U {bandwidthUpBytes} D {bandwidthDownBytes}",
         //"format-ethernet": "󰛶 {bandwidthUpOctets} 󰛴 {bandwidthDownOctets}",
         "tooltip": false,
         "tooltip-format": "{ifname} via {gwaddr} ",
@@ -124,23 +105,23 @@
     },
     "pulseaudio": {
         // "scroll-step": 1, // %, can be a float
-        "format": "{icon} {volume}%",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {format_source}",
-        "format-source": "{volume}% ",
-        "format-source-muted": "",
+        "format": "V {volume}%",
+        "format-bluetooth": "B {volume}%",
+        "format-bluetooth-muted": "B M",
+        "format-muted": "V M",
+        "format-source": "{volume}% ",
+        "format-source-muted": "",
         "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
+            "headphone": "V",
+            "hands-free": "V",
+            "headset": "V",
+            "phone": "V",
+            "portable": "V",
+            "car": "V",
             "default": [
-                "",
-                "",
-                ""
+                "V",
+                "V",
+                "V"
             ]
         },
         "on-click": "pavucontrol"
