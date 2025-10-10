@@ -35,37 +35,47 @@ def parse_hysteria2_url(url):
 
     # 根据端口号确定端口范围
     port = parsed.port
-    if 5000 <= port <= 5999:
-        ports_range = "5000-6000"
-    elif 1000 <= port <= 1999:
+    if 1000 <= port <= 2000:
         ports_range = "1000-2000"
-    elif 3000 <= port <= 3999:
+    elif 3000 <= port <= 4000:
         ports_range = "3000-4000"
-    elif 7000 <= port <= 7999:
+    elif 5000 <= port <= 6000:
+        ports_range = "5000-6000"
+    elif 7000 <= port <= 8000:
         ports_range = "7000-8000"
-    elif 9000 <= port <= 9999:
+    elif 9000 <= port <= 10000:
         ports_range = "9000-10000"
+    elif 11000 <= port <= 12000:
+        ports_range = "11000-12000"
+    elif 13000 <= port <= 14000:
+        ports_range = "13000-14000"
+    elif 15000 <= port <= 16000:
+        ports_range = "15000-16000"
+    elif 17000 <= port <= 18000:
+        ports_range = "17000-18000"
+    elif 19000 <= port <= 20000:
+        ports_range = "19000-20000"
     else:
         # 默认端口范围
-        ports_range = "5000-6000"
+        ports_range = None
 
     # 目标结构
     sni = query["sni"][0] if "sni" in query and query["sni"][0] else parsed.hostname
     up_speed = query.get("upmbps", query.get("up", ["50"]))[0]
     down_speed = query.get("downmbps", query.get("down", ["200"]))[0]
     # 端口范围格式调整
-    ports_range = ports_range.replace("-", ":")
     config = {
         "type": "hysteria2",
         "tag": node_name,
         "server": parsed.hostname,
         "server_port": port,
-        "server_ports": ports_range,
         "up_mbps": int(up_speed),
         "down_mbps": int(down_speed),
         "password": parsed.username,
         "tls": {"enabled": True, "server_name": sni},
     }
+    if ports_range:
+        config["server_ports"] = ports_range.replace("-", ":")
     return config
 
 
