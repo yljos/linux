@@ -10,6 +10,12 @@ export GPG_TTY=$(tty)
 export LANG=en_US.UTF-8
 export VISUAL=vim
 export EDITOR=vim
+# 历史记录不存重复项
+setopt HIST_IGNORE_ALL_DUPS   # 如果新增命令已经存在于历史中，则删除之前的，保留最新的
+setopt HIST_SAVE_NO_DUPS      # 保存到文件时不写入重复项
+setopt HIST_IGNORE_DUPS       # 连续重复命令不记录
+setopt HIST_FIND_NO_DUPS      # 搜索历史时跳过重复项
+
 umask 022
 CASE_SENSITIVE="true"
 # Powerlevel10k Instant Prompt
