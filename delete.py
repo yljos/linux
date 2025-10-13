@@ -20,6 +20,7 @@ TARGET_EXTENSIONS = [
     ".bt",
     ".torrent",
     ".bc!",
+    ".doc",
 ]
 
 # 2. 要按文件名删除的 .mp4 文件列表 (不含.mp4后缀, 小写, 精确匹配)
@@ -109,7 +110,7 @@ def main():
                 should_delete = False
 
                 # 条件1: 匹配扩展名列表
-                if any(file_lower.endswith(ext) for ext in TARGET_EXTENSIONS):
+                if any(filename.endswith(ext) or filename.endswith(ext.upper()) for ext in TARGET_EXTENSIONS):
                     should_delete = True
 
                 # 条件2: 删除没有扩展名的文件
