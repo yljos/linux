@@ -22,9 +22,9 @@ while true; do
 	if [ "$CONTENT" = "1" ]; then
 		notify-send -u critical "检测到关机信号" "系统将在60秒后关机"
 		sleep 60
-		
+
 		sudo shutdown now # 测试时注释
 		exit 0
-	fi	# 等待固定间隔再检测
+	fi # 等待固定间隔再检测
 	sleep "$INTERVAL"
 done
