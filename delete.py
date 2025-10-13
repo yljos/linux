@@ -19,6 +19,7 @@ TARGET_EXTENSIONS = [
     ".dat",
     ".bt",
     ".torrent",
+    ".bc!",
 ]
 
 # 2. 要按文件名删除的 .mp4 文件列表 (不含.mp4后缀, 小写, 精确匹配)
