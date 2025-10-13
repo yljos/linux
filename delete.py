@@ -1,4 +1,5 @@
 import os
+import sys
 import concurrent.futures
 import threading
 
@@ -29,7 +30,12 @@ TARGET_MP4_NAMES = ["人间尤物"]
 #    如果不想使用此功能，请将其设置为 0
 MP4_SIZE_THRESHOLD_MB = 30
 
-# 4. 并发线程数
+# 4. 新功能：是否删除没有扩展名的文件
+#    设置为 True 会删除所有没有扩展名的文件（不包含 . 的文件名）
+#    设置为 False 则不删除无扩展名文件
+DELETE_NO_EXTENSION = True
+
+# 5. 并发线程数
 MAX_WORKERS = 20
 
 # --- 脚本开始 ---
@@ -83,6 +89,8 @@ def main():
         print(f"指定 .mp4 文件名: {', '.join(TARGET_MP4_NAMES)}")
     if size_threshold_bytes > 0:
         print(f"删除小于 {MP4_SIZE_THRESHOLD_MB}MB 的 .mp4 文件")
+    if DELETE_NO_EXTENSION:
+        print(f"删除没有扩展名的文件")
     print(f"并发数: {MAX_WORKERS}")
     print("-" * 30)
 
@@ -103,7 +111,11 @@ def main():
                 if any(file_lower.endswith(ext) for ext in TARGET_EXTENSIONS):
                     should_delete = True
 
-                # 条件2: 如果是.mp4文件，则应用特定规则
+                # 条件2: 删除没有扩展名的文件
+                elif DELETE_NO_EXTENSION and '.' not in filename:
+                    should_delete = True
+
+                # 条件3: 如果是.mp4文件，则应用特定规则
                 elif file_lower.endswith(".mp4"):
                     # 子条件2a: 匹配指定文件名
                     name_part = os.path.splitext(filename)[0].lower()
