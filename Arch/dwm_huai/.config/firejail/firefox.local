@@ -3,8 +3,7 @@ blacklist ${HOME}/下载
 blacklist ${HOME}/Documents
 blacklist ${HOME}/Desktop
 
-# 设置 VAAPI 硬件解码所需环境变量
-env MOZ_ENABLE_WAYLAND=1
+# 设置 VAAPI 硬件解码所需环境变量 (X11环境)
 env MOZ_ACCELERATED=1
 env MOZ_USE_HWDEC=1
 env MOZ_IGNORE_GPU_BLACKLIST=1
