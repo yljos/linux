@@ -35,32 +35,44 @@ def parse_hysteria2_url(url):
 
     # 根据端口号确定端口范围
     port = parsed.port
-    if 5000 <= port <= 5999:
-        ports_range = "5000-6000"
-    elif 1000 <= port <= 1999:
+    if 1000 <= port <= 2000:
         ports_range = "1000-2000"
-    elif 3000 <= port <= 3999:
+    elif 3000 <= port <= 4000:
         ports_range = "3000-4000"
-    elif 7000 <= port <= 7999:
+    elif 5000 <= port <= 6000:
+        ports_range = "5000-6000"
+    elif 7000 <= port <= 8000:
         ports_range = "7000-8000"
-    elif 9000 <= port <= 9999:
+    elif 9000 <= port <= 10000:
         ports_range = "9000-10000"
+    elif 11000 <= port <= 12000:
+        ports_range = "11000-12000"
+    elif 13000 <= port <= 14000:
+        ports_range = "13000-14000"
+    elif 15000 <= port <= 16000:
+        ports_range = "15000-16000"
+    elif 17000 <= port <= 18000:
+        ports_range = "17000-18000"
+    elif 19000 <= port <= 20000:
+        ports_range = "19000-20000"
     else:
         # 默认端口范围
-        ports_range = "5000-6000"
+        ports_range = None
 
     # 基础配置 - 包含必要的默认参数
     config = {
         "name": node_name,
         "type": "hysteria2",
         "server": parsed.hostname,
-        "ports": ports_range,  # 智能端口范围
         "password": parsed.username,
         "udp": True,  # 默认启用UDP
         "skip-cert-verify": False,  # 默认验证证书
         "up": "50 Mbps",  # 默认上传速度限制
         "down": "200 Mbps",  # 默认下载速度限制
     }
+
+    if ports_range:
+        config["ports"] = ports_range  # 智能端口范围
 
     # 处理查询参数 - 覆盖默认值或添加额外参数
     if "sni" in query and query["sni"][0]:
