@@ -110,11 +110,14 @@ def main():
                 should_delete = False
 
                 # 条件1: 匹配扩展名列表
-                if any(filename.endswith(ext) or filename.endswith(ext.upper()) for ext in TARGET_EXTENSIONS):
+                if any(
+                    filename.endswith(ext) or filename.endswith(ext.upper())
+                    for ext in TARGET_EXTENSIONS
+                ):
                     should_delete = True
 
                 # 条件2: 删除没有扩展名的文件
-                elif DELETE_NO_EXTENSION and '.' not in filename:
+                elif DELETE_NO_EXTENSION and "." not in filename:
                     should_delete = True
 
                 # 条件3: 如果是.mp4文件，则应用特定规则
