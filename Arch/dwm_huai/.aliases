@@ -129,7 +129,7 @@ alias np="sh /home/huai/.config/swww.sh"
 alias py="python3"
 x() {
     if [ -f "$HOME/.xinitrc" ]; then
-        exec dwm
+        startx
     else
         exec /home/huai/.config/dwl/dwl_status.sh | dwl
     fi
