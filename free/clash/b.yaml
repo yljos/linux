@@ -60,7 +60,7 @@ dns:
     "rule-set:speedtest-site-classical": "https://cloudflare-dns.com/dns-query#SpeedTest"
 proxies: []
 proxy-groups:
-  - {<<: *select, name: M, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
+  - {<<: *select, name: M, proxies: [JP_loadbalance, JP_fallback, SG_fallback, US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
   - {<<: *select, name: Default, type: select, proxies: [M, SG_fallback, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest, DIRECT]}
   - {<<: *select, name: Google, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
   - {<<: *select, name: OpenAi, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
@@ -71,8 +71,8 @@ proxy-groups:
   - {<<: *select, name: PikPak, proxies: [SG_fallback, HK_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
   - {<<: *select, name: PikPak-Download, type: select, proxies: [SG_fallback, DIRECT, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
   - {<<: *select, name: SpeedTest, type: select, proxies: [M, SG_fallback, US_fallback, JP_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest, DIRECT]}
-  - {<<: *select, name: GitHub, proxies: [SG_fallback, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest, DIRECT]}
-  - {<<: *select, name: Microsoft, proxies: [SG_fallback, DIRECT, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
+  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest, DIRECT]}
+  - {<<: *select, name: Microsoft, proxies: [DIRECT, SG_fallback, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
   - {<<: *fallback, name: HK_fallback, filter: "(?i)(香港|hk|hong)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
   - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
