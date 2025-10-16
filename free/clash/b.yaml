@@ -1,7 +1,7 @@
 select: &select {type: select, filter: "(?i)^(?!.*(kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期)).*$", include-all-proxies: true}
-fallback: &fallback {type: fallback, url: "https://www.gstatic.com/generate_204", interval: 30, hidden: true, timeout: 600, max-failed-times: 3, lazy: true}
-load-balance: &load-balance {type: load-balance, strategy: consistent-hashing, url: "https://www.gstatic.com/generate_204", interval: 30, hidden: true, timeout: 600, max-failed-times: 3, lazy: true}
-url-test: &url-test {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, hidden: true, timeout: 600, max-failed-times: 3, lazy: true}
+fallback: &fallback {type: fallback, url: "https://www.gstatic.com/generate_204", interval: 30, hidden: true, timeout: 600, max-failed-times: 3, include-all-proxies: true}
+load-balance: &load-balance {type: load-balance, strategy: consistent-hashing, url: "https://www.gstatic.com/generate_204", interval: 30, hidden: true, timeout: 600, max-failed-times: 3, include-all-proxies: true}
+url-test: &url-test {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, hidden: true, timeout: 600, max-failed-times: 3, include-all-proxies: true}
 domain: &domain {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain}
 ipcidr: &ipcidr {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr}
 classical: &classical {proxy: M, type: http, interval: 86400, behavior: classical, format: yaml}
@@ -73,18 +73,18 @@ proxy-groups:
   - {<<: *select, name: SpeedTest, type: select, proxies: [M, SG_fallback, US_fallback, JP_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest, DIRECT]}
   - {<<: *select, name: GitHub, proxies: [SG_fallback,JP_fallback,  US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [SG_fallback,DIRECT,  US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, SG_urltest, US_urltest, HK_urltest, JP_urltest]}
-  - {<<: *fallback, name: HK_fallback, filter: "(?i)(香港|hk|hong)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *fallback, name: SG_fallback, filter: "(?i)(新加坡|sg|singapore)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *load-balance, name: HK_loadbalance, filter: "(?i)(香港|hk|hong)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *load-balance, name: JP_loadbalance, filter: "(?i)(日本|jp|japan)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *load-balance, name: US_loadbalance, filter: "(?i)(美国|us|united|america)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *load-balance, name: SG_loadbalance, filter: "(?i)(新加坡|sg|singapore)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *url-test, name: HK_urltest, filter: "(?i)(香港|hk|hong)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *url-test, name: JP_urltest, filter: "(?i)(日本|jp|japan)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *url-test, name: US_urltest, filter: "(?i)(美国|us|united|america)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
-  - {<<: *url-test, name: SG_urltest, filter: "(?i)(新加坡|sg|singapore)(?!.*(家宽|isp|小众|低倍率))", include-all-proxies: true}
+  - {<<: *fallback, name: HK_fallback, filter: "(?i)(香港|hk|hong)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *fallback, name: SG_fallback, filter: "(?i)(新加坡|sg|singapore)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *load-balance, name: HK_loadbalance, filter: "(?i)(香港|hk|hong)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *load-balance, name: JP_loadbalance, filter: "(?i)(日本|jp|japan)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *load-balance, name: US_loadbalance, filter: "(?i)(美国|us|united|america)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *load-balance, name: SG_loadbalance, filter: "(?i)(新加坡|sg|singapore)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *url-test, name: HK_urltest, filter: "(?i)(香港|hk|hong)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *url-test, name: JP_urltest, filter: "(?i)(日本|jp|japan)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *url-test, name: US_urltest, filter: "(?i)(美国|us|united|america)(?!.*(家宽|isp|小众|低倍率))"}
+  - {<<: *url-test, name: SG_urltest, filter: "(?i)(新加坡|sg|singapore)(?!.*(家宽|isp|小众|低倍率))"}
 rule-providers:
   archlinux: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/archlinux.mrs}
   adguard: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs}
