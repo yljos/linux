@@ -62,7 +62,7 @@ def replace_line(line):
     if m_volume:
         num = chinese_to_int(m_volume.group(1))
         title = m_volume.group(2).strip() if m_volume.group(2) else "未命名"
-        return f"\n# 第{num:03d}卷 {title}\n\n"
+        return f"\n# 第{num:06d}卷 {title}\n\n"
 
     # 章/节
     m_chapter = re.match(
@@ -72,14 +72,14 @@ def replace_line(line):
     if m_chapter:
         num = chinese_to_int(m_chapter.group(1))
         title = m_chapter.group(2).strip() if m_chapter.group(2) else "未命名"
-        return f"\n## 第{num:03d}章 {title}\n\n"
+        return f"\n## 第{num:06d}章 {title}\n\n"
 
     # 数字标题
     m_numdot = re.match(r"^([0-9零一二三四五六七八九十百两]+)\.\s*(.*)$", stripped)
     if m_numdot:
         num = chinese_to_int(m_numdot.group(1))
         title = m_numdot.group(2).strip() if m_numdot.group(2) else "未命名"
-        return f"\n## 第{num:03d}章 {title}\n\n"
+        return f"\n## 第{num:06d}章 {title}\n\n"
 
     # 已经是标题
     if stripped.startswith("# ") or stripped.startswith("## "):
