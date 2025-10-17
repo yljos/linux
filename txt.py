@@ -16,7 +16,7 @@ _digits = {
 }
 
 # 保留标点集合
-keep_punct = "。？，！# :"
+keep_punct = "。？，！# : .……"
 
 
 def chinese_to_int(s: str):
@@ -62,7 +62,7 @@ def replace_line(line):
     if m_volume:
         num = chinese_to_int(m_volume.group(1))
         title = m_volume.group(2).strip() if m_volume.group(2) else "未命名"
-        return f"\n# 第{num:06d}卷 {title}\n\n"
+        return f"\n# 第{num:03d}卷 {title}\n\n"
 
     # 章/节
     m_chapter = re.match(
