@@ -1,15 +1,6 @@
 import os
 import re
 
-# 阿拉伯数字 -> 中文章名（通用）
-num_map = {
-    1: "第一章", 2: "第二章", 3: "第三章", 4: "第四章", 5: "第五章",
-    6: "第六章", 7: "第七章", 8: "第八章", 9: "第九章", 10: "第十章",
-    11: "第十一章", 12: "第十二章", 13: "第十三章", 14: "第十四章",
-    15: "第十五章", 16: "第十六章", 17: "第十七章", 18: "第十八章",
-    19: "第十九章", 20: "第二十章"
-}
-
 _digits = {"零":0,"一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9,"两":2}
 
 # 保留标点集合
@@ -47,21 +38,21 @@ def replace_line(line):
     if m_volume:
         num = chinese_to_int(m_volume.group(1))
         title = m_volume.group(2).strip() if m_volume.group(2) else "未命名"
-        return f"\n# 第{num}卷 {title}\n\n"
+        return f"\n# 第{num:03d}卷 {title}\n\n"
 
     # 章/节
     m_chapter = re.match(r'^第\s*([0-9零一二三四五六七八九十百两]+)\s*[节章]\s*[、,，]?\s*(.*)$', stripped)
     if m_chapter:
         num = chinese_to_int(m_chapter.group(1))
         title = m_chapter.group(2).strip() if m_chapter.group(2) else "未命名"
-        return f"\n## {num_map.get(num, f'第{num}章')} {title}\n\n"
+        return f"\n## 第{num:03d}章 {title}\n\n"
 
     # 数字标题
     m_numdot = re.match(r'^([0-9零一二三四五六七八九十百两]+)\.\s*(.*)$', stripped)
     if m_numdot:
         num = chinese_to_int(m_numdot.group(1))
         title = m_numdot.group(2).strip() if m_numdot.group(2) else "未命名"
-        return f"\n## {num_map.get(num, f'第{num}章')} {title}\n\n"
+        return f"\n## 第{num:03d}章 {title}\n\n"
 
     # 已经是标题
     if stripped.startswith("# ") or stripped.startswith("## "):
@@ -72,7 +63,12 @@ def replace_line(line):
 
 def process_file(filename):
     with open(filename, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+        content = f.read()
+
+    # 先删除所有 #
+    content = content.replace('#', '')
+
+    lines = content.splitlines()
 
     new_lines = [replace_line(line) for line in lines]
 
