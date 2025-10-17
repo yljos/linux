@@ -25,6 +25,56 @@ def chinese_to_int(s: str):
         return int(s)
     if len(s) == 1 and s in _digits:
         return _digits[s]
+    # 支持千
+    if "千" in s:
+        parts = s.split("千")
+        left = parts[0]
+        right = parts[1] if len(parts) > 1 else ""
+        thousands = _digits.get(left, 1) if left else 1
+        # 千后面可能有百
+        if "百" in right:
+            hundred_parts = right.split("百")
+            hundreds = _digits.get(hundred_parts[0], 1) if hundred_parts[0] else 1
+            right2 = hundred_parts[1] if len(hundred_parts) > 1 else ""
+            # 百后面可能有十
+            if "十" in right2:
+                ten_parts = right2.split("十")
+                tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
+                ones = _digits.get(ten_parts[1], 0) if len(ten_parts) > 1 and ten_parts[1] else 0
+                return thousands * 1000 + hundreds * 100 + tens * 10 + ones
+            elif right2:
+                ones = _digits.get(right2, 0)
+                return thousands * 1000 + hundreds * 100 + ones
+            else:
+                return thousands * 1000 + hundreds * 100
+        elif "十" in right:
+            ten_parts = right.split("十")
+            tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
+            ones = _digits.get(ten_parts[1], 0) if len(ten_parts) > 1 and ten_parts[1] else 0
+            return thousands * 1000 + tens * 10 + ones
+        elif right:
+            ones = _digits.get(right, 0)
+            return thousands * 1000 + ones
+        else:
+            return thousands * 1000
+    # 支持百
+    if "百" in s:
+        parts = s.split("百")
+        left = parts[0]
+        right = parts[1] if len(parts) > 1 else ""
+        hundreds = _digits.get(left, 1) if left else 1
+        # 处理百后面可能有十
+        if "十" in right:
+            ten_parts = right.split("十")
+            tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
+            ones = _digits.get(ten_parts[1], 0) if len(ten_parts) > 1 and ten_parts[1] else 0
+            return hundreds * 100 + tens * 10 + ones
+        elif right:
+            ones = _digits.get(right, 0)
+            return hundreds * 100 + ones
+        else:
+            return hundreds * 100
+    # 支持十
     if "十" in s:
         parts = s.split("十")
         left = parts[0]
