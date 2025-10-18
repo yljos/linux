@@ -39,9 +39,9 @@
   ],
   "outbounds": [
     {"tag": "D", "type": "direct"},
-    {"tag": "Default", "type": "selector", "outbounds": ["JP", "HK", "SG", "US", "D"], "default": "SG"},
-    {"tag": "M", "type": "selector", "outbounds": ["HK", "SG", "JP", "US", "D"], "default": "SG"},
-    {"tag": "Google", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "US"},
+    {"tag": "Default", "type": "selector", "outbounds": ["M","JP", "HK", "SG", "US", "D"], "default": "M"},
+    {"tag": "M", "type": "selector", "outbounds": ["HK", "SG", "JP", "US", "D"], "default": "JP"},
+    {"tag": "Google", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "JP"},
     {"tag": "OpenAi", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "US"},
     {"tag": "Steam", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "HK"},
     {"tag": "Telegram", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "US"},

@@ -60,9 +60,9 @@ dns:
     "rule-set:speedtest-site-classical": "https://cloudflare-dns.com/dns-query#SpeedTest"
 proxies: []
 proxy-groups:
-  - {<<: *select, name: M, proxies: [SG_loadbalance, JP_loadbalance, JP_fallback, SG_fallback, US_fallback, HK_fallback, US_loadbalance, HK_loadbalance]}
+  - {<<: *select, name: M, proxies: [JP_loadbalance,SG_loadbalance,  JP_fallback, SG_fallback, US_fallback, HK_fallback, US_loadbalance, HK_loadbalance]}
   - {<<: *select, name: Default, type: select, proxies: [M, SG_fallback, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, DIRECT]}
-  - {<<: *select, name: Google, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
+  - {<<: *select, name: Google, proxies: [JP_fallback,US_fallback, SG_fallback, HK_fallback,  SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
   - {<<: *select, name: OpenAi, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
   - {<<: *select, name: Telegram, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
   - {<<: *select, name: Netflix, proxies: [SG_fallback, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
