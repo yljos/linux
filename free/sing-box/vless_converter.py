@@ -43,8 +43,7 @@ def parse_vless_url(url):
         "tls": {
             "enabled": False,
             "server_name": "",
-            "utls": {"enabled": False, "fingerprint": "chrome"},
-            "reality": {"enabled": False},
+            "utls": {"enabled": False, "fingerprint": "firefox"}
         },
         "packet_encoding": "xudp",
         "flow": "xtls-rprx-vision",
@@ -60,21 +59,38 @@ def parse_vless_url(url):
         config["tls"]["server_name"] = parsed.hostname
     # utls
     config["tls"]["utls"]["enabled"] = True
-    if "fp" in query and query["fp"][0]:
-        config["tls"]["utls"]["fingerprint"] = query["fp"][0]
+    if "fp" in query:
+        config["tls"]["utls"]["fingerprint"] = "firefox"
     # reality
     if security == "reality":
-        config["tls"]["reality"]["enabled"] = True
+        config["tls"]["reality"] = {
+            "enabled": True
+        }
         if "pbk" in query and query["pbk"][0]:
             config["tls"]["reality"]["public_key"] = query["pbk"][0]
         if "sid" in query and query["sid"][0]:
             config["tls"]["reality"]["short_id"] = query["sid"][0]
     # 传输协议
-    network_type = query.get("type", ["tcp"])[0]
+    network_type = query.get("type", ["ws"])[0]
     if network_type == "grpc":
         config["transport"] = {"type": "grpc"}
         if "serviceName" in query and query["serviceName"][0]:
             config["transport"]["service_name"] = query["serviceName"][0]
+    elif network_type == "ws":
+        config["transport"] = {
+            "type": "ws",
+            "path": query.get("path", ["/"])[0],
+            "headers": {},
+            "max_early_data": 2048,
+            "early_data_header_name": "Sec-WebSocket-Protocol"
+        }
+        if "host" in query and query["host"][0]:
+            config["transport"]["headers"]["Host"] = [query["host"][0]]
+        # 处理其他 WebSocket 参数
+        if "ed" in query and query["ed"][0]:
+            config["transport"]["max_early_data"] = int(query["ed"][0])
+        if "edh" in query and query["edh"][0]:
+            config["transport"]["early_data_header_name"] = query["edh"][0]
     # packet_encoding
     if "packet_encoding" in query and query["packet_encoding"][0]:
         config["packet_encoding"] = query["packet_encoding"][0]
