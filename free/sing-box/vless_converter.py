@@ -45,8 +45,8 @@ def parse_vless_url(url):
             "server_name": "",
             "utls": {"enabled": False, "fingerprint": "firefox"},
         },
+        "flow": "",
         "packet_encoding": "xudp",
-        "flow": "xtls-rprx-vision",
     }
 
     # 处理security参数
@@ -92,6 +92,9 @@ def parse_vless_url(url):
     # packet_encoding
     if "packet_encoding" in query and query["packet_encoding"][0]:
         config["packet_encoding"] = query["packet_encoding"][0]
+    # flow: only write 'flow' key if it exists in the query (allow empty string)
+    if "flow" in query:
+        config["flow"] = query["flow"][0]
     return config
 
 
