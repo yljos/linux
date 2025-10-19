@@ -52,7 +52,7 @@ dns:
     "rule-set:telegram-site": "https://cloudflare-dns.com/dns-query#Telegram"
     "rule-set:twitter": "https://cloudflare-dns.com/dns-query#US_fallback"
     "rule-set:facebook": "https://cloudflare-dns.com/dns-query#US_fallback"
-    "rule-set:tiktok": "https://cloudflare-dns.com/dns-query#TikTok"
+    "rule-set:tiktok": "https://cloudflare-dns.com/dns-query#JP_fallback"
     "rule-set:netflix": "https://cloudflare-dns.com/dns-query#Netflix"
     "rule-set:youtube": "https://dns.google/dns-query#Google"
     "rule-set:googlefcm": "https://dns.google/dns-query#Google"
@@ -62,14 +62,13 @@ proxies: []
 proxy-groups:
   - {<<: *select, name: M, proxies: [JP_loadbalance, SG_loadbalance, JP_fallback, SG_fallback, US_fallback, HK_fallback, US_loadbalance, HK_loadbalance]}
   - {<<: *select, name: Default, type: select, proxies: [M, SG_fallback, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, DIRECT]}
-  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
-  - {<<: *select, name: OpenAi, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
-  - {<<: *select, name: Telegram, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
-  - {<<: *select, name: Netflix, proxies: [SG_fallback, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
-  - {<<: *select, name: TikTok, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
+  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: OpenAi, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback]}
+  - {<<: *select, name: Telegram, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback,]}
+  - {<<: *select, name: Netflix, proxies: [SG_fallback, US_fallback, HK_fallback, JP_fallback,]}
   - {<<: *select, name: Steam, proxies: [HK_fallback, SG_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
   - {<<: *select, name: PikPak, proxies: [SG_fallback, HK_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
-  - {<<: *select, name: PikPak-Download, type: select, proxies: [SG_loadbalance, SG_fallback, DIRECT, US_fallback, HK_fallback, JP_fallback, US_loadbalance, HK_loadbalance, JP_loadbalance]}
+  - {<<: *select, name: PikPak-Download, type: select, proxies: [JP_loadbalance, SG_loadbalance, SG_fallback, DIRECT, US_fallback, HK_fallback, JP_fallback, US_loadbalance, HK_loadbalance]}
   - {<<: *select, name: SpeedTest, type: select, proxies: [M, SG_fallback, US_fallback, JP_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, DIRECT]}
   - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, DIRECT, US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
@@ -168,7 +167,7 @@ rules:
   - "RULE-SET,youtube,Google"
   - "RULE-SET,google,Google"
   - "RULE-SET,netflix,Netflix"
-  - "RULE-SET,tiktok,TikTok"
+  - "RULE-SET,tiktok,JP_fallback"
   - "RULE-SET,tmdb,M"
   - "RULE-SET,telegram-site,Telegram"
   - "RULE-SET,twitter,US_fallback"
