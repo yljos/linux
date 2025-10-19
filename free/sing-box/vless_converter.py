@@ -43,7 +43,7 @@ def parse_vless_url(url):
         "tls": {
             "enabled": False,
             "server_name": "",
-            "utls": {"enabled": False, "fingerprint": "firefox"}
+            "utls": {"enabled": False, "fingerprint": "firefox"},
         },
         "packet_encoding": "xudp",
         "flow": "xtls-rprx-vision",
@@ -63,9 +63,7 @@ def parse_vless_url(url):
         config["tls"]["utls"]["fingerprint"] = "firefox"
     # reality
     if security == "reality":
-        config["tls"]["reality"] = {
-            "enabled": True
-        }
+        config["tls"]["reality"] = {"enabled": True}
         if "pbk" in query and query["pbk"][0]:
             config["tls"]["reality"]["public_key"] = query["pbk"][0]
         if "sid" in query and query["sid"][0]:
@@ -82,7 +80,7 @@ def parse_vless_url(url):
             "path": query.get("path", ["/"])[0],
             "headers": {},
             "max_early_data": 2048,
-            "early_data_header_name": "Sec-WebSocket-Protocol"
+            "early_data_header_name": "Sec-WebSocket-Protocol",
         }
         if "host" in query and query["host"][0]:
             config["transport"]["headers"]["Host"] = [query["host"][0]]

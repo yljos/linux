@@ -40,7 +40,11 @@ def chinese_to_int(s: str):
             if "十" in right2:
                 ten_parts = right2.split("十")
                 tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
-                ones = _digits.get(ten_parts[1], 0) if len(ten_parts) > 1 and ten_parts[1] else 0
+                ones = (
+                    _digits.get(ten_parts[1], 0)
+                    if len(ten_parts) > 1 and ten_parts[1]
+                    else 0
+                )
                 return thousands * 1000 + hundreds * 100 + tens * 10 + ones
             elif right2:
                 ones = _digits.get(right2, 0)
@@ -50,7 +54,11 @@ def chinese_to_int(s: str):
         elif "十" in right:
             ten_parts = right.split("十")
             tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
-            ones = _digits.get(ten_parts[1], 0) if len(ten_parts) > 1 and ten_parts[1] else 0
+            ones = (
+                _digits.get(ten_parts[1], 0)
+                if len(ten_parts) > 1 and ten_parts[1]
+                else 0
+            )
             return thousands * 1000 + tens * 10 + ones
         elif right:
             ones = _digits.get(right, 0)
@@ -67,7 +75,11 @@ def chinese_to_int(s: str):
         if "十" in right:
             ten_parts = right.split("十")
             tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
-            ones = _digits.get(ten_parts[1], 0) if len(ten_parts) > 1 and ten_parts[1] else 0
+            ones = (
+                _digits.get(ten_parts[1], 0)
+                if len(ten_parts) > 1 and ten_parts[1]
+                else 0
+            )
             return hundreds * 100 + tens * 10 + ones
         elif right:
             ones = _digits.get(right, 0)
