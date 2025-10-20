@@ -46,7 +46,7 @@ dns:
     # "rule-set:ad-site-classical": "rcode://refused"
     "rule-set:huawei-site": "rcode://name_error"
     "rule-set:openai": "https://cloudflare-dns.com/dns-query#OpenAi"
-    "rule-set:pikpak-download-site": "https://cloudflare-dns.com/dns-query#PikPak-Download"
+    "rule-set:pikpak-download-site": "https://cloudflare-dns.com/dns-query#PikPak"
     "rule-set:steam-site-classical": "https://cloudflare-dns.com/dns-query#Steam"
     "rule-set:github": "https://cloudflare-dns.com/dns-query#GitHub"
     "rule-set:telegram-site": "https://cloudflare-dns.com/dns-query#Telegram"
@@ -57,19 +57,17 @@ dns:
     "rule-set:youtube": "https://dns.google/dns-query#Google"
     "rule-set:googlefcm": "https://dns.google/dns-query#Google"
     "rule-set:google": "https://dns.google/dns-query#Google"
-    "rule-set:speedtest-site-classical": "https://cloudflare-dns.com/dns-query#SpeedTest"
+    "rule-set:speedtest-site-classical": "https://cloudflare-dns.com/dns-query#M"
 proxies: []
 proxy-groups:
-  - {<<: *select, name: M, proxies: [JP_loadbalance, SG_loadbalance, JP_fallback, SG_fallback, US_fallback, HK_fallback, US_loadbalance, HK_loadbalance]}
+  - {<<: *select, name: M, proxies: [JP_loadbalance, SG_loadbalance, JP_fallback, SG_fallback, US_fallback, HK_fallback, US_loadbalance, HK_loadbalance, DIRECT]}
   - {<<: *select, name: Default, type: select, proxies: [M, SG_fallback, US_fallback, HK_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, DIRECT]}
   - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: OpenAi, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback]}
-  - {<<: *select, name: Telegram, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback,]}
-  - {<<: *select, name: Netflix, proxies: [SG_fallback, US_fallback, HK_fallback, JP_fallback,]}
+  - {<<: *select, name: Telegram, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback]}
+  - {<<: *select, name: Netflix, proxies: [SG_fallback, US_fallback, HK_fallback, JP_fallback]}
   - {<<: *select, name: Steam, proxies: [HK_fallback, SG_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
-  - {<<: *select, name: PikPak, proxies: [SG_fallback, HK_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
-  - {<<: *select, name: PikPak-Download, type: select, proxies: [JP_loadbalance, SG_loadbalance, SG_fallback, DIRECT, US_fallback, HK_fallback, JP_fallback, US_loadbalance, HK_loadbalance]}
-  - {<<: *select, name: SpeedTest, type: select, proxies: [M, SG_fallback, US_fallback, JP_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, DIRECT]}
+  - {<<: *select, name: PikPak, proxies: [JP_loadbalance, SG_fallback, HK_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance]}
   - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, DIRECT, US_fallback, HK_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
   - {<<: *fallback, name: HK_fallback, filter: "(?i)(香港|hk|hong)"}
@@ -150,7 +148,7 @@ rules:
   - "RULE-SET,direct-site,DIRECT"
   - "RULE-SET,direct-cf-site,DIRECT"
   - "RULE-SET,pikpak-site,PikPak"
-  - "RULE-SET,pikpak-download-site,PikPak-Download"
+  - "RULE-SET,pikpak-download-site,PikPak"
   - "RULE-SET,alibaba-site,DIRECT"
   - "RULE-SET,jd,DIRECT"
   - "RULE-SET,tencent,DIRECT"
@@ -174,7 +172,7 @@ rules:
   - "RULE-SET,facebook,US_fallback"
   - "RULE-SET,reddit,M"
   - "RULE-SET,adguard,M"
-  - "RULE-SET,speedtest-site-classical,SpeedTest"
+  - "RULE-SET,speedtest-site-classical,M"
   - "RULE-SET,wikimedia,M"
   - "RULE-SET,javdb,M"
   - "RULE-SET,apkpure,M"
