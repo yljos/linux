@@ -98,7 +98,10 @@ def fetch_subscription_info(url):
 def fetch_content_from_url(url):
     """从URL获取base64编码的内容并解码"""
     try:
-        subscription_userinfo = fetch_subscription_info(url)
+        # 临时不需要订阅信息，避免额外的网络请求。
+        # 若将来需要恢复订阅信息，可恢复下一行：
+        # subscription_userinfo = fetch_subscription_info(url)
+        subscription_userinfo = ""
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0"
         }
