@@ -43,11 +43,12 @@ def parse_vless_url(url: str) -> Dict[str, Any]:
         "server": parsed.hostname,
         "port": parsed.port,
         "uuid": parsed.username,
+        "cipher": "auto",  # 默认加密方式
         "udp": True,  # 默认启用UDP
         "packet-encoding": "xudp",  # 默认数据包编码
         "tls": True,  # 默认启用TLS，根据security参数调整
         "servername": "",  # 服务器名称，根据sni参数设置
-        "client-fingerprint": "chrome",  # 默认客户端指纹
+        "client-fingerprint": "firefox",  # 默认客户端指纹
         "skip-cert-verify": False,  # 默认验证证书
         "network": "tcp",  # 默认传输协议
     }
@@ -91,6 +92,7 @@ def parse_vless_url(url: str) -> Dict[str, Any]:
 
         headers: Dict[str, Any] = {}
         if "host" in query and query["host"][0]:
+            # 保持 Host 字段格式与示例一致
             headers["Host"] = query["host"][0]
 
         if headers:
@@ -121,9 +123,9 @@ def parse_vless_url(url: str) -> Dict[str, Any]:
     if "flow" in query and query["flow"][0]:
         config["flow"] = query["flow"][0]
 
-    # 处理fingerprint参数
-    if "fp" in query and query["fp"][0]:
-        config["client-fingerprint"] = query["fp"][0]
+    # 处理fingerprint参数 — 如果传了 fp 参数，强制使用 firefox（覆盖传入值）
+    if "fp" in query:
+        config["client-fingerprint"] = "firefox"
 
     # 清理空值和无效配置
     cleaned_config: Dict[str, Any] = {}
@@ -155,6 +157,7 @@ def convert_url_to_yaml(url: str) -> str:
         indent=2,
         default_style=None,
         sort_keys=False,
+        width=float("inf"),  # 防止长字符串被折行
     )
 
 
