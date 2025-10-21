@@ -65,7 +65,7 @@ proxy-groups:
   - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: OpenAi, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback]}
   - {<<: *select, name: Telegram, proxies: [US_fallback, SG_fallback, HK_fallback, JP_fallback]}
-  - {<<: *select, name: Netflix, proxies: [SG_fallback, US_fallback, HK_fallback, JP_fallback]}
+  - {<<: *select, name: Netflix, hidden: true, proxies: [SG_fallback, US_fallback, HK_fallback, JP_fallback]}
   - {<<: *select, name: Steam, proxies: [HK_fallback, SG_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance, JP_loadbalance]}
   - {<<: *select, name: PikPak, proxies: [JP_loadbalance, SG_fallback, HK_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance]}
   - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
