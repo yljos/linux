@@ -206,9 +206,10 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
                     matched_tags = [
                         tag for tag in all_node_tags if compiled.search(tag)
                     ]
-
                     if matched_tags:
                         outbound["outbounds"] = matched_tags
+                    else:
+                        outbound["outbounds"] = ["D"]
                 except re.error as e:
                     print(f"无效的正则表达式 '{pattern}': {e}", file=sys.stderr)
                     continue

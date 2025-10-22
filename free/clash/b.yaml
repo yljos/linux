@@ -60,7 +60,7 @@ dns:
     "rule-set:speedtest-site-classical": "https://cloudflare-dns.com/dns-query#M"
 proxies: []
 proxy-groups:
-  - {<<: *fallback, name: M, proxies: [JP_loadbalance, SG_loadbalance, US_loadbalance, HK_loadbalance, DIRECT]}
+  - {<<: *select, name: M, proxies: [JP_loadbalance, SG_loadbalance, US_loadbalance, HK_loadbalance, DIRECT]}
   - {<<: *select, name: Default, type: select, proxies: [M, DIRECT]}
   - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: OpenAi, proxies: [JP_fallback,US_fallback, SG_fallback, HK_fallback, ]}
