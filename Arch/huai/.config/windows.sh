@@ -30,18 +30,8 @@ done
 	# Function to connect to the host
 	connect_to_host() {
 		notify-send "连接中" "启动 RDP..." && play ~/.config/dunst/connecting.mp3 >/dev/null 2>&1
-		env SDL_VIDEODRIVER=wayland sdl-freerdp3 /v:192.168.31.15 /u:huai /p:1107530255 /cert:ignore /sound /w:1916 /h:1056 '/auth-pkg-list:!kerberos,ntlm'
+	env SDL_VIDEODRIVER=wayland sdl-freerdp3 /v:192.168.31.15 /u:huai /p:"$PASSWORD" /cert:ignore /sound /w:1916 /h:1056 &
 
-		#xfreerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /w:1902 /h:1032 /sound /cert:ignore >/dev/null 2>&1 &
-		#wlfreerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /dynamic-resolution /f /smart-sizing /desktop-composition /sound /cert:ignore >/dev/null 2>&1 &
-		RDP_PID=$!
-		sleep 10
-		if kill -0 "$RDP_PID" 2>/dev/null; then
-			notify-send "连接成功" "RDP 会话已建立" && play ~/.config/dunst/success.mp3 >/dev/null 2>&1
-		else
-			notify-send "连接失败" "RDP 连接建立失败" && play ~/.config/dunst/error.mp3 >/dev/null 2>&1
-			exit 1
-		fi
 	}
 	# check if the host is online
 	if sudo arping -c 1 -w 1 -q -I "$INTERFACE" "$TARGET_IP" >/dev/null 2>&1; then
