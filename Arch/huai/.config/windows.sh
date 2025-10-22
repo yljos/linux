@@ -17,14 +17,7 @@ fi
 PASSWORD=$(printf "%s" "$PASSWORD")
 # check dependencies
 for cmd in arping wakeonlan notify-send gpg play xfreerdp3; do
-	if ! command -v "$cmd" >/dev/null 2>&1; then
-		if command -v notify-send >/dev/null 2>&1; then
-			notify-send "错误" "$cmd 未安装"
-		else
-			echo "错误: $cmd 未安装" >&2
-		fi
-		exit 1
-	fi
+	command -v "$cmd" >/dev/null 2>&1 || { echo "错误: $cmd 未安装" >&2; exit 1; }
 done
 (
 	# Function to connect to the host
@@ -50,9 +43,6 @@ done
 				notify-send "启动成功" "开始连接" && play ~/.config/dunst/system_online.mp3 >/dev/null 2>&1
 				connect_to_host
 				exit 0
-			fi
-			if [ $((i % 2)) -eq 0 ]; then
-				notify-send "等待中" "$i/$MAX_TRIES 秒"
 			fi
 			sleep 1
 			i=$((i + 1))
