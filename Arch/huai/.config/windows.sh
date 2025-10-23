@@ -19,10 +19,12 @@ PASSWORD=$(printf "%s" "$PASSWORD")
 # 检查依赖
 check_dependencies() {
 	for cmd in arping wakeonlan notify-send gpg play xfreerdp3; do
-		command -v "$cmd" >/dev/null 2>&1 || { echo "错误: $cmd 未安装" >&2; exit 1; }
+		command -v "$cmd" >/dev/null 2>&1 || {
+			echo "错误: $cmd 未安装" >&2
+			exit 1
+		}
 	done
 }
-
 
 # 唤醒主机
 wake_host() {
