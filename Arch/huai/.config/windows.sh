@@ -5,6 +5,17 @@ TARGET_IP="192.168.31.15"
 MAC_ADDRESS="00:23:24:67:DF:14"
 INTERFACE="enp0s31f6"
 MAX_TRIES=10
+
+# Decrypt password
+if [ ! -f "$CONFIG_GPG" ]; then
+	notify-send "脚本错误" "找不到 $CONFIG_GPG"
+	exit 1
+fi
+if ! PASSWORD=$(gpg -d "$CONFIG_GPG" 2>/dev/null); then
+	notify-send "脚本错误" "解密 $CONFIG_GPG 失败。"
+	exit 1
+fi
+PASSWORD=$(printf "%s" "$PASSWORD")
 # 检查依赖
 check_dependencies() {
 	for cmd in arping wakeonlan notify-send gpg play xfreerdp3; do
@@ -12,18 +23,6 @@ check_dependencies() {
 	done
 }
 
-# 解密密码
-decrypt_password() {
-	if [ ! -f "$CONFIG_GPG" ]; then
-		notify-send "脚本错误" "找不到 $CONFIG_GPG"
-		exit 1
-	fi
-	if ! PASSWORD=$(gpg -d "$CONFIG_GPG" 2>/dev/null); then
-		notify-send "脚本错误" "解密 $CONFIG_GPG 失败。"
-		exit 1
-	fi
-	PASSWORD=$(printf "%s" "$PASSWORD")
-}
 
 # 唤醒主机
 wake_host() {
@@ -59,7 +58,6 @@ connect_to_host() {
 # 主流程
 main() {
 	check_dependencies
-	decrypt_password
 	if sudo arping -c 1 -w 1 -q -I "$INTERFACE" "$TARGET_IP" >/dev/null 2>&1; then
 		notify-send "已在线" "正在连接..." && play ~/.config/dunst/system_online.mp3 >/dev/null 2>&1
 		connect_to_host
