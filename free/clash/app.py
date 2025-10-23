@@ -21,7 +21,6 @@ app = Flask(__name__)
 BASE_DIR = Path(os.getenv("BASE_DIR", ".")).absolute()
 OUTPUT_FOLDER = BASE_DIR / os.getenv("OUTPUT_FOLDER", "outputs")
 TEMPLATE_PATH = BASE_DIR / os.getenv("TEMPLATE_PATH", "template/b.yaml")
-PORTS_PATH = BASE_DIR / os.getenv("PORTS_PATH", "template/ports.yaml")
 HEADERS_CACHE_PATH = (
     OUTPUT_FOLDER / Path(os.getenv("HEADERS_CACHE_PATH", "headers_cache.json")).name
 )
@@ -204,7 +203,7 @@ def replace_fallback_nodes_in_group(
             )
 
 
-def process_proxy_config(proxy, ports_config):
+def process_proxy_config(proxy):
     """处理单个代理配置"""
     if not isinstance(proxy, dict):
         return
@@ -223,11 +222,6 @@ def process_proxy_config(proxy, ports_config):
         )
 
         proxy.update({"up": up_value, "down": down_value, "skip-cert-verify": False})
-
-        # 检查是否存在匹配的端口配置
-        if proxy.get("name") in ports_config:
-            proxy["ports"] = ports_config[proxy["name"]]
-            proxy.pop("port", None)
 
     elif proxy_type == "vless":
         proxy.update({"skip-cert-verify": False, "packet-encoding": "xudp"})
@@ -307,21 +301,13 @@ def process_yaml_content(yaml_path):
         with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
             template_data = yaml.load(f)
 
-        # 读取ports配置
-        with open(PORTS_PATH, "r", encoding="utf-8") as f:
-            ports_data = yaml.load(f)
-
-        ports_config = {
-            proxy["name"]: proxy["ports"] for proxy in ports_data.get("proxies", [])
-        }
-
         proxies = input_data.get("proxies", [])
         if not proxies:
             raise ValueError("YAML文件中未找到有效的proxies配置")
 
         # 处理代理配置
         for proxy in proxies:
-            process_proxy_config(proxy, ports_config)
+            process_proxy_config(proxy)
 
         # 提取节点名称并保存（如果启用了节点替换功能）
         if ENABLE_NODE_REPLACEMENT:
