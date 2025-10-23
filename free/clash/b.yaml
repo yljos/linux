@@ -60,21 +60,19 @@ dns:
     "rule-set:speedtest-site-classical": "https://cloudflare-dns.com/dns-query#M"
 proxies: []
 proxy-groups:
-  - {<<: *select, name: M, proxies: [JP_loadbalance, SG_loadbalance, US_loadbalance, HK_loadbalance, DIRECT]}
+  - {<<: *select, name: M, proxies: [JP_loadbalance, US_loadbalance, SG_loadbalance, DIRECT]}
   - {<<: *select, name: Default, type: select, proxies: [M, DIRECT]}
-  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
-  - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
-  - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
-  - {<<: *select, name: Netflix, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback]}
-  - {<<: *select, name: Steam, proxies: [JP_fallback, HK_fallback, SG_fallback, US_fallback]}
-  - {<<: *select, name: PikPak, proxies: [JP_loadbalance, SG_fallback, HK_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance, HK_loadbalance]}
-  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, DIRECT, US_fallback, HK_fallback]}
-  - {<<: *fallback, name: HK_fallback, filter: "(?i)(香港|hk|hong)"}
+  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback]}
+  - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback]}
+  - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback]}
+  - {<<: *select, name: Netflix, proxies: [JP_fallback, SG_fallback, US_fallback]}
+  - {<<: *select, name: Steam, proxies: [JP_fallback, SG_fallback, US_fallback]}
+  - {<<: *select, name: PikPak, proxies: [JP_loadbalance, SG_fallback, US_fallback, JP_fallback, SG_loadbalance, US_loadbalance]}
+  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, DIRECT]}
+  - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, DIRECT, US_fallback]}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)"}
   - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)"}
   - {<<: *fallback, name: SG_fallback, filter: "(?i)(新加坡|sg|singapore)"}
-  - {<<: *load-balance, name: HK_loadbalance, filter: "(?i)(香港|hk|hong)"}
   - {<<: *load-balance, name: JP_loadbalance, filter: "(?i)(日本|jp|japan)"}
   - {<<: *load-balance, name: US_loadbalance, filter: "(?i)(美国|us|united|america)"}
   - {<<: *load-balance, name: SG_loadbalance, filter: "(?i)(新加坡|sg|singapore)"}
