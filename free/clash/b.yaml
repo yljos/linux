@@ -44,7 +44,7 @@ dns:
   nameserver-policy:
     "rule-set:microsoft": "https://cloudflare-dns.com/dns-query#Microsoft"
     # "rule-set:ad-site-classical": "rcode://refused"
-    "rule-set:huawei-site": "rcode://name_error"
+    "rule-set:huawei-site": "rcode://refused"
     "rule-set:openai": "https://cloudflare-dns.com/dns-query#OpenAi"
     "rule-set:pikpak-download-site": "https://cloudflare-dns.com/dns-query#PikPak"
     "rule-set:steam-site-classical": "https://cloudflare-dns.com/dns-query#Steam"
