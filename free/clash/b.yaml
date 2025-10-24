@@ -133,11 +133,11 @@ rule-providers:
   facebook-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs}
 rules:
   - "AND,((DST-PORT,443),(NETWORK,UDP)),REJECT"
-  # - "RULE-SET,ad-site-classical,REJECT-DROP"
-  - "RULE-SET,ad-ip,REJECT-DROP"
+  # - "RULE-SET,ad-site-classical,REJECT"
+  - "RULE-SET,ad-ip,REJECT"
   - "RULE-SET,huawei-direct-site,DIRECT"
-  - "RULE-SET,huawei-site,REJECT-DROP"
-  - "RULE-SET,huawei-ip,REJECT-DROP"
+  - "RULE-SET,huawei-site,REJECT"
+  - "RULE-SET,huawei-ip,REJECT"
   - "SRC-IP-CIDR,192.168.31.24/32,DIRECT"
 
   - "RULE-SET,cloudflare,M"
