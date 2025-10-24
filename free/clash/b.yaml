@@ -154,7 +154,7 @@ rules:
   - "RULE-SET,googlefcm,DIRECT"
   - "RULE-SET,proxy-site,M"
   - "RULE-SET,github,GitHub"
-  - "RULE-SET,codeberg,Github"
+  - "RULE-SET,codeberg,GitHub"
   - "RULE-SET,docker,M"
   - "RULE-SET,archlinux,M"
   - "RULE-SET,openwrt,M"
