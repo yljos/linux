@@ -1,11 +1,13 @@
 import os
-import sys
 import concurrent.futures
 import threading
 
 # --- 配置 ---
 # 1. 要按扩展名删除的文件类型 (小写)
 TARGET_EXTENSIONS = []  # 不再按扩展名删除，逻辑改为只保留指定视频格式
+
+# 要保留的视频格式
+VIDEO_EXTS = ('.mp4', '.wmv', '.mkv', '.avi')
 
 # 2. 要按文件名删除的 .mp4 文件列表 (不含.mp4后缀, 小写, 精确匹配)
 #    如果要删除所有名为 '缓存' 和 '广告' 的mp4, 设置为: ['缓存', '广告']
@@ -78,6 +80,40 @@ def delete_empty_folders(directory):
     return deleted_folders_count
 
 
+def should_delete_file(file_path, target_mp4_set, size_threshold_bytes):
+    """判断单个文件是否应该被删除。
+
+    规则：
+    - 跳过脚本自身应在调用处处理（这里只做文件类别判定）
+    - 仅保留 VIDEO_EXTS 指定的视频格式；其它格式默认删除
+    - 对 .mp4 应用额外规则：若文件名在 target_mp4_set 或文件小于阈值则删除
+    - 如果 DELETE_NO_EXTENSION 为 True，且文件名没有扩展名，则删除
+    """
+    filename = os.path.basename(file_path)
+    file_lower = filename.lower()
+
+    # 如果是视频格式（先判断是否为视频）
+    if file_lower.endswith(VIDEO_EXTS):
+        if file_lower.endswith('.mp4'):
+            name_part = os.path.splitext(filename)[0].lower()
+            if name_part in target_mp4_set:
+                return True
+            if size_threshold_bytes > 0:
+                try:
+                    if os.path.getsize(file_path) < size_threshold_bytes:
+                        return True
+                except OSError:
+                    # 无法访问文件时保守跳过（不删除）
+                    return False
+        # 其它视频格式不删除
+        return False
+
+    # 非视频格式默认删除
+    if '.' not in filename and DELETE_NO_EXTENSION:
+        return True
+    return True
+
+
 def main():
     current_directory = os.getcwd()
     target_mp4_set = {name.lower() for name in TARGET_MP4_NAMES}
@@ -100,55 +136,32 @@ def main():
     total_found = 0
 
     script_path = os.path.abspath(__file__)
+
+    # 收集要删除的文件（先不并发删除，以避免并发判断/IO 冲突）
+    files_to_delete = []
+    for root, dirs, files in os.walk(current_directory):
+        for filename in files:
+            file_path = os.path.join(root, filename)
+            # 跳过脚本自身
+            if os.path.abspath(file_path) == script_path:
+                continue
+            try:
+                if should_delete_file(file_path, target_mp4_set, size_threshold_bytes):
+                    files_to_delete.append(file_path)
+            except Exception:
+                # 如果判断过程中出现不可预期错误，记录并跳过该文件
+                with print_lock:
+                    print(f"[警告] 无法判断文件是否删除: {file_path}")
+
+    total_found = len(files_to_delete)
+    if total_found == 0:
+        print("未找到任何符合条件的文件。")
+    else:
+        print(f"[*] 已找到 {total_found} 个文件，删除操作已开始...")
+
+    # 并发删除
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = []
-
-        for root, dirs, files in os.walk(current_directory):
-            for filename in files:
-                file_lower = filename.lower()
-                file_path = os.path.join(root, filename)
-                should_delete = False
-
-                # 跳过脚本自身
-                if os.path.abspath(file_path) == script_path:
-                    continue
-
-                # 只保留 mp4, wmv, mkv, avi，其余全部删除
-                if file_lower.endswith(('.mp4', '.wmv', '.mkv', '.avi')):
-                    # mp4 额外处理
-                    if file_lower.endswith('.mp4'):
-                        name_part = os.path.splitext(filename)[0].lower()
-                        if name_part in target_mp4_set:
-                            should_delete = True
-                        elif size_threshold_bytes > 0:
-                            try:
-                                file_size = os.path.getsize(file_path)
-                                if file_size < size_threshold_bytes:
-                                    should_delete = True
-                            except OSError:
-                                continue
-                        else:
-                            should_delete = False  # 其它 mp4 不删
-                    else:
-                        should_delete = False  # 其它视频格式不删
-                else:
-                    # 非视频格式全部删除
-                    should_delete = True
-
-                # 删除没有扩展名的文件
-                if not file_lower.endswith(('.mp4', '.wmv', '.mkv', '.avi')) and DELETE_NO_EXTENSION and '.' not in filename:
-                    should_delete = True
-
-                if should_delete:
-                    total_found += 1
-                    future = executor.submit(delete_file, file_path)
-                    futures.append(future)
-
-        if not futures:
-            print("未找到任何符合条件的文件。")
-        else:
-            print(f"[*] 已找到 {len(futures)} 个文件，删除操作已开始...")
-
+        futures = [executor.submit(delete_file, p) for p in files_to_delete]
         for future in concurrent.futures.as_completed(futures):
             success, _ = future.result()
             if success:
@@ -156,7 +169,7 @@ def main():
             else:
                 failed_count += 1
 
-    # 清理空文件夹
+    # 最后统一清理空文件夹
     deleted_folders = delete_empty_folders(current_directory)
 
     # 最终总结
