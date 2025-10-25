@@ -7,7 +7,7 @@ import threading
 TARGET_EXTENSIONS = []  # 不再按扩展名删除，逻辑改为只保留指定视频格式
 
 # 要保留的视频格式
-VIDEO_EXTS = ('.mp4', '.wmv', '.mkv', '.avi')
+VIDEO_EXTS = (".mp4", ".wmv", ".mkv", ".avi")
 
 # 2. 要按文件名删除的 .mp4 文件列表 (不含.mp4后缀, 小写, 精确匹配)
 #    如果要删除所有名为 '缓存' 和 '广告' 的mp4, 设置为: ['缓存', '广告']
@@ -94,7 +94,7 @@ def should_delete_file(file_path, target_mp4_set, size_threshold_bytes):
 
     # 如果是视频格式（先判断是否为视频）
     if file_lower.endswith(VIDEO_EXTS):
-        if file_lower.endswith('.mp4'):
+        if file_lower.endswith(".mp4"):
             name_part = os.path.splitext(filename)[0].lower()
             if name_part in target_mp4_set:
                 return True
@@ -109,7 +109,7 @@ def should_delete_file(file_path, target_mp4_set, size_threshold_bytes):
         return False
 
     # 非视频格式默认删除
-    if '.' not in filename and DELETE_NO_EXTENSION:
+    if "." not in filename and DELETE_NO_EXTENSION:
         return True
     return True
 
