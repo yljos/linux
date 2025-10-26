@@ -45,7 +45,7 @@
     {"tag": "Steam", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "JP"},
     {"tag": "Telegram", "type": "selector", "outbounds": ["SG", "JP", "US"], "default": "JP"},
     {"tag": "Netflix", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "JP"},
-    {"tag": "PikPak", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "JP"},
+    {"tag": "PikPak", "type": "selector", "outbounds": ["HK", "SG", "JP", "US"], "default": "SG"},
     {"tag": "GitHub", "type": "selector", "outbounds": ["HK", "SG", "JP", "US", "D"], "default": "JP"},
     {"tag": "Microsoft", "type": "selector", "outbounds": ["HK", "SG", "JP", "US", "D"], "default": "JP"},
     {"tag": "HK", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(hk|香港|hongkong))(?!.*(小众)).*$"]}]},
