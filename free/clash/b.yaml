@@ -46,7 +46,7 @@ dns:
     # "rule-set:ad-site-classical": "rcode://refused"
     "rule-set:huawei-site": "rcode://refused"
     "rule-set:openai": "https://cloudflare-dns.com/dns-query#OpenAi"
-    "rule-set:pikpak-download-site": "https://cloudflare-dns.com/dns-query#PikPak"
+    # "rule-set:pikpak-download-site": "https://cloudflare-dns.com/dns-query#PikPak"
     "rule-set:steam-site-classical": "https://cloudflare-dns.com/dns-query#Steam"
     "rule-set:github": "https://cloudflare-dns.com/dns-query#GitHub"
     "rule-set:codeberg": "https://cloudflare-dns.com/dns-query#GitHub"
@@ -113,7 +113,7 @@ rule-providers:
   openwrt: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openwrt.mrs}
   pikpak-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash//pikpak/pikpak-site.mrs}
   pikpak-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/pikpak/pikpak-ip.mrs}
-  pikpak-download-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/pikpak-download/pikpak-download-site.mrs}
+  # pikpak-download-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/pikpak-download/pikpak-download-site.mrs}
   proxy-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/proxy/proxy-site.mrs}
   reddit: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/reddit.mrs}
   speedtest-site-classical: {<<: *classical, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/speedtest/speedtest-site-classical.yaml}
@@ -147,7 +147,7 @@ rules:
   - "RULE-SET,direct-site,DIRECT"
   - "RULE-SET,direct-cf-site,DIRECT"
   - "RULE-SET,pikpak-site,PikPak"
-  - "RULE-SET,pikpak-download-site,PikPak"
+  # - "RULE-SET,pikpak-download-site,PikPak"
   - "RULE-SET,alibaba-site,DIRECT"
   - "RULE-SET,jd,DIRECT"
   - "RULE-SET,tencent,DIRECT"
