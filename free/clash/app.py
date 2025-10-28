@@ -226,6 +226,18 @@ def process_proxy_config(proxy):
     elif proxy_type == "vless":
         proxy.update({"skip-cert-verify": False, "packet-encoding": "xudp"})
 
+        # 仅在 vless 类型下，如果存在 client-fingerprint 键，则统一替换为 firefox
+        try:
+            if "client-fingerprint" in proxy:
+                proxy["client-fingerprint"] = "firefox"
+                logger.info(
+                    f"已将 vless 代理 '{proxy.get('name', '')}' 的 client-fingerprint 统一设置为 firefox"
+                )
+        except Exception:
+            logger.debug("在 vless 中设置 client-fingerprint 为 firefox 时发生异常")
+
+    
+
 
 def replace_proxy_groups_with_nodes(template_data):
     """将代理组中的fallback节点替换为实际节点"""
