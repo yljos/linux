@@ -67,7 +67,7 @@ def parse_hysteria2_url(url):
         "password": parsed.username,
         "udp": True,  # 默认启用UDP
         "skip-cert-verify": False,  # 默认验证证书
-        "up": "50 Mbps",  # 默认上传速度限制
+        "up": "40 Mbps",  # 默认上传速度限制
         "down": "200 Mbps",  # 默认下载速度限制
     }
 
