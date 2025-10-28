@@ -17,30 +17,39 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# 基础配置
-BASE_DIR = Path(os.getenv("BASE_DIR", ".")).absolute()
-OUTPUT_FOLDER = BASE_DIR / os.getenv("OUTPUT_FOLDER", "outputs")
-TEMPLATE_PATH = BASE_DIR / os.getenv("TEMPLATE_PATH", "template/b.yaml")
+
+def require_env(key: str) -> str:
+    """统一读取必填环境变量，缺失或为空则抛出 RuntimeError。"""
+    val = os.getenv(key)
+    if val is None or val == "":
+        raise RuntimeError(
+            f"环境变量 {key} 未设置（必填）。请在 .env 或环境中设置 {key}。"
+        )
+    return val
+
+# 基础配置（全部从环境读取，缺失则报错）
+BASE_DIR = Path(require_env("BASE_DIR")).absolute()
+OUTPUT_FOLDER = BASE_DIR / require_env("OUTPUT_FOLDER")
+TEMPLATE_PATH = BASE_DIR / require_env("TEMPLATE_PATH")
 HEADERS_CACHE_PATH = (
-    OUTPUT_FOLDER / Path(os.getenv("HEADERS_CACHE_PATH", "headers_cache.json")).name
+    OUTPUT_FOLDER / Path(require_env("HEADERS_CACHE_PATH")).name
 )
-TEMP_YAML_PATH = OUTPUT_FOLDER / Path(os.getenv("TEMP_YAML_PATH", "temp.yaml")).name
+TEMP_YAML_PATH = OUTPUT_FOLDER / Path(require_env("TEMP_YAML_PATH")).name
 TEMP_YAML_LOCK = (
-    OUTPUT_FOLDER / Path(os.getenv("TEMP_YAML_LOCK", "temp.yaml.lock")).name
+    OUTPUT_FOLDER / Path(require_env("TEMP_YAML_LOCK")).name
 )
 
-USER_AGENT = os.getenv("USER_AGENT", "clash verge")
-CACHE_DURATION = int(os.getenv("CACHE_DURATION", 300))
-HYSTERIA2_UP = os.getenv("HYSTERIA2_UP", "50 Mbps")
-HYSTERIA2_DOWN = os.getenv("HYSTERIA2_DOWN", "300 Mbps")
-INCLUDED_HEADERS = set(
-    os.getenv("INCLUDED_HEADERS", "Subscription-Userinfo").split(",")
-)
+USER_AGENT = require_env("USER_AGENT")
+CACHE_DURATION = int(require_env("CACHE_DURATION"))
+HYSTERIA2_UP = require_env("HYSTERIA2_UP")
+HYSTERIA2_DOWN = require_env("HYSTERIA2_DOWN")
+INCLUDED_HEADERS = set(require_env("INCLUDED_HEADERS").split(","))
 
-# 节点替换功能开关
-ENABLE_NODE_REPLACEMENT = (
-    os.getenv("ENABLE_NODE_REPLACEMENT", "false").lower() == "true"
-)
+# 节点替换功能开关（必填，填 true/false）
+ENABLE_NODE_REPLACEMENT = require_env("ENABLE_NODE_REPLACEMENT").lower() == "true"
+
+# 从 .env 中读取 client-fingerprint（必填）
+CLIENT_FINGERPRINT = require_env("CLIENT_FINGERPRINT")
 
 # 确保输出目录存在
 OUTPUT_FOLDER.mkdir(exist_ok=True)
@@ -229,12 +238,12 @@ def process_proxy_config(proxy):
         # 仅在 vless 类型下，如果存在 client-fingerprint 键，则统一替换为 firefox
         try:
             if "client-fingerprint" in proxy:
-                proxy["client-fingerprint"] = "firefox"
+                proxy["client-fingerprint"] = CLIENT_FINGERPRINT
                 logger.info(
-                    f"已将 vless 代理 '{proxy.get('name', '')}' 的 client-fingerprint 统一设置为 firefox"
+                    f"已将 vless 代理 '{proxy.get('name', '')}' 的 client-fingerprint 统一设置为 {CLIENT_FINGERPRINT}"
                 )
         except Exception:
-            logger.debug("在 vless 中设置 client-fingerprint 为 firefox 时发生异常")
+            logger.debug("在 vless 中设置 client-fingerprint 时发生异常")
 
     
 
@@ -424,8 +433,9 @@ def process_yaml(yaml_url):
 
 
 if __name__ == "__main__":
-    debug_mode = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
-    port = int(os.getenv("PORT", 5002))
-    host = os.getenv("HOST", "0.0.0.0")
+    # DEBUG, PORT, HOST 也为必填环境变量（缺失将抛错）
+    debug_mode = require_env("DEBUG").lower() in ("true", "1", "yes")
+    port = int(require_env("PORT"))
+    host = require_env("HOST")
 
     app.run(debug=debug_mode, port=port, host=host)
