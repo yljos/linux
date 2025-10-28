@@ -68,7 +68,7 @@ proxy-groups:
   - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback]}
   - {<<: *select, name: Netflix, proxies: [JP_fallback, SG_fallback, US_fallback]}
   - {<<: *select, name: Steam, proxies: [JP_fallback, SG_fallback, US_fallback]}
-  - {<<: *select, name: PikPak, proxies: [SG_loadbalance, JP_loadbalance, SG_fallback, US_fallback, JP_fallback, US_loadbalance]}
+  - {<<: *select, name: PikPak, proxies: [JP_loadbalance, SG_loadbalance, SG_fallback, US_fallback, JP_fallback, US_loadbalance]}
   - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, DIRECT, US_fallback]}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)"}
