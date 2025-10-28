@@ -7,7 +7,7 @@ import threading
 TARGET_EXTENSIONS = []  # 不再按扩展名删除，逻辑改为只保留指定视频格式
 
 # 要保留的视频格式
-VIDEO_EXTS = (".mp4", ".wmv", ".mkv", ".avi")
+VIDEO_EXTS = (".mp4", ".mkv", ".avi")
 
 # 2. 要按文件名删除的 .mp4 文件列表 (不含.mp4后缀, 小写, 精确匹配)
 #    如果要删除所有名为 '缓存' 和 '广告' 的mp4, 设置为: ['缓存', '广告']
