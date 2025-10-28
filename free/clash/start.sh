@@ -5,4 +5,4 @@ echo "正在安装 Python 依赖..."
 pip install -r requirements.txt
 
 echo "启动 Python 应用..."
-exec python app_base64.py
+exec python app.py
