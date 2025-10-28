@@ -27,17 +27,14 @@ def require_env(key: str) -> str:
         )
     return val
 
+
 # 基础配置（全部从环境读取，缺失则报错）
 BASE_DIR = Path(require_env("BASE_DIR")).absolute()
 OUTPUT_FOLDER = BASE_DIR / require_env("OUTPUT_FOLDER")
 TEMPLATE_PATH = BASE_DIR / require_env("TEMPLATE_PATH")
-HEADERS_CACHE_PATH = (
-    OUTPUT_FOLDER / Path(require_env("HEADERS_CACHE_PATH")).name
-)
+HEADERS_CACHE_PATH = OUTPUT_FOLDER / Path(require_env("HEADERS_CACHE_PATH")).name
 TEMP_YAML_PATH = OUTPUT_FOLDER / Path(require_env("TEMP_YAML_PATH")).name
-TEMP_YAML_LOCK = (
-    OUTPUT_FOLDER / Path(require_env("TEMP_YAML_LOCK")).name
-)
+TEMP_YAML_LOCK = OUTPUT_FOLDER / Path(require_env("TEMP_YAML_LOCK")).name
 
 USER_AGENT = require_env("USER_AGENT")
 CACHE_DURATION = int(require_env("CACHE_DURATION"))
@@ -239,13 +236,9 @@ def process_proxy_config(proxy):
         try:
             if "client-fingerprint" in proxy:
                 proxy["client-fingerprint"] = CLIENT_FINGERPRINT
-                logger.info(
-                    f"已将 vless 代理 '{proxy.get('name', '')}' 的 client-fingerprint 统一设置为 {CLIENT_FINGERPRINT}"
-                )
+
         except Exception:
             logger.debug("在 vless 中设置 client-fingerprint 时发生异常")
-
-    
 
 
 def replace_proxy_groups_with_nodes(template_data):
