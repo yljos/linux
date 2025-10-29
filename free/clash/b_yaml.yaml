@@ -152,7 +152,6 @@ dns:
     - "alt5-mtalk.google.com"
     - "alt6-mtalk.google.com"
     - "mtalk.google.com"
-    - "ntp.aliyun.com"
   use-hosts: true
   default-nameserver:
     - "223.5.5.5#DIRECT"
@@ -279,7 +278,9 @@ rule-providers:
   adguard:
     <<: *domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs
-  # ad-site-classical: { <<: *classical, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site-classical.yaml }
+  # ad-site-classical: 
+  #   <<: *classical
+  #   url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site-classical.yaml
   ad-ip:
     <<: *ipcidr
     url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-ip.mrs
@@ -376,7 +377,9 @@ rule-providers:
   pikpak-ip:
     <<: *ipcidr
     url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/pikpak/pikpak-ip.mrs
-  # pikpak-download-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/pikpak-download/pikpak-download-site.mrs}
+  # pikpak-download-site: 
+  #   <<: *domain
+  #   url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/pikpak-download/pikpak-download-site.mrs
   proxy-site:
     <<: *domain
     url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/proxy/proxy-site.mrs
@@ -437,7 +440,7 @@ rules:
   - "RULE-SET,huawei-site,REJECT"
   - "RULE-SET,huawei-ip,REJECT"
   - "SRC-IP-CIDR,192.168.31.24/32,DIRECT"
-
+  
   - "RULE-SET,cloudflare,M"
   - "DOMAIN-KEYWORD,msftconnecttest.com,Microsoft"
   - "DOMAIN-KEYWORD,msftncsi.com,Microsoft"
