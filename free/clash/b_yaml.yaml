@@ -1,6 +1,6 @@
 select: &select
   type: select
-  exclude-filter: "(?i).*(10|ctcc|kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期).*"
+  exclude-filter: "(?i).*(ctcc|kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期).*"
   include-all-proxies: true
 
 fallback: &fallback
@@ -11,7 +11,7 @@ fallback: &fallback
   timeout: 600
   max-failed-times: 3
   include-all-proxies: true
-  exclude-filter: "(?i).*(10|ctcc|kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期).*"
+  exclude-filter: "(?i).*(ctcc|kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期).*"
 
 load-balance: &load-balance
   type: load-balance
@@ -22,7 +22,7 @@ load-balance: &load-balance
   timeout: 600
   max-failed-times: 3
   include-all-proxies: true
-  exclude-filter: "(?i).*(10|ctcc|kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期).*"
+  exclude-filter: "(?i).*(ctcc|kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期).*"
 
 url-test: &url-test
   type: url-test
@@ -33,7 +33,7 @@ url-test: &url-test
   timeout: 600
   max-failed-times: 3
   include-all-proxies: true
-  exclude-filter: "(?i).*(10|ctcc|kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期).*"
+  exclude-filter: "(?i).*(ctcc|kr|tw|Traffic|Expire|官网|0\\.[0-9]|剩余|到期).*"
 
 domain: &domain
   proxy: M
