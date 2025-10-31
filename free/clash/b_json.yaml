@@ -91,7 +91,6 @@ rule-providers:
   cn-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/cn/cn-site.mrs}
   cn-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/cn/cn-ip.mrs}
   docker: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/docker.mrs}
-  direct-cf-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/direct/direct-cf-site.mrs}
   direct-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/direct/direct-site.mrs}
   direct-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/direct/direct-ip.mrs}
   mozilla: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/mozilla.mrs}
@@ -145,7 +144,6 @@ rules:
   - "DOMAIN-KEYWORD,msftncsi.com,Microsoft"
   - "DOMAIN-KEYWORD,googleapis,Google"
   - "RULE-SET,direct-site,DIRECT"
-  - "RULE-SET,direct-cf-site,DIRECT"
   - "RULE-SET,pikpak-site,PikPak"
   # - "RULE-SET,pikpak-download-site,PikPak"
   - "RULE-SET,alibaba-site,DIRECT"
