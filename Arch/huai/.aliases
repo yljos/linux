@@ -54,7 +54,7 @@ alias pl="vim /home/huai/.config/mpd/playlists/all.m3u"
 # 远程连接
 alias nas="ssh_add_check; ssh huai@192.168.31.21"
 alias cloud="ssh_add_check; ssh cloud"
-alias sing-boxupload="ssh_add_check; rsync -avzh --delete /workspace/linux/free/sing-box/ cloud:/root/sing-box/"
+alias sing-boxupload="ssh_add_check; rsync -avzh --delete /workspace/linux/free/sing-box/ cloud:/root/sing-box/ && rsync -avzh --delete /workspace/linux/free/m-box/ cloud:/root/m-box/"
 alias clashupload="ssh_add_check; rsync -avzh --delete /workspace/linux/free/clash/ cloud:/root/clash/"
 alias openwrt='ssh_add_check; ssh openwrt'
 alias ax6s='ssh_add_check; ssh ax6s'
