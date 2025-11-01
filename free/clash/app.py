@@ -61,9 +61,52 @@ def setup_yaml_config():
     """设置YAML配置"""
     yaml_config = YAML()
     yaml_config.preserve_quotes = True
-    yaml_config.indent(mapping=2, sequence=4, offset=2)
+    yaml_config.indent(mapping=2, sequence=2, offset=2)
     yaml_config.width = 4096  # 避免自动换行
+    # 使字典以流式风格(单行 {}) 输出
+    yaml_config.default_flow_style = None
     return yaml_config
+
+
+def convert_proxies_to_inline(proxies):
+    """将proxies列表转换为单行 {} 格式的字符串"""
+    inline_proxies = []
+    for proxy in proxies:
+        # 构建单行的字典格式
+        items = []
+        for key, value in proxy.items():
+            # 需要用引号的键名（如果包含特殊字符）
+            key_str = f'"{key}"' if '-' in key else key
+            
+            if isinstance(value, bool):
+                # 布尔值必须最先检查（因为bool是int的子类）
+                items.append(f"{key_str}: {str(value).lower()}")
+            elif isinstance(value, str):
+                # 字符串值用引号
+                items.append(f"{key_str}: {repr(value)}")
+            elif isinstance(value, (int, float)):
+                items.append(f"{key_str}: {value}")
+            elif isinstance(value, dict):
+                # 嵌套字典也转为单行格式
+                nested_items = []
+                for k, v in value.items():
+                    k_str = f'"{k}"' if '-' in k else k
+                    if isinstance(v, bool):
+                        # 嵌套字典中的布尔值也保持小写
+                        nested_items.append(f"{k_str}: {str(v).lower()}")
+                    elif isinstance(v, str):
+                        nested_items.append(f"{k_str}: {repr(v)}")
+                    else:
+                        nested_items.append(f"{k_str}: {v}")
+                items.append(f"{key_str}: {{{', '.join(nested_items)}}}")
+            elif isinstance(value, list):
+                # 列表转为 [item1, item2] 格式
+                items.append(f"{key_str}: {value}")
+            else:
+                # 其他类型，直接转为字符串
+                items.append(f"{key_str}: {repr(value)}")
+        inline_proxies.append("  - {" + ", ".join(items) + "}")
+    return "\n".join(inline_proxies)
 
 
 yaml = setup_yaml_config()
@@ -304,7 +347,11 @@ def replace_proxy_groups_with_nodes(template_data):
 def process_yaml_content(yaml_path):
     """处理本地YAML文件"""
     try:
-        # 读取输入的YAML
+        # 读取标准模板（获取原始顺序）
+        with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
+            template_text = f.read()
+
+        # 解析YAML获取数据结构
         with open(yaml_path, "r", encoding="utf-8") as f:
             input_data = yaml.load(f)
 
@@ -327,17 +374,35 @@ def process_yaml_content(yaml_path):
         if ENABLE_NODE_REPLACEMENT:
             save_node_names(proxies)
 
-        # 更新模板中的代理列表
-        template_data["proxies"] = proxies
-
         # 替换代理组中的节点（如果启用了节点替换功能）
         if ENABLE_NODE_REPLACEMENT:
             template_data = replace_proxy_groups_with_nodes(template_data)
 
-        # 保存处理后的YAML
+        # 保存处理后的YAML（只修改proxies部分为单行格式）
         output_path = OUTPUT_FOLDER / "config.yaml"
         with open(output_path, "w", encoding="utf-8") as f:
-            yaml.dump(template_data, f)
+            import re
+            
+            # 生成新的proxies内容
+            proxies_inline = convert_proxies_to_inline(proxies)
+            
+            # 使用正则表达式替换模板中的 proxies: [] 部分
+            # 精确匹配 "proxies: []" 这一行
+            pattern = r'proxies:\s*\[\s*\]'
+            
+            if re.search(pattern, template_text):
+                # 找到了 proxies: []，替换它
+                replacement = 'proxies:\n' + proxies_inline
+                result = re.sub(pattern, replacement, template_text)
+                f.write(result)
+            else:
+                # 如果没找到proxies部分，直接输出模板并追加proxies
+                f.write(template_text)
+                if not template_text.endswith('\n'):
+                    f.write('\n')
+                f.write('proxies:\n')
+                f.write(proxies_inline)
+                f.write('\n')
 
         return output_path
 
