@@ -4,7 +4,7 @@ CONFIG_GPG="$HOME/.config/mima.gpg"
 TARGET_IP="192.168.31.15"
 MAC_ADDRESS="00:23:24:67:DF:14"
 INTERFACE="enp0s31f6"
-MAX_TRIES=10
+MAX_TRIES=15
 
 # Decrypt password
 if [ ! -f "$CONFIG_GPG" ]; then
