@@ -76,8 +76,8 @@ def convert_proxies_to_inline(proxies):
         items = []
         for key, value in proxy.items():
             # 需要用引号的键名（如果包含特殊字符）
-            key_str = f'"{key}"' if '-' in key else key
-            
+            key_str = f'"{key}"' if "-" in key else key
+
             if isinstance(value, bool):
                 # 布尔值必须最先检查（因为bool是int的子类）
                 items.append(f"{key_str}: {str(value).lower()}")
@@ -90,7 +90,7 @@ def convert_proxies_to_inline(proxies):
                 # 嵌套字典也转为单行格式
                 nested_items = []
                 for k, v in value.items():
-                    k_str = f'"{k}"' if '-' in k else k
+                    k_str = f'"{k}"' if "-" in k else k
                     if isinstance(v, bool):
                         # 嵌套字典中的布尔值也保持小写
                         nested_items.append(f"{k_str}: {str(v).lower()}")
@@ -382,27 +382,27 @@ def process_yaml_content(yaml_path):
         output_path = OUTPUT_FOLDER / "config.yaml"
         with open(output_path, "w", encoding="utf-8") as f:
             import re
-            
+
             # 生成新的proxies内容
             proxies_inline = convert_proxies_to_inline(proxies)
-            
+
             # 使用正则表达式替换模板中的 proxies: [] 部分
             # 精确匹配 "proxies: []" 这一行
-            pattern = r'proxies:\s*\[\s*\]'
-            
+            pattern = r"proxies:\s*\[\s*\]"
+
             if re.search(pattern, template_text):
                 # 找到了 proxies: []，替换它
-                replacement = 'proxies:\n' + proxies_inline
+                replacement = "proxies:\n" + proxies_inline
                 result = re.sub(pattern, replacement, template_text)
                 f.write(result)
             else:
                 # 如果没找到proxies部分，直接输出模板并追加proxies
                 f.write(template_text)
-                if not template_text.endswith('\n'):
-                    f.write('\n')
-                f.write('proxies:\n')
+                if not template_text.endswith("\n"):
+                    f.write("\n")
+                f.write("proxies:\n")
                 f.write(proxies_inline)
-                f.write('\n')
+                f.write("\n")
 
         return output_path
 
