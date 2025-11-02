@@ -131,7 +131,7 @@ rule-providers:
   facebook: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/facebook.mrs}
   facebook-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs}
 rules:
-  - "AND,((DST-PORT,443),(NETWORK,UDP)),REJECT"
+  - "AND,((DST-PORT,443/8443),(NETWORK,UDP)),REJECT"
   # - "RULE-SET,ad-site-classical,REJECT"
   - "RULE-SET,ad-ip,REJECT"
   - "RULE-SET,huawei-direct-site,DIRECT"
