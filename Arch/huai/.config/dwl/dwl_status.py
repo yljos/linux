@@ -302,7 +302,7 @@ class StatusBar:
 
     def update_time(self):
         """更新时间"""
-        self.time_status = datetime.now().strftime("%a %b %d %H:%M")
+        self.time_status = datetime.now().strftime("%Y-%m-%d %H:%M %a" )
 
     def update_net(self):
         """更新网络速度"""
