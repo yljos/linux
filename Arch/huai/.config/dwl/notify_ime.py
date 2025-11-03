@@ -41,11 +41,11 @@ def find_dwl_status_pid():
 def send_ime_signal():
     """发送输入法更新信号 (SIGUSR2)"""
     pids = find_dwl_status_pid()
-    
+
     if not pids:
         print("未找到运行中的 dwl_status.py 进程", file=sys.stderr)
         return False
-    
+
     success = False
     for pid in pids:
         try:
@@ -56,7 +56,7 @@ def send_ime_signal():
             print(f"进程 {pid} 不存在", file=sys.stderr)
         except PermissionError:
             print(f"没有权限向进程 {pid} 发送信号", file=sys.stderr)
-    
+
     return success
 
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # 先切换输入法
     if not toggle_fcitx5():
         sys.exit(1)
-    
+
     # 再发送信号通知状态栏更新
     if send_ime_signal():
         sys.exit(0)

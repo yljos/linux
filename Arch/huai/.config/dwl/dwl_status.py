@@ -305,7 +305,7 @@ class StatusBar:
 
     def update_time(self):
         """更新时间"""
-        self.time_status = datetime.now().strftime("%Y-%m-%d %H:%M %a" )
+        self.time_status = datetime.now().strftime("%Y-%m-%d %H:%M %a")
 
     def update_weather(self):
         """更新天气信息"""
@@ -314,14 +314,14 @@ class StatusBar:
             # 格式: %c 天气图标, %t 温度
             location = WEATHER_LOCATION or ""
             url = f"wttr.in/{location}?format=%c+%t"
-            
+
             result = subprocess.run(
                 ["curl", "-s", "-m", "10", url],
                 capture_output=True,
                 text=True,
-                timeout=15
+                timeout=15,
             )
-            
+
             if result.returncode == 0 and result.stdout.strip():
                 weather = result.stdout.strip()
                 self.weather_status = f"{ICON_WEATHER}{weather}"
@@ -373,10 +373,10 @@ class StatusBar:
 
         parts.append(f"{ICON_VOL}{self.vol_status}")
         parts.append(self.net_status_str)
-        
+
         if self.weather_status:
             parts.append(self.weather_status)
-        
+
         parts.append(self.time_status)
         parts.append(self.ime_status)
 

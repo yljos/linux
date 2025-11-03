@@ -31,11 +31,11 @@ def find_dwl_status_pid():
 def send_volume_signal():
     """发送音量更新信号 (SIGUSR1)"""
     pids = find_dwl_status_pid()
-    
+
     if not pids:
         print("未找到运行中的 dwl_status.py 进程", file=sys.stderr)
         return False
-    
+
     success = False
     for pid in pids:
         try:
@@ -46,7 +46,7 @@ def send_volume_signal():
             print(f"进程 {pid} 不存在", file=sys.stderr)
         except PermissionError:
             print(f"没有权限向进程 {pid} 发送信号", file=sys.stderr)
-    
+
     return success
 
 
