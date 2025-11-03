@@ -26,6 +26,7 @@ ICON_VOL = "V:"
 ICON_BT = "B:"
 ICON_NET_DOWN = "D:"
 ICON_NET_UP = "U:"
+ICON_WEATHER = "W:"
 
 # --- 2. Colors ---
 C_NORM = "^fg(00ff00)"
@@ -36,6 +37,7 @@ C_RESET = "^fg()"
 # --- 3. System Settings ---
 CPU_TEMP_FILE = "/sys/class/thermal/thermal_zone0/temp"
 INTERFACE = "enp0s31f6"  # 网卡名称
+WEATHER_LOCATION = ""  # 留空自动检测，或指定如 "Beijing" 或 "~北京"
 
 # --- 4. Behavior Settings ---
 UPDATE_INTERVAL_MEDIUM = 5  # 中等频率更新间隔(秒)
@@ -79,6 +81,7 @@ class StatusBar:
         self.ime_status = ""
         self.time_status = ""
         self.bluetooth_status = ""
+        self.weather_status = ""
 
     def _get_kernel_version(self):
         """获取内核版本"""
@@ -304,6 +307,29 @@ class StatusBar:
         """更新时间"""
         self.time_status = datetime.now().strftime("%Y-%m-%d %H:%M %a" )
 
+    def update_weather(self):
+        """更新天气信息"""
+        try:
+            # 使用 wttr.in 服务获取天气
+            # 格式: %c 天气图标, %t 温度
+            location = WEATHER_LOCATION or ""
+            url = f"wttr.in/{location}?format=%c+%t"
+            
+            result = subprocess.run(
+                ["curl", "-s", "-m", "10", url],
+                capture_output=True,
+                text=True,
+                timeout=15
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                weather = result.stdout.strip()
+                self.weather_status = f"{ICON_WEATHER}{weather}"
+            else:
+                self.weather_status = f"{ICON_WEATHER}N/A"
+        except:
+            self.weather_status = f"{ICON_WEATHER}N/A"
+
     def update_net(self):
         """更新网络速度"""
         if self.rx1 is None:
@@ -347,6 +373,10 @@ class StatusBar:
 
         parts.append(f"{ICON_VOL}{self.vol_status}")
         parts.append(self.net_status_str)
+        
+        if self.weather_status:
+            parts.append(self.weather_status)
+        
         parts.append(self.time_status)
         parts.append(self.ime_status)
 
@@ -389,6 +419,7 @@ def main():
     status.update_net()
     status.update_volume()
     status.update_bluetooth()
+    status.update_weather()
 
     # 主循环
     sec = 0
@@ -405,6 +436,7 @@ def main():
 
             if sec % UPDATE_INTERVAL_LONG == 0:
                 status.update_time()
+                status.update_weather()
 
             status.print_status_bar()
             time.sleep(1)
