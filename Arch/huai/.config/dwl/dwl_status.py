@@ -311,9 +311,9 @@ class StatusBar:
         """更新天气信息"""
         try:
             # 使用 wttr.in 服务获取天气
-            # 格式: %c 天气图标, %t 温度
+            # 格式: %t 温度, %C 天气状况文字
             location = WEATHER_LOCATION or ""
-            url = f"wttr.in/{location}?format=%c+%t"
+            url = f"wttr.in/{location}?format=%t+%C"
 
             result = subprocess.run(
                 ["curl", "-s", "-m", "10", url],
