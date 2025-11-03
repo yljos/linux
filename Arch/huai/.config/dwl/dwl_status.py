@@ -356,6 +356,8 @@ class StatusBar:
     def update_weather(self):
         """更新天气信息"""
         try:
+            # ensure we can assign to the module WEATHER_LOCATION when needed
+            global WEATHER_LOCATION
             # 使用 wttr.in 服务获取天气
             # 格式: %t 温度, %C 天气状况文字
             # If WEATHER_LOCATION is empty, attempt to load from encrypted file on each update.
@@ -363,8 +365,7 @@ class StatusBar:
             if not location:
                 loc = _try_load_location_from_gpg()
                 if loc:
-                    # set global so future updates reuse it
-                    global WEATHER_LOCATION
+                    # set module-level location so future updates reuse it
                     WEATHER_LOCATION = loc
                     location = WEATHER_LOCATION
             url = f"wttr.in/{location}?format=%t+%C"
