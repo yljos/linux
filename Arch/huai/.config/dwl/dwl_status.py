@@ -38,6 +38,30 @@ C_RESET = "^fg()"
 CPU_TEMP_FILE = "/sys/class/thermal/thermal_zone0/temp"
 INTERFACE = "enp0s31f6"  # 网卡名称
 WEATHER_LOCATION = ""  # 留空自动检测，或指定如 "Beijing" 或 "~北京"
+LOCATION_GPG = str(Path.home() / ".config" / "location.gpg")  # optional encrypted location
+
+
+def _try_load_location_from_gpg(timeout: int = 5):
+    """Try to decrypt LOCATION_GPG and return the location string or None.
+
+    This is safe to call repeatedly; failures are silently ignored.
+    """
+    try:
+        if not LOCATION_GPG or not os.path.isfile(LOCATION_GPG):
+            return None
+        # run gpg in non-interactive/batch mode and detach stdin to avoid pinentry
+        res = subprocess.run(
+            ["gpg", "--batch", "--yes", "-d", LOCATION_GPG],
+            capture_output=True,
+            stdin=subprocess.DEVNULL,
+            text=True,
+            timeout=timeout,
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            return os.path.expanduser(res.stdout.strip())
+    except Exception:
+        return None
+    return None
 
 # --- 4. Behavior Settings ---
 UPDATE_INTERVAL_MEDIUM = 5  # 中等频率更新间隔(秒)
@@ -52,6 +76,27 @@ SEPARATOR = "|"  # 各模块之间的分隔符
 
 class StatusBar:
     def __init__(self):
+        # 如果未在配置中指定 WEATHER_LOCATION，尝试从 location.gpg 中读取
+        global WEATHER_LOCATION
+        if not WEATHER_LOCATION and LOCATION_GPG:
+            try:
+                # 使用 gpg 解密文件（以非交互模式运行以避免 pinentry 弹窗）
+                res = subprocess.run(
+                    ["gpg", "--batch", "--yes", "-d", LOCATION_GPG],
+                    capture_output=True,
+                    stdin=subprocess.DEVNULL,
+                    text=True,
+                    timeout=5,
+                )
+                if res.returncode == 0 and res.stdout.strip():
+                    loc = res.stdout.strip()
+                    # 展开 ~ 并去除多余空白
+                    loc = os.path.expanduser(loc)
+                    WEATHER_LOCATION = loc
+            except Exception:
+                # 忽略解密错误，保持 WEATHER_LOCATION 为空
+                pass
+
         self.kernel_version = self._get_kernel_version()
         self.arch = f"{C_NORM}{self.kernel_version.split('-')[0]}{C_RESET}"
 
@@ -313,7 +358,15 @@ class StatusBar:
         try:
             # 使用 wttr.in 服务获取天气
             # 格式: %t 温度, %C 天气状况文字
+            # If WEATHER_LOCATION is empty, attempt to load from encrypted file on each update.
             location = WEATHER_LOCATION or ""
+            if not location:
+                loc = _try_load_location_from_gpg()
+                if loc:
+                    # set global so future updates reuse it
+                    global WEATHER_LOCATION
+                    WEATHER_LOCATION = loc
+                    location = WEATHER_LOCATION
             url = f"wttr.in/{location}?format=%t+%C"
 
             result = subprocess.run(
