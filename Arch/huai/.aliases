@@ -120,10 +120,7 @@ mount-data() {
 }
 
 # 脚本和程序
-# 启动 windows.py：完全丢弃 stdin/stdout/stderr 并脱离会话
-win() {
-  setsid python3 "$HOME/.config/windows.py" >/dev/null 2>&1 < /dev/null &
-}
+alias win="python3 /home/huai/.config/windows.py &"
 alias repo="sh /home/huai/.config/repo.sh"
 alias np="sh /home/huai/.config/swww.sh"
 alias py="python3"
