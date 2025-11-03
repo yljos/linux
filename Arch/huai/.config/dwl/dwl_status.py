@@ -32,6 +32,7 @@ ICON_WEATHER = "W:"
 C_NORM = "^fg(00ff00)"
 C_WARN = "^fg(ffff00)"
 C_CRIT = "^fg(ff0000)"
+C_BLUE = "^fg(66a3ff)"
 C_RESET = "^fg()"
 
 # --- 3. System Settings ---
@@ -379,7 +380,110 @@ class StatusBar:
 
             if result.returncode == 0 and result.stdout.strip():
                 weather = result.stdout.strip()
-                self.weather_status = f"{ICON_WEATHER}{weather}"
+                lw = weather.lower()
+
+                # extract temperature substring (e.g. +12°C or 12°C)
+                temp_match = re.search(r"([+-]?\\d+\s*°?C?)", weather)
+                temp_str = None
+                if temp_match:
+                    temp_str = temp_match.group(1).strip()
+
+                # determine temperature color: <20 blue, 20-26 green, >26 yellow
+                temp_color = C_NORM
+                if temp_str:
+                    num_match = re.search(r"([+-]?\\d+)", temp_str)
+                    if num_match:
+                        try:
+                            t = int(num_match.group(1))
+                            if t <= 10:
+                               temp_color = C_CRIT
+                            elif t < 18:
+                                temp_color = C_BLUE
+                            elif t <= 26:
+                                temp_color = C_NORM
+                            elif t <= 32:
+                                temp_color = C_WARN
+                            else:
+                                temp_color = C_CRIT
+                        except Exception:
+                            temp_color = C_NORM
+
+                # determine condition substring (everything after temp) and its color
+                cond_str = weather
+                if temp_str:
+                    # remove the first occurrence of temp_str from weather to get condition
+                    cond_str = weather.replace(temp_str, "", 1).strip()
+
+                # condition color: expanded English keyword lists
+                # Keep existing color mapping but include more common terms
+                cond_color = C_NORM
+                # severe / dangerous weather
+                if any(
+                    k in lw
+                    for k in (
+                        "tornado",
+                        "hurricane",
+                        "typhoon",
+                        "cyclone",
+                        "squall",
+                        "squalls",
+                        "snow",
+                        "blizzard",
+                        "thunderstorm",
+                        "storm",
+                        "thunder",
+                    )
+                ):
+                    cond_color = C_CRIT
+                # precipitation / rain-like
+                elif any(
+                    k in lw
+                    for k in (
+                        "rain",
+                        "rains",
+                        "showers",
+                        "shower",
+                        "drizzle",
+                        "sleet",
+                        "hail",
+                        "freezing",
+                        "freezing rain",
+                        "freezing-rain",
+                        "ice",
+                        "ice pellets",
+                    )
+                ):
+                    cond_color = C_BLUE
+                # low visibility / mist/fog/haze/smoke
+                elif any(k in lw for k in ("mist", "fog", "haze", "smoke")):
+                    cond_color = C_BLUE
+                # dust / sand / ash events
+                elif any(k in lw for k in ("dust", "sand", "ash")):
+                    cond_color = C_BLUE
+                # clouds / overcast (neutral)
+                elif any(
+                    k in lw
+                    for k in (
+                        "cloud",
+                        "clouds",
+                        "cloudy",
+                        "overcast",
+                        "broken",
+                        "scattered",
+                        "few",
+                    )
+                ):
+                    cond_color = C_NORM
+                # clear / sunny
+                elif any(k in lw for k in ("sun", "clear", "sunny")):
+                    cond_color = C_NORM
+
+                # assemble: ICON + colored temp + colored condition
+                if temp_str:
+                    self.weather_status = f"{ICON_WEATHER}{temp_color}{temp_str}{C_RESET} {cond_color}{cond_str}{C_RESET}"
+                else:
+                    # fallback: color whole string by condition
+                    self.weather_status = f"{ICON_WEATHER}{cond_color}{weather}{C_RESET}"
             else:
                 self.weather_status = f"{ICON_WEATHER}N/A"
         except:
