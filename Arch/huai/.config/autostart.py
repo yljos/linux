@@ -40,7 +40,12 @@ def is_running(name: str) -> bool:
 def is_running_match(pattern: str) -> bool:
     """Return True if any process matches the given pattern using pgrep -f."""
     try:
-        return subprocess.run(["pgrep", "-f", pattern], stdout=DEVNULL, stderr=DEVNULL).returncode == 0
+        return (
+            subprocess.run(
+                ["pgrep", "-f", pattern], stdout=DEVNULL, stderr=DEVNULL
+            ).returncode
+            == 0
+        )
     except FileNotFoundError:
         return False
 
@@ -83,7 +88,13 @@ def start_process(cmd, cwd=None):
         pass
 
 
-def start_if_not_running(name: str, cmd, check_delay: float = 3.0, notify_delay: int = 0, notify_msg: str = "") -> None:
+def start_if_not_running(
+    name: str,
+    cmd,
+    check_delay: float = 3.0,
+    notify_delay: int = 0,
+    notify_msg: str = "",
+) -> None:
     """Start `cmd` if `name` process is not running; notify only on failure.
 
     Logic:
@@ -101,7 +112,13 @@ def start_if_not_running(name: str, cmd, check_delay: float = 3.0, notify_delay:
             notify_delayed(notify_delay, "Autostart", f"{notify_msg} failed")
 
 
-def start_if_not_running_match(pattern: str, cmd, check_delay: float = 3.0, notify_delay: int = 0, notify_msg: str = "") -> None:
+def start_if_not_running_match(
+    pattern: str,
+    cmd,
+    check_delay: float = 3.0,
+    notify_delay: int = 0,
+    notify_msg: str = "",
+) -> None:
     """Same as start_if_not_running but uses pattern matching (pgrep -f).
 
     Useful for scripts where the running process is best detected by a
@@ -118,9 +135,7 @@ def main():
     # No script lock; always run as requested.
 
     # Start dunst
-    start_if_not_running(
-        "dunst", ["dunst"], notify_delay=0, notify_msg="dunst"
-    )
+    start_if_not_running("dunst", ["dunst"], notify_delay=0, notify_msg="dunst")
 
     # Start swww-daemon
     start_if_not_running(
@@ -132,18 +147,24 @@ def main():
 
     # Start swww_auto.sh (original: sh /home/huai/.config/swww_auto.sh &)
     start_if_not_running_match(
-        str(SWWW_AUTO), ["/bin/sh", str(SWWW_AUTO)], check_delay=3.0, notify_delay=4, notify_msg="swww_auto.sh"
+        str(SWWW_AUTO),
+        ["/bin/sh", str(SWWW_AUTO)],
+        check_delay=3.0,
+        notify_delay=4,
+        notify_msg="swww_auto.sh",
     )
 
     # Start shutdown.sh (original: sh /home/huai/.config/shutdown.sh &)
     start_if_not_running_match(
-        str(SHUTDOWN_SH), ["/bin/sh", str(SHUTDOWN_SH)], check_delay=3.0, notify_delay=6, notify_msg="shutdown.sh"
+        str(SHUTDOWN_SH),
+        ["/bin/sh", str(SHUTDOWN_SH)],
+        check_delay=3.0,
+        notify_delay=6,
+        notify_msg="shutdown.sh",
     )
 
     # Start firefox if not running
-    start_if_not_running(
-        "firefox", ["firefox"], notify_delay=8, notify_msg="Firefox"
-    )
+    start_if_not_running("firefox", ["firefox"], notify_delay=8, notify_msg="Firefox")
 
     # Start Telegram if not running (command is `Telegram`)
     start_if_not_running(
@@ -152,7 +173,11 @@ def main():
 
     # Start fcitx5 if not running (original used `fcitx5 -d`)
     start_if_not_running(
-        "fcitx5", ["fcitx5", "-d"], check_delay=3.0, notify_delay=12, notify_msg="fcitx5"
+        "fcitx5",
+        ["fcitx5", "-d"],
+        check_delay=3.0,
+        notify_delay=12,
+        notify_msg="fcitx5",
     )
 
 
