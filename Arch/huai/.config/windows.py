@@ -23,7 +23,11 @@ DEPENDENCIES = ["arping", "wakeonlan", "notify-send", "gpg", "play", "sdl-freerd
 def notify(title, msg, sound=None):
     subprocess.run([NOTIFY_CMD, title, msg])
     if sound:
-        subprocess.run([PLAY_CMD, os.path.join(DUNST_PATH, sound)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            [PLAY_CMD, os.path.join(DUNST_PATH, sound)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
 
 def check_dependencies():
@@ -38,7 +42,9 @@ def decrypt_password():
         notify("脚本错误", f"找不到 {CONFIG_GPG}")
         sys.exit(1)
     try:
-        result = subprocess.run(["gpg", "-d", CONFIG_GPG], capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ["gpg", "-d", CONFIG_GPG], capture_output=True, text=True, check=True
+        )
         password = result.stdout.strip()
         return password
     except subprocess.CalledProcessError:
@@ -48,7 +54,11 @@ def decrypt_password():
 
 def wake_host():
     notify("唤醒中", "发送 WOL 包...", "wol.mp3")
-    result = subprocess.run(["wakeonlan", "-i", "192.168.31.255", MAC_ADDRESS], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    result = subprocess.run(
+        ["wakeonlan", "-i", "192.168.31.255", MAC_ADDRESS],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     if result.returncode != 0:
         notify("唤醒失败", "检查网络连接", "error.mp3")
         sys.exit(1)
@@ -57,7 +67,11 @@ def wake_host():
 
 def wait_online():
     for i in range(1, MAX_TRIES + 1):
-        result = subprocess.run(["sudo", "arping", "-c", "1", "-w", "1", "-q", "-I", INTERFACE, TARGET_IP], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        result = subprocess.run(
+            ["sudo", "arping", "-c", "1", "-w", "1", "-q", "-I", INTERFACE, TARGET_IP],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         if result.returncode == 0:
             notify("启动成功", "开始连接", "system_online.mp3")
             return True
@@ -70,22 +84,31 @@ def connect_to_host(password):
     notify("连接中", "启动 RDP...", "connecting.mp3")
     env = os.environ.copy()
     env["SDL_VIDEODRIVER"] = "wayland"
-    subprocess.Popen([
-        "sdl-freerdp3",
-        f"/v:{TARGET_IP}",
-        "/u:huai",
-        f"/p:{password}",
-        "/cert:ignore",
-        "/sound",
-        "/w:1916",
-        "/h:1056"
-    ], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.Popen(
+        [
+            "sdl-freerdp3",
+            f"/v:{TARGET_IP}",
+            "/u:huai",
+            f"/p:{password}",
+            "/cert:ignore",
+            "/sound",
+            "/w:1916",
+            "/h:1056",
+        ],
+        env=env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
 
 def main():
     check_dependencies()
     password = decrypt_password()
-    result = subprocess.run(["sudo", "arping", "-c", "1", "-w", "1", "-q", "-I", INTERFACE, TARGET_IP], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    result = subprocess.run(
+        ["sudo", "arping", "-c", "1", "-w", "1", "-q", "-I", INTERFACE, TARGET_IP],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     if result.returncode == 0:
         notify("已在线", "正在连接...", "system_online.mp3")
         connect_to_host(password)
@@ -93,6 +116,7 @@ def main():
         wake_host()
         if wait_online():
             connect_to_host(password)
+
 
 if __name__ == "__main__":
     main()
