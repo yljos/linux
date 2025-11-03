@@ -404,11 +404,17 @@ def main():
         status.update_ime()
         status.print_status_bar()
 
+    def handle_pipe_signal(signum, frame):
+        """处理管道断开信号 (SIGPIPE)"""
+        sys.exit(0)
+
     # 注册信号处理器
     # 使用 SIGUSR1 代替 SIGRTMIN+2 (音量改变)
     # 使用 SIGUSR2 代替 SIGRTMIN+3 (输入法改变)
     signal.signal(signal.SIGUSR1, handle_volume_change)
     signal.signal(signal.SIGUSR2, handle_ime_change)
+    # 处理管道断开 (dwl 退出时)
+    signal.signal(signal.SIGPIPE, handle_pipe_signal)
 
     # 首次运行
     status.update_cpu()
@@ -444,7 +450,8 @@ def main():
             status.print_status_bar()
             time.sleep(1)
             sec += 1
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, BrokenPipeError, IOError):
+        # 优雅退出：Ctrl+C 或管道断开 (dwl 退出)
         sys.exit(0)
 
 
