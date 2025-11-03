@@ -33,13 +33,13 @@ def notify(title, msg, sound=None):
 def check_dependencies():
     for cmd in DEPENDENCIES:
         if shutil.which(cmd) is None:
-            print(f"错误: {cmd} 未安装", file=sys.stderr)
+            print(f"Missing dependency: {cmd}", file=sys.stderr)
             sys.exit(1)
 
 
 def decrypt_password():
     if not os.path.isfile(CONFIG_GPG):
-        notify("脚本错误", f"找不到 {CONFIG_GPG}")
+        notify("Error", f"Missing config: {CONFIG_GPG}")
         sys.exit(1)
     try:
         result = subprocess.run(
@@ -48,21 +48,21 @@ def decrypt_password():
         password = result.stdout.strip()
         return password
     except subprocess.CalledProcessError:
-        notify("脚本错误", f"解密 {CONFIG_GPG} 失败。")
+        notify("Error", f"Failed to decrypt: {CONFIG_GPG}")
         sys.exit(1)
 
 
 def wake_host():
-    notify("唤醒中", "发送 WOL 包...", "wol.mp3")
+    notify("Waking", "Sending WOL packet...", "wol.mp3")
     result = subprocess.run(
         ["wakeonlan", "-i", "192.168.31.255", MAC_ADDRESS],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     if result.returncode != 0:
-        notify("唤醒失败", "检查网络连接", "error.mp3")
+        notify("Wake failed", "Check network", "error.mp3")
         sys.exit(1)
-    notify("等待启动", "检测中...", "starting.mp3")
+    notify("Waiting", "Checking...", "starting.mp3")
 
 
 def wait_online():
@@ -73,15 +73,15 @@ def wait_online():
             stderr=subprocess.DEVNULL,
         )
         if result.returncode == 0:
-            notify("启动成功", "开始连接", "system_online.mp3")
+            notify("Online", "Starting connection", "system_online.mp3")
             return True
         time.sleep(1)
-    notify("连接超时", "请检查主机状态", "error.mp3")
+    notify("Timeout", "Host did not respond", "error.mp3")
     sys.exit(1)
 
 
 def connect_to_host(password):
-    notify("连接中", "启动 RDP...", "connecting.mp3")
+    notify("Connecting", "Starting RDP...", "connecting.mp3")
     env = os.environ.copy()
     env["SDL_VIDEODRIVER"] = "wayland"
     subprocess.Popen(
@@ -110,7 +110,7 @@ def main():
         stderr=subprocess.DEVNULL,
     )
     if result.returncode == 0:
-        notify("已在线", "正在连接...", "system_online.mp3")
+        notify("Online", "Connecting...", "system_online.mp3")
         connect_to_host(password)
     else:
         wake_host()
