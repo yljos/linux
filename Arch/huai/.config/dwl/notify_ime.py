@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-通知 dwl_status.py 更新输入法显示
+切换 fcitx5 输入法并通知 dwl_status.py 更新显示
 使用方法: python3 notify_ime.py
 """
 
@@ -8,6 +8,16 @@ import os
 import signal
 import subprocess
 import sys
+
+
+def toggle_fcitx5():
+    """切换 fcitx5 输入法"""
+    try:
+        subprocess.run(["fcitx5-remote", "-t"], check=True)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("切换输入法失败", file=sys.stderr)
+        return False
 
 
 def find_dwl_status_pid():
@@ -51,7 +61,13 @@ def send_ime_signal():
 
 
 if __name__ == "__main__":
+    # 先切换输入法
+    if not toggle_fcitx5():
+        sys.exit(1)
+    
+    # 再发送信号通知状态栏更新
     if send_ime_signal():
         sys.exit(0)
     else:
-        sys.exit(1)
+        # 即使通知失败，输入法已经切换成功了
+        sys.exit(0)

@@ -34,11 +34,8 @@ alias 1="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph
 alias 2="pactl set-default-sink bluez_output.E6_30_6D_65_E0_5F.1;vol 90" 
 vol() {
     pactl set-sink-volume @DEFAULT_SINK@ "${1}%"
-    local PID_FILE="${XDG_RUNTIME_DIR}/dwl_status.pid"
-    local SIGNAL_NUM=36 # SIGRTMIN+2
-    if [ -f "$PID_FILE" ]; then
-        kill -"$SIGNAL_NUM" "$(cat "$PID_FILE")"
-    fi
+    # 使用 Python 脚本通知状态栏更新音量
+    python3 "$HOME/.config/dwl/notify_volume.py" 2>/dev/null
 }
 alias volup="vol +10%"
 alias voldown="vol -10%"
@@ -131,7 +128,7 @@ x() {
     if [ -f "$HOME/.xinitrc" ]; then
         startx
     else
-        exec /home/huai/.config/dwl/dwl_status.sh | dwl
+        python3 /home/huai/.config/dwl/dwl_status.py | dwl
     fi
 }
 
