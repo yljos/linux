@@ -39,7 +39,9 @@ C_RESET = "^fg()"
 CPU_TEMP_FILE = "/sys/class/thermal/thermal_zone0/temp"
 INTERFACE = "enp0s31f6"  # 网卡名称
 WEATHER_LOCATION = ""  # 留空自动检测，或指定如 "Beijing" 或 "~北京"
-LOCATION_GPG = str(Path.home() / ".config" / "location.gpg")  # optional encrypted location
+LOCATION_GPG = str(
+    Path.home() / ".config" / "location.gpg"
+)  # optional encrypted location
 
 
 def _try_load_location_from_gpg(timeout: int = 5):
@@ -63,6 +65,7 @@ def _try_load_location_from_gpg(timeout: int = 5):
     except Exception:
         return None
     return None
+
 
 # --- 4. Behavior Settings ---
 UPDATE_INTERVAL_MEDIUM = 5  # 中等频率更新间隔(秒)
@@ -397,7 +400,7 @@ class StatusBar:
                         try:
                             t = int(num_match.group(1))
                             if t <= 10:
-                               temp_color = C_CRIT
+                                temp_color = C_CRIT
                             elif t < 18:
                                 temp_color = C_BLUE
                             elif t <= 26:
@@ -484,7 +487,9 @@ class StatusBar:
                     self.weather_status = f"{ICON_WEATHER}{temp_color}{temp_str}{C_RESET} {cond_color}{cond_str}{C_RESET}"
                 else:
                     # fallback: color whole string by condition
-                    self.weather_status = f"{ICON_WEATHER}{cond_color}{weather}{C_RESET}"
+                    self.weather_status = (
+                        f"{ICON_WEATHER}{cond_color}{weather}{C_RESET}"
+                    )
             else:
                 self.weather_status = f"{ICON_WEATHER}N/A"
         except:
