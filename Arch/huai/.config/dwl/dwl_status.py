@@ -383,7 +383,8 @@ class StatusBar:
                 lw = weather.lower()
 
                 # extract temperature substring (e.g. +12°C or 12°C)
-                temp_match = re.search(r"([+-]?\\d+\s*°?C?)", weather)
+                # match digits with optional sign and optional °C
+                temp_match = re.search(r"([+-]?\d+\s*°?C?)", weather)
                 temp_str = None
                 if temp_match:
                     temp_str = temp_match.group(1).strip()
@@ -391,7 +392,7 @@ class StatusBar:
                 # determine temperature color: <20 blue, 20-26 green, >26 yellow
                 temp_color = C_NORM
                 if temp_str:
-                    num_match = re.search(r"([+-]?\\d+)", temp_str)
+                    num_match = re.search(r"([+-]?\d+)", temp_str)
                     if num_match:
                         try:
                             t = int(num_match.group(1))
