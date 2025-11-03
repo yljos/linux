@@ -122,7 +122,7 @@ update_music() {
 	else MUSIC_STATUS=""; fi
 }
 update_ime() { case $(fcitx5-remote 2>/dev/null) in 2) IME_STATUS="${C_WARN}CN${C_RESET}" ;; *) IME_STATUS="${C_NORM}EN${C_RESET}" ;; esac }
-update_time() { TIME_STATUS=$(printf "%(%Y-%m-%d &a %H:%M)T" -1); }
+update_time() { TIME_STATUS=$(printf "%(%Y-%m-%d %a %H:%M)T" -1); }
 update_net() {
 	if [[ -z "$RX1" ]]; then
 		NET_STATUS_STR=${NET_STATUS_STR:-"N/A"}
