@@ -362,18 +362,22 @@ class StatusBar:
 def main():
     status = StatusBar()
 
-    # 信号处理
-    def signal_handler(signum, frame):
-        if signum == signal.SIGRTMIN + 2:  # 音量改变
-            status.update_volume()
-            status.print_status_bar()
-        elif signum == signal.SIGRTMIN + 3:  # 输入法改变
-            status.update_ime()
-            status.print_status_bar()
+    # 信号处理函数
+    def handle_volume_change(signum, frame):
+        """处理音量改变信号 (SIGUSR1)"""
+        status.update_volume()
+        status.print_status_bar()
 
-    # 只能处理标准信号
-    signal.signal(signal.SIGUSR1, signal_handler)
-    signal.signal(signal.SIGUSR2, signal_handler)
+    def handle_ime_change(signum, frame):
+        """处理输入法改变信号 (SIGUSR2)"""
+        status.update_ime()
+        status.print_status_bar()
+
+    # 注册信号处理器
+    # 使用 SIGUSR1 代替 SIGRTMIN+2 (音量改变)
+    # 使用 SIGUSR2 代替 SIGRTMIN+3 (输入法改变)
+    signal.signal(signal.SIGUSR1, handle_volume_change)
+    signal.signal(signal.SIGUSR2, handle_ime_change)
 
     # 首次运行
     status.update_cpu()
