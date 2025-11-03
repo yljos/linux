@@ -102,7 +102,7 @@ def connect_to_host(password):
 
 
 def main():
-    check_dependencies()
+    # check_dependencies()
     password = decrypt_password()
     result = subprocess.run(
         ["sudo", "arping", "-c", "1", "-w", "1", "-q", "-I", INTERFACE, TARGET_IP],
