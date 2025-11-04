@@ -37,7 +37,7 @@ def delete_empty_folders(directory):
     """删除所有空文件夹（多轮删除直到无可删除）。"""
     deleted_count = 0
     root_abs = os.path.abspath(directory)
-    
+
     while True:
         removed = 0
         for root, dirs, files in os.walk(directory, topdown=False):
@@ -51,17 +51,17 @@ def delete_empty_folders(directory):
                 continue
         if removed == 0:
             break
-    
+
     return deleted_count
 
 
 def should_delete_file(file_path, target_mp4_set, size_threshold_bytes):
     """判断单个文件是否应该被删除。
-    
+
     保留规则：
     - .mp4 >= 80MB（且不在黑名单）
     - 所有 .mkv 和 .avi
-    
+
     删除规则：
     - .mp4 < 80MB
     - 黑名单中的 .mp4
@@ -75,12 +75,12 @@ def should_delete_file(file_path, target_mp4_set, size_threshold_bytes):
         # .mkv 和 .avi 全部保留
         if not file_lower.endswith(".mp4"):
             return False
-        
+
         # .mp4 黑名单直接删除
         name_part = os.path.splitext(filename)[0].lower()
         if name_part in target_mp4_set:
             return True
-        
+
         # .mp4 按大小判断
         if size_threshold_bytes > 0:
             try:
@@ -111,7 +111,9 @@ def main():
     for root, dirs, files in os.walk(current_directory):
         for filename in files:
             file_path = os.path.join(root, filename)
-            if os.path.abspath(file_path) != script_path and should_delete_file(file_path, target_mp4_set, size_threshold_bytes):
+            if os.path.abspath(file_path) != script_path and should_delete_file(
+                file_path, target_mp4_set, size_threshold_bytes
+            ):
                 files_to_delete.append(file_path)
 
     if not files_to_delete:
@@ -136,7 +138,9 @@ def main():
 
     # 总结
     print(f"\n{'=' * 50}")
-    print(f"完成！删除文件: {deleted} 个 | 失败: {failed} 个 | 空文件夹: {deleted_folders} 个")
+    print(
+        f"完成！删除文件: {deleted} 个 | 失败: {failed} 个 | 空文件夹: {deleted_folders} 个"
+    )
     print(f"{'=' * 50}")
 
 
