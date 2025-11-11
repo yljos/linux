@@ -79,14 +79,14 @@ def parse_vless_url(url):
             "type": "ws",
             "path": query.get("path", ["/"])[0],
             "headers": {},
-            "max_early_data": 2048,
+            "max_early_data": "2048",
             "early_data_header_name": "Sec-WebSocket-Protocol",
         }
         if "host" in query and query["host"][0]:
-            config["transport"]["headers"]["Host"] = [query["host"][0]]
+            config["transport"]["headers"]["Host"] = query["host"][0]
         # 处理其他 WebSocket 参数
         if "ed" in query and query["ed"][0]:
-            config["transport"]["max_early_data"] = int(query["ed"][0])
+            config["transport"]["max_early_data"] = query["ed"][0]
         if "edh" in query and query["edh"][0]:
             config["transport"]["early_data_header_name"] = query["edh"][0]
     # packet_encoding
