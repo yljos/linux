@@ -4,6 +4,11 @@ START=99
 STOP=10
 USE_PROCD=1
 
+boot() {
+    # 延迟启动以确保 fw4 已完全加载
+    ( sleep 5 && start "$@" ) &
+}
+
 start_service() {
     procd_open_instance
     procd_set_param command /bin/sh -c '
