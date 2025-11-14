@@ -11,6 +11,8 @@ import logging
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import hashlib
+import hmac
 
 # 加载.env文件
 load_dotenv()
@@ -48,12 +50,50 @@ ENABLE_NODE_REPLACEMENT = require_env("ENABLE_NODE_REPLACEMENT").lower() == "tru
 # 从 .env 中读取 client-fingerprint（必填）
 CLIENT_FINGERPRINT = require_env("CLIENT_FINGERPRINT")
 
+# 从 .env 读取两个不同的上游 URL 文件路径（必填，文件为无扩展名的文本文件）
+MITCE_URL_FILE = (BASE_DIR / require_env("MITCE_URL_FILE")).absolute()
+BAJIE_URL_FILE = (BASE_DIR / require_env("BAJIE_URL_FILE")).absolute()
+ACCESS_KEY_SHA256 = require_env("ACCESS_KEY_SHA256")  # 共享密钥的 SHA256 十六进制字符串
+
 # 确保输出目录存在
 OUTPUT_FOLDER.mkdir(exist_ok=True)
 
 # 验证必要文件存在
 if not TEMPLATE_PATH.exists():
     raise FileNotFoundError(f"模板文件不存在: {TEMPLATE_PATH}")
+
+# 验证 URL 文件存在
+for _path in (MITCE_URL_FILE, BAJIE_URL_FILE):
+    if not _path.exists():
+        raise FileNotFoundError(f"URL 文件不存在: {_path}")
+
+
+def read_url_from_file(path: Path) -> str:
+    """从文本文件读取上游 URL，取第一行非空内容。"""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                url = line.strip()
+                if url:
+                    return url
+        raise ValueError(f"URL 文件为空: {path}")
+    except Exception as e:
+        raise RuntimeError(f"读取 URL 文件失败 {path}: {e}")
+
+
+@app.before_request
+def restrict_paths():
+    # 允许的路径集合
+    allowed = {"/mitce", "/bajie"}
+    if request.path not in allowed:
+        return "Not Found", 404
+    # 查询参数中携带 key 进行鉴权
+    key = request.args.get("key")
+    if not key:
+        return "Unauthorized", 401
+    provided_hash = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    if not hmac.compare_digest(provided_hash, ACCESS_KEY_SHA256):
+        return "Unauthorized", 401
 
 
 # YAML 配置
@@ -439,20 +479,15 @@ def cleanup_response(response, temp_yaml_path, output_path):
     return response
 
 
-@app.route("/<path:yaml_url>")
-def process_yaml(yaml_url):
+@app.route("/mitce")
+def process_mitce():
     temp_yaml_path = None
     output_path = None
 
     try:
-        yaml_url = unquote(yaml_url)
+        yaml_url = unquote(read_url_from_file(MITCE_URL_FILE))
 
-        # 处理URL中可能包含的查询参数
-        # 如果URL中没有查询参数，但request中有查询参数，则将其拼接到URL后面
-        if "?" not in yaml_url and request.query_string:
-            yaml_url = yaml_url + "?" + request.query_string.decode("utf-8")
-
-        logger.info(f"处理URL: {yaml_url}")
+        logger.info(f"处理URL(/mitce): {yaml_url}")
 
         temp_yaml_path = fetch_yaml(yaml_url)
         output_path = process_yaml_content(temp_yaml_path)
@@ -487,6 +522,49 @@ def process_yaml(yaml_url):
         if temp_yaml_path or output_path:
             cleanup_files(temp_yaml_path, output_path)  # 清理临时文件和输出文件
         logger.error(f"处理请求失败: {str(e)}")
+        return str(e), 500
+
+
+@app.route("/bajie")
+def process_bajie():
+    temp_yaml_path = None
+    output_path = None
+
+    try:
+        yaml_url = unquote(read_url_from_file(BAJIE_URL_FILE))
+        logger.info(f"处理URL(/bajie): {yaml_url}")
+
+        temp_yaml_path = fetch_yaml(yaml_url)
+        output_path = process_yaml_content(temp_yaml_path)
+        cached_headers = get_headers_cache(yaml_url)
+
+        response = send_file(
+            output_path,
+            mimetype="application/yaml",
+            as_attachment=True,
+            download_name="config.yaml",
+        )
+
+        response.headers["Content-Type"] = "application/yaml; charset=utf-8"
+
+        if cached_headers:
+            for header, value in cached_headers.items():
+                if header.lower() in {h.lower() for h in INCLUDED_HEADERS}:
+                    response.headers[header] = value
+
+        temp_path = temp_yaml_path
+        out_path = output_path
+
+        @after_this_request
+        def cleanup(resp):
+            return cleanup_response(resp, temp_path, out_path)
+
+        return response
+
+    except Exception as e:
+        if temp_yaml_path or output_path:
+            cleanup_files(temp_yaml_path, output_path)
+        logger.error(f"处理请求失败(/bajie): {str(e)}")
         return str(e), 500
 
 
