@@ -495,7 +495,9 @@ def process_mitce():
         logger.info(f"处理URL(/mitce): {yaml_url} 使用模板: {template_path}")
 
         temp_yaml_path = fetch_yaml(yaml_url)
-        output_path = process_yaml_content(temp_yaml_path, template_path, up_pref, down_pref)
+        output_path = process_yaml_content(
+            temp_yaml_path, template_path, up_pref, down_pref
+        )
         cached_headers = get_headers_cache(yaml_url)
 
         response = send_file(
@@ -545,7 +547,9 @@ def process_bajie():
         logger.info(f"处理URL(/bajie): {yaml_url} 使用模板: {template_path}")
 
         temp_yaml_path = fetch_yaml(yaml_url)
-        output_path = process_yaml_content(temp_yaml_path, template_path, up_pref, down_pref)
+        output_path = process_yaml_content(
+            temp_yaml_path, template_path, up_pref, down_pref
+        )
         cached_headers = get_headers_cache(yaml_url)
 
         response = send_file(
