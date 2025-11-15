@@ -58,7 +58,7 @@ dns:
     "rule-set:youtube": "https://dns.google/dns-query#Google"
     "rule-set:googlefcm": "https://dns.google/dns-query#Google"
     "rule-set:google": "https://dns.google/dns-query#Google"
-    "rule-set:speedtest-site-classical": "https://cloudflare-dns.com/dns-query#M"
+    "rule-set:speedtest-site": "https://cloudflare-dns.com/dns-query#M"
 proxies: []
 proxy-groups:
   - {<<: *select, name: M, proxies: [JP_fallback, US_fallback, SG_fallback, JP_loadbalance, US_loadbalance, SG_loadbalance, DIRECT]}
@@ -115,7 +115,7 @@ rule-providers:
   # pikpak-download-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/pikpak-download/pikpak-download-site.mrs}
   proxy-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/proxy/proxy-site.mrs}
   reddit: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/reddit.mrs}
-  speedtest-site-classical: {<<: *classical, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/speedtest/speedtest-site-classical.yaml}
+  speedtest-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/speedtest/speedtest-site.mrs}
   spotify: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/spotify.mrs}
   steam-site-classical: {<<: *classical, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/steam/steam-site-classical.yaml}
   telegram-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/telegram/telegram-site.mrs}
@@ -169,7 +169,7 @@ rules:
   - "RULE-SET,facebook,US_fallback"
   - "RULE-SET,reddit,M"
   - "RULE-SET,adguard,M"
-  - "RULE-SET,speedtest-site-classical,M"
+  - "RULE-SET,speedtest-site,M"
   - "RULE-SET,wikimedia,M"
   - "RULE-SET,javdb,M"
   - "RULE-SET,apkpure,M"
