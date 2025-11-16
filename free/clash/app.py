@@ -1,18 +1,16 @@
-from flask import Flask, send_file, after_this_request, request
+from flask import Flask, send_file, request
 from ruamel.yaml import YAML
 import requests
 from urllib.parse import unquote
 import json
-import time
-import threading
 from datetime import datetime, timedelta
-from filelock import FileLock
 import logging
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 import hashlib
 import hmac
+import io
 
 # 加载.env文件
 load_dotenv()
@@ -36,8 +34,6 @@ OUTPUT_FOLDER = BASE_DIR / require_env("OUTPUT_FOLDER")
 TEMPLATE_PATH_PC = BASE_DIR / require_env("TEMPLATE_PATH_pc")
 TEMPLATE_PATH_M = BASE_DIR / require_env("TEMPLATE_PATH_shouji")
 HEADERS_CACHE_PATH = OUTPUT_FOLDER / Path(require_env("HEADERS_CACHE_PATH")).name
-TEMP_YAML_PATH = OUTPUT_FOLDER / Path(require_env("TEMP_YAML_PATH")).name
-TEMP_YAML_LOCK = OUTPUT_FOLDER / Path(require_env("TEMP_YAML_LOCK")).name
 
 USER_AGENT = require_env("USER_AGENT")
 CACHE_DURATION = int(require_env("CACHE_DURATION"))
@@ -179,36 +175,18 @@ def get_headers_cache(url):
     return None
 
 
-def fetch_yaml(url):
-    """获取 YAML 内容并缓存到本地"""
-    temp_path = TEMP_YAML_PATH.with_suffix(".tmp")
-
-    with FileLock(TEMP_YAML_LOCK):
-        try:
-            headers = {"User-Agent": USER_AGENT}
-            response = requests.get(url, headers=headers, timeout=30)
-            response.raise_for_status()
-
-            save_headers_cache(url, response.headers)
-
-            with open(temp_path, "w", encoding="utf-8") as f:
-                f.write(response.text)
-
-            if not temp_path.exists() or os.path.getsize(temp_path) == 0:
-                raise IOError("临时文件写入失败")
-
-            if TEMP_YAML_PATH.exists():
-                TEMP_YAML_PATH.unlink()
-            temp_path.rename(TEMP_YAML_PATH)
-
-            logger.info(f"成功缓存YAML文件: {url}")
-            return TEMP_YAML_PATH
-
-        except Exception as e:
-            logger.error(f"获取YAML失败: {str(e)}")
-            if temp_path.exists():
-                temp_path.unlink()
-            raise
+def fetch_yaml_text(url):
+    """获取上游 YAML 文本并缓存响应头（内存模式）。"""
+    try:
+        headers = {"User-Agent": USER_AGENT}
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        save_headers_cache(url, response.headers)
+        logger.info(f"成功获取上游YAML文本: {url}")
+        return response.text
+    except Exception as e:
+        logger.error(f"获取YAML失败: {str(e)}")
+        raise
 
 
 def filter_node_names(proxies):
@@ -323,12 +301,11 @@ def replace_proxy_groups_with_nodes(template_data, node_names):
     return template_data
 
 
-def process_yaml_content(yaml_path, template_path: Path, up_pref: str, down_pref: str):
-    """处理本地YAML文件"""
+def process_yaml_content(yaml_text: str, template_path: Path, up_pref: str, down_pref: str):
+    """处理上游YAML文本，返回字节串以便内存直传。"""
     try:
-        # 解析YAML获取数据结构
-        with open(yaml_path, "r", encoding="utf-8") as f:
-            input_data = yaml.load(f)
+        # 解析YAML获取数据结构（直接从字符串）
+        input_data = yaml.load(yaml_text)
 
         if not isinstance(input_data, dict):
             raise ValueError("YAML内容必须是有效的字典格式")
@@ -358,52 +335,24 @@ def process_yaml_content(yaml_path, template_path: Path, up_pref: str, down_pref
         if ENABLE_NODE_REPLACEMENT:
             template_data = replace_proxy_groups_with_nodes(template_data, filtered_names)
 
-        output_path = OUTPUT_FOLDER / "config.yaml"
-        # 始终使用 ruamel 输出（flow style）
+        # 内存中生成 YAML 文本
+        buf = io.StringIO()
         template_data["proxies"] = proxies
         set_flow_style_for_proxies(template_data.get("proxies", []))
-        with open(output_path, "w", encoding="utf-8") as f:
-            yaml.dump(template_data, f)
-
-        return output_path
+        yaml.dump(template_data, buf)
+        text = buf.getvalue()
+        return text.encode("utf-8")
 
     except Exception as e:
         logger.error(f"处理YAML内容失败: {str(e)}")
         raise
 
 
-def cleanup_files(*paths):
-    """清理指定的文件"""
-    for path in paths:
-        try:
-            if isinstance(path, (str, Path)) and Path(path).exists():
-                Path(path).unlink()
-                logger.info(f"成功删除文件: {path}")
-            elif isinstance(path, (str, Path)):
-                logger.warning(f"文件不存在，跳过删除: {path}")
-        except Exception as e:
-            logger.error(f"清理文件失败 {path}: {str(e)}")
-
-
-def cleanup_response(response, temp_yaml_path, output_path):
-    """处理响应后的清理函数"""
-
-    def delayed_cleanup():
-        logger.info("开始执行延迟清理...")
-        time.sleep(30)  # 等待30秒后删除文件
-        logger.info("30秒等待结束，开始清理文件")
-        cleanup_files(temp_yaml_path, output_path, HEADERS_CACHE_PATH)
-        logger.info("文件清理完成")
-
-    # 在后台线程中执行清理
-    threading.Thread(target=delayed_cleanup, daemon=True).start()
-    return response
+ 
 
 
 @app.route("/mitce")
 def process_mitce():
-    temp_yaml_path = None
-    output_path = None
 
     try:
         yaml_url = unquote(read_url_from_file(MITCE_URL_FILE))
@@ -416,14 +365,14 @@ def process_mitce():
 
         logger.info(f"处理URL(/mitce): {yaml_url} 使用模板: {template_path}")
 
-        temp_yaml_path = fetch_yaml(yaml_url)
-        output_path = process_yaml_content(
-            temp_yaml_path, template_path, up_pref, down_pref
+        yaml_text = fetch_yaml_text(yaml_url)
+        output_bytes = process_yaml_content(
+            yaml_text, template_path, up_pref, down_pref
         )
         cached_headers = get_headers_cache(yaml_url)
 
         response = send_file(
-            output_path,
+            io.BytesIO(output_bytes),
             mimetype="application/yaml",
             as_attachment=True,
             download_name="config.yaml",
@@ -435,29 +384,15 @@ def process_mitce():
             for header, value in cached_headers.items():
                 if header.lower() in {h.lower() for h in INCLUDED_HEADERS}:
                     response.headers[header] = value
-
-        # 修复：将清理函数定义在外部，通过闭包捕获必要的变量
-        temp_path = temp_yaml_path
-        out_path = output_path
-
-        @after_this_request
-        def cleanup(resp):  # <-- 修改此处：将 'response' 重命名为 'resp' 以避免命名冲突
-            """注册一个函数，在请求处理完毕后执行清理操作。"""
-            return cleanup_response(resp, temp_path, out_path)
-
         return response
 
     except Exception as e:
-        if temp_yaml_path or output_path:
-            cleanup_files(temp_yaml_path, output_path)  # 清理临时文件和输出文件
         logger.error(f"处理请求失败: {str(e)}")
         return str(e), 500
 
 
 @app.route("/bajie")
 def process_bajie():
-    temp_yaml_path = None
-    output_path = None
 
     try:
         yaml_url = unquote(read_url_from_file(BAJIE_URL_FILE))
@@ -468,14 +403,14 @@ def process_bajie():
         down_pref = HYSTERIA2_DOWN_M if config_val == "m" else HYSTERIA2_DOWN
         logger.info(f"处理URL(/bajie): {yaml_url} 使用模板: {template_path}")
 
-        temp_yaml_path = fetch_yaml(yaml_url)
-        output_path = process_yaml_content(
-            temp_yaml_path, template_path, up_pref, down_pref
+        yaml_text = fetch_yaml_text(yaml_url)
+        output_bytes = process_yaml_content(
+            yaml_text, template_path, up_pref, down_pref
         )
         cached_headers = get_headers_cache(yaml_url)
 
         response = send_file(
-            output_path,
+            io.BytesIO(output_bytes),
             mimetype="application/yaml",
             as_attachment=True,
             download_name="config.yaml",
@@ -487,19 +422,9 @@ def process_bajie():
             for header, value in cached_headers.items():
                 if header.lower() in {h.lower() for h in INCLUDED_HEADERS}:
                     response.headers[header] = value
-
-        temp_path = temp_yaml_path
-        out_path = output_path
-
-        @after_this_request
-        def cleanup(resp):
-            return cleanup_response(resp, temp_path, out_path)
-
         return response
 
     except Exception as e:
-        if temp_yaml_path or output_path:
-            cleanup_files(temp_yaml_path, output_path)
         logger.error(f"处理请求失败(/bajie): {str(e)}")
         return str(e), 500
 
