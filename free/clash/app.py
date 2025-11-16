@@ -47,6 +47,9 @@ HYSTERIA2_UP_M = require_env("HYSTERIA2_UP_M")
 HYSTERIA2_DOWN_M = require_env("HYSTERIA2_DOWN_M")
 INCLUDED_HEADERS = set(require_env("INCLUDED_HEADERS").split(","))
 
+# 节点关键字（必填，逗号分隔），仅保存名称中包含这些关键字的节点
+NODE_KEYWORDS = [k.strip() for k in require_env("NODE_KEYWORDS").split(",") if k.strip()]
+
 # 节点替换功能开关（必填，填 true/false）
 ENABLE_NODE_REPLACEMENT = require_env("ENABLE_NODE_REPLACEMENT").lower() == "true"
 
@@ -234,34 +237,37 @@ def fetch_yaml(url):
 
 
 def save_node_names(proxies):
-    """提取节点名称并保存到nodes.yaml文件"""
+    """提取并过滤节点名称，写入 nodes.yaml，返回 (filtered_node_names, all_node_names)。"""
     try:
-        # 提取所有代理节点的名称
-        node_names = []
-        for proxy in proxies:
-            if isinstance(proxy, dict) and "name" in proxy:
-                node_names.append(proxy["name"])
+        node_names = [
+            proxy["name"]
+            for proxy in proxies
+            if isinstance(proxy, dict) and "name" in proxy
+        ]
+        filtered_node_names = [
+            n for n in node_names if any(kw.lower() in n.lower() for kw in NODE_KEYWORDS)
+        ]
 
-        # 准备要保存的数据结构
         nodes_data = {
-            "node_names": node_names,
-            "total": len(node_names),
+            "node_names": filtered_node_names,
+            "total": len(filtered_node_names),
             "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "keywords": NODE_KEYWORDS,
+            "original_total": len(node_names),
         }
 
-        # 配置YAML输出格式
         nodes_yaml = setup_yaml_config()
-
-        # 保存到nodes.yaml
         nodes_path = OUTPUT_FOLDER / "nodes.yaml"
         with open(nodes_path, "w", encoding="utf-8") as f:
             nodes_yaml.dump(nodes_data, f)
 
-        logger.info(f"成功保存节点名称到 {nodes_path}, 共 {len(node_names)} 个节点")
-        return nodes_path
+        logger.info(
+            f"保存节点名称: 过滤 {len(filtered_node_names)} / 原始 {len(node_names)} -> {nodes_path}"
+        )
+        return filtered_node_names, node_names
     except Exception as e:
         logger.error(f"保存节点名称失败: {str(e)}")
-        return None
+        return [], []
 
 
 def filter_nodes_by_region(node_names, region_patterns):
@@ -401,19 +407,27 @@ def process_yaml_content(yaml_path, template_path: Path, up_pref: str, down_pref
         with open(template_path, "r", encoding="utf-8") as f:
             template_data = yaml.load(f)
 
-        proxies = input_data.get("proxies", [])
-        if not proxies:
+        proxies_original = input_data.get("proxies", [])
+        if not proxies_original:
             raise ValueError("YAML文件中未找到有效的proxies配置")
 
-        # 处理代理配置
-        for proxy in proxies:
+        # 处理原始代理配置（仅用于生成/过滤节点名称）
+        for proxy in proxies_original:
             process_proxy_config(proxy, up_pref, down_pref)
 
-        # 提取节点名称并保存（如果启用了节点替换功能）
-        if ENABLE_NODE_REPLACEMENT:
-            save_node_names(proxies)
+        # 保存并获取过滤结果（内存使用，不再读回文件）
+        filtered_names, all_names = save_node_names(proxies_original)
 
-        # 替换代理组中的节点（如果启用了节点替换功能）
+        proxies = [
+            p for p in proxies_original if isinstance(p, dict) and p.get("name") in filtered_names
+        ]
+        if not proxies:
+            logger.warning(
+                "过滤后无匹配节点，使用全部原始节点 (0 filtered)"
+            )
+            proxies = proxies_original
+
+        # 仅在开关开启时才执行代理组节点替换（使用 nodes.yaml 中的名称）
         if ENABLE_NODE_REPLACEMENT:
             template_data = replace_proxy_groups_with_nodes(template_data)
 
@@ -470,7 +484,9 @@ def cleanup_response(response, temp_yaml_path, output_path):
         logger.info("开始执行延迟清理...")
         time.sleep(30)  # 等待30秒后删除文件
         logger.info("30秒等待结束，开始清理文件")
-        cleanup_files(temp_yaml_path, output_path, HEADERS_CACHE_PATH)
+        # 同时删除 nodes.yaml
+        nodes_path = OUTPUT_FOLDER / "nodes.yaml"
+        cleanup_files(temp_yaml_path, output_path, HEADERS_CACHE_PATH, nodes_path)
         logger.info("文件清理完成")
 
     # 在后台线程中执行清理
