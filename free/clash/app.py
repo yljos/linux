@@ -56,6 +56,9 @@ ENABLE_NODE_REPLACEMENT = require_env("ENABLE_NODE_REPLACEMENT").lower() == "tru
 # 从 .env 中读取 client-fingerprint（必填）
 CLIENT_FINGERPRINT = require_env("CLIENT_FINGERPRINT")
 
+# 是否使用 ruamel 原生 flow style 输出 proxies（单行 {k: v} 形式）
+PROXIES_FLOW_STYLE = require_env("PROXIES_FLOW_STYLE").lower() == "true"
+
 # 从 .env 读取两个不同的上游 URL 文件路径（必填，文件为无扩展名的文本文件）
 MITCE_URL_FILE = (BASE_DIR / require_env("MITCE_URL_FILE")).absolute()
 BAJIE_URL_FILE = (BASE_DIR / require_env("BAJIE_URL_FILE")).absolute()
@@ -155,6 +158,18 @@ def convert_proxies_to_inline(proxies):
                 items.append(f"{key_str}: {repr(value)}")
         inline_proxies.append("  - {" + ", ".join(items) + "}")
     return "\n".join(inline_proxies)
+
+
+def set_flow_style_for_proxies(proxies_list):
+    """将代理列表中的每个映射设置为 flow style（{ ... }）。
+    仅在使用 ruamel.dump 时生效。失败时静默跳过，保持默认格式。"""
+    for item in proxies_list:
+        try:
+            # ruamel 的 CommentedMap 支持通过 .fa.set_flow_style() 设置为 flow style
+            if hasattr(item, "fa") and hasattr(item.fa, "set_flow_style"):
+                item.fa.set_flow_style()
+        except Exception:
+            continue
 
 
 yaml = setup_yaml_config()
@@ -387,31 +402,12 @@ def process_yaml_content(yaml_path, template_path: Path, up_pref: str, down_pref
         if ENABLE_NODE_REPLACEMENT:
             template_data = replace_proxy_groups_with_nodes(template_data, filtered_names)
 
-        # 保存处理后的YAML（只修改proxies部分为单行格式）
         output_path = OUTPUT_FOLDER / "config.yaml"
+        # 始终使用 ruamel 输出，临时关闭手工内联模式
+        template_data["proxies"] = proxies
+        set_flow_style_for_proxies(template_data.get("proxies", []))
         with open(output_path, "w", encoding="utf-8") as f:
-            import re
-
-            # 生成新的proxies内容
-            proxies_inline = convert_proxies_to_inline(proxies)
-
-            # 使用正则表达式替换模板中的 proxies: [] 部分
-            # 精确匹配 "proxies: []" 这一行
-            pattern = r"proxies:\s*\[\s*\]"
-
-            if re.search(pattern, template_text):
-                # 找到了 proxies: []，替换它
-                replacement = "proxies:\n" + proxies_inline
-                result = re.sub(pattern, replacement, template_text)
-                f.write(result)
-            else:
-                # 如果没找到proxies部分，直接输出模板并追加proxies
-                f.write(template_text)
-                if not template_text.endswith("\n"):
-                    f.write("\n")
-                f.write("proxies:\n")
-                f.write(proxies_inline)
-                f.write("\n")
+            yaml.dump(template_data, f)
 
         return output_path
 
