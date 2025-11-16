@@ -44,7 +44,9 @@ HYSTERIA2_DOWN_M = require_env("HYSTERIA2_DOWN_M")
 INCLUDED_HEADERS = set(require_env("INCLUDED_HEADERS").split(","))
 
 # 节点关键字（必填，逗号分隔），仅保存名称中包含这些关键字的节点
-NODE_KEYWORDS = [k.strip() for k in require_env("NODE_KEYWORDS").split(",") if k.strip()]
+NODE_KEYWORDS = [
+    k.strip() for k in require_env("NODE_KEYWORDS").split(",") if k.strip()
+]
 
 # 节点替换功能开关（必填，填 true/false）
 ENABLE_NODE_REPLACEMENT = require_env("ENABLE_NODE_REPLACEMENT").lower() == "true"
@@ -111,9 +113,6 @@ def setup_yaml_config():
     # 使字典以流式风格(单行 {}) 输出
     yaml_config.default_flow_style = None
     return yaml_config
-
-
- 
 
 
 def set_flow_style_for_proxies(proxies_list):
@@ -301,7 +300,9 @@ def replace_proxy_groups_with_nodes(template_data, node_names):
     return template_data
 
 
-def process_yaml_content(yaml_text: str, template_path: Path, up_pref: str, down_pref: str):
+def process_yaml_content(
+    yaml_text: str, template_path: Path, up_pref: str, down_pref: str
+):
     """处理上游YAML文本，返回字节串以便内存直传。"""
     try:
         # 解析YAML获取数据结构（直接从字符串）
@@ -326,14 +327,18 @@ def process_yaml_content(yaml_text: str, template_path: Path, up_pref: str, down
         filtered_names, all_names = filter_node_names(proxies_original)
 
         proxies = [
-            p for p in proxies_original if isinstance(p, dict) and p.get("name") in filtered_names
+            p
+            for p in proxies_original
+            if isinstance(p, dict) and p.get("name") in filtered_names
         ]
         if not proxies:
             logger.warning("过滤后无匹配节点，使用全部原始节点 (0 filtered)")
             proxies = proxies_original
 
         if ENABLE_NODE_REPLACEMENT:
-            template_data = replace_proxy_groups_with_nodes(template_data, filtered_names)
+            template_data = replace_proxy_groups_with_nodes(
+                template_data, filtered_names
+            )
 
         # 内存中生成 YAML 文本
         buf = io.StringIO()
@@ -346,9 +351,6 @@ def process_yaml_content(yaml_text: str, template_path: Path, up_pref: str, down
     except Exception as e:
         logger.error(f"处理YAML内容失败: {str(e)}")
         raise
-
-
- 
 
 
 @app.route("/mitce")
