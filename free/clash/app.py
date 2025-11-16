@@ -236,38 +236,20 @@ def fetch_yaml(url):
             raise
 
 
-def save_node_names(proxies):
-    """提取并过滤节点名称，写入 nodes.yaml，返回 (filtered_node_names, all_node_names)。"""
-    try:
-        node_names = [
-            proxy["name"]
-            for proxy in proxies
-            if isinstance(proxy, dict) and "name" in proxy
-        ]
-        filtered_node_names = [
-            n for n in node_names if any(kw.lower() in n.lower() for kw in NODE_KEYWORDS)
-        ]
-
-        nodes_data = {
-            "node_names": filtered_node_names,
-            "total": len(filtered_node_names),
-            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "keywords": NODE_KEYWORDS,
-            "original_total": len(node_names),
-        }
-
-        nodes_yaml = setup_yaml_config()
-        nodes_path = OUTPUT_FOLDER / "nodes.yaml"
-        with open(nodes_path, "w", encoding="utf-8") as f:
-            nodes_yaml.dump(nodes_data, f)
-
-        logger.info(
-            f"保存节点名称: 过滤 {len(filtered_node_names)} / 原始 {len(node_names)} -> {nodes_path}"
-        )
-        return filtered_node_names, node_names
-    except Exception as e:
-        logger.error(f"保存节点名称失败: {str(e)}")
-        return [], []
+def filter_node_names(proxies):
+    """在内存中过滤节点名称，返回 (filtered_node_names, all_node_names)。"""
+    all_names = [
+        proxy.get("name")
+        for proxy in proxies
+        if isinstance(proxy, dict) and "name" in proxy
+    ]
+    filtered = [
+        n for n in all_names if any(kw.lower() in n.lower() for kw in NODE_KEYWORDS)
+    ]
+    logger.info(
+        f"节点过滤完成: 过滤 {len(filtered)} / 原始 {len(all_names)} 关键字={NODE_KEYWORDS}"
+    )
+    return filtered, all_names
 
 
 def filter_nodes_by_region(node_names, region_patterns):
@@ -329,64 +311,41 @@ def process_proxy_config(proxy, up_pref: str, down_pref: str):
             logger.debug("在 vless 中设置 client-fingerprint 时发生异常")
 
 
-def replace_proxy_groups_with_nodes(template_data):
-    """将代理组中的fallback节点替换为实际节点"""
-    try:
-        # 检查nodes.yaml是否存在
-        nodes_path = OUTPUT_FOLDER / "nodes.yaml"
-        if not nodes_path.exists():
-            logger.warning("nodes.yaml不存在，无法替换节点")
-            return template_data
-
-        # 读取nodes.yaml获取所有节点名称
-        nodes_yaml = setup_yaml_config()
-        with open(nodes_path, "r", encoding="utf-8") as f:
-            nodes_data = nodes_yaml.load(f)
-
-        # 获取节点名称列表
-        node_names = nodes_data.get("node_names", [])
-        if not node_names:
-            logger.warning("nodes.yaml中未找到节点名称")
-            return template_data
-
-        # 定义区域配置
-        region_configs = {
-            "US_fallback": (["US", "美国"], "US"),
-            "HK_fallback": (["HK", "香港"], "HK"),
-            "SG_fallback": (["SG", "新加坡", "Singapore"], "SG"),
-            "JP_fallback": (["JP", "日本", "Japan"], "JP"),
-            "TW_fallback": (["TW", "台湾", "Taiwan"], "TW"),
-        }
-
-        # 筛选各区域节点
-        region_nodes = {}
-        for fallback_key, (patterns, _) in region_configs.items():
-            region_nodes[fallback_key] = filter_nodes_by_region(node_names, patterns)
-            logger.info(
-                f"找到 {len(region_nodes[fallback_key])} 个{fallback_key.replace('_fallback', '')}节点"
-            )
-
-        # 处理代理组
-        proxy_groups = template_data.get("proxy-groups", [])
-        for group in proxy_groups:
-            if (
-                isinstance(group, dict)
-                and group.get("type") == "fallback"
-                and "proxies" in group
-            ):
-                group_name = group.get("name", "未命名")
-                proxies = group["proxies"]
-
-                # 替换所有区域的fallback节点
-                for fallback_name, nodes in region_nodes.items():
-                    replace_fallback_nodes_in_group(
-                        proxies, fallback_name, nodes, group_name
-                    )
-
+def replace_proxy_groups_with_nodes(template_data, node_names):
+    """用内存节点列表替换 fallback 组中的占位节点。"""
+    if not node_names:
+        logger.info("无可用节点名称，跳过代理组替换。")
         return template_data
-    except Exception as e:
-        logger.error(f"替换代理组节点失败: {str(e)}")
-        return template_data
+
+    region_configs = {
+        "US_fallback": (["US", "美国"], "US"),
+        "HK_fallback": (["HK", "香港"], "HK"),
+        "SG_fallback": (["SG", "新加坡", "Singapore"], "SG"),
+        "JP_fallback": (["JP", "日本", "Japan"], "JP"),
+        "TW_fallback": (["TW", "台湾", "Taiwan"], "TW"),
+    }
+
+    region_nodes = {}
+    for fallback_key, (patterns, _) in region_configs.items():
+        region_nodes[fallback_key] = filter_nodes_by_region(node_names, patterns)
+        logger.info(
+            f"找到 {len(region_nodes[fallback_key])} 个{fallback_key.replace('_fallback', '')}节点"
+        )
+
+    proxy_groups = template_data.get("proxy-groups", [])
+    for group in proxy_groups:
+        if (
+            isinstance(group, dict)
+            and group.get("type") == "fallback"
+            and "proxies" in group
+        ):
+            group_name = group.get("name", "未命名")
+            proxies = group["proxies"]
+            for fallback_name, nodes in region_nodes.items():
+                replace_fallback_nodes_in_group(
+                    proxies, fallback_name, nodes, group_name
+                )
+    return template_data
 
 
 def process_yaml_content(yaml_path, template_path: Path, up_pref: str, down_pref: str):
@@ -415,21 +374,18 @@ def process_yaml_content(yaml_path, template_path: Path, up_pref: str, down_pref
         for proxy in proxies_original:
             process_proxy_config(proxy, up_pref, down_pref)
 
-        # 保存并获取过滤结果（内存使用，不再读回文件）
-        filtered_names, all_names = save_node_names(proxies_original)
+        # 内存过滤节点
+        filtered_names, all_names = filter_node_names(proxies_original)
 
         proxies = [
             p for p in proxies_original if isinstance(p, dict) and p.get("name") in filtered_names
         ]
         if not proxies:
-            logger.warning(
-                "过滤后无匹配节点，使用全部原始节点 (0 filtered)"
-            )
+            logger.warning("过滤后无匹配节点，使用全部原始节点 (0 filtered)")
             proxies = proxies_original
 
-        # 仅在开关开启时才执行代理组节点替换（使用 nodes.yaml 中的名称）
         if ENABLE_NODE_REPLACEMENT:
-            template_data = replace_proxy_groups_with_nodes(template_data)
+            template_data = replace_proxy_groups_with_nodes(template_data, filtered_names)
 
         # 保存处理后的YAML（只修改proxies部分为单行格式）
         output_path = OUTPUT_FOLDER / "config.yaml"
@@ -484,9 +440,7 @@ def cleanup_response(response, temp_yaml_path, output_path):
         logger.info("开始执行延迟清理...")
         time.sleep(30)  # 等待30秒后删除文件
         logger.info("30秒等待结束，开始清理文件")
-        # 同时删除 nodes.yaml
-        nodes_path = OUTPUT_FOLDER / "nodes.yaml"
-        cleanup_files(temp_yaml_path, output_path, HEADERS_CACHE_PATH, nodes_path)
+        cleanup_files(temp_yaml_path, output_path, HEADERS_CACHE_PATH)
         logger.info("文件清理完成")
 
     # 在后台线程中执行清理
