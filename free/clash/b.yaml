@@ -58,20 +58,20 @@ dns:
     "rule-set:speedtest-site": "https://cloudflare-dns.com/dns-query#M"
 proxies: []
 proxy-groups:
-  - {<<: *select, name: M, proxies: [JP_fallback, US_fallback, SG_fallback, DIRECT]}
+  - {<<: *select, name: M, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback, DIRECT]}
   - {<<: *select, name: Default, type: select, proxies: [M, DIRECT]}
-  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback]}
-  - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback]}
-  - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback]}
-  - {<<: *select, name: Netflix, proxies: [JP_fallback, SG_fallback, US_fallback]}
-  - {<<: *select, name: Steam, proxies: [JP_fallback, SG_fallback, US_fallback]}
-  - {<<: *select, name: PikPak, proxies: [SG_fallback, JP_fallback, US_fallback]}
-  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, DIRECT]}
-  - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, DIRECT, US_fallback]}
+  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: Netflix, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback]}
+  - {<<: *select, name: Steam, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback]}
+  - {<<: *select, name: PikPak, proxies: [HK_fallback, SG_fallback, JP_fallback, US_fallback]}
+  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
+  - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, HK_fallback, DIRECT, US_fallback]}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)"}
   - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)"}
   - {<<: *fallback, name: SG_fallback, filter: "(?i)(新加坡|sg|singapore)"}
-
+  - {<<: *fallback, name: HK_fallback, filter: "(?i)(香港|hk|hongkong)"}
 rule-providers:
   archlinux: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/archlinux.mrs}
   adguard: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs}
