@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import hashlib
 import hmac
 import io
+from threading import RLock
 
 # 加载.env文件
 load_dotenv()
@@ -33,7 +34,9 @@ BASE_DIR = Path(require_env("BASE_DIR")).absolute()
 OUTPUT_FOLDER = BASE_DIR / require_env("OUTPUT_FOLDER")
 TEMPLATE_PATH_PC = BASE_DIR / require_env("TEMPLATE_PATH_pc")
 TEMPLATE_PATH_M = BASE_DIR / require_env("TEMPLATE_PATH_shouji")
-HEADERS_CACHE_PATH = OUTPUT_FOLDER / Path(require_env("HEADERS_CACHE_PATH")).name
+"""仅内存缓存：不再使用基于文件的 headers 缓存"""
+HEADERS_CACHE = {}
+HEADERS_CACHE_LOCK = RLock()
 
 USER_AGENT = require_env("USER_AGENT")
 CACHE_DURATION = int(require_env("CACHE_DURATION"))
@@ -134,44 +137,41 @@ logger = logging.getLogger(__name__)
 
 
 def save_headers_cache(url, headers):
-    """保存请求头缓存，仅保存白名单中的header"""
+    """保存请求头缓存到内存，仅保存白名单中的 header。"""
     try:
-        if HEADERS_CACHE_PATH.exists():
-            with open(HEADERS_CACHE_PATH, "r", encoding="utf-8") as f:
-                cache = json.load(f)
-        else:
-            cache = {}
-
         filtered_headers = {
             k: v
             for k, v in headers.items()
             if k.lower() in {h.lower() for h in INCLUDED_HEADERS}
         }
 
-        cache[url] = {
-            "headers": filtered_headers,
-            "timestamp": datetime.now().isoformat(),
-        }
-
-        with open(HEADERS_CACHE_PATH, "w", encoding="utf-8") as f:
-            json.dump(cache, f, indent=2, ensure_ascii=False)
+        with HEADERS_CACHE_LOCK:
+            HEADERS_CACHE[url] = {
+                "headers": filtered_headers,
+                "timestamp": datetime.now(),
+            }
     except Exception as e:
-        logger.error(f"保存headers缓存失败: {e}")
+        logger.error(f"保存headers内存缓存失败: {e}")
 
 
 def get_headers_cache(url):
-    """获取指定URL的headers缓存，检查是否过期"""
+    """获取指定 URL 的 headers 内存缓存，检查是否过期。"""
     try:
-        if HEADERS_CACHE_PATH.exists():
-            with open(HEADERS_CACHE_PATH, "r", encoding="utf-8") as f:
-                cache = json.load(f)
-                if url in cache:
-                    cache_time = datetime.fromisoformat(cache[url]["timestamp"])
-                    if datetime.now() - cache_time < timedelta(seconds=CACHE_DURATION):
-                        return cache[url]["headers"]
+        with HEADERS_CACHE_LOCK:
+            entry = HEADERS_CACHE.get(url)
+            if not entry:
+                return None
+
+            cache_time = entry.get("timestamp")
+            if datetime.now() - cache_time < timedelta(seconds=CACHE_DURATION):
+                return entry.get("headers")
+            else:
+                # 过期清理
+                HEADERS_CACHE.pop(url, None)
+                return None
     except Exception as e:
-        logger.error(f"读取headers缓存失败: {e}")
-    return None
+        logger.error(f"读取headers内存缓存失败: {e}")
+        return None
 
 
 def fetch_yaml_text(url):
