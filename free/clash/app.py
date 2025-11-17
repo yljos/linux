@@ -2,7 +2,6 @@ from flask import Flask, send_file, request
 from ruamel.yaml import YAML
 import requests
 from urllib.parse import unquote
-import json
 from datetime import datetime, timedelta
 import logging
 import os
@@ -31,7 +30,6 @@ def require_env(key: str) -> str:
 
 # 基础配置（全部从环境读取，缺失则报错）
 BASE_DIR = Path(require_env("BASE_DIR")).absolute()
-OUTPUT_FOLDER = BASE_DIR / require_env("OUTPUT_FOLDER")
 TEMPLATE_PATH_PC = BASE_DIR / require_env("TEMPLATE_PATH_pc")
 TEMPLATE_PATH_M = BASE_DIR / require_env("TEMPLATE_PATH_shouji")
 """仅内存缓存：不再使用基于文件的 headers 缓存"""
@@ -63,8 +61,7 @@ MITCE_URL_FILE = (BASE_DIR / require_env("MITCE_URL_FILE")).absolute()
 BAJIE_URL_FILE = (BASE_DIR / require_env("BAJIE_URL_FILE")).absolute()
 ACCESS_KEY_SHA256 = require_env("ACCESS_KEY_SHA256")  # 共享密钥的 SHA256 十六进制字符串
 
-# 确保输出目录存在
-OUTPUT_FOLDER.mkdir(exist_ok=True)
+# 不执行任何目录创建，保持零写入
 
 # 验证必要文件存在
 if not TEMPLATE_PATH_PC.exists():
