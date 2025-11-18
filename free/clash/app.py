@@ -49,6 +49,11 @@ NODE_KEYWORDS = [
     k.strip() for k in require_env("NODE_KEYWORDS").split(",") if k.strip()
 ]
 
+# 节点排除关键字（必填，逗号分隔），名称命中任一将被排除
+NODE_EXCLUDE_KEYWORDS = [
+    k.strip() for k in require_env("NODE_EXCLUDE_KEYWORDS").split(",") if k.strip()
+]
+
 # 节点替换功能开关（必填，填 true/false）
 ENABLE_NODE_REPLACEMENT = require_env("ENABLE_NODE_REPLACEMENT").lower() == "true"
 
@@ -193,10 +198,16 @@ def filter_node_names(proxies):
         if isinstance(proxy, dict) and "name" in proxy
     ]
     filtered = [
-        n for n in all_names if any(kw.lower() in n.lower() for kw in NODE_KEYWORDS)
+        n
+        for n in all_names
+        if any(kw.lower() in n.lower() for kw in NODE_KEYWORDS)
+        and not any(ex.lower() in n.lower() for ex in NODE_EXCLUDE_KEYWORDS)
     ]
     logger.info(
-        f"节点过滤完成: 过滤 {len(filtered)} / 原始 {len(all_names)} 关键字={NODE_KEYWORDS}"
+        (
+            "节点过滤完成: 过滤 %d / 原始 %d 包含=%s 排除=%s"
+            % (len(filtered), len(all_names), NODE_KEYWORDS, NODE_EXCLUDE_KEYWORDS)
+        )
     )
     return filtered, all_names
 
