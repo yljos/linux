@@ -30,8 +30,8 @@ def require_env(key: str) -> str:
 
 # 基础配置（全部从环境读取，缺失则报错）
 BASE_DIR = Path(require_env("BASE_DIR")).absolute()
-TEMPLATE_PATH_PC = BASE_DIR / require_env("TEMPLATE_PATH_pc")
-TEMPLATE_PATH_M = BASE_DIR / require_env("TEMPLATE_PATH_shouji")
+TEMPLATE_PATH_PC = BASE_DIR / require_env("TEMPLATE_PATH_PC")
+TEMPLATE_PATH_M = BASE_DIR / require_env("TEMPLATE_PATH_SHOUJI")
 """仅内存缓存：不再使用基于文件的 headers 缓存"""
 HEADERS_CACHE = {}
 HEADERS_CACHE_LOCK = RLock()
@@ -183,7 +183,7 @@ def fetch_yaml_text(url):
         response = requests.get(url, headers=headers, timeout=30)
         response.raise_for_status()
         save_headers_cache(url, response.headers)
-        logger.info(f"成功获取上游YAML文本: {url}")
+        logger.info("成功获取上游YAML文本")
         return response.text
     except Exception as e:
         logger.error(f"获取YAML失败: {str(e)}")
@@ -373,7 +373,7 @@ def process_mitce():
         up_pref = HYSTERIA2_UP_M if config_val == "m" else HYSTERIA2_UP
         down_pref = HYSTERIA2_DOWN_M if config_val == "m" else HYSTERIA2_DOWN
 
-        logger.info(f"处理URL(/mitce): {yaml_url} 使用模板: {template_path}")
+        logger.info(f"处理URL(mitce) 使用模板: {template_path}")
 
         yaml_text = fetch_yaml_text(yaml_url)
         output_bytes = process_yaml_content(
@@ -411,7 +411,7 @@ def process_bajie():
         template_path = TEMPLATE_PATH_M if config_val == "m" else TEMPLATE_PATH_PC
         up_pref = HYSTERIA2_UP_M if config_val == "m" else HYSTERIA2_UP
         down_pref = HYSTERIA2_DOWN_M if config_val == "m" else HYSTERIA2_DOWN
-        logger.info(f"处理URL(/bajie): {yaml_url} 使用模板: {template_path}")
+        logger.info(f"处理URL(bajie) 使用模板: {template_path}")
 
         yaml_text = fetch_yaml_text(yaml_url)
         output_bytes = process_yaml_content(
