@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Flask应用 - 处理base64编码的节点信息，生成config.json
 支持从URL参数获取base64编码数据，并将其节点注入到JSON模板中。

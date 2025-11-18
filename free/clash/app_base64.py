@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Flask应用 - 处理base64编码的节点信息，生成config.yaml
 支持从URL参数获取base64编码数据，解码后处理vless://节点信息
