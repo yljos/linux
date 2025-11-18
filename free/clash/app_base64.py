@@ -3,7 +3,6 @@ Flask应用 - 处理base64编码的节点信息，生成config.yaml
 支持从URL参数获取base64编码数据，解码后处理vless://节点信息
 """
 
-
 from flask import Flask, request, jsonify, send_file, after_this_request
 import base64
 import os
