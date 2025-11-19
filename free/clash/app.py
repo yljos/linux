@@ -12,61 +12,49 @@ import hmac
 import io
 from threading import RLock
 
-# 加载.env文件
-load_dotenv()
 
+# =====================
+# .env 配置项直接常量化
+# =====================
 app = Flask(__name__)
 
 
-def require_env(key: str) -> str:
-    """统一读取必填环境变量，缺失或为空则抛出 RuntimeError。"""
-    val = os.getenv(key)
-    if val is None or val == "":
-        raise RuntimeError(
-            f"环境变量 {key} 未设置（必填）。请在 .env 或环境中设置 {key}。"
-        )
-    return val
-
-
-# 基础配置（全部从环境读取，缺失则报错）
-BASE_DIR = Path(require_env("BASE_DIR")).absolute()
-TEMPLATE_PATH_PC = BASE_DIR / require_env("TEMPLATE_PATH_PC")
-TEMPLATE_PATH_M = BASE_DIR / require_env("TEMPLATE_PATH_SHOUJI")
-"""仅内存缓存：不再使用基于文件的 headers 缓存"""
+TEMPLATE_PATH_PC = Path("b.yaml")
+TEMPLATE_PATH_M = Path("b_shouji.yaml")
 HEADERS_CACHE = {}
 HEADERS_CACHE_LOCK = RLock()
 
-USER_AGENT = require_env("USER_AGENT")
-CACHE_DURATION = int(require_env("CACHE_DURATION"))
-HYSTERIA2_UP = require_env("HYSTERIA2_UP")
-HYSTERIA2_DOWN = require_env("HYSTERIA2_DOWN")
-HYSTERIA2_UP_M = require_env("HYSTERIA2_UP_M")
-HYSTERIA2_DOWN_M = require_env("HYSTERIA2_DOWN_M")
-INCLUDED_HEADERS = set(require_env("INCLUDED_HEADERS").split(","))
+USER_AGENT = "clash verge"
+CACHE_DURATION = 300
+HYSTERIA2_UP = "40 Mbps"
+HYSTERIA2_DOWN = "200 Mbps"
+HYSTERIA2_UP_M = "20 Mbps"
+HYSTERIA2_DOWN_M = "40 Mbps"
+INCLUDED_HEADERS = set("Subscription-Userinfo".split(","))
 
-# 节点关键字（必填，逗号分隔），仅保存名称中包含这些关键字的节点
 NODE_KEYWORDS = [
-    k.strip() for k in require_env("NODE_KEYWORDS").split(",") if k.strip()
+    k.strip() for k in "US,HK,SG,JP,美国,香港,新加坡,日本".split(",") if k.strip()
 ]
-
-# 节点排除关键字（必填，逗号分隔），名称命中任一将被排除
 NODE_EXCLUDE_KEYWORDS = [
-    k.strip() for k in require_env("NODE_EXCLUDE_KEYWORDS").split(",") if k.strip()
+    k.strip() for k in "官网,流量,倍率,剩余,10,到期".split(",") if k.strip()
 ]
 
-# 节点替换功能开关（必填，填 true/false）
-ENABLE_NODE_REPLACEMENT = require_env("ENABLE_NODE_REPLACEMENT").lower() == "true"
+ENABLE_NODE_REPLACEMENT = False
+CLIENT_FINGERPRINT = "firefox"
 
-# 从 .env 中读取 client-fingerprint（必填）
-CLIENT_FINGERPRINT = require_env("CLIENT_FINGERPRINT")
+MITCE_URL_FILE = Path("mitce").absolute()
+BAJIE_URL_FILE = Path("bajie").absolute()
+ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
+
+DEBUG = True
+PORT = 5002
+HOST = "0.0.0.0"
 
 
-# 从 .env 读取两个不同的上游 URL 文件路径（必填，文件为无扩展名的文本文件）
-MITCE_URL_FILE = (BASE_DIR / require_env("MITCE_URL_FILE")).absolute()
-BAJIE_URL_FILE = (BASE_DIR / require_env("BAJIE_URL_FILE")).absolute()
-ACCESS_KEY_SHA256 = require_env("ACCESS_KEY_SHA256")  # 共享密钥的 SHA256 十六进制字符串
-
-# 不执行任何目录创建，保持零写入
+"""
+仅内存缓存：不再使用基于文件的 headers 缓存
+（已在常量区定义）
+"""
 
 # 验证必要文件存在
 if not TEMPLATE_PATH_PC.exists():
@@ -440,9 +428,4 @@ def process_bajie():
 
 
 if __name__ == "__main__":
-    # DEBUG, PORT, HOST 也为必填环境变量（缺失将抛错）
-    debug_mode = require_env("DEBUG").lower() in ("true", "1", "yes")
-    port = int(require_env("PORT"))
-    host = require_env("HOST")
-
-    app.run(debug=debug_mode, port=port, host=host)
+    app.run(debug=DEBUG, port=PORT, host=HOST)
