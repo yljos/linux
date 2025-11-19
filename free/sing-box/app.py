@@ -28,7 +28,152 @@ CONFIG_TEMPLATE_FILENAME = "1.12.json"
 # 密码哈希和API地址文件
 MITCE_PASSWORD_HASH = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed" 
 MITCE_API_FILE = "mitce"  # 当前目录下的 mitce 文件
+BAJIE_API_FILE = "bajie"  # 当前目录下的 bajie 文件
 app = Flask(__name__)
+# 读取 bajie 文件内容作为 API 地址
+def get_bajie_api_url() -> str:
+    file_path = os.path.join(os.path.dirname(__file__), BAJIE_API_FILE)
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            url = f.read().strip()
+            if not url:
+                raise ValueError("bajie 文件内容为空")
+            return url
+    except Exception as e:
+        raise RuntimeError(f"读取 bajie 文件失败: {str(e)}")
+# 新增 /bajie 路由，逻辑与 /mitce 一致，不鉴权
+@app.route("/bajie", methods=["GET"])
+def process_nodes_from_bajie() -> Union[Response, Tuple[Response, int]]:
+    key = request.args.get("key", "")
+    if not key:
+        return jsonify({"error": "缺少 key 参数"}), 400
+
+    # 校验 key 的哈希
+    key_hash = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    if key_hash != MITCE_PASSWORD_HASH:
+        return jsonify({"error": "鉴权失败"}), 401
+
+    # 读取 bajie 文件内容作为 base64 链接
+    try:
+        bajie_url = get_bajie_api_url()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    try:
+        decoded_content, _ = fetch_content_from_url(bajie_url)
+        node_urls = extract_urls_from_text(decoded_content)
+        if not node_urls:
+            return (
+                jsonify(
+                    {
+                        "error": "未找到有效的节点URL",
+                        "decoded_content": (
+                            decoded_content[:500] + "..."
+                            if len(decoded_content) > 500
+                            else decoded_content
+                        ),
+                        "url": bajie_url,
+                    }
+                ),
+                400,
+            )
+
+        nodes, errors = [], []
+        for i, url in enumerate(node_urls):
+            try:
+                node_config = parse_node_url(url)
+                if "name" in node_config and "tag" not in node_config:
+                    node_config["tag"] = node_config["name"]
+                nodes.append(node_config)
+            except Exception as e:
+                errors.append(f"节点 {i + 1} 解析失败: {str(e)}")
+
+        if not nodes:
+            return (
+                jsonify(
+                    {"error": "所有节点解析都失败了", "errors": errors, "url": bajie_url}
+                ),
+                400,
+            )
+
+        config_path = os.path.join(os.path.dirname(__file__), CONFIG_TEMPLATE_FILENAME)
+        with open(config_path, "r", encoding="utf-8") as f:
+            base_config = json.load(f)
+
+        outbounds = base_config.get("outbounds", [])
+        existing_tags = {o.get("tag") for o in outbounds}
+        new_nodes = [
+            n for n in nodes if n.get("tag") and n.get("tag") not in existing_tags
+        ]
+        outbounds.extend(new_nodes)
+
+        def node_tag_valid(tag: str) -> bool:
+            tag_upper = tag.upper() if tag else ""
+            if not any(region.upper() in tag_upper for region in NODE_REGION_KEYWORDS):
+                return False
+            if any(exclude in tag for exclude in NODE_EXCLUDE_KEYWORDS):
+                return False
+            return True
+
+        filtered_outbounds = [
+            o
+            for o in outbounds
+            if node_tag_valid(o.get("tag", ""))
+            or o.get("type") in ["urltest", "selector", "direct", "block"]
+        ]
+
+        for outbound in filtered_outbounds:
+            if outbound.get("type") == "urltest" and "filter" in outbound:
+                regex_list = [
+                    reg
+                    for f in outbound.get("filter", [])
+                    for reg in f.get("regex", [])
+                ]
+                if not regex_list:
+                    del outbound["filter"]
+                    continue
+
+                pattern = "|".join(regex_list)
+                try:
+                    compiled = re.compile(pattern, re.IGNORECASE)
+                    all_node_tags = [
+                        o.get("tag")
+                        for o in filtered_outbounds
+                        if o.get("tag")
+                        and o.get("type")
+                        not in ["urltest", "selector", "direct", "block"]
+                    ]
+                    matched_tags = [
+                        tag for tag in all_node_tags if compiled.search(tag)
+                    ]
+                    if matched_tags:
+                        outbound["outbounds"] = matched_tags
+                    else:
+                        outbound["outbounds"] = ["D"]
+                except re.error as e:
+                    print(f"无效的正则表达式 '{pattern}': {e}", file=sys.stderr)
+                    continue
+
+                del outbound["filter"]
+
+        base_config["outbounds"] = filtered_outbounds
+
+        json_str = json.dumps(base_config, ensure_ascii=False, separators=(",", ":"))
+        return Response(
+            json_str,
+            mimetype="application/json",
+            headers={"Content-Disposition": "attachment; filename=config.json"},
+        )
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": f"处理过程中发生错误: {str(e)}",
+                    "url": bajie_url,
+                }
+            ),
+            500,
+        )
 
 # 读取 mitce 文件内容作为 API 地址
 def get_mitce_api_url() -> str:
@@ -105,13 +250,12 @@ def process_nodes_from_mitce() -> Union[Response, Tuple[Response, int]]:
         return jsonify({"error": "鉴权失败"}), 401
 
 
-    # 读取 mitce 文件内容作为 API 地址
+
+    # 读取 mitce 文件内容作为 base64 链接（不拼接 key 参数）
     try:
-        mitce_api_url = get_mitce_api_url()
+        mitce_url = get_mitce_api_url()
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    mitce_url = f"{mitce_api_url}?key={key}"
 
     try:
         decoded_content, _ = fetch_content_from_url(mitce_url)

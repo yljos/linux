@@ -6,7 +6,7 @@
 **/.idea/
 **/.venv/
 **/__pycache__/
-/free/clash/bajie
-/free/clash/mitce
+**/bajie
+**/mitce
 
 
