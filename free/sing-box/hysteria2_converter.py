@@ -3,7 +3,8 @@
 Hysteria2 URL to YAML converter
 转换为包含默认参数的Clash配置格式
 """
-
+DEFAULT_UP_SPEED = "40"
+DEFAULT_DOWN_SPEED = "200"
 import json
 from urllib.parse import urlparse, parse_qs
 import urllib.parse
@@ -61,8 +62,8 @@ def parse_hysteria2_url(url):
 
     # 目标结构
     sni = query["sni"][0] if "sni" in query and query["sni"][0] else parsed.hostname
-    up_speed = query.get("upmbps", query.get("up", ["40"]))[0]
-    down_speed = query.get("downmbps", query.get("down", ["200"]))[0]
+    up_speed = query.get("upmbps", query.get("up", [DEFAULT_UP_SPEED]))[0]
+    down_speed = query.get("downmbps", query.get("down", [DEFAULT_DOWN_SPEED]))[0]
     # 端口范围格式调整
     config = {
         "type": "hysteria2",

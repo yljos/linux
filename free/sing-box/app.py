@@ -3,70 +3,26 @@ Flask应用 - 处理base64编码的节点信息，生成config.json
 支持从URL参数获取base64编码数据，并将其节点注入到JSON模板中。
 """
 
-import threading
 import base64
-import tempfile
 import requests
 import json
 import re
 import os
 import sys
-
-# 导入 Union 以支持多种返回类型
 from typing import Any, Dict, List, Tuple, Union
-from flask import Flask, request, jsonify, send_file, after_this_request, Response
 
-TEMP_FILES = set()
+from flask import Flask, request, jsonify, Response
 
+# ===== 可修改配置项 =====
 
-# --------- 临时文件清理工具 ---------
-def cleanup_files(file_list: List[str]):
-    for f in file_list:
-        try:
-            os.remove(f)
-            TEMP_FILES.discard(f)
-            print(f"[临时文件清理] 删除成功: {f}", file=sys.stderr)
-        except Exception as ex:
-            print(f"[临时文件清理] 删除失败: {f}, 错误: {ex}", file=sys.stderr)
+NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡", "日本"]
+NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10"]
+CONFIG_TEMPLATE_FILENAME = "1.12.json"
 
+from vless_converter import parse_vless_url
+from ss_converter import parse_shadowsocks_url as parse_ss_url
+from hysteria2_converter import parse_hysteria2_url
 
-def create_cleanup_callback(temp_files: List[str], exclude_files: List[str] = None):
-    @after_this_request
-    def cleanup_callback(response: Response) -> Response:
-        def delayed_cleanup():
-            time.sleep(2)  # 等待2秒确保文件传输完成
-            files_to_clean = temp_files.copy()
-            if exclude_files:
-                for exclude_file in exclude_files:
-                    if exclude_file in files_to_clean:
-                        files_to_clean.remove(exclude_file)
-            cleanup_files(files_to_clean)
-            if exclude_files:
-                time.sleep(1)  # 再等待1秒
-                cleanup_files(exclude_files)
-
-        import time
-
-        cleanup_thread = threading.Thread(target=delayed_cleanup, daemon=True)
-        cleanup_thread.start()
-        return response
-
-    return cleanup_callback
-
-
-# 动态导入解析器
-try:
-    from vless_converter import parse_vless_url
-except ImportError:
-    parse_vless_url = None
-try:
-    from ss_converter import parse_shadowsocks_url as parse_ss_url
-except ImportError:
-    parse_ss_url = None
-try:
-    from hysteria2_converter import parse_hysteria2_url
-except ImportError:
-    parse_hysteria2_url = None
 
 app = Flask(__name__)
 
@@ -109,17 +65,11 @@ def extract_urls_from_text(text: str) -> List[str]:
 def parse_node_url(url: str) -> Dict[str, Any]:
     url = url.strip()
     if url.startswith("vless://"):
-        if parse_vless_url:
-            return parse_vless_url(url)
-        raise ValueError("VLESS转换器未可用")
+        return parse_vless_url(url)
     elif url.startswith("ss://"):
-        if parse_ss_url:
-            return parse_ss_url(url)
-        raise ValueError("SS转换器未可用")
+        return parse_ss_url(url)
     elif url.startswith(("hysteria2://", "hy2://")):
-        if parse_hysteria2_url:
-            return parse_hysteria2_url(url)
-        raise ValueError("Hysteria2转换器未可用")
+        return parse_hysteria2_url(url)
     else:
         raise ValueError(f"不支持的协议类型: {url[:20]}...")
 
@@ -169,7 +119,7 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
                 400,
             )
 
-        config_path = os.path.join(os.path.dirname(__file__), "1.12.json")
+        config_path = os.path.join(os.path.dirname(__file__), CONFIG_TEMPLATE_FILENAME)
         with open(config_path, "r", encoding="utf-8") as f:
             base_config = json.load(f)
 
@@ -178,10 +128,28 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
         new_nodes = [
             n for n in nodes if n.get("tag") and n.get("tag") not in existing_tags
         ]
-
         outbounds.extend(new_nodes)
 
-        for outbound in outbounds:
+        # 节点过滤：只保留tag包含指定地区，排除指定关键字
+        def node_tag_valid(tag: str) -> bool:
+            tag_upper = tag.upper() if tag else ""
+            # 包含目标地区
+            if not any(region.upper() in tag_upper for region in NODE_REGION_KEYWORDS):
+                return False
+            # 排除包含指定关键字
+            if any(exclude in tag for exclude in NODE_EXCLUDE_KEYWORDS):
+                return False
+            return True
+
+        filtered_outbounds = [
+            o
+            for o in outbounds
+            if node_tag_valid(o.get("tag", ""))
+            or o.get("type") in ["urltest", "selector", "direct", "block"]
+        ]
+
+        # 后续所有逻辑都基于 filtered_outbounds
+        for outbound in filtered_outbounds:
             if outbound.get("type") == "urltest" and "filter" in outbound:
                 regex_list = [
                     reg
@@ -197,7 +165,7 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
                     compiled = re.compile(pattern, re.IGNORECASE)
                     all_node_tags = [
                         o.get("tag")
-                        for o in outbounds
+                        for o in filtered_outbounds
                         if o.get("tag")
                         and o.get("type")
                         not in ["urltest", "selector", "direct", "block"]
@@ -215,23 +183,14 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
 
                 del outbound["filter"]
 
-        base_config["outbounds"] = outbounds
+        base_config["outbounds"] = filtered_outbounds
+
         json_str = json.dumps(base_config, ensure_ascii=False, separators=(",", ":"))
-
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
-        ) as f:
-            f.write(json_str)
-            temp_file_path = f.name
-        TEMP_FILES.add(temp_file_path)
-
-        create_cleanup_callback([temp_file_path])
-
-        return send_file(
-            temp_file_path,
-            as_attachment=True,
-            download_name="config.json",
+        # 直接内存返回，无需落盘
+        return Response(
+            json_str,
             mimetype="application/json",
+            headers={"Content-Disposition": "attachment; filename=config.json"},
         )
     except Exception as e:
         # This now correctly matches the Union type hint
