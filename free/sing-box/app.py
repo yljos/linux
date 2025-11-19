@@ -9,9 +9,12 @@ import json
 import re
 import os
 import sys
+import hashlib
 from typing import Any, Dict, List, Tuple, Union
-
 from flask import Flask, request, jsonify, Response
+from vless_converter import parse_vless_url
+from ss_converter import parse_shadowsocks_url as parse_ss_url
+from hysteria2_converter import parse_hysteria2_url
 
 # ===== 可修改配置项 =====
 
@@ -19,12 +22,25 @@ NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡",
 NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10"]
 CONFIG_TEMPLATE_FILENAME = "1.12.json"
 
-from vless_converter import parse_vless_url
-from ss_converter import parse_shadowsocks_url as parse_ss_url
-from hysteria2_converter import parse_hysteria2_url
 
 
+
+# 密码哈希和API地址文件
+MITCE_PASSWORD_HASH = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed" 
+MITCE_API_FILE = "mitce"  # 当前目录下的 mitce 文件
 app = Flask(__name__)
+
+# 读取 mitce 文件内容作为 API 地址
+def get_mitce_api_url() -> str:
+    file_path = os.path.join(os.path.dirname(__file__), MITCE_API_FILE)
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            url = f.read().strip()
+            if not url:
+                raise ValueError("mitce 文件内容为空")
+            return url
+    except Exception as e:
+        raise RuntimeError(f"读取 mitce 文件失败: {str(e)}")
 
 
 def decode_base64_content(content: str) -> str:
@@ -74,16 +90,31 @@ def parse_node_url(url: str) -> Dict[str, Any]:
         raise ValueError(f"不支持的协议类型: {url[:20]}...")
 
 
-@app.route("/<path:url_path>", methods=["GET"])
-# FIX: Update the return type to allow for both Response and tuple[Response, int]
-def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, int]]:
-    full_url = url_path
-    if request.query_string:
-        query_part = request.query_string.decode("utf-8")
-        full_url = f"{url_path}?{query_part}"
+# 新增 /mitce 路由，使用 key 参数拼接 mitce URL
+
+@app.route("/mitce", methods=["GET"])
+def process_nodes_from_mitce() -> Union[Response, Tuple[Response, int]]:
+    key = request.args.get("key", "")
+    if not key:
+        return jsonify({"error": "缺少 key 参数"}), 400
+
+
+    # 校验 key 的哈希
+    key_hash = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    if key_hash != MITCE_PASSWORD_HASH:
+        return jsonify({"error": "鉴权失败"}), 401
+
+
+    # 读取 mitce 文件内容作为 API 地址
+    try:
+        mitce_api_url = get_mitce_api_url()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    mitce_url = f"{mitce_api_url}?key={key}"
 
     try:
-        decoded_content, _ = fetch_content_from_url(full_url)
+        decoded_content, _ = fetch_content_from_url(mitce_url)
         node_urls = extract_urls_from_text(decoded_content)
         if not node_urls:
             return (
@@ -95,7 +126,7 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
                             if len(decoded_content) > 500
                             else decoded_content
                         ),
-                        "url": full_url,
+                        "url": mitce_url,
                     }
                 ),
                 400,
@@ -114,7 +145,7 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
         if not nodes:
             return (
                 jsonify(
-                    {"error": "所有节点解析都失败了", "errors": errors, "url": full_url}
+                    {"error": "所有节点解析都失败了", "errors": errors, "url": mitce_url}
                 ),
                 400,
             )
@@ -130,13 +161,10 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
         ]
         outbounds.extend(new_nodes)
 
-        # 节点过滤：只保留tag包含指定地区，排除指定关键字
         def node_tag_valid(tag: str) -> bool:
             tag_upper = tag.upper() if tag else ""
-            # 包含目标地区
             if not any(region.upper() in tag_upper for region in NODE_REGION_KEYWORDS):
                 return False
-            # 排除包含指定关键字
             if any(exclude in tag for exclude in NODE_EXCLUDE_KEYWORDS):
                 return False
             return True
@@ -148,7 +176,6 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
             or o.get("type") in ["urltest", "selector", "direct", "block"]
         ]
 
-        # 后续所有逻辑都基于 filtered_outbounds
         for outbound in filtered_outbounds:
             if outbound.get("type") == "urltest" and "filter" in outbound:
                 regex_list = [
@@ -186,19 +213,17 @@ def process_nodes_from_path(url_path: str) -> Union[Response, Tuple[Response, in
         base_config["outbounds"] = filtered_outbounds
 
         json_str = json.dumps(base_config, ensure_ascii=False, separators=(",", ":"))
-        # 直接内存返回，无需落盘
         return Response(
             json_str,
             mimetype="application/json",
             headers={"Content-Disposition": "attachment; filename=config.json"},
         )
     except Exception as e:
-        # This now correctly matches the Union type hint
         return (
             jsonify(
                 {
                     "error": f"处理过程中发生错误: {str(e)}",
-                    "url": full_url,
+                    "url": mitce_url,
                 }
             ),
             500,
