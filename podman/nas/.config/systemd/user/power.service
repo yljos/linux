@@ -13,7 +13,7 @@ ExecStart=/usr/bin/podman run \
   -e TZ=Asia/Shanghai \
   -p 5008:5008 \
   -v /data/www:/usr/src/myapp:z \
-  docker.io/library/python:3 \
+  docker.io/library/python:3.12.12 \
   /usr/src/myapp/start.sh
 
 ExecStop=/usr/bin/podman stop -t 10 power
