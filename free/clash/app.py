@@ -349,19 +349,23 @@ def process_yaml_content(
         raise
 
 
-@app.route("/mitce")
-def process_mitce():
 
+# 合并 mitce 和 bajie 路由为 /<source>
+@app.route("/<source>")
+def process_source(source):
     try:
-        yaml_url = unquote(read_url_from_file(MITCE_URL_FILE))
-        # 模板选择：默认 pc，?config=m 使用手机模板
+        if source == "mitce":
+            yaml_url = unquote(read_url_from_file(MITCE_URL_FILE))
+        elif source == "bajie":
+            yaml_url = unquote(read_url_from_file(BAJIE_URL_FILE))
+        else:
+            return "Not Found", 404
+
         config_val = (request.args.get("config", "pc") or "pc").lower()
         template_path = TEMPLATE_PATH_M if config_val == "m" else TEMPLATE_PATH_PC
-        # 根据模板选择带宽参数
         up_pref = HYSTERIA2_UP_M if config_val == "m" else HYSTERIA2_UP
         down_pref = HYSTERIA2_DOWN_M if config_val == "m" else HYSTERIA2_DOWN
-
-        logger.info(f"处理URL(mitce) 使用模板: {template_path}")
+        logger.info(f"处理URL({source}) 使用模板: {template_path}")
 
         yaml_text = fetch_yaml_text(yaml_url)
         output_bytes = process_yaml_content(
@@ -385,45 +389,7 @@ def process_mitce():
         return response
 
     except Exception as e:
-        logger.error(f"处理请求失败: {str(e)}")
-        return str(e), 500
-
-
-@app.route("/bajie")
-def process_bajie():
-
-    try:
-        yaml_url = unquote(read_url_from_file(BAJIE_URL_FILE))
-        # 模板选择：默认 pc，?config=m 使用手机模板
-        config_val = (request.args.get("config", "pc") or "pc").lower()
-        template_path = TEMPLATE_PATH_M if config_val == "m" else TEMPLATE_PATH_PC
-        up_pref = HYSTERIA2_UP_M if config_val == "m" else HYSTERIA2_UP
-        down_pref = HYSTERIA2_DOWN_M if config_val == "m" else HYSTERIA2_DOWN
-        logger.info(f"处理URL(bajie) 使用模板: {template_path}")
-
-        yaml_text = fetch_yaml_text(yaml_url)
-        output_bytes = process_yaml_content(
-            yaml_text, template_path, up_pref, down_pref
-        )
-        cached_headers = get_headers_cache(yaml_url)
-
-        response = send_file(
-            io.BytesIO(output_bytes),
-            mimetype="application/yaml",
-            as_attachment=True,
-            download_name="config.yaml",
-        )
-
-        response.headers["Content-Type"] = "application/yaml; charset=utf-8"
-
-        if cached_headers:
-            for header, value in cached_headers.items():
-                if header.lower() in {h.lower() for h in INCLUDED_HEADERS}:
-                    response.headers[header] = value
-        return response
-
-    except Exception as e:
-        logger.error(f"处理请求失败(/bajie): {str(e)}")
+        logger.error(f"处理请求失败({source}): {str(e)}")
         return str(e), 500
 
 
