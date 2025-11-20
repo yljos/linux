@@ -349,7 +349,6 @@ def process_yaml_content(
         raise
 
 
-
 # 合并 mitce 和 bajie 路由为 /<source>
 @app.route("/<source>")
 def process_source(source):

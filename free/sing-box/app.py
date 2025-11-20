@@ -17,7 +17,6 @@ from ss_converter import parse_shadowsocks_url as parse_ss_url
 from hysteria2_converter import parse_hysteria2_url
 
 
-
 # ===== 可修改配置项 =====
 
 NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡", "日本"]
@@ -29,6 +28,7 @@ MITCE_API_FILE = "mitce"  # 当前目录下的 mitce 文件
 BAJIE_API_FILE = "bajie"  # 当前目录下的 bajie 文件
 
 app = Flask(__name__)
+
 
 # 支持 /nodes/<source> 和 /<source> 两种路由
 @app.route("/nodes/<source>", methods=["GET"])
@@ -93,7 +93,11 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         if not nodes:
             return (
                 jsonify(
-                    {"error": "所有节点解析都失败了", "errors": errors, "source": source}
+                    {
+                        "error": "所有节点解析都失败了",
+                        "errors": errors,
+                        "source": source,
+                    }
                 ),
                 400,
             )
@@ -168,15 +172,9 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         )
     except Exception as e:
         return (
-            jsonify(
-                {
-                    "error": f"处理过程中发生错误: {str(e)}",
-                    "source": source
-                }
-            ),
+            jsonify({"error": f"处理过程中发生错误: {str(e)}", "source": source}),
             500,
         )
-
 
 
 def decode_base64_content(content: str) -> str:
@@ -224,9 +222,6 @@ def parse_node_url(url: str) -> Dict[str, Any]:
         return parse_hysteria2_url(url)
     else:
         raise ValueError(f"不支持的协议类型: {url[:20]}...")
-
-
-
 
 
 if __name__ == "__main__":

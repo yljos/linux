@@ -33,7 +33,9 @@ def delete_empty_folders(directory: Path):
     while True:
         removed = 0
         # 倒序删除深层目录
-        for folder in sorted(directory.rglob("*"), key=lambda p: len(str(p)), reverse=True):
+        for folder in sorted(
+            directory.rglob("*"), key=lambda p: len(str(p)), reverse=True
+        ):
             if folder.is_dir() and folder.absolute() != root:
                 try:
                     folder.rmdir()
@@ -83,8 +85,10 @@ def main():
 
     # --- 收集文件 ---
     files_to_delete = [
-        f for f in current_directory.rglob("*")
-        if f.is_file() and f.absolute() != script_path
+        f
+        for f in current_directory.rglob("*")
+        if f.is_file()
+        and f.absolute() != script_path
         and should_delete_file(f, target_mp4_set, size_threshold_bytes)
     ]
 
