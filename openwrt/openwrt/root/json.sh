@@ -34,21 +34,21 @@ PASSWORD=$2
 temp_dir=$(mktemp -d)
 
 # 从远程下载zip文件
-if ! curl -s -o "$temp_dir/singbox.zip" "http://192.168.31.21/singbox.zip"; then
-	echo "错误：下载 singbox.zip 失败"
+if ! curl -s -o "$temp_dir/sing-box.zip" "http://192.168.31.21/sing-box.zip"; then
+	echo "错误：下载 sing-box.zip 失败"
 	rm -rf "$temp_dir"
 	exit 1
 fi
 
 # 解压zip文件以获取txt文件
-if ! unzip -P "$PASSWORD" "$temp_dir/singbox.zip" -d "$temp_dir"; then
+if ! unzip -P "$PASSWORD" "$temp_dir/sing-box.zip" -d "$temp_dir"; then
 	echo "错误：解压 zip 文件失败"
 	rm -rf "$temp_dir"
 	exit 1
 fi
 
 # 读取解压后的txt文件内容并获取指定订阅源的URL
-url_part=$(grep "^$SUBSCRIPTION:" "$temp_dir/singbox.txt" | cut -d' ' -f2-)
+url_part=$(grep "^$SUBSCRIPTION:" "$temp_dir/sing-box.txt" | cut -d' ' -f2-)
 
 # 检查URL内容是否为空
 if [ -z "$url_part" ]; then
