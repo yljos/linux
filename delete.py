@@ -30,7 +30,9 @@ def delete_empty_folders(directory: Path):
 
     while True:
         removed = 0
-        for folder in sorted(directory.rglob("*"), key=lambda p: len(str(p)), reverse=True):
+        for folder in sorted(
+            directory.rglob("*"), key=lambda p: len(str(p)), reverse=True
+        ):
             if folder.is_dir() and folder.absolute() != root:
                 try:
                     folder.rmdir()
@@ -74,7 +76,8 @@ def main():
         f
         for f in current_directory.rglob("*")
         if f.is_file()
-        and f.absolute() != script_path.absolute()  # ✅ 用 absolute() 避免 WinError 1005
+        and f.absolute()
+        != script_path.absolute()  # ✅ 用 absolute() 避免 WinError 1005
         and should_delete_file(f, target_mp4_set, size_threshold_bytes)
     ]
 
