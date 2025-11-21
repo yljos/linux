@@ -4,11 +4,16 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Restart=unless-stopped
+Type=simple
+Restart=always
+RestartSec=5s
 
 ExecStart=/usr/bin/podman run \
+  --replace \
   --rm \
+  --init \
   --name=pw \
+  --log-driver=journald \
   -e TZ=Asia/Shanghai \
   -p 8181:80 \
   -v /data/appdata/vaultwarden:/data:Z \

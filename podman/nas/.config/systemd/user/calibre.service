@@ -4,13 +4,16 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Restart=unless-stopped
+Type=simple
+Restart=always
+RestartSec=5s
 
-# -- ExecStart: 启动命令 --
-# 将您提供的配置转换为 podman run 命令
 ExecStart=/usr/bin/podman run \
+  --replace \
   --rm \
+  --init \
   --name=calibre \
+  --log-driver=journald \
   -e TZ=Asia/Shanghai \
   -e PASSWORD=110 \
   -e CLI_ARGS=abc \
@@ -20,7 +23,6 @@ ExecStart=/usr/bin/podman run \
   -v /data/epub:/epub:Z \
   lscr.io/linuxserver/calibre:latest
 
-# -- ExecStop: 停止命令 --
 ExecStop=/usr/bin/podman stop -t 10 calibre
 
 [Install]

@@ -4,11 +4,16 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Restart=unless-stopped
+Type=simple
+Restart=always
+RestartSec=5s
 
 ExecStart=/usr/bin/podman run \
+  --replace \
   --rm \
+  --init \
   --name=tmm \
+  --log-driver=journald \
   --userns=keep-id \
   --user=root \
   -e TZ=Asia/Shanghai \

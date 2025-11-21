@@ -1,13 +1,27 @@
 [Unit]
-Description=huai12138_bot
+Description=Huai12138 Bot Service
+# 确保网络完全就绪，防止 Bot 启动时连不上 API 报错
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-# 启动命令
+# 明确服务类型
+Type=simple
+
+# -------------------------------------------------
+# 启动命令优化点：
+# 1. --rm: 容器停止后自动清理垃圾
+# 2. --init: 极其重要！解决 Shell 脚本启动导致的信号屏蔽问题
+# 3. PYTHONUNBUFFERED: 确保 Bot 的日志实时输出，不卡在缓冲区
+# 4. --log-driver: 让 Podman 直接把日志吐给 journald
+# -------------------------------------------------
 ExecStart=/usr/bin/podman run \
   --name huai12138_bot \
   --replace \
+  --rm \
+  --init \
+  --log-driver=journald \
+  --env PYTHONUNBUFFERED=1 \
   --workdir /usr/src/myapp \
   -p 5005:5005 \
   -v /root/huai12138_bot:/usr/src/myapp:z \
@@ -15,10 +29,16 @@ ExecStart=/usr/bin/podman run \
   /usr/src/myapp/start.sh
 
 # 停止命令
+# 发送停止信号，等待 10 秒让 Bot 保存状态或断开连接
 ExecStop=/usr/bin/podman stop -t 10 huai12138_bot
 
-# 重启策略
-Restart=unless-stopped
+# -------------------------------------------------
+# 修复点：Systemd 不支持 "unless-stopped"
+# -------------------------------------------------
+Restart=always
+# 防止 Bot 崩溃时疯狂重启占用 CPU，设置 5 秒冷却
+RestartSec=5s
 
 [Install]
-WantedBy=default.target
+# 服务器环境标准 Target
+WantedBy=multi-user.target

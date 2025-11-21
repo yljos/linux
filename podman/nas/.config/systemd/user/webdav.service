@@ -4,7 +4,8 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Restart=unless-stopped
+Restart=always
+RestartSec=5s
 
 ExecStart=/usr/bin/podman run \
   --rm \

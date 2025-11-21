@@ -4,12 +4,17 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Restart=unless-stopped
+Type=simple
+Restart=always
+RestartSec=5s
 
-# 核心启动命令
 ExecStart=/usr/bin/podman run \
+  --replace \
   --rm \
+  --init \
   --name=ha \
+  --log-driver=journald \
+  --env PYTHONUNBUFFERED=1 \
   -e TZ=Asia/Shanghai \
   -p 8123:8123 \
   -p 1900:1900/udp \
@@ -18,7 +23,6 @@ ExecStart=/usr/bin/podman run \
   -v /etc/localtime:/etc/localtime:ro \
   ghcr.io/home-assistant/home-assistant:stable
 
-# 优雅地停止容器
 ExecStop=/usr/bin/podman stop -t 10 ha
 
 [Install]
