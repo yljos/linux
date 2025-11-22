@@ -6,13 +6,13 @@ USE_PROCD=1
 
 # --- Configuration ---
 PROXY_PORT=7893
-ROUTING_MARK=666   # Must match "default_mark" in config.json (0x29a = 666)
-PROXY_FWMARK=0x1   # Firewall mark for TProxy
+ROUTING_MARK=666
+PROXY_FWMARK=0x1
 TABLE_ID=100
 # --- End Configuration ---
 
 boot() {
-    # Delay start to ensure interfaces and fw4 are ready
+    # Delay start slightly
     ( sleep 10 && start_service ) &
 }
 
@@ -38,52 +38,52 @@ start_service() {
 
         # ==========================================
         # 3. Populate PREROUTING Chain (LAN -> Proxy)
-        #    (Note: Quotes in comments are escaped with \")
+        #    (Using safe comments without special chars)
         # ==========================================
         
         # 3.1 Loop Prevention & Core Services
-        nft add rule $NFT_TABLE $CHAIN_PRE meta mark '$ROUTING_MARK' return comment \"Prevention: Bypass sing-box outbound traffic\"
-        nft add rule $NFT_TABLE $CHAIN_PRE udp dport { 67, 68 } return comment \"Bypass: DHCP\"
-        nft add rule $NFT_TABLE $CHAIN_PRE ip6 nexthdr icmpv6 return comment \"Bypass: IPv6 ICMP (Ping/NDP)\"
+        nft add rule $NFT_TABLE $CHAIN_PRE meta mark '$ROUTING_MARK' return comment "Prevention_Bypass_Singbox_Outbound"
+        nft add rule $NFT_TABLE $CHAIN_PRE udp dport { 67, 68 } return comment "Bypass_DHCP"
+        nft add rule $NFT_TABLE $CHAIN_PRE ip6 nexthdr icmpv6 return comment "Bypass_IPv6_ICMP"
         
         # 3.2 Critical Bypasses
-        nft add rule $NFT_TABLE $CHAIN_PRE ct status dnat return comment \"Bypass: Port Forwarding (DNAT)\"
-        nft add rule $NFT_TABLE $CHAIN_PRE fib daddr type local return comment \"Bypass: Router Local Access\"
+        nft add rule $NFT_TABLE $CHAIN_PRE ct status dnat return comment "Bypass_Port_Forwarding_DNAT"
+        nft add rule $NFT_TABLE $CHAIN_PRE fib daddr type local return comment "Bypass_Router_Local_Access"
 
         # 3.3 Private & Reserved Addresses Bypass
         nft add rule $NFT_TABLE $CHAIN_PRE ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4 } return
         nft add rule $NFT_TABLE $CHAIN_PRE ip6 daddr { ::1/128, fc00::/7, fe80::/10, ff00::/8 } return
 
         # 3.4 Core TProxy Rule
-        nft add rule $NFT_TABLE $CHAIN_PRE meta l4proto { tcp, udp } tproxy to :'$PROXY_PORT' meta mark set '$PROXY_FWMARK' accept comment \"Action: TProxy to sing-box\"
+        nft add rule $NFT_TABLE $CHAIN_PRE meta l4proto { tcp, udp } tproxy to :'$PROXY_PORT' meta mark set '$PROXY_FWMARK' accept comment "Action_TProxy_To_Singbox"
 
         # ==========================================
         # 4. Populate OUTPUT Chain (Router -> Proxy)
         # ==========================================
         
-        # 4.1 Local Loopback Integrity (Crucial for ddns-go/dnsmasq)
-        nft add rule $NFT_TABLE $CHAIN_OUT meta oifname "lo" return comment \"Bypass: Loopback Interface\"
+        # 4.1 Local Loopback Integrity
+        nft add rule $NFT_TABLE $CHAIN_OUT meta oifname "lo" return comment "Bypass_Loopback_Interface"
 
         # 4.2 Prevention & Services
-        nft add rule $NFT_TABLE $CHAIN_OUT meta mark '$ROUTING_MARK' return comment \"Prevention: Bypass sing-box outbound traffic\"
-        nft add rule $NFT_TABLE $CHAIN_OUT ip6 nexthdr icmpv6 return comment \"Bypass: IPv6 ICMP\"
-        nft add rule $NFT_TABLE $CHAIN_OUT udp dport { 137, 138 } return comment \"Bypass: NetBIOS\"
+        nft add rule $NFT_TABLE $CHAIN_OUT meta mark '$ROUTING_MARK' return comment "Prevention_Bypass_Singbox_Outbound"
+        nft add rule $NFT_TABLE $CHAIN_OUT ip6 nexthdr icmpv6 return comment "Bypass_IPv6_ICMP"
+        nft add rule $NFT_TABLE $CHAIN_OUT udp dport { 137, 138 } return comment "Bypass_NetBIOS"
 
         # 4.3 Private & Reserved Addresses Bypass
         nft add rule $NFT_TABLE $CHAIN_OUT ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4 } return
         nft add rule $NFT_TABLE $CHAIN_OUT ip6 daddr { ::1/128, fc00::/7, fe80::/10, ff00::/8 } return
 
         # 4.4 Core Output Mark Rule
-        nft add rule $NFT_TABLE $CHAIN_OUT meta l4proto { tcp, udp } meta mark set '$PROXY_FWMARK' accept comment \"Action: Mark Router Output\"
+        nft add rule $NFT_TABLE $CHAIN_OUT meta l4proto { tcp, udp } meta mark set '$PROXY_FWMARK' accept comment "Action_Mark_Router_Output"
 
         # ==========================================
         # 5. Hook Chains to FW4
         # ==========================================
         nft list chain $NFT_TABLE mangle_prerouting | grep -q "jump $CHAIN_PRE" || \
-            nft insert rule $NFT_TABLE mangle_prerouting jump $CHAIN_PRE comment \"singbox_pre_hook\"
+            nft insert rule $NFT_TABLE mangle_prerouting jump $CHAIN_PRE comment "Singbox_Pre_Hook"
             
         nft list chain $NFT_TABLE mangle_output | grep -q "jump $CHAIN_OUT" || \
-            nft insert rule $NFT_TABLE mangle_output jump $CHAIN_OUT comment \"singbox_out_hook\"
+            nft insert rule $NFT_TABLE mangle_output jump $CHAIN_OUT comment "Singbox_Out_Hook"
 
         # ==========================================
         # 6. Configure Routing Rules
@@ -98,7 +98,7 @@ start_service() {
             ip -6 rule show table '$TABLE_ID' | grep -q "fwmark '$PROXY_FWMARK'" || ip -6 rule add fwmark '$PROXY_FWMARK' lookup '$TABLE_ID' pref 9000
         fi
         
-        echo "[singbox-tproxy] Rules loaded successfully (English Version)"
+        echo "[singbox-tproxy] Rules loaded successfully (Safe Mode)"
     '
     procd_set_param stdout 1
     procd_set_param stderr 1
@@ -111,10 +111,10 @@ stop_service() {
     CHAIN_OUT="singbox_output"
 
     # 1. Remove Hooks
-    for h in $(nft --handle list chain $NFT_TABLE mangle_prerouting | grep "singbox_pre_hook" | awk "{print \$NF}"); do
+    for h in $(nft --handle list chain $NFT_TABLE mangle_prerouting | grep "Singbox_Pre_Hook" | awk "{print \$NF}"); do
         nft delete rule $NFT_TABLE mangle_prerouting handle $h 2>/dev/null
     done
-    for h in $(nft --handle list chain $NFT_TABLE mangle_output | grep "singbox_out_hook" | awk "{print \$NF}"); do
+    for h in $(nft --handle list chain $NFT_TABLE mangle_output | grep "Singbox_Out_Hook" | awk "{print \$NF}"); do
         nft delete rule $NFT_TABLE mangle_output handle $h 2>/dev/null
     done
 
