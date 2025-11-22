@@ -12,6 +12,7 @@ OUTPUT_FOLDER_NAME = "processed"
 
 # --- 脚本主逻辑 ---
 
+
 def process_videos_recursively():
     # 检查 ffmpeg
     if not shutil.which("ffmpeg"):
@@ -26,8 +27,8 @@ def process_videos_recursively():
     print(f"输出目录：{output_root_directory}\n")
 
     # 使用 rglob 进行递归遍历 ('**/*' 代表递归所有子目录和文件)
-    for file_path in root_directory.rglob('*'):
-        
+    for file_path in root_directory.rglob("*"):
+
         # 1. 跳过文件夹，只处理文件
         if not file_path.is_file():
             continue
@@ -39,13 +40,13 @@ def process_videos_recursively():
 
         # 3. 检查扩展名 (pathlib 的 .suffix 带有点号，例如 .mp4)
         if file_path.suffix.lower() in VIDEO_EXTENSIONS:
-            
+
             # --- 计算路径 ---
             # 获取相对路径 (例如: sub/video.mp4)
             relative_path = file_path.relative_to(root_directory)
             # 拼接输出路径
             output_path = output_root_directory / relative_path
-            
+
             # --- 创建目录 ---
             # 直接创建父目录，如果存在则忽略，如果父级不存在则递归创建
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -55,9 +56,12 @@ def process_videos_recursively():
             # 构建命令 (subprocess 接受 Path 对象，但为了最大兼容性可以转为 str)
             command = [
                 "ffmpeg",
-                "-i", str(file_path),
-                "-c", "copy",
-                "-movflags", "+faststart",
+                "-i",
+                str(file_path),
+                "-c",
+                "copy",
+                "-movflags",
+                "+faststart",
                 "-y",
                 str(output_path),
             ]
@@ -72,6 +76,7 @@ def process_videos_recursively():
                 print(e.stderr)
 
     print("\n所有视频文件处理完毕。")
+
 
 if __name__ == "__main__":
     process_videos_recursively()

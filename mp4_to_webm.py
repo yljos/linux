@@ -13,14 +13,22 @@ VIDEO_EXTENSIONS = {".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv"}
 
 # 2. FFmpeg 参数配置
 FFMPEG_PARAMS = [
-    "-c:v", "libvpx-vp9",
-    "-crf", "33",
-    "-b:v", "0",
-    "-speed", "2",
-    "-threads", "2",
-    "-row-mt", "1",
-    "-c:a", "libopus",
-    "-b:a", "96k",
+    "-c:v",
+    "libvpx-vp9",
+    "-crf",
+    "33",
+    "-b:v",
+    "0",
+    "-speed",
+    "2",
+    "-threads",
+    "2",
+    "-row-mt",
+    "1",
+    "-c:a",
+    "libopus",
+    "-b:a",
+    "96k",
 ]
 # --- 配置区结束 ---
 
@@ -46,16 +54,16 @@ def convert_videos(source_dir):
     """
     original_title = "FFmpeg 全自动转换脚本 (Pathlib版)"
     set_terminal_title(original_title)
-    
+
     # 将输入转换为 Path 对象并解析绝对路径
     source_path = Path(source_dir).resolve()
-    
+
     print(f"[*] 开始自动扫描目录及其所有子目录: {source_path}")
     print("-" * 50)
 
     # 使用 rglob('*') 递归遍历所有文件和文件夹
-    for file_path in source_path.rglob('*'):
-        
+    for file_path in source_path.rglob("*"):
+
         # 1. 必须是文件
         if not file_path.is_file():
             continue
@@ -85,12 +93,7 @@ def convert_videos(source_dir):
         set_terminal_title(f"正在转换: {file_path.name}")
 
         # 构建命令 (subprocess 需要字符串路径，所以这里做一次转换)
-        command = [
-            "ffmpeg", 
-            "-i", str(file_path), 
-            *FFMPEG_PARAMS, 
-            str(output_path)
-        ]
+        command = ["ffmpeg", "-i", str(file_path), *FFMPEG_PARAMS, str(output_path)]
 
         try:
             # 使用 Popen 获取实时输出
@@ -100,7 +103,7 @@ def convert_videos(source_dir):
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
                 encoding="utf-8",
-                errors="replace" # 防止编码错误导致脚本崩溃
+                errors="replace",  # 防止编码错误导致脚本崩溃
             )
 
             # 逐行读取输出并添加前缀
