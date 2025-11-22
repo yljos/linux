@@ -59,7 +59,16 @@ alias mi8='ssh_add_check; ssh mi8'
 alias xiaoai='ssh_add_check; ssh xiaoai'
 # Git相关
 alias gaa='git add -A'
-alias gc='git commit -v'
+gc() {
+    if [ $# -eq 0 ]; then
+        # 没参数：执行 git commit -v
+        git commit -v
+    else
+        # 有参数：把所有参数拼成一句话，传给 -m
+        # 例如：gc 修复 bug -> git commit -m "修复 bug"
+        git commit -m "$*"
+    fi
+}
 alias gpl='ssh_add_check; git pull'
 alias gpu='github && codeberg'
 alias gcl='ssh_add_check; git clone'
