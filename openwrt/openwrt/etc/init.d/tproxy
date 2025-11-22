@@ -40,7 +40,7 @@ load_modules() {
     modprobe nf_tproxy_ipv4 >/dev/null 2>&1
     modprobe nf_tproxy_ipv6 >/dev/null 2>&1
     # xt_TPROXY 主要用于 iptables，fw4 环境下缺失是正常的，静默即可
-    modprobe xt_TPROXY >/dev/null 2>&1
+    # modprobe xt_TPROXY >/dev/null 2>&1
 }
 
 # 核心逻辑：加载规则

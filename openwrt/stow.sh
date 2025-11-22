@@ -24,4 +24,4 @@ ln -sf /root/linux/openwrt/openwrt/etc/init.d/tproxy /etc/init.d/tproxy
 
 # nftables 配置目录
 rm -rf /etc/nftables.d/11-sing-box.nft
-ln -sf /root/linux/openwrt/openwrt/etc/nftables.d/11-sing-box.nft /etc/nftables.d/11-sing-box.nft
+# ln -sf /root/linux/openwrt/openwrt/etc/nftables.d/11-sing-box.nft /etc/nftables.d/11-sing-box.nft
