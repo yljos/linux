@@ -1,5 +1,5 @@
-import os
 import re
+from pathlib import Path
 
 _digits = {
     "零": 0,
@@ -20,6 +20,10 @@ keep_punct = "。？，！# : .……"
 
 
 def chinese_to_int(s: str):
+    """
+    (保持原逻辑不变)
+    将中文数字转换为整数
+    """
     s = s.replace("两", "二").strip()
     if s.isdigit():
         return int(s)
@@ -103,7 +107,10 @@ def chinese_to_int(s: str):
 
 
 def clean_punct(text):
-    """删除除 keep_punct 外的其它标点符号"""
+    """
+    (保持原逻辑不变)
+    删除除 keep_punct 外的其它标点符号
+    """
     return "".join(
         ch
         for ch in text
@@ -115,6 +122,7 @@ def clean_punct(text):
 
 
 def replace_line(line):
+    """(保持原逻辑不变)"""
     stripped = line.strip()
 
     # 卷
@@ -151,11 +159,19 @@ def replace_line(line):
     return clean_punct(stripped) + "\n"
 
 
-def process_file(filename):
-    with open(filename, "r", encoding="utf-8") as f:
-        content = f.read()
+def process_file(file_path: Path):
+    """
+    使用 pathlib 读取、处理并写入文件
+    """
+    # pathlib 读取文件内容
+    # errors="ignore" 或 "replace" 可以防止编码错误，这里使用 strict (默认)
+    try:
+        content = file_path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        print(f"编码错误跳过: {file_path.name}")
+        return
 
-    # 先删除所有 #
+    # 先删除所有 # (保持原逻辑)
     content = content.replace("#", "")
 
     lines = content.splitlines()
@@ -177,13 +193,15 @@ def process_file(filename):
         else:
             cleaned_lines.append(line)
 
-    with open(filename, "w", encoding="utf-8") as f:
-        f.writelines(cleaned_lines)
+    # pathlib 写入文件
+    # write_text 需要传入字符串，所以用 join 将列表合并
+    file_path.write_text("".join(cleaned_lines), encoding="utf-8")
 
-    print(f"处理完成: {filename}")
+    print(f"处理完成: {file_path.name}")
 
 
 if __name__ == "__main__":
-    for file in os.listdir("."):
-        if file.endswith(".txt"):
-            process_file(file)
+    # 使用 pathlib 的 glob 查找当前目录下所有 .txt 文件
+    # Path.cwd() 获取当前工作目录
+    for txt_file in Path.cwd().glob("*.txt"):
+        process_file(txt_file)
