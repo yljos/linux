@@ -3,6 +3,7 @@ from pathlib import Path
 
 # --- 辅助函数 (保持原有逻辑) ---
 
+
 def format_folder_name(name):
     """
     文件夹命名规则：
@@ -34,6 +35,7 @@ def format_file_name(name):
 
 # --- 核心逻辑 (Pathlib 重构版) ---
 
+
 def clean_filename_prefix(filename):
     """
     移除文件名中已有的 '01_' 或 'E01_' 前缀
@@ -46,7 +48,7 @@ def clean_filename_prefix(filename):
             is_digit_prefix = prefix.isdigit()
             # 检查是否是 E+数字 (例如 E01)
             is_episode_prefix = prefix.startswith("E") and prefix[1:].isdigit()
-            
+
             if is_digit_prefix or is_episode_prefix:
                 return rest
     except ValueError:
@@ -77,7 +79,7 @@ def process_directory_recursively(current_dir):
     for folder_path in subdirs:
         old_name = folder_path.name
         new_name = format_folder_name(old_name)
-        
+
         # 如果计算出的新名字有效且不同
         if new_name and old_name != new_name:
             # with_name 创建一个新的 Path 对象，仅替换文件名部分
@@ -97,30 +99,30 @@ def process_directory_recursively(current_dir):
     # --- 第二步: 处理 .webm 文件 ---
     # 筛选并排序
     webm_files = sorted([f for f in files if f.suffix.lower() == ".webm"])
-    
+
     if not webm_files:
         return
 
     counter = 1
     for file_path in webm_files:
         original_name = file_path.name
-        
+
         # 1. 清理前缀 (基于完整文件名)
         name_without_prefix = clean_filename_prefix(original_name)
-        
+
         # 2. 分离文件名和后缀 (Pathlib 的 .stem 不带后缀)
         # 注意：这里我们需要手动处理 string，因为 .stem 只能去一层后缀
         # 为了稳妥，使用 pathlib 的 .stem 和 .suffix
-        file_stem = Path(name_without_prefix).stem 
-        file_suffix = file_path.suffix # .webm
-        
+        file_stem = Path(name_without_prefix).stem
+        file_suffix = file_path.suffix  # .webm
+
         # 3. 格式化文件名主体
         cleaned_stem = format_file_name(file_stem)
-        
+
         if not cleaned_stem:
             print(f"  跳过: 文件名主体为空 '{original_name}'")
             continue
-            
+
         # 4. 组合新文件名
         new_filename = f"E{counter:02d}_{cleaned_stem}{file_suffix}"
         new_file_path = file_path.with_name(new_filename)
@@ -141,7 +143,7 @@ def process_directory_recursively(current_dir):
 if __name__ == "__main__":
     # 获取当前工作目录
     root_path = Path.cwd()
-    
+
     print(f"开始处理根目录： {root_path}\n")
     process_directory_recursively(root_path)
     print("\n处理完成！")
