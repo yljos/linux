@@ -6,6 +6,8 @@ domain: &domain {proxy: M, interval: 86400, type: http, format: mrs, behavior: d
 ipcidr: &ipcidr {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr}
 classical: &classical {proxy: M, type: http, interval: 86400, behavior: classical, format: yaml}
 mixed-port: 12138
+redir-port: 7892
+tproxy-port: 7893
 allow-lan: true
 bind-address: "*"
 find-process-mode: off # always, strict, off
