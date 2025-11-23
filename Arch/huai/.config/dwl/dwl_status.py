@@ -2,6 +2,7 @@
 """
 DWL Status Bar Generator
 功能完全等同于 dwl_status.sh
+优化：使用多线程异步更新天气，解决启动和运行时卡顿问题
 """
 
 import os
@@ -9,6 +10,7 @@ import sys
 import time
 import signal
 import subprocess
+import threading  # 新增：用于异步更新
 from pathlib import Path
 from datetime import datetime
 import re
@@ -357,6 +359,12 @@ class StatusBar:
         """更新时间"""
         self.time_status = datetime.now().strftime("%Y-%m-%d %H:%M %a")
 
+    def update_weather_async(self):
+        """[新增] 异步更新天气，防止卡死"""
+        thread = threading.Thread(target=self.update_weather)
+        thread.daemon = True
+        thread.start()
+
     def update_weather(self):
         """更新天气信息"""
         try:
@@ -590,7 +598,9 @@ def main():
     status.update_net()
     status.update_volume()
     status.update_bluetooth()
-    status.update_weather()
+
+    # 【修改点】使用异步更新天气，防止启动卡顿
+    status.update_weather_async()
 
     # 主循环
     sec = 0
@@ -609,7 +619,8 @@ def main():
                 status.update_time()
 
             if sec % UPDATE_INTERVAL_WEATHER == 0:
-                status.update_weather()
+                # 【修改点】循环中也使用异步更新
+                status.update_weather_async()
 
             status.print_status_bar()
             time.sleep(1)
