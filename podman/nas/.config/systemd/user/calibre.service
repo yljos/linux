@@ -8,12 +8,16 @@ Type=simple
 Restart=always
 RestartSec=5s
 
+# 关键修改：添加了 --userns=keep-id 和 PUID/PGID
 ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
   --name=calibre \
   --log-driver=journald \
+  --userns=keep-id \
   -e TZ=Asia/Shanghai \
+  -e PUID=1000 \
+  -e PGID=1000 \
   -e PASSWORD=110 \
   -e CLI_ARGS=abc \
   -p 8081:8181 \
