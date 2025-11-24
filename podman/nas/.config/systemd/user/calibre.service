@@ -14,7 +14,6 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --name=calibre \
   --log-driver=journald \
-  --userns=keep-id \
   -e TZ=Asia/Shanghai \
   -e PUID=1000 \
   -e PGID=1000 \
