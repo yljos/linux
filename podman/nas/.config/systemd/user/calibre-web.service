@@ -11,7 +11,6 @@ RestartSec=5s
 ExecStart=/usr/bin/podman run \
   --rm \
   --name=calibre-web \
-  --userns=keep-id \
   -e TZ=Asia/Shanghai \
   -e PUID=1000 \
   -e PGID=1000 \
