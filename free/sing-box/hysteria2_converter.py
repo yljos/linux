@@ -3,8 +3,8 @@
 Hysteria2 URL to YAML converter
 转换为包含默认参数的Clash配置格式
 """
-DEFAULT_UP_SPEED = "40"
-DEFAULT_DOWN_SPEED = "200"
+DEFAULT_UP_SPEED = "20"
+DEFAULT_DOWN_SPEED = "40"
 import json
 from urllib.parse import urlparse, parse_qs
 import urllib.parse
