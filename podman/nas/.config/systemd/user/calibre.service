@@ -18,7 +18,7 @@ ExecStart=/usr/bin/podman run \
   -e CLI_ARGS=abc \
   -p 8081:8181 \
   -v /data/appdata/calibre:/config:Z \
-  -v "/data/books:/config/calibre library:Z" \
+  -v "/data/books:/config/calibre library:z" \
   -v /data/epub:/epub:Z \
   lscr.io/linuxserver/calibre:latest
 

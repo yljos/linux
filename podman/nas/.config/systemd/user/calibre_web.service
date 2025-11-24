@@ -15,7 +15,7 @@ ExecStart=/usr/bin/podman run \
   -e OAUTHLIB_RELAX_TOKEN_SCOPE=1 \
   -p 8083:8083 \
   -v /data/appdata/calibre-web:/config:Z \
-  -v /data/books:/books:Z \
+  -v /data/books:/books:z \
   lscr.io/linuxserver/calibre-web:latest
 
 ExecStop=/usr/bin/podman stop -t 10 calibre_web
