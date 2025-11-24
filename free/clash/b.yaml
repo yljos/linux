@@ -59,14 +59,14 @@ proxies: []
 proxy-groups:
   - {<<: *select, name: M, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback, DIRECT]}
   - {<<: *select, name: Default, type: select, proxies: [M, JP_fallback, US_fallback, SG_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Google, proxies: [M, JP_fallback, US_fallback, SG_fallback, HK_fallback]}
-  - {<<: *select, name: OpenAi, proxies: [M, JP_fallback, US_fallback, SG_fallback, HK_fallback]}
-  - {<<: *select, name: Telegram, proxies: [M, JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: Netflix, proxies: [SG_fallback, JP_fallback, US_fallback, HK_fallback]}
-  - {<<: *select, name: Steam, proxies: [M, JP_fallback, SG_fallback, US_fallback, HK_fallback]}
+  - {<<: *select, name: Steam, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback]}
   - {<<: *select, name: PikPak, proxies: [HK_fallback, SG_fallback, JP_fallback, US_fallback]}
-  - {<<: *select, name: GitHub, proxies: [M, JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Microsoft, proxies: [M, JP_fallback, SG_fallback, HK_fallback, DIRECT, US_fallback]}
+  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
+  - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, HK_fallback, DIRECT, US_fallback]}
   - {<<: *select, name: AD, include-all-proxies: false, hidden: true, proxies: [REJECT, PASS]}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)"}
   - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)"}

@@ -12,7 +12,7 @@ allow-lan: true
 bind-address: "*"
 find-process-mode: off # always, strict, off
 log-level: error # info, warning, error, debug
-ipv6: false
+ipv6: true
 udp: true
 unified-delay: true
 tcp-concurrent: true
@@ -31,7 +31,7 @@ dns:
   enable: true
   prefer-h3: false
   listen: "0.0.0.0:1053"
-  ipv6: false
+  ipv6: true
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
@@ -59,12 +59,12 @@ proxies: []
 proxy-groups:
   - {<<: *select, name: M, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback, DIRECT]}
   - {<<: *select, name: Default, type: select, proxies: [M, JP_fallback, US_fallback, SG_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Google, proxies: [M, JP_fallback, US_fallback, SG_fallback, HK_fallback]}
-  - {<<: *select, name: Telegram, proxies: [M, JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: Netflix, proxies: [SG_fallback, JP_fallback, US_fallback, HK_fallback]}
   - {<<: *select, name: PikPak, proxies: [HK_fallback, SG_fallback, JP_fallback, US_fallback]}
-  - {<<: *select, name: GitHub, proxies: [M, JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Microsoft, proxies: [M, JP_fallback, SG_fallback, HK_fallback, DIRECT, US_fallback]}
+  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
+  - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, HK_fallback, DIRECT, US_fallback]}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)"}
   - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)"}
   - {<<: *fallback, name: SG_fallback, filter: "(?i)(新加坡|sg|singapore)"}
