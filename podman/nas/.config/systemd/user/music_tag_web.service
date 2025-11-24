@@ -10,7 +10,7 @@ RestartSec=5s
 # 核心启动命令
 ExecStart=/usr/bin/podman run \
   --rm \
-  --name=music_tag_web \
+  --name=music-tag-web \
   -e TZ=Asia/Shanghai \
   -p 8002:8002 \
   -v /data/media/Music:/app/media:Z \
@@ -19,7 +19,7 @@ ExecStart=/usr/bin/podman run \
   docker.io/xhongc/music_tag_web:latest
 
 # 优雅地停止容器
-ExecStop=/usr/bin/podman stop -t 10 music_tag_web
+ExecStop=/usr/bin/podman stop -t 10 music-tag-web
 
 [Install]
 WantedBy=default.target
