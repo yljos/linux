@@ -33,9 +33,13 @@ alias 0="pactl set-default-sink alsa_output.usb-DeSheng_Electronics_Inc._Star_Y3
 alias 1="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 60"
 alias 2="pactl set-default-sink bluez_output.E6_30_6D_65_E0_5F.1;vol 90" 
 vol() {
+    # 1. 调整音量
     pactl set-sink-volume @DEFAULT_SINK@ "${1}%"
-    # 使用 Python 脚本通知状态栏更新音量
-    python3 "$HOME/.config/dwl/notify_volume.py" 2>/dev/null
+
+    # 2. 发送信号给 dwl_status.sh
+    # 注意：这里必须对应 trap 中的 SIGRTMIN+2
+    # pkill 的参数是 -RTMIN+2 (有些系统写作 -36，但推荐用名称)
+    pkill -RTMIN+2 -f dwl_status.sh
 }
 alias volup="vol +10%"
 alias voldown="vol -10%"
