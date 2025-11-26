@@ -37,8 +37,7 @@ vol() {
     pactl set-sink-volume @DEFAULT_SINK@ "${1}%"
 
     # 2. 发送信号给 dwl_status.sh
-    # 注意：这里必须对应 trap 中的 SIGRTMIN+2
-    # pkill 的参数是 -RTMIN+2 (有些系统写作 -36，但推荐用名称)
+
     pkill -RTMIN+2 -f dwl_status.sh
 }
 alias volup="vol +10%"
