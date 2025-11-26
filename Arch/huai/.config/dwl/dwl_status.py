@@ -52,12 +52,13 @@ MPD_PORT = 6600
 # --- 4. Behavior Settings ---
 UPDATE_INTERVAL_MEDIUM = 5
 UPDATE_INTERVAL_LONG = 60
-UPDATE_INTERVAL_WEATHER = 1800 # 30分钟
+UPDATE_INTERVAL_WEATHER = 1800  # 30分钟
 SEPARATOR = "|"
 
 # =============================================================================
 # --- GLOBAL STATE ---
 # =============================================================================
+
 
 class StatusBar:
     def __init__(self):
@@ -113,7 +114,7 @@ class StatusBar:
                 # user+nice+system+idle+iowait+irq+softirq
                 cpu_vals = [int(x) for x in line[1:8]]
                 self.prev_cpu = sum(cpu_vals)
-                self.prev_idle = cpu_vals[3] # idle is index 3 (4th value)
+                self.prev_idle = cpu_vals[3]  # idle is index 3 (4th value)
         except:
             pass
 
@@ -185,7 +186,12 @@ class StatusBar:
         self.bluetooth_status = ""
         # 快速检查进程，避免无效调用
         try:
-            subprocess.run(["pgrep", "-x", "bluetoothd"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            subprocess.run(
+                ["pgrep", "-x", "bluetoothd"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True,
+            )
         except subprocess.CalledProcessError:
             return
 
@@ -228,28 +234,37 @@ class StatusBar:
                 s.settimeout(0.1)
                 s.connect((MPD_HOST, MPD_PORT))
                 s.send(b"currentsong\nstatus\nclose\n")
-                
+
                 data = b""
                 while True:
                     chunk = s.recv(4096)
-                    if not chunk: break
+                    if not chunk:
+                        break
                     data += chunk
 
                 response = data.decode("utf-8", errors="ignore")
-                
+
                 state = "stop"
                 artist = ""
                 title = ""
                 name = ""
 
                 for line in response.splitlines():
-                    if line.startswith("state: "): state = line[7:]
-                    elif line.startswith("Artist: "): artist = line[8:]
-                    elif line.startswith("Title: "): title = line[7:]
-                    elif line.startswith("Name: "): name = line[6:]
+                    if line.startswith("state: "):
+                        state = line[7:]
+                    elif line.startswith("Artist: "):
+                        artist = line[8:]
+                    elif line.startswith("Title: "):
+                        title = line[7:]
+                    elif line.startswith("Name: "):
+                        name = line[6:]
 
                 if state == "play":
-                    display = f"{artist} - {title}" if artist and title else (title or name or "Unknown")
+                    display = (
+                        f"{artist} - {title}"
+                        if artist and title
+                        else (title or name or "Unknown")
+                    )
                     self.music_status = f"{C_NORM}{display}{C_RESET}"
                 else:
                     self.music_status = ""
@@ -279,21 +294,24 @@ class StatusBar:
         try:
             url = f"wttr.in/{WEATHER_LOCATION}?format=%t+%C"
             result = subprocess.run(
-                ["curl", "-s", "-m", "10", url],
-                capture_output=True, text=True
+                ["curl", "-s", "-m", "10", url], capture_output=True, text=True
             )
 
             if result.returncode == 0 and result.stdout.strip():
                 weather = result.stdout.strip()
-                
+
                 # 提取温度数字用于颜色判断
                 temp_match = re.search(r"([+-]?\d+)", weather)
                 temp_val = int(temp_match.group(1)) if temp_match else 20
-                
-                if temp_val <= 10: temp_color = C_BLUE
-                elif temp_val >= 32: temp_color = C_CRIT
-                elif temp_val >= 26: temp_color = C_WARN
-                else: temp_color = C_NORM
+
+                if temp_val <= 10:
+                    temp_color = C_BLUE
+                elif temp_val >= 32:
+                    temp_color = C_CRIT
+                elif temp_val >= 26:
+                    temp_color = C_WARN
+                else:
+                    temp_color = C_NORM
 
                 # 分离温度文本和天气状况
                 # 假设格式如 "+25°C Sunny"
@@ -302,26 +320,33 @@ class StatusBar:
                 cond_str = weather.replace(temp_str, "").strip()
 
                 if temp_str:
-                    self.weather_status = f"{ICON_WEATHER}{temp_color}{temp_str}{C_RESET} {cond_str}"
+                    self.weather_status = (
+                        f"{ICON_WEATHER}{temp_color}{temp_str}{C_RESET} {cond_str}"
+                    )
                 else:
                     self.weather_status = f"{ICON_WEATHER}{weather}"
             else:
-                pass # 保持上一次的状态，不更新为 N/A，避免闪烁
+                pass  # 保持上一次的状态，不更新为 N/A，避免闪烁
         except:
             pass
 
     def update_net(self):
-        if self.rx1 is None: return
+        if self.rx1 is None:
+            return
         try:
-            with open(self.net_rx_file) as f: rx2 = int(f.read())
-            with open(self.net_tx_file) as f: tx2 = int(f.read())
-            
+            with open(self.net_rx_file) as f:
+                rx2 = int(f.read())
+            with open(self.net_tx_file) as f:
+                tx2 = int(f.read())
+
             rx_mbps = ((rx2 - self.rx1) * 8) // 1000000
             tx_mbps = ((tx2 - self.tx1) * 8) // 1000000
-            
+
             self.rx1 = rx2
             self.tx1 = tx2
-            self.net_status_str = f"{ICON_NET_DOWN}{rx_mbps}Mbps {ICON_NET_UP}{tx_mbps}Mbps"
+            self.net_status_str = (
+                f"{ICON_NET_DOWN}{rx_mbps}Mbps {ICON_NET_UP}{tx_mbps}Mbps"
+            )
         except:
             self.net_status_str = "N/A"
 
@@ -337,23 +362,29 @@ class StatusBar:
             self.net_status_str,
             self.weather_status,
             self.time_status,
-            self.ime_status
+            self.ime_status,
         ]
         # 过滤掉空字符串并用分隔符连接
         print(SEPARATOR.join(filter(None, parts)))
         sys.stdout.flush()
 
+
 # =============================================================================
 # --- MAIN ---
 # =============================================================================
+
 
 def main():
     status = StatusBar()
 
     # 信号处理
-    signal.signal(signal.SIGUSR1, lambda s, f: (status.update_volume(), status.print_status_bar()))
-    signal.signal(signal.SIGUSR2, lambda s, f: (status.update_ime(), status.print_status_bar()))
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL) # 处理管道关闭
+    signal.signal(
+        signal.SIGUSR1, lambda s, f: (status.update_volume(), status.print_status_bar())
+    )
+    signal.signal(
+        signal.SIGUSR2, lambda s, f: (status.update_ime(), status.print_status_bar())
+    )
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # 处理管道关闭
 
     # 首次全量更新
     status.update_cpu()
@@ -392,11 +423,13 @@ def main():
 
             # 精准对齐下一秒，防止时间漂移
             sleep_time = 1.0 - (time.time() % 1.0)
-            if sleep_time < 0.001: sleep_time += 1.0
+            if sleep_time < 0.001:
+                sleep_time += 1.0
             time.sleep(sleep_time)
 
     except KeyboardInterrupt:
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

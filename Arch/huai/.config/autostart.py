@@ -21,6 +21,7 @@ SHUTDOWN_SH = CONFIG_DIR / "shutdown.sh"
 
 # ================= 工具函数 =================
 
+
 async def is_running(pattern: str, exact: bool = True) -> bool:
     """
     异步检查进程是否运行。
@@ -36,34 +37,36 @@ async def is_running(pattern: str, exact: bool = True) -> bool:
 
     # 创建子进程运行 pgrep
     proc = await asyncio.create_subprocess_exec(
-        *args,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
+        *args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
     await proc.wait()
     return proc.returncode == 0
+
 
 async def notify(title: str, message: str, delay: int = 0):
     """异步发送通知"""
     if delay > 0:
         await asyncio.sleep(delay)
-    
+
     # 检查 notify-send 是否存在
     if shutil.which("notify-send"):
         await asyncio.create_subprocess_exec(
-            "notify-send", title, message,
+            "notify-send",
+            title,
+            message,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
 
+
 async def ensure_service(
-    name: str, 
-    cmd: list[str], 
+    name: str,
+    cmd: list[str],
     cwd: Path | None = None,
     match_pattern: str | None = None,
     check_delay: float = 3.0,
     notify_delay: int = 0,
-    notify_msg: str = ""
+    notify_msg: str = "",
 ):
     """
     核心逻辑：
@@ -78,7 +81,7 @@ async def ensure_service(
 
     # 1. 初始检查
     if await is_running(pattern, exact=exact_match):
-        return # 已在运行，直接退出
+        return  # 已在运行，直接退出
 
     # 2. 预检：命令是否存在 (对于脚本，检查文件是否存在)
     executable = cmd[0]
@@ -96,11 +99,11 @@ async def ensure_service(
     # 3. 启动进程 (使用 Popen 类似机制，不等待其结束)
     try:
         subprocess.Popen(
-            cmd, 
+            cmd,
             cwd=cwd,
-            stdout=subprocess.DEVNULL, 
+            stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            stdin=subprocess.DEVNULL
+            stdin=subprocess.DEVNULL,
         )
     except Exception as e:
         await notify("Autostart Exception", f"Failed to start {name}: {e}")
@@ -116,63 +119,78 @@ async def ensure_service(
             # 但既然已经过了 check_delay，通常直接通知即可
             # 如果为了保持原脚本逻辑，我们这里再异步延时
             asyncio.create_task(
-                notify("Autostart Failed", f"{notify_msg} failed to start", delay=max(0, notify_delay - int(check_delay)))
+                notify(
+                    "Autostart Failed",
+                    f"{notify_msg} failed to start",
+                    delay=max(0, notify_delay - int(check_delay)),
+                )
             )
 
+
 # ================= 主入口 =================
+
 
 async def main():
     # 使用 asyncio.gather 并发执行所有任务
     # 这意味着脚本只需等待所有任务中最慢的那一个（约3秒），而不是所有时间的总和。
-    
+
     tasks = [
         # 1. Dunst
-        ensure_service(
-            "dunst", ["dunst"], notify_msg="dunst"
-        ),
-        
+        ensure_service("dunst", ["dunst"], notify_msg="dunst"),
         # 2. SWWW Daemon
         ensure_service(
-            "swww-daemon", ["swww-daemon"], 
-            check_delay=3.0, notify_delay=2, notify_msg="swww-daemon"
+            "swww-daemon",
+            ["swww-daemon"],
+            check_delay=3.0,
+            notify_delay=2,
+            notify_msg="swww-daemon",
         ),
-        
         # 3. swww_auto.sh (Shell 脚本)
         ensure_service(
-            "swww_auto.sh", 
-            ["/bin/sh", str(SWWW_AUTO)], 
-            match_pattern=str(SWWW_AUTO), # 使用完整路径匹配 (-f)
-            check_delay=3.0, notify_delay=4, notify_msg="swww_auto.sh"
+            "swww_auto.sh",
+            ["/bin/sh", str(SWWW_AUTO)],
+            match_pattern=str(SWWW_AUTO),  # 使用完整路径匹配 (-f)
+            check_delay=3.0,
+            notify_delay=4,
+            notify_msg="swww_auto.sh",
         ),
-        
         # 4. shutdown.sh (Shell 脚本)
         ensure_service(
-            "shutdown.sh", 
-            ["/bin/sh", str(SHUTDOWN_SH)], 
-            match_pattern=str(SHUTDOWN_SH), # 使用完整路径匹配 (-f)
-            check_delay=3.0, notify_delay=6, notify_msg="shutdown.sh"
+            "shutdown.sh",
+            ["/bin/sh", str(SHUTDOWN_SH)],
+            match_pattern=str(SHUTDOWN_SH),  # 使用完整路径匹配 (-f)
+            check_delay=3.0,
+            notify_delay=6,
+            notify_msg="shutdown.sh",
         ),
-        
         # 5. Firefox
         ensure_service(
-            "firefox", ["firefox"], 
-            check_delay=3.0, notify_delay=8, notify_msg="Firefox"
+            "firefox",
+            ["firefox"],
+            check_delay=3.0,
+            notify_delay=8,
+            notify_msg="Firefox",
         ),
-        
         # 6. Telegram
         ensure_service(
-            "Telegram", ["Telegram"], 
-            check_delay=3.0, notify_delay=10, notify_msg="Telegram"
+            "Telegram",
+            ["Telegram"],
+            check_delay=3.0,
+            notify_delay=10,
+            notify_msg="Telegram",
         ),
-        
         # 7. Fcitx5
         ensure_service(
-            "fcitx5", ["fcitx5", "-d"], 
-            check_delay=3.0, notify_delay=12, notify_msg="fcitx5"
+            "fcitx5",
+            ["fcitx5", "-d"],
+            check_delay=3.0,
+            notify_delay=12,
+            notify_msg="fcitx5",
         ),
     ]
 
     await asyncio.gather(*tasks)
+
 
 if __name__ == "__main__":
     try:
