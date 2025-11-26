@@ -1,79 +1,68 @@
 #!/usr/bin/env bash
 
-# --- 配置区域 ---
-# 锁文件路径，使用变量更安全
-LOCK_SCRIPT="$HOME/.config/script_lock.sh"
-SWWW_SCRIPT="$HOME/.config/swww_auto.sh"
-SHUTDOWN_SCRIPT="$HOME/.config/shutdown.sh"
-
-# --- 加载脚本锁 ---
-if [ -f "$LOCK_SCRIPT" ]; then
-    . "$LOCK_SCRIPT"
+# --- 1. 加载脚本锁 (保持原有逻辑) ---
+LOCK_FILE="$HOME/.config/script_lock.sh"
+if [ -f "$LOCK_FILE" ]; then
+    . "$LOCK_FILE"
     acquire_script_lock || exit 0
-else
-    echo "Warning: Lock script not found." >&2
 fi
 
-# --- 工具函数 ---
+# --- 2. 核心函数: 启动并静默检查 ---
+# 用法: run_silent "匹配模式(pgrep用)" "启动命令" "中文名称"
+run_silent() {
+    local match_pattern="$1"
+    local run_cmd="$2"
+    local app_name="$3"
 
-# 检查进程是否运行
-is_running() {
-    # -x 精确匹配进程名
-    pgrep -x "$1" >/dev/null 2>&1
-}
-
-# 异步发送通知 (不再通过 subshell sleep，直接扔给后台)
-notify_delayed() {
-    local delay=$1
-    local title=$2
-    local message=$3
-    # 使用 nohup 确保主脚本退出后通知依然能发送，且不挂起
-    (sleep "$delay" && notify-send "$title" "$message") >/dev/null 2>&1 &
-}
-
-# 核心启动逻辑封装
-# 用法: start_service "进程名" "启动命令" "通知延迟" "中文描述"
-start_service() {
-    local proc_name=$1
-    local cmd=$2
-    local delay=$3
-    local desc=$4
-
-    if ! is_running "$proc_name"; then
-        # 启动命令 ($cmd 可能包含参数，所以不加引号直接展开，或者使用 eval)
-        eval "$cmd" &
-        
-        # 可选：稍微等待一下以确保进程创建（非阻塞整个脚本的关键，但在 Shell 中很难做到完全无阻塞检测）
-        # 这里为了脚本极速执行，我们**去掉** sleep 0.5 的检测。
-        # 对于自动启动来说，"火后即焚" (Fire and Forget) 通常体验更好。
-        
-        # 发送通知
-        notify_delayed "$delay" "Autostart" "启动 $desc"
-    else
-        echo "$desc 已经在运行中"
+    # A. 启动前检查：如果已经在运行，直接跳过，啥也不干
+    # 使用 -f 模糊匹配，既能匹配 "dunst"，也能匹配 "sh script.sh"
+    if pgrep -f "$match_pattern" >/dev/null 2>&1; then
+        return 0
     fi
+
+    # B. 启动进程 (丢弃输出，后台运行)
+    # 使用 eval 确保带参数的命令(如 fcitx5 -d)能正确执行
+    eval "$run_cmd" >/dev/null 2>&1 &
+
+    # C. 异步延时检查 (关键优化)
+    # 将"等待3秒后检查"这个动作也放入后台，主脚本不阻塞
+    (
+        sleep 3
+        # 3秒后再次检查，如果找不到进程，说明启动失败
+        if ! pgrep -f "$match_pattern" >/dev/null 2>&1; then
+            notify-send -u critical "启动失败" "❌ 无法启动: $app_name"
+        fi
+    ) &
 }
 
-# --- 主逻辑 ---
+# --- 3. 任务列表 ---
 
-# 1. Dunst (通知服务通常最先启动)
-start_service "dunst" "dunst" 0 "dunst 通知守护进程"
+# Dunst (通知服务)
+# 注意: dunst 必须先活下来，否则后面的 notify-send 发不出去
+# 这里为了保险，我们可以稍微特殊处理，不放后台等待，确保它起来
+if ! pgrep -x "dunst" >/dev/null; then
+    dunst & 
+    sleep 0.5 # 稍微给点面子等待一下
+fi
 
-# 2. 壁纸相关
-start_service "swww-daemon" "swww-daemon" 2 "swww-daemon 壁纸守护进程"
-# 脚本通常不能用 pgrep -x 匹配，这里直接运行 (假设脚本内部有锁)
-sh "$SWWW_SCRIPT" &
-notify_delayed 4 "Autostart" "启动 swww_auto.sh 壁纸脚本"
+# 壁纸守护进程
+run_silent "swww-daemon" "swww-daemon" "swww 守护进程"
 
-# 3. 关机脚本 (假设脚本内部有锁)
-sh "$SHUTDOWN_SCRIPT" &
-notify_delayed 6 "Autostart" "启动 shutdown.sh 关机脚本"
+# 壁纸自动切换脚本 (匹配完整路径)
+SWWW_SCRIPT="$HOME/.config/swww_auto.sh"
+run_silent "$SWWW_SCRIPT" "sh $SWWW_SCRIPT" "swww_auto.sh"
 
-# 4. 应用程序
-start_service "firefox" "firefox" 8 "Firefox 浏览器"
-start_service "Telegram" "Telegram" 10 "Telegram 即时通讯"
+# 关机脚本
+SHUTDOWN_SCRIPT="$HOME/.config/shutdown.sh"
+run_silent "$SHUTDOWN_SCRIPT" "sh $SHUTDOWN_SCRIPT" "shutdown.sh"
 
-# 5. 输入法 (fcitx5 需要 -d 参数)
-start_service "fcitx5" "fcitx5 -d" 12 "fcitx5 输入法"
+# Firefox
+run_silent "firefox" "firefox" "Firefox 浏览器"
+
+# Telegram
+run_silent "Telegram" "Telegram" "Telegram"
+
+# Fcitx5 输入法
+run_silent "fcitx5" "fcitx5 -d" "Fcitx5 输入法"
 
 exit 0
