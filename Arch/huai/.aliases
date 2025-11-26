@@ -137,7 +137,7 @@ x() {
     if [ -f "$HOME/.xinitrc" ]; then
         startx
     else
-        python3 /home/huai/.config/dwl/dwl_status.py | dwl
+        /usr/bin/bash /home/huai/.config/dwl/dwl_status.sh | dwl
     fi
 }
 
