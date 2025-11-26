@@ -17,7 +17,7 @@
       {"rule_set": "huawei-site", "action": "reject"},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "googlefcm", "strategy": "ipv4_only", "server": "dns_google"},
-      {"rule_set": "cn-site", "strategy": "prefer_ipv6", "server": "dns_direct"},
+      {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"},
       {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
     ],
     "final": "dns_proxy",
