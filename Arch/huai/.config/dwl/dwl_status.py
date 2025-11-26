@@ -43,12 +43,13 @@ C_RESET = "^fg()"
 # --- 3. System Settings ---
 CPU_TEMP_FILE = "/sys/class/thermal/thermal_zone0/temp"
 INTERFACE = "enp0s31f6"
-WEATHER_LOCATION = "" 
+WEATHER_LOCATION = ""
 LOCATION_GPG = str(Path.home() / ".config" / "location.gpg")
 
 # MPD 设置 (根据你的 mpd.conf)
-MPD_HOST = '127.0.0.1'
+MPD_HOST = "127.0.0.1"
 MPD_PORT = 6600
+
 
 def _try_load_location_from_gpg(timeout: int = 5):
     try:
@@ -67,6 +68,7 @@ def _try_load_location_from_gpg(timeout: int = 5):
         return None
     return None
 
+
 # --- 4. Behavior Settings ---
 UPDATE_INTERVAL_MEDIUM = 5
 UPDATE_INTERVAL_LONG = 60
@@ -76,6 +78,7 @@ SEPARATOR = "|"
 # =============================================================================
 # --- GLOBAL STATE ---
 # =============================================================================
+
 
 class StatusBar:
     def __init__(self):
@@ -142,14 +145,24 @@ class StatusBar:
             with open("/proc/stat", "r") as f:
                 line = f.readline().split()
                 cpu_user, cpu_nice, cpu_system, cpu_idle = (
-                    int(line[1]), int(line[2]), int(line[3]), int(line[4])
+                    int(line[1]),
+                    int(line[2]),
+                    int(line[3]),
+                    int(line[4]),
                 )
                 cpu_iowait, cpu_irq, cpu_softirq = (
-                    int(line[5]), int(line[6]), int(line[7])
+                    int(line[5]),
+                    int(line[6]),
+                    int(line[7]),
                 )
                 self.prev_cpu = (
-                    cpu_user + cpu_nice + cpu_system + cpu_idle +
-                    cpu_iowait + cpu_irq + cpu_softirq
+                    cpu_user
+                    + cpu_nice
+                    + cpu_system
+                    + cpu_idle
+                    + cpu_iowait
+                    + cpu_irq
+                    + cpu_softirq
                 )
                 self.prev_idle = cpu_idle
         except:
@@ -160,15 +173,25 @@ class StatusBar:
             with open("/proc/stat", "r") as f:
                 line = f.readline().split()
                 cpu_user, cpu_nice, cpu_system, cpu_idle = (
-                    int(line[1]), int(line[2]), int(line[3]), int(line[4])
+                    int(line[1]),
+                    int(line[2]),
+                    int(line[3]),
+                    int(line[4]),
                 )
                 cpu_iowait, cpu_irq, cpu_softirq = (
-                    int(line[5]), int(line[6]), int(line[7])
+                    int(line[5]),
+                    int(line[6]),
+                    int(line[7]),
                 )
 
                 curr_cpu = (
-                    cpu_user + cpu_nice + cpu_system + cpu_idle +
-                    cpu_iowait + cpu_irq + cpu_softirq
+                    cpu_user
+                    + cpu_nice
+                    + cpu_system
+                    + cpu_idle
+                    + cpu_iowait
+                    + cpu_irq
+                    + cpu_softirq
                 )
                 curr_idle = cpu_idle
                 total_diff = curr_cpu - self.prev_cpu
@@ -251,7 +274,9 @@ class StatusBar:
                             color_code = C_WARN
                         else:
                             color_code = C_NORM
-                        self.bluetooth_status = f"{ICON_BT}{color_code}{level}%{C_RESET}"
+                        self.bluetooth_status = (
+                            f"{ICON_BT}{color_code}{level}%{C_RESET}"
+                        )
                         break
         except:
             pass
@@ -280,12 +305,12 @@ class StatusBar:
         try:
             # 连接 MPD
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(0.2) # 设置短超时，防止阻塞
+                s.settimeout(0.2)  # 设置短超时，防止阻塞
                 s.connect((MPD_HOST, MPD_PORT))
-                
+
                 # 发送查询命令 (currentsong 获取信息, status 获取状态)
                 s.send(b"currentsong\nstatus\nclose\n")
-                
+
                 # 接收数据
                 data = b""
                 while True:
@@ -293,26 +318,26 @@ class StatusBar:
                     if not chunk:
                         break
                     data += chunk
-                
-                response = data.decode('utf-8', errors='ignore')
-                
+
+                response = data.decode("utf-8", errors="ignore")
+
                 # 解析数据
                 state = "stop"
                 artist = ""
                 title = ""
                 name = ""
-                
-                for line in response.splitlines():
-                    if line.startswith('state: '):
-                        state = line.replace('state: ', '').strip()
-                    elif line.startswith('Artist: '):
-                        artist = line.replace('Artist: ', '').strip()
-                    elif line.startswith('Title: '):
-                        title = line.replace('Title: ', '').strip()
-                    elif line.startswith('Name: '):
-                        name = line.replace('Name: ', '').strip()
 
-                if state == 'play':
+                for line in response.splitlines():
+                    if line.startswith("state: "):
+                        state = line.replace("state: ", "").strip()
+                    elif line.startswith("Artist: "):
+                        artist = line.replace("Artist: ", "").strip()
+                    elif line.startswith("Title: "):
+                        title = line.replace("Title: ", "").strip()
+                    elif line.startswith("Name: "):
+                        name = line.replace("Name: ", "").strip()
+
+                if state == "play":
                     # 优先显示 Artist - Title，其次显示 Title，最后显示 Name (电台名)
                     if artist and title:
                         display = f"{artist} - {title}"
@@ -322,11 +347,11 @@ class StatusBar:
                         display = name
                     else:
                         display = "Unknown"
-                        
+
                     self.music_status = f"{C_NORM}{display}{C_RESET}"
                 else:
                     self.music_status = ""
-                    
+
         except (socket.error, socket.timeout, ConnectionRefusedError):
             # 连接失败 (MPD 未运行或配置错误) 清空状态
             self.music_status = ""
@@ -410,11 +435,13 @@ class StatusBar:
                     cond_color = C_BLUE
                 elif any(k in lw for k in ("mist", "fog")):
                     cond_color = C_BLUE
-                
+
                 if temp_str:
                     self.weather_status = f"{ICON_WEATHER}{temp_color}{temp_str}{C_RESET} {cond_color}{cond_str}{C_RESET}"
                 else:
-                    self.weather_status = f"{ICON_WEATHER}{cond_color}{weather}{C_RESET}"
+                    self.weather_status = (
+                        f"{ICON_WEATHER}{cond_color}{weather}{C_RESET}"
+                    )
             else:
                 self.weather_status = f"{ICON_WEATHER}N/A"
         except:
@@ -433,7 +460,9 @@ class StatusBar:
             self.tx1 = tx2
             rx_mbps = (rx_diff * 8) // 1000000
             tx_mbps = (tx_diff * 8) // 1000000
-            self.net_status_str = f"{ICON_NET_DOWN}{rx_mbps}Mbps {ICON_NET_UP}{tx_mbps}Mbps"
+            self.net_status_str = (
+                f"{ICON_NET_DOWN}{rx_mbps}Mbps {ICON_NET_UP}{tx_mbps}Mbps"
+            )
         except:
             self.net_status_str = "N/A"
 
@@ -453,13 +482,15 @@ class StatusBar:
             parts.append(self.weather_status)
         parts.append(self.time_status)
         parts.append(self.ime_status)
-        
+
         print(SEPARATOR.join(parts))
         sys.stdout.flush()
+
 
 # =============================================================================
 # --- MAIN EXECUTION ---
 # =============================================================================
+
 
 def main():
     status = StatusBar()
@@ -483,7 +514,7 @@ def main():
     status.update_cpu()
     status.update_mem()
     status.update_temp()
-    status.update_music() # 使用新的 Socket 方法
+    status.update_music()  # 使用新的 Socket 方法
     status.update_ime()
     status.update_time()
     status.update_net()
@@ -497,17 +528,17 @@ def main():
             # 记录循环开始时间，用于精准计算休眠时间
             start_time = time.time()
             current_sec = int(start_time)
-            
+
             # --- 高频更新 (每秒) ---
             status.update_cpu()
             status.update_temp()
             status.update_net()
-            status.update_time() # 时间最好每秒刷，保证切换分钟时即时显示
+            status.update_time()  # 时间最好每秒刷，保证切换分钟时即时显示
 
             # --- 中频更新 ---
             if current_sec % UPDATE_INTERVAL_MEDIUM == 0:
                 status.update_mem()
-                status.update_music() # Socket 方式开销极小
+                status.update_music()  # Socket 方式开销极小
                 status.update_bluetooth()
 
             # --- 低频更新 (天气) ---
@@ -522,15 +553,16 @@ def main():
             # 这样下一次循环就会精准地落在 12:00:01.00 附近
             now = time.time()
             sleep_time = 1.0 - (now % 1.0)
-            
+
             # 加上一点点缓冲防止浮点误差导致连续两次落在同一秒内
-            if sleep_time < 0.001: 
+            if sleep_time < 0.001:
                 sleep_time += 1.0
-                
+
             time.sleep(sleep_time)
 
     except (KeyboardInterrupt, BrokenPipeError, IOError):
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
