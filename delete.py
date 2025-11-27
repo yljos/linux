@@ -46,16 +46,32 @@ def delete_empty_folders(directory: Path):
 
 
 def should_delete_file(path_obj: Path, target_mp4_set, size_threshold_bytes):
+    """
+    判断文件是否应该被删除
+    """
     filename = path_obj.name.lower()
+    
+    # 1. 检查是否为视频文件
     if filename.endswith(VIDEO_EXTS):
+        # 保留 .mkv 和 .avi
         if filename.endswith((".mkv", ".avi")):
             return False
+            
+        # 删除黑名单中的文件 (优先级高于 # 号规则，如果黑名单文件也带 #，依然会被删)
         if path_obj.stem.lower() in target_mp4_set:
             return True
+
+        # --- 新增规则：如果文件名以 # 开头，直接保留 (即使小于 80MB) ---
+        if path_obj.name.startswith("#"):
+            return False
+
+        # 检查大小：小于阈值则删除
         try:
             return path_obj.stat().st_size < size_threshold_bytes
         except Exception:
             return False
+
+    # 2. 非视频文件，删除
     return True
 
 
@@ -67,7 +83,8 @@ def main():
     size_threshold_bytes = MP4_SIZE_THRESHOLD_MB * 1024 * 1024
 
     print(f"目录: {current_directory}")
-    print(f"保留: .mp4 ≥ {MP4_SIZE_THRESHOLD_MB}MB | .mkv | .avi")
+    # 更新提示信息
+    print(f"保留: .mp4 (≥ {MP4_SIZE_THRESHOLD_MB}MB 或 以#开头) | .mkv | .avi")
     if target_mp4_set:
         print(f"黑名单: {', '.join(TARGET_MP4_NAMES)}.mp4")
     print("-" * 40)
@@ -76,8 +93,7 @@ def main():
         f
         for f in current_directory.rglob("*")
         if f.is_file()
-        and f.absolute()
-        != script_path.absolute()  # ✅ 用 absolute() 避免 WinError 1005
+        and f.absolute() != script_path.absolute()  # 避免删除脚本自身
         and should_delete_file(f, target_mp4_set, size_threshold_bytes)
     ]
 
