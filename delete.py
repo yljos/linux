@@ -50,13 +50,13 @@ def should_delete_file(path_obj: Path, target_mp4_set, size_threshold_bytes):
     判断文件是否应该被删除
     """
     filename = path_obj.name.lower()
-    
+
     # 1. 检查是否为视频文件
     if filename.endswith(VIDEO_EXTS):
         # 保留 .mkv 和 .avi
         if filename.endswith((".mkv", ".avi")):
             return False
-            
+
         # 删除黑名单中的文件 (优先级高于 # 号规则，如果黑名单文件也带 #，依然会被删)
         if path_obj.stem.lower() in target_mp4_set:
             return True
