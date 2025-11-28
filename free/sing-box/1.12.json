@@ -48,6 +48,7 @@
   "route": {
     "rules": [
       {"inbound": ["tproxy-in", "mixed-in"], "action": "sniff", "timeout": "300ms"},
+      {"package_name": ["com.eg.android.AlipayGphone", "com.whmstr.whsmk"], "outbound": "D"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"protocol": "quic", "action": "reject"},
       {"rule_set": "ad-site", "action": "reject"},
