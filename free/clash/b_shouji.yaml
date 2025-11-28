@@ -10,7 +10,7 @@ redir-port: 7892
 tproxy-port: 7893
 allow-lan: true
 bind-address: "*"
-find-process-mode: off # always, strict, off
+find-process-mode: strict # always, strict, off
 log-level: error # info, warning, error, debug
 ipv6: true
 udp: true
@@ -112,6 +112,8 @@ rule-providers:
   facebook-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs}
 rules:
   - "AND,((DST-PORT,443/8443),(NETWORK,UDP)),REJECT"
+  - "PROCESS-NAME,com.eg.android.AlipayGphone,DIRECT"
+  - "PROCESS-NAME,com.whmstr.whsmk,DIRECT"
   # - "RULE-SET,ad-site-classical,REJECT"
   - "RULE-SET,ad-ip,REJECT"
   - "RULE-SET,cloudflare,M"
