@@ -26,8 +26,6 @@ COPY --from=builder /app/.venv /app/.venv
 
 # 2. 复制主程序
 COPY app.py .
-COPY favicon.png . 
-# (如果有 favicon.png 就复制，没有这行可以删掉，代码里虽然引用了但缺少它只会404)
 
 # 3. 设置环境变量
 ENV PATH="/app/.venv/bin:$PATH"
