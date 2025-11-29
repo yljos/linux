@@ -7,7 +7,7 @@ from datetime import datetime  # 添加datetime模块
 app = Flask(__name__)
 
 # 提取常量变量
-SHUTDOWN_FILENAME = "shutdown"
+SHUTDOWN_FILENAME = "/data/www/shutdown"
 AUTO_DELETE_DELAY_MINUTES = 10  # 自动删除的延迟时间（分钟）
 
 
