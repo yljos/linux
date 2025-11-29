@@ -1,20 +1,13 @@
 [Unit]
 Description=Sing-box Service (Python Wrapper)
-# 强依赖网络，确保网卡启动后再拉起容器
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-# 显式指定类型
 Type=simple
+Restart=always
+RestartSec=5
 
-# -------------------------------------------------
-# 启动命令优化细节：
-# 1. --rm: 必加，容器停止后立即销毁，防止残留 "Exited" 状态的容器占名
-# 2. --init: 必加，解决 shell 脚本启动导致的信号屏蔽问题，确保能优雅停止
-# 3. PYTHONUNBUFFERED=1: 必加，禁止 Python 输出缓存，查看日志不仅快而且全
-# 4. --log-driver=journald: 让 Podman 将日志直接托管给 systemd
-# -------------------------------------------------
 ExecStart=/usr/bin/podman run \
   --name sing-box \
   --replace \
@@ -22,23 +15,13 @@ ExecStart=/usr/bin/podman run \
   --init \
   --log-driver=journald \
   --env PYTHONUNBUFFERED=1 \
-  --workdir /usr/src/myapp \
-  -p 5000:5000 \
-  -v /root/sing-box:/usr/src/myapp:z \
-  docker.io/library/python:3.12.12-slim \
-  /usr/src/myapp/start.sh
+  -p 5002:5002 \
+  -v /root/linux/free/sing-box/1.12.json:/app/1.12.json:Z \
+  -v /root/linux/free/sing-box/mitce:/app/mitce:Z \
+  -v /root/linux/free/sing-box/bajie:/app/bajie:Z \
+  localhost/sing-box:latest
 
-# 停止命令
-# 给 Sing-box 10秒时间关闭连接和保存状态
 ExecStop=/usr/bin/podman stop -t 10 sing-box
 
-# -------------------------------------------------
-# 【重要修正】Systemd 语法
-# -------------------------------------------------
-# 原配置 "unless-stopped" 无效，改为 systemd 标准的 "always"
-Restart=always
-RestartSec=5s
-
 [Install]
-# 服务器生产环境建议使用 multi-user.target
 WantedBy=multi-user.target
