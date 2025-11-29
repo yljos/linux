@@ -1,46 +1,25 @@
 [Unit]
-Description=Power Container Service
+Description=Shutdown Signal Flask Service
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-# 推荐显式指定类型
 Type=simple
+Restart=always
+RestartSec=5
 
-# -------------------------------------------------
-# 核心优化点：
-# 1. --replace: 必加！防止服务非正常重启时，旧容器残留导致 "Name already in use" 报错。
-# 2. --init: 必加！解决 start.sh 导致的信号屏蔽问题，确保能优雅停机。
-# 3. PYTHONUNBUFFERED=1: 必加！防止 Python 日志卡在缓冲区，崩溃时看不到最后一行报错。
-# 4. TZ=Asia/Shanghai: 很好，保持了时区设置。
-# -------------------------------------------------
 ExecStart=/usr/bin/podman run \
-  --name power \
+  --name shutdown \
   --replace \
   --rm \
   --init \
   --log-driver=journald \
   --env PYTHONUNBUFFERED=1 \
-  --env TZ=Asia/Shanghai \
-  --workdir /usr/src/myapp \
   -p 5008:5008 \
-  -v /data/www:/usr/src/myapp:z \
-  docker.io/library/python:3.12.12-slim \
-  /usr/src/myapp/start.sh
+  -v /data/www:/app:Z \
+  localhost/shutdown:latest
 
-# 停止命令
-ExecStop=/usr/bin/podman stop -t 10 power
-
-# -------------------------------------------------
-# 【必须修正】 Systemd 语法
-# -------------------------------------------------
-# "unless-stopped" 是 Docker Compose 写法，Systemd 会报错或忽略。
-# 生产环境标准写法是 "always" 或 "on-failure"。
-Restart=always
-
-# 防抖动：如果服务崩溃，等待 5 秒再重启，保护 CPU
-RestartSec=5s
+ExecStop=/usr/bin/podman stop -t 5 shutdown
 
 [Install]
-# 服务器环境通常建议使用 multi-user.target
 WantedBy=multi-user.target
