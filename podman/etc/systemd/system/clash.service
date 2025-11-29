@@ -20,7 +20,7 @@ ExecStart=/usr/bin/podman run \
   -v /root/clash/b_shouji.yaml:/app/b_shouji.yaml:Z \
   -v /root/clash/mitce:/app/mitce:Z \
   -v /root/clash/bajie:/app/bajie:Z \
-  localhost/clash-service:latest
+  localhost/clash:latest
 
 ExecStop=/usr/bin/podman stop -t 10 clash
 
