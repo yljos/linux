@@ -4,8 +4,8 @@
 # 保持你选择的 3.12 slim 镜像
 FROM docker.io/python:3.12-slim AS builder
 
-# 1. 安装 PDM 工具本身 (使用 pipx 是最佳实践)
-RUN pip install pipx && pipx install pdm
+# 1. 安装 PDM 工具本身
+RUN pdm install --prod --no-self
 
 WORKDIR /app
 
