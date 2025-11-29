@@ -20,7 +20,7 @@ ExecStart=/usr/bin/podman run \
   -v /root/mconline_bot/yao_online.txt:/app/yao_online.txt \
   localhost/mconline_bot:latest
 
-ExecStop=/usr/bin/podman stop -t 10 huai12138_bot
+ExecStop=/usr/bin/podman stop -t 10 mconline_bot
 
 [Install]
 WantedBy=multi-user.target
