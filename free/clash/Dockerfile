@@ -5,7 +5,7 @@
 FROM docker.io/python:3.12-slim AS builder
 
 # 1. 安装 PDM 工具本身
-RUN pdm install --prod --no-self
+RUN pip install pdm
 
 WORKDIR /app
 
