@@ -1,44 +1,25 @@
 [Unit]
-Description=MCOnline Service
-# 强依赖网络，确保连网后再启动
+Description=MCOnline Telegram Bot Service (Podman)
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-# 显式指定服务类型
 Type=simple
+Restart=always
+RestartSec=5
 
-# -------------------------------------------------
-# 启动命令优化点：
-# 1. --rm: 容器停止后自动清理，防止磁盘残留
-# 2. --init: 关键！解决 start.sh 作为 PID 1 导致无法接收停止信号的问题
-# 3. PYTHONUNBUFFERED: 禁用 Python 输出缓存，让日志实时显示
-# 4. --log-driver: 明确使用 systemd 的日志驱动
-# -------------------------------------------------
 ExecStart=/usr/bin/podman run \
-  --name mconline \
+  --name mconline_bot \
   --replace \
   --rm \
   --init \
   --log-driver=journald \
   --env PYTHONUNBUFFERED=1 \
-  --workdir /usr/src/myapp \
-  -p 5007:5007 \
-  -v /root/mconline:/usr/src/myapp:z \
-  docker.io/library/python:3.12.12-slim \
-  /usr/src/myapp/start.sh
+  -p 5005:5005 \
+  --env-file /root/mconline_bot/.env \
+  localhost/mconline_bot:latest
 
-# 停止命令
-ExecStop=/usr/bin/podman stop -t 10 mconline
-
-# -------------------------------------------------
-# 【修正】Systemd 标准语法
-# -------------------------------------------------
-# 原写法 "unless-stopped" 是 Docker 专用的，Systemd 不识别
-Restart=always
-# 设置重启冷却时间，防止程序疯狂崩溃导致 CPU 飙升
-RestartSec=5s
+ExecStop=/usr/bin/podman stop -t 10 huai12138_bot
 
 [Install]
-# 服务器后台服务通常使用 multi-user.target
 WantedBy=multi-user.target
