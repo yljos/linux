@@ -17,6 +17,7 @@ ExecStart=/usr/bin/podman run \
   --env PYTHONUNBUFFERED=1 \
   -p 5007:5007 \
   --env-file /root/mconline_bot/.env \
+  -v /root/mconline_bot/yao_online.txt:/app/yao_online.txt \
   localhost/mconline_bot:latest
 
 ExecStop=/usr/bin/podman stop -t 10 huai12138_bot
