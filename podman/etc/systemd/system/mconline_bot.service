@@ -15,7 +15,7 @@ ExecStart=/usr/bin/podman run \
   --init \
   --log-driver=journald \
   --env PYTHONUNBUFFERED=1 \
-  -p 5005:5005 \
+  -p 5007:5007 \
   --env-file /root/mconline_bot/.env \
   localhost/mconline_bot:latest
 
