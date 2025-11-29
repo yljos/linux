@@ -18,6 +18,7 @@ ExecStart=/usr/bin/podman run \
   -p 5005:5005 \
   --env-file /root/huai12138_bot/.env \
   -v /root/huai12138_bot/blocked_users.json:/app/blocked_users.json:Z \
+  -v /root/huai12138_bot/whitelist.json:/app/whitelist.json:Z \
   localhost/huai12138_bot:latest
 
 ExecStop=/usr/bin/podman stop -t 10 huai12138_bot
