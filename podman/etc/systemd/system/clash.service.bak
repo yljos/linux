@@ -1,0 +1,37 @@
+[Unit]
+Description=Clash Python Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+# 推荐显式指定类型
+Type=simple
+
+# 启动命令
+# 1. 修正了 Restart 语法
+# 2. 增加了 --rm --init 保证生命周期健康
+# 3. 增加了 PYTHONUNBUFFERED 保证日志实时
+# 4. 增加了 --log-driver 确保日志正确送入 journald
+ExecStart=/usr/bin/podman run \
+  --name clash \
+  --replace \
+  --rm \
+  --init \
+  --log-driver=journald \
+  --env PYTHONUNBUFFERED=1 \
+  --workdir /usr/src/myapp \
+  -p 5002:5002 \
+  -v /root/clash:/usr/src/myapp:z \
+  docker.io/library/python:3.12.12-slim \
+  /usr/src/myapp/start.sh
+
+# 停止命令
+# 这里的 stop 会发送 SIGTERM 给 --init 进程，实现秒级优雅退出
+ExecStop=/usr/bin/podman stop -t 10 clash
+
+# 【重要修正】Systemd 标准语法
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
