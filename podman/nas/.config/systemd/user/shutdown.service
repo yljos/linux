@@ -22,4 +22,4 @@ ExecStart=/usr/bin/podman run \
 ExecStop=/usr/bin/podman stop -t 5 shutdown
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
