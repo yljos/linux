@@ -37,7 +37,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 
 # 4. 暴露端口 (Webhook 端口)
-EXPOSE 5005
+EXPOSE 5007
 
 # 5. 启动
 CMD ["python", "app.py"]
