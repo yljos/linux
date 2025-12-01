@@ -67,7 +67,6 @@ proxy-groups:
   - {<<: *select, name: PikPak, proxies: [HK_fallback, SG_fallback, JP_fallback, US_fallback]}
   - {<<: *select, name: GitHub, proxies: [JP_fallback, M, SG_fallback, US_fallback, HK_fallback, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [JP_fallback, M, SG_fallback, HK_fallback, DIRECT, US_fallback]}
-  - {<<: *select, name: AD, include-all-proxies: false, hidden: true, proxies: [REJECT, PASS]}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)"}
   - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)"}
   - {<<: *fallback, name: SG_fallback, filter: "(?i)(新加坡|sg|singapore)"}
@@ -94,9 +93,6 @@ rule-providers:
   google: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/google.mrs}
   google-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/google.mrs}
   googlefcm: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/googlefcm.mrs}
-  huawei-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/huawei/huawei-site.mrs}
-  huawei-direct-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/huawei/huawei-direct-site.mrs}
-  huawei-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/huawei/huawei-ip.mrs}
   javdb: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/javdb.mrs}
   jd: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/jd.mrs}
   local-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/local/local-ip.mrs}
@@ -128,10 +124,6 @@ rules:
   - "AND,((DST-PORT,443/8443),(NETWORK,UDP)),REJECT"
   # - "RULE-SET,ad-site-classical,REJECT"
   - "RULE-SET,ad-ip,REJECT"
-  - "RULE-SET,huawei-direct-site,DIRECT"
-  - "RULE-SET,huawei-site,AD"
-  - "RULE-SET,huawei-ip,AD"
-  - "SRC-IP-CIDR,192.168.31.24/32,DIRECT"
   - "RULE-SET,cloudflare,M"
   - "DOMAIN-KEYWORD,msftconnecttest.com,Microsoft"
   - "DOMAIN-KEYWORD,msftncsi.com,Microsoft"
