@@ -16,8 +16,8 @@ ExecStart=/usr/bin/podman run \
   --log-driver=journald \
   --env PYTHONUNBUFFERED=1 \
   -p 5002:5002 \
-  -v /root/clash/mitce:/app/mitce:Z \
-  -v /root/clash/bajie:/app/bajie:Z \
+  -v /root/config/mitce:/app/mitce:Z \
+  -v /root/config/bajie:/app/bajie:Z \
   localhost/clash:latest
 
 ExecStop=/usr/bin/podman stop -t 10 clash
