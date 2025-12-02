@@ -256,6 +256,8 @@ async def verification_sweeper(application: Application):
             pending_verification.pop(uid, None)
             if uid in admin_ids:
                 continue
+            # 在新逻辑下，通常会在第一条错误消息时就被直接封禁，
+            # 但保留此清理逻辑以防万一有遗漏的 pending 状态
             await ban_user(context, uid, "Verification timeout")
         await asyncio.sleep(5)
 
@@ -424,6 +426,8 @@ async def unban(update: Update, context: CallbackContext):
 
 async def forward_to_admin(update: Update, context: CallbackContext):
     message = update.message
+    if not message:
+        return
     user = message.from_user
     chat_id = message.chat.id
     user_id = str(chat_id)
@@ -432,24 +436,32 @@ async def forward_to_admin(update: Update, context: CallbackContext):
         await message.reply_text("Banned!")
         return
 
-    # 非管理员先检查白名单/验证流程
+    # ========== 严格验证逻辑 ==========
+    # 如果用户不是管理员
     if user_id not in admin_ids:
-        if user_id in pending_verification:
-            if message.text == "Hi":
-                del pending_verification[user_id]
+        # 1. 如果消息是 "Hi"，则尝试验证
+        if message.text == "Hi":
+            # 仅当用户不在白名单时才处理（避免重复刷）
+            if user_id not in whitelist_users:
+                if user_id in pending_verification:
+                    del pending_verification[user_id]
                 add_to_whitelist(user_id)
                 await update.message.reply_text("Success! You are verified.")
+                
+                # 通知管理员
                 admin_msg = f"New user verified:\nName: {user.first_name} (@{user.username if user.username else 'No username'})\nUser ID: {user_id}"
                 await context.bot.send_message(primary_admin_id, admin_msg)
                 return
-            else:
-                await update.message.reply_text('Please send "Hi" (case-sensitive)')
-                return
-        # 如果未在白名单也未在验证流程，启动验证
-        if user_id not in whitelist_users:
-            pending_verification[user_id] = time.time() + VERIFY_TIMEOUT
-            await update.message.reply_text(
-                'Please verify: send "Hi" within 30 seconds (case-sensitive)'
+            # 如果已经在白名单，继续向下执行，视作普通消息转发
+
+        # 2. 如果消息不是 "Hi" 且用户不在白名单 -> 直接封禁
+        elif user_id not in whitelist_users:
+            await ban_user(
+                context,
+                user_id,
+                "Immediate Ban: Unauthorized message (not 'Hi')",
+                user,
+                actor_admin_id=None,
             )
             return
 
@@ -465,10 +477,8 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                     user,
                     actor_admin_id=None,
                 )
-                await message.reply_text("Banned!")
-                return
+                return # ban_user 内部已发提示
         try:
-            # ========== 修改开始：合并用户信息和内容 ==========
             sender_content = (
                 f"From user: {user.first_name} (@{user.username if user.username else 'No username'})\n"
                 f"User ID: {chat_id}\n"
@@ -476,8 +486,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 f"{message.text}"
             )
             await context.bot.send_message(primary_admin_id, sender_content)
-            # ========== 修改结束 ==========
-
+            
             if "user_chat_ids" not in context.bot_data:
                 context.bot_data["user_chat_ids"] = {}
             context.bot_data["user_chat_ids"][str(chat_id)] = chat_id
