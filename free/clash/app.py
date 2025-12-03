@@ -33,10 +33,10 @@ HYSTERIA2_DOWN_M = "40 Mbps"
 INCLUDED_HEADERS = set("Subscription-Userinfo".split(","))
 
 NODE_KEYWORDS = [
-    k.strip() for k in "US,HK,SG,JP,美国,香港,新加坡,日本".split(",") if k.strip()
+    k.strip() for k in "US,HK,Hong Kong,Singapore,Japan,United States,SG,JP,美国,香港,新加坡,日本".split(",") if k.strip()
 ]
 NODE_EXCLUDE_KEYWORDS = [
-    k.strip() for k in "官网,流量,倍率,剩余,10,到期".split(",") if k.strip()
+    k.strip() for k in "官网,流量,倍率,剩余,10,Australia,到期".split(",") if k.strip()
 ]
 
 ENABLE_NODE_REPLACEMENT = False
@@ -44,6 +44,9 @@ CLIENT_FINGERPRINT = "firefox"
 
 MITCE_URL_FILE = Path("mitce").absolute()
 BAJIE_URL_FILE = Path("bajie").absolute()
+# [修改 1] 定义新的 URL 文件路径
+WESTDATA_URL_FILE = Path("westdata").absolute()
+
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 
 DEBUG = True
@@ -62,8 +65,8 @@ if not TEMPLATE_PATH_PC.exists():
 if not TEMPLATE_PATH_M.exists():
     raise FileNotFoundError(f"模板文件不存在: {TEMPLATE_PATH_M}")
 
-# 验证 URL 文件存在
-for _path in (MITCE_URL_FILE, BAJIE_URL_FILE):
+# [修改 2] 验证 URL 文件存在 (加入 WESTDATA_URL_FILE)
+for _path in (MITCE_URL_FILE, BAJIE_URL_FILE, WESTDATA_URL_FILE):
     if not _path.exists():
         raise FileNotFoundError(f"URL 文件不存在: {_path}")
 
@@ -83,8 +86,8 @@ def read_url_from_file(path: Path) -> str:
 
 @app.before_request
 def restrict_paths():
-    # 允许的路径集合
-    allowed = {"/mitce", "/bajie"}
+    # [修改 3] 允许的路径集合加入 /westdata
+    allowed = {"/mitce", "/bajie", "/westdata"}
     if request.path not in allowed:
         return "Not Found", 404
     # 查询参数中携带 key 进行鉴权
@@ -357,6 +360,9 @@ def process_source(source):
             yaml_url = unquote(read_url_from_file(MITCE_URL_FILE))
         elif source == "bajie":
             yaml_url = unquote(read_url_from_file(BAJIE_URL_FILE))
+        # [修改 4] 添加 westdata 路由处理
+        elif source == "westdata":
+            yaml_url = unquote(read_url_from_file(WESTDATA_URL_FILE))
         else:
             return "Not Found", 404
 
