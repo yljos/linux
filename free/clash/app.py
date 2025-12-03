@@ -33,7 +33,11 @@ HYSTERIA2_DOWN_M = "40 Mbps"
 INCLUDED_HEADERS = set("Subscription-Userinfo".split(","))
 
 NODE_KEYWORDS = [
-    k.strip() for k in "US,HK,Hong Kong,Singapore,Japan,United States,SG,JP,美国,香港,新加坡,日本".split(",") if k.strip()
+    k.strip()
+    for k in "US,HK,Hong Kong,Singapore,Japan,United States,SG,JP,美国,香港,新加坡,日本".split(
+        ","
+    )
+    if k.strip()
 ]
 NODE_EXCLUDE_KEYWORDS = [
     k.strip() for k in "官网,流量,倍率,剩余,10,Australia,到期".split(",") if k.strip()

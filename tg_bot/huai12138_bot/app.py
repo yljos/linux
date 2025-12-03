@@ -204,7 +204,7 @@ async def ban_user(
     # 封禁时顺手清除等待验证状态，防止 sweeper 重复处理
     if user_id in pending_verification:
         del pending_verification[user_id]
-        
+
     add_to_blocklist(user_id)
     try:
         await context.bot.send_message(user_id, "Banned!")
@@ -255,9 +255,7 @@ async def verification_sweeper(application: Application):
         now = time.time()
         # 复制 keys 防止遍历时修改
         current_pending = list(pending_verification.items())
-        expired = [
-            uid for uid, deadline in current_pending if deadline <= now
-        ]
+        expired = [uid for uid, deadline in current_pending if deadline <= now]
         for uid in expired:
             # 双重检查，因为在遍历过程中可能被手动 ban 删除了
             if uid in pending_verification:
@@ -441,7 +439,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
     message = update.message
     if not message:
         return
-    
+
     # 安全获取 User，防止在 Channel 消息中崩溃
     user = message.from_user
     if not user:
@@ -464,10 +462,10 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 # 移除等待队列（防止 sweeper 再次处理）
                 if user_id in pending_verification:
                     del pending_verification[user_id]
-                
+
                 add_to_whitelist(user_id)
                 await update.message.reply_text("Success! You are verified.")
-                
+
                 # 通知管理员有新用户通过
                 admin_msg = f"New user verified:\nName: {user.first_name} (@{user.username if user.username else 'No username'})\nUser ID: {user_id}"
                 await context.bot.send_message(primary_admin_id, admin_msg)
@@ -506,7 +504,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 f"{message.text}"
             )
             await context.bot.send_message(primary_admin_id, sender_content)
-            
+
             if "user_chat_ids" not in context.bot_data:
                 context.bot_data["user_chat_ids"] = {}
             context.bot_data["user_chat_ids"][str(chat_id)] = chat_id
