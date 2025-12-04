@@ -210,6 +210,11 @@ async def ban_user(
         await context.bot.send_message(user_id, "Banned!")
     except Exception:
         pass
+    # ========== 关键修改开始 ==========
+    # 1. 如果原因是 "验证失败秒封"，直接返回，不通知管理员
+    if reason == "Immediate Ban: Unauthorized message (not 'Hi')":
+        return
+    # ========== 关键修改结束 ==========
     # 如果是主管理员手动操作，避免重复向其发送格式化通知
     if actor_admin_id == primary_admin_id:
         return
