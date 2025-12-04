@@ -37,6 +37,8 @@ sudo ufw allow proto tcp to any port 8181 # vaultwarden
 
 sudo ufw allow proto tcp to any port 8002 # music-tag-web
 sudo ufw allow proto tcp to any port 3000 # homepage
+sudo ufw allow proto tcp to any port 3001 # gitea
+sudo ufw allow proto tcp to any port 2222 # gitea_ssh
 sudo ufw allow proto tcp to any port 8123 # homeassistant
 sudo ufw allow proto tcp to any port 6065 # webdav-server
 sudo ufw allow proto tcp to any port 8081 # calibre
