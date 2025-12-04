@@ -100,10 +100,11 @@ def save_whitelist_users():
 
 load_whitelist_users()
 
-pending_verification = {}  # {user_id: deadline_timestamp}
+# ========== 已移除 30s 超时验证相关的数据结构和常量 ==========
+# pending_verification = {}  # {user_id: deadline_timestamp}   <- 已移除
+# VERIFY_TIMEOUT = 30  # 秒  <- 已移除
 
 # ========== 常量与策略配置 ==========
-VERIFY_TIMEOUT = 30  # 秒
 MAX_MSG_LEN = 15
 CHAT_CACHE_TTL = 60  # 预留: 用户信息缓存TTL (暂未实现缓存逻辑)
 
@@ -201,9 +202,7 @@ async def ban_user(
     user_obj=None,
     actor_admin_id: str | None = None,
 ):
-    # 封禁时顺手清除等待验证状态，防止 sweeper 重复处理
-    if user_id in pending_verification:
-        del pending_verification[user_id]
+    # 原先这里会清除 pending_verification，现已移除相关结构
 
     add_to_blocklist(user_id)
     try:
@@ -249,26 +248,10 @@ async def unban_user(
         logging.error(f"管理员通知解封失败: {e}")
 
 
-# ========== 集中验证过期清理 ==========
-async def verification_sweeper(application: Application):
-    class SimpleContext:
-        def __init__(self, bot):
-            self.bot = bot
-
-    context = SimpleContext(application.bot)
-    while True:
-        now = time.time()
-        # 复制 keys 防止遍历时修改
-        current_pending = list(pending_verification.items())
-        expired = [uid for uid, deadline in current_pending if deadline <= now]
-        for uid in expired:
-            # 双重检查，因为在遍历过程中可能被手动 ban 删除了
-            if uid in pending_verification:
-                pending_verification.pop(uid, None)
-                if uid in admin_ids:
-                    continue
-                await ban_user(context, uid, "Verification timeout")
-        await asyncio.sleep(5)
+# ========== 已移除 verification_sweeper (超时封禁协程) ==========
+# async def verification_sweeper(application: Application):
+#     ...
+# 已删除整个函数体
 
 
 # ========== 提取用户ID的辅助函数 ==========
@@ -315,10 +298,9 @@ async def start(update: Update, context: CallbackContext):
         await update.message.reply_text("You are already verified.")
         return
 
-    # 记录截止时间，集中协程处理过期
-    pending_verification[user_id] = time.time() + VERIFY_TIMEOUT
+    # 原先这里会记录 pending_verification 并带有 30s 超时，现已移除超时记录
     await update.message.reply_text(
-        'Send "Hi" to complete verification (within 30 seconds, case-sensitive)'
+        'Send "Hi" to complete verification (case-sensitive)'
     )
 
 
@@ -464,10 +446,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
         if message.text == "Hi":
             # 如果不在白名单，则通过验证
             if user_id not in whitelist_users:
-                # 移除等待队列（防止 sweeper 再次处理）
-                if user_id in pending_verification:
-                    del pending_verification[user_id]
-
+                # 原先这里会删除 pending_verification（已移除）
                 add_to_whitelist(user_id)
                 await update.message.reply_text("Success! You are verified.")
 
@@ -637,8 +616,8 @@ async def post_initialization(application: Application):
     try:
         await application.bot.send_message(chat_id=primary_admin_id, text="I'm online")
         logging.info("成功发送上线通知给主管理员。")
-        # 启动集中验证清理协程
-        application.create_task(verification_sweeper(application))
+        # 已移除 verification_sweeper 的创建
+        # application.create_task(verification_sweeper(application))
     except Exception as e:
         logging.error(f"发送上线通知时出错: {e}")
 
