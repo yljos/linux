@@ -67,6 +67,7 @@ proxy-groups:
   - {<<: *select, name: PikPak, proxies: [HK_fallback, SG_fallback, JP_fallback, US_fallback]}
   - {<<: *select, name: GitHub, proxies: [JP_fallback, M, SG_fallback, US_fallback, HK_fallback, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [JP_fallback, M, SG_fallback, HK_fallback, DIRECT, US_fallback]}
+  - {<<: *fallback, name: Cloudflare, proxies: [M, DIRECT], hidden: true}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)"}
   - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)"}
   - {<<: *fallback, name: SG_fallback, filter: "(?i)(新加坡|sg|singapore)"}
@@ -124,7 +125,7 @@ rules:
   - "AND,((DST-PORT,443/8443),(NETWORK,UDP)),REJECT"
   # - "RULE-SET,ad-site-classical,REJECT"
   - "RULE-SET,ad-ip,REJECT"
-  - "RULE-SET,cloudflare,M"
+  - "RULE-SET,cloudflare,Cloudflare"
   - "DOMAIN-KEYWORD,msftconnecttest.com,Microsoft"
   - "DOMAIN-KEYWORD,msftncsi.com,Microsoft"
   - "DOMAIN-KEYWORD,googleapis,Google"
