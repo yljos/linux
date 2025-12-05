@@ -71,7 +71,7 @@ gc() {
     fi
 }
 alias gpl='ssh_add_check; git pull'
-alias gpu='github && codeberg && gitea'
+alias gpu='github && gitea'
 alias gcl='ssh_add_check; git clone'
 alias gst='git status'
 alias gl='git log'
