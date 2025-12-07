@@ -43,7 +43,7 @@ dns:
   direct-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
   nameserver-policy:
     "rule-set:microsoft": "https://cloudflare-dns.com/dns-query#Microsoft"
-    # "rule-set:ad-site-classical": "rcode://refused"
+    "rule-set:ad-site": "rcode://refused"
     "rule-set:openai": "https://cloudflare-dns.com/dns-query#M"
     "rule-set:github": "https://cloudflare-dns.com/dns-query#GitHub"
     "rule-set:telegram-site": "https://cloudflare-dns.com/dns-query#Telegram"
@@ -71,7 +71,7 @@ proxy-groups:
   - {<<: *fallback, name: HK_fallback, filter: "(?i)(香港|hk|hongkong)"}
 rule-providers:
   adguard: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs}
-  # ad-site-classical: { <<: *classical, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site-classical.yaml }
+  ad-site: { <<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site.mrs}
   ad-ip: {<<: *ipcidr, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-ip.mrs}
   alibaba-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-site.mrs}
   alibaba-ip: {<<: *ipcidr, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-ip.mrs}
@@ -114,7 +114,7 @@ rules:
   - "AND,((DST-PORT,443/8443),(NETWORK,UDP)),REJECT"
   - "PROCESS-NAME,com.eg.android.AlipayGphone,DIRECT"
   - "PROCESS-NAME,com.whmstr.whsmk,DIRECT"
-  # - "RULE-SET,ad-site-classical,REJECT"
+  - "RULE-SET,ad-site,REJECT"
   - "RULE-SET,ad-ip,REJECT"
   - "RULE-SET,cloudflare,M"
   - "DOMAIN-KEYWORD,msftconnecttest.com,Microsoft"
