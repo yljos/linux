@@ -17,8 +17,7 @@ udp: true
 unified-delay: true
 tcp-concurrent: true
 profile: {store-selected: true, store-fake-ip: true}
-external-controller: "0.0.0.0:9090"
-secret: "101300"
+external-controller: "127.0.0.1:9090"
 authentication: ["huai:password12138"]
 skip-auth-prefixes: [127.0.0.1/8, 192.168.0.0/16]
 external-ui: ui
