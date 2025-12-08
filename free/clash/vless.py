@@ -75,6 +75,8 @@ def parse_vless_url(url: str) -> Dict[str, Any]:
 
     # 处理传输协议
     network_type = query.get("type", ["tcp"])[0]
+    # 根据你的要求，如果 network_type 是默认的 "tcp"，则不显式设置。但 VLESS 协议在 Clash 中要求 network 字段，我们保留它。
+    # 如果用户明确要求移除 VLESS 中的 'network: "tcp"'，需要进一步确认 VLESS 是否可以省略该字段。
     config["network"] = network_type
 
     if network_type == "grpc":
@@ -93,7 +95,7 @@ def parse_vless_url(url: str) -> Dict[str, Any]:
         headers: Dict[str, Any] = {}
         if "host" in query and query["host"][0]:
             # 保持 Host 字段格式与示例一致
-            headers["Host"] = query["host"][0]
+            headers["Host"] = query["host"][0].split(",")
 
         if headers:
             ws_opts["headers"] = headers
@@ -103,10 +105,9 @@ def parse_vless_url(url: str) -> Dict[str, Any]:
 
     elif network_type == "tcp":
         if query.get("headerType", [""])[0] == "http":
-            # 明确 http_opts 的值可以为任意类型，解决第一个错误
+            # 明确 http_opts 的值可以为任意类型
             http_opts: Dict[str, Any] = {"method": "GET"}
             if "path" in query and query["path"][0]:
-                # 此处赋值为 list[str]，现在是允许的
                 http_opts["path"] = query["path"][0].split(",")
 
             headers: Dict[str, Any] = {}
@@ -116,7 +117,6 @@ def parse_vless_url(url: str) -> Dict[str, Any]:
             if headers:
                 http_opts["headers"] = headers
 
-            # 此处赋值为 dict，因为 config 的值类型已声明为 Any，所以不再报错
             config["http-opts"] = http_opts
 
     # 处理flow参数
@@ -150,6 +150,13 @@ def convert_url_to_yaml(url: str) -> str:
     """
     config = parse_vless_url(url)
     clash_config = {"proxies": [config]}
+
+    # 添加自定义布尔值表示器，确保输出为小写 "true" / "false"
+    def boolean_representer(dumper, data):
+        return dumper.represent_scalar('tag:yaml.org,2002:bool', str(data).lower())
+
+    yaml.add_representer(bool, boolean_representer)
+
     return yaml.dump(
         clash_config,
         default_flow_style=False,

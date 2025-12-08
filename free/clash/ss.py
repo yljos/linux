@@ -119,6 +119,13 @@ def convert_url_to_yaml(url: str) -> str:
     """
     config = parse_shadowsocks_url(url)
     clash_config = {"proxies": [config]}
+
+    # 添加自定义布尔值表示器，确保输出为小写 "true" / "false"
+    def boolean_representer(dumper, data):
+        return dumper.represent_scalar('tag:yaml.org,2002:bool', str(data).lower())
+
+    yaml.add_representer(bool, boolean_representer)
+
     return yaml.dump(
         clash_config,
         default_flow_style=False,
