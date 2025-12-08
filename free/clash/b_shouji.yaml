@@ -59,17 +59,21 @@ dns:
     "rule-set:speedtest-site": "https://cloudflare-dns.com/dns-query#M"
 proxies: []
 proxy-groups:
-  - {<<: *select, name: M, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Default, type: select, proxies: [M, JP_fallback, US_fallback, SG_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Google, proxies: [JP_fallback, M, US_fallback, SG_fallback, HK_fallback]}
-  - {<<: *select, name: OpenAi, proxies: [JP_fallback, M, US_fallback, SG_fallback, HK_fallback]}
-  - {<<: *select, name: Telegram, proxies: [JP_fallback, M, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: M, proxies: [JP_load-balance, HK_load-balance, SG_load-balance, US_load-balance]}
+  - {<<: *select, name: Default, type: select, proxies: [M, DIRECT], include-all-proxies: false}
+  - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
+  - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: Netflix, proxies: [SG_fallback, JP_fallback, US_fallback, HK_fallback]}
-  - {<<: *select, name: Steam, proxies: [JP_fallback, M, SG_fallback, US_fallback, HK_fallback]}
-  - {<<: *select, name: PikPak, proxies: [HK_fallback, SG_fallback, JP_fallback, US_fallback]}
-  - {<<: *select, name: GitHub, proxies: [JP_fallback, M, SG_fallback, US_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Microsoft, proxies: [JP_fallback, M, SG_fallback, HK_fallback, DIRECT, US_fallback]}
-  - {<<: *fallback, name: Cloudflare_fallback, proxies: [M, DIRECT], hidden: true}
+  - {<<: *select, name: Steam, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback]}
+  - {<<: *select, name: PikPak, proxies: [SG_load-balance, HK_load-balance, JP_load-balance, US_load-balance]}
+  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
+  - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, HK_fallback, DIRECT, US_fallback]}
+  - {<<: *fallback, name: Cloudflare_fallback, proxies: [M, DIRECT]}
+  - {<<: *load-balance, name: HK_load-balance, filter: "(?i)(香港|hk|hongkong)"}
+  - {<<: *load-balance, name: SG_load-balance, filter: "(?i)(新加坡|sg|singapore)"}
+  - {<<: *load-balance, name: US_load-balance, filter: "(?i)(美国|us|united|america)"}
+  - {<<: *load-balance, name: JP_load-balance, filter: "(?i)(日本|jp|japan)"}
   - {<<: *fallback, name: JP_fallback, filter: "(?i)(日本|jp|japan)"}
   - {<<: *fallback, name: US_fallback, filter: "(?i)(美国|us|united|america)"}
   - {<<: *fallback, name: SG_fallback, filter: "(?i)(新加坡|sg|singapore)"}
@@ -77,7 +81,7 @@ proxy-groups:
 rule-providers:
   archlinux: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/archlinux.mrs}
   adguard: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs}
-  ad-site: { <<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site.mrs }
+  ad-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site.mrs}
   ad-ip: {<<: *ipcidr, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-ip.mrs}
   alibaba-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-site.mrs}
   alibaba-ip: {<<: *ipcidr, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-ip.mrs}
