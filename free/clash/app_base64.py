@@ -1,52 +1,14 @@
 """
-Flask应用 - 处理base64编码的节点信息，生成config.yaml
+Flask应用 - 纯内存处理订阅节点信息，生成config.yaml
 支持从URL参数获取base64编码数据，解码后处理vless://、ss://、hysteria2://、trojan://节点信息
 """
 
-from flask import Flask, request, jsonify, send_file, after_this_request
+from flask import Flask, request, jsonify, send_file
 import base64
 import os
-import tempfile
 import requests
+import io # 导入内存I/O模块
 from ruamel.yaml import YAML
-
-
-# --------- 临时文件清理工具 ---------
-def cleanup_files(file_list):
-    import os, sys
-
-    for f in file_list:
-        try:
-            os.remove(f)
-            print(f"[临时文件清理] 删除成功: {f}", file=sys.stderr)
-        except Exception as ex:
-            print(f"[临时文件清理] 删除失败: {f}, 错误: {ex}", file=sys.stderr)
-
-
-def create_cleanup_callback(temp_files, exclude_files=None):
-    @after_this_request
-    def cleanup_callback(response):
-        import threading
-        import time
-
-        def delayed_cleanup():
-            time.sleep(2)  # 等待2秒确保文件传输完成
-            files_to_clean = temp_files.copy()
-            if exclude_files:
-                for exclude_file in exclude_files:
-                    if exclude_file in files_to_clean:
-                        files_to_clean.remove(exclude_file)
-            cleanup_files(files_to_clean)
-            if exclude_files:
-                time.sleep(1)
-                cleanup_files(exclude_files)
-
-        cleanup_thread = threading.Thread(target=delayed_cleanup, daemon=True)
-        cleanup_thread.start()
-        return response
-
-    return cleanup_callback
-
 
 # 导入现有的转换器模块
 try:
@@ -65,7 +27,6 @@ except ImportError:
     print("警告: 无法导入hysteria2_converter模块")
     parse_hysteria2_url = None
 try:
-    # 新增：导入 Trojan 转换器
     from trojan import parse_trojan_url
 except ImportError:
     print("警告: 无法导入trojan_converter模块")
@@ -73,6 +34,22 @@ except ImportError:
 
 
 app = Flask(__name__)
+
+# --- 预加载 b.yaml 内容到内存 (假设 b.yaml 存在于同一目录) ---
+# 建议：将 b.yaml 文件的内容定义为一个全局常量 BASE_YAML_CONTENT
+BASE_YAML_CONTENT = ""
+try:
+    b_yaml_path = os.path.join(os.path.dirname(__file__), "b.yaml")
+    with open(b_yaml_path, "r", encoding="utf-8") as f:
+        BASE_YAML_CONTENT = f.read()
+    print("b.yaml 已成功预加载到内存。")
+except FileNotFoundError:
+    print("警告: b.yaml 文件未找到，将使用空基础配置。")
+    BASE_YAML_CONTENT = "{}"
+except Exception as e:
+    print(f"警告: 加载b.yaml时发生错误: {e}，将使用空基础配置。")
+    BASE_YAML_CONTENT = "{}"
+# -------------------------------------------------------------------
 
 
 def decode_base64_content(content):
@@ -88,6 +65,7 @@ def decode_base64_content(content):
         raise ValueError(f"Base64解码失败: {str(e)}")
 
 
+# (fetch_subscription_info 和 fetch_content_from_url 保持不变...)
 def fetch_subscription_info(url):
     """使用clash verge User-Agent获取订阅信息"""
     try:
@@ -103,8 +81,6 @@ def fetch_subscription_info(url):
 def fetch_content_from_url(url):
     """从URL获取base64编码的内容并解码"""
     try:
-        # 临时不需要订阅信息，避免额外的网络请求。
-        # subscription_userinfo = fetch_subscription_info(url)
         subscription_userinfo = ""
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0"
@@ -124,7 +100,6 @@ def extract_urls_from_text(text):
     lines = text.strip().split("\n")
     for line in lines:
         line = line.strip()
-        # 更新：添加 trojan:// 协议支持
         if line.startswith(("vless://", "ss://", "hysteria2://", "hy2://", "trojan://")):
             urls.append(line)
     return urls
@@ -148,7 +123,6 @@ def parse_node_url(url):
             return parse_hysteria2_url(url)
         else:
             raise ValueError("Hysteria2转换器未可用")
-    # 新增：处理 trojan:// 协议
     elif url.startswith("trojan://"):
         if parse_trojan_url:
             return parse_trojan_url(url)
@@ -166,37 +140,26 @@ def index():
 @app.route("/<path:url_path>", methods=["GET"])
 def process_nodes_from_path(url_path):
     """通过路径参数处理节点信息并生成config.yaml"""
-    # 修正 1: 在 try 块外部初始化 full_url，确保其总有值
     full_url = url_path
     if request.query_string:
         query_part = request.query_string.decode("utf-8")
         full_url = f"{url_path}?{query_part}"
 
     try:
-        # 从URL获取内容
         decoded_content, subscription_userinfo = fetch_content_from_url(full_url)
-
-        # 提取节点URL
         node_urls = extract_urls_from_text(decoded_content)
+        
         if not node_urls:
             return (
-                jsonify(
-                    {
-                        "error": "未找到有效的节点URL",
-                        "decoded_content": (
-                            decoded_content[:500] + "..."
-                            if len(decoded_content) > 500
-                            else decoded_content
-                        ),
-                        "url": full_url,
-                    }
-                ),
+                jsonify({
+                    "error": "未找到有效的节点URL",
+                    "url": full_url,
+                }),
                 400,
             )
 
         # 解析所有节点
         nodes, errors = [], []
-        # 修正 2: 将 'i' 重命名为 'idx' 避免变量遮蔽
         for idx, url in enumerate(node_urls):
             try:
                 node_config = parse_node_url(url)
@@ -206,27 +169,22 @@ def process_nodes_from_path(url_path):
 
         if not nodes:
             return (
-                jsonify(
-                    {"error": "所有节点解析都失败了", "errors": errors, "url": full_url}
-                ),
+                jsonify({"error": "所有节点解析都失败了", "errors": errors, "url": full_url}),
                 400,
             )
 
-        # 合并到b.yaml
-        b_yaml_path = os.path.join(os.path.dirname(__file__), "b.yaml")
+        # --- 纯内存 YAML 处理开始 ---
         yaml_ruamel = YAML()
         yaml_ruamel.preserve_quotes = True
-        base_config = (
-            yaml_ruamel.load(open(b_yaml_path, "r", encoding="utf-8"))
-            if os.path.exists(b_yaml_path)
-            else yaml_ruamel.load("{}")
-        )
+
+        # 1. 从内存常量加载基础配置
+        base_config = yaml_ruamel.load(BASE_YAML_CONTENT)
 
         proxies = list(base_config.get("proxies", []))
         proxies.extend(nodes)
-
+        
         from ruamel.yaml.comments import CommentedSeq, CommentedMap
-
+        
         def dict_to_flow_map(d):
             if not isinstance(d, dict):
                 return d
@@ -251,26 +209,32 @@ def process_nodes_from_path(url_path):
         ]
         base_config["proxies"] = CommentedSeq(proxies_flow)
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False, encoding="utf-8"
-        ) as f:
-            yaml_ruamel.width = 4096
-            yaml_ruamel.dump(base_config, f)
-            temp_file_path = f.name
-
-        create_cleanup_callback([temp_file_path])
+        # 2. 写入内存缓冲区
+        output_stream = io.StringIO()
+        yaml_ruamel.width = 4096
+        yaml_ruamel.dump(base_config, output_stream)
+        
+        # 3. 将 StringIO 内容作为文件发送
+        output_stream.seek(0)
+        
+        # 使用 io.BytesIO 包装，以便 send_file 可以正确处理 MIME 类型和附件
+        # 也可以直接返回 output_stream.getvalue()，但使用 send_file 兼容性更好
+        return_data = io.BytesIO(output_stream.getvalue().encode('utf-8'))
+        
         response = send_file(
-            temp_file_path,
-            as_attachment=True,
-            download_name="config.yaml",
+            return_data,
             mimetype="text/yaml",
+            as_attachment=True,
+            download_name="config.yaml"
         )
+        # --- 纯内存 YAML 处理结束 ---
 
         if subscription_userinfo:
             response.headers["Subscription-Userinfo"] = subscription_userinfo
         return response
 
     except Exception as e:
+        # 在生产环境中，应该记录完整的 traceback
         return jsonify({"error": f"处理过程中发生错误: {str(e)}", "url": full_url}), 500
 
 

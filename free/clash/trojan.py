@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Trojan URL to YAML converter
 转换为包含默认参数的Clash配置格式
@@ -33,7 +34,7 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
             f"URL缺少必要信息: server={parsed.hostname}, port={parsed.port}, password={parsed.username}"
         )
 
-    # 基础配置 - 不再默认设置 "network": "tcp"
+    # 基础配置 - 默认设置为 skip-cert-verify: True
     config: Dict[str, Any] = {
         "name": node_name,
         "type": "trojan",
@@ -42,7 +43,7 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
         "password": parsed.username,
         "udp": True,  # 默认启用UDP
         "sni": "",  # 服务器名称，根据sni参数设置
-        "skip-cert-verify": True,  # 默认跳过验证证书
+        "skip-cert-verify": True, # <-- 关键修改：默认设置为 True
     }
 
     # 处理SNI参数
@@ -52,7 +53,15 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
         # 如果没有指定sni，使用服务器地址作为默认值
         config["sni"] = parsed.hostname
 
-    # 处理传输协议 (默认为 tcp，Trojan-Go 和 V2Ray 等支持 ws, grpc)
+    # --- 关键修改：处理 insecure 参数 ---
+    # 只有当 allowInsecure=false 时，才移除默认的 skip-cert-verify: true
+    if "allowInsecure" in query:
+        if query["allowInsecure"][0].lower() == "false":
+            # 如果明确要求验证证书，则将默认值覆盖为 False
+            config["skip-cert-verify"] = False
+    # --- 关键修改结束 ---
+    
+    # 处理传输协议 (默认为 tcp)
     network_type = query.get("type", [""])[0] 
     
     # 仅当 type 参数存在且不等于 "tcp" 时，才显式设置 network
@@ -70,7 +79,6 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
         # Host Header
         headers: Dict[str, Any] = {}
         if "host" in query and query["host"][0]:
-            # 保持 Host 字段格式与示例一致
             headers["Host"] = query["host"][0]
 
         if headers:
@@ -88,12 +96,6 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
         if grpc_opts:
             config["grpc-opts"] = grpc_opts
 
-    # 处理 insecure 参数
-    if "allowInsecure" in query:
-        # Clash/Clash-Meta 使用 skip-cert-verify
-        # URL参数中可能是 insecure 或 allowInsecure
-        config["skip-cert-verify"] = query["allowInsecure"][0].lower() == "true"
-
     # 清理空值和无效配置
     cleaned_config: Dict[str, Any] = {}
     for key, value in config.items():
@@ -108,6 +110,10 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
             else:
                 cleaned_config[key] = value
 
+    # 在最终清理步骤之后，如果 skip-cert-verify 为 False，则不包含它
+    if cleaned_config.get("skip-cert-verify") is False:
+        del cleaned_config["skip-cert-verify"]
+        
     return cleaned_config
 
 
