@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import hashlib
 import hmac
 import io
-from threading import RLock
+import json  # [新增] 引入json处理
 
 # =====================
 # .env 配置项直接常量化
@@ -19,15 +19,12 @@ app = Flask(__name__)
 
 TEMPLATE_PATH_PC = Path("b.yaml")
 TEMPLATE_PATH_M = Path("b_shouji.yaml")
-# [新增] 定义本地文件缓存目录
-CACHE_DIR = Path("cache")
-CACHE_DIR.mkdir(exist_ok=True)  # 自动创建目录
 
-HEADERS_CACHE = {}
-HEADERS_CACHE_LOCK = RLock()
+# 本地文件缓存目录
+CACHE_DIR = Path("cache")
+CACHE_DIR.mkdir(exist_ok=True)
 
 USER_AGENT = "clash verge"
-CACHE_DURATION = 300
 HYSTERIA2_UP = "40 Mbps"
 HYSTERIA2_DOWN = "200 Mbps"
 HYSTERIA2_UP_M = "20 Mbps"
@@ -58,12 +55,6 @@ DEBUG = True
 PORT = 5002
 HOST = "0.0.0.0"
 
-
-"""
-仅内存缓存：不再使用基于文件的 headers 缓存
-（已在常量区定义）
-"""
-
 # 验证必要文件存在
 if not TEMPLATE_PATH_PC.exists():
     raise FileNotFoundError(f"模板文件不存在: {TEMPLATE_PATH_PC}")
@@ -93,7 +84,6 @@ def restrict_paths():
     allowed = {"/mitce", "/bajie", "/westdata"}
     if request.path not in allowed:
         return "Not Found", 404
-    # 查询参数中携带 key 进行鉴权
     key = request.args.get("key")
     if not key:
         return "Unauthorized", 401
@@ -104,22 +94,17 @@ def restrict_paths():
 
 # YAML 配置
 def setup_yaml_config():
-    """设置YAML配置"""
     yaml_config = YAML()
     yaml_config.preserve_quotes = True
     yaml_config.indent(mapping=2, sequence=2, offset=2)
-    yaml_config.width = 4096  # 避免自动换行
-    # 使字典以流式风格(单行 {}) 输出
+    yaml_config.width = 4096
     yaml_config.default_flow_style = None
     return yaml_config
 
 
 def set_flow_style_for_proxies(proxies_list):
-    """将代理列表中的每个映射设置为 flow style（{ ... }）。
-    仅在使用 ruamel.dump 时生效。失败时静默跳过，保持默认格式。"""
     for item in proxies_list:
         try:
-            # ruamel 的 CommentedMap 支持通过 .fa.set_flow_style() 设置为 flow style
             if hasattr(item, "fa") and hasattr(item.fa, "set_flow_style"):
                 item.fa.set_flow_style()
         except Exception:
@@ -132,90 +117,93 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def save_headers_cache(url, headers):
-    """保存请求头缓存到内存，仅保存白名单中的 header。"""
+# [新增] Headers 缓存读写辅助函数
+def save_headers_to_disk(source_name, headers):
+    """过滤并保存 Headers 到磁盘 JSON 文件"""
     try:
         filtered_headers = {
             k: v
             for k, v in headers.items()
             if k.lower() in {h.lower() for h in INCLUDED_HEADERS}
         }
+        # 如果没有需要保存的 header，就不创建文件
+        if not filtered_headers:
+            return {}
 
-        with HEADERS_CACHE_LOCK:
-            HEADERS_CACHE[url] = {
-                "headers": filtered_headers,
-                "timestamp": datetime.now(),
-            }
+        file_path = CACHE_DIR / f"{source_name}.headers.json"
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(filtered_headers, f, ensure_ascii=False, indent=2)
+        return filtered_headers
     except Exception as e:
-        logger.error(f"保存headers内存缓存失败: {e}")
+        logger.error(f"[{source_name}] 保存 Headers 到磁盘失败: {e}")
+        return {}
 
 
-def get_headers_cache(url):
-    """获取指定 URL 的 headers 内存缓存，检查是否过期。"""
+def load_headers_from_disk(source_name):
+    """从磁盘 JSON 文件读取 Headers"""
+    file_path = CACHE_DIR / f"{source_name}.headers.json"
+    if not file_path.exists():
+        return {}
     try:
-        with HEADERS_CACHE_LOCK:
-            entry = HEADERS_CACHE.get(url)
-            if not entry:
-                return None
-
-            cache_time = entry.get("timestamp")
-            if datetime.now() - cache_time < timedelta(seconds=CACHE_DURATION):
-                return entry.get("headers")
-            else:
-                # 过期清理
-                HEADERS_CACHE.pop(url, None)
-                return None
+        with open(file_path, "r", encoding="utf-8") as f:
+            return json.load(f)
     except Exception as e:
-        logger.error(f"读取headers内存缓存失败: {e}")
-        return None
+        logger.error(f"[{source_name}] 读取磁盘 Headers 失败: {e}")
+        return {}
 
 
 def fetch_yaml_text(url, source_name):
     """
-    获取上游 YAML 文本。
-    1. 尝试网络请求并更新本地文件缓存。
-    2. 如果网络请求失败，尝试读取本地文件缓存作为兜底。
+    获取上游 YAML 文本和 Headers。
+    返回: (yaml_text, headers_dict)
     """
-    cache_file = CACHE_DIR / f"{source_name}.yaml"
+    yaml_cache_file = CACHE_DIR / f"{source_name}.yaml"
     
     try:
         headers = {"User-Agent": USER_AGENT}
-        # 设置超时时间，避免长时间挂起
         response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
         
-        # 网络请求成功，更新 Header 缓存
-        save_headers_cache(url, response.headers)
+        # 1. 网络请求成功，保存 Headers 到磁盘 (JSON)
+        saved_headers = save_headers_to_disk(source_name, response.headers)
         
-        # 将内容写入本地文件缓存
+        # 2. 保存 YAML 内容到磁盘
         try:
-            with open(cache_file, "w", encoding="utf-8") as f:
+            with open(yaml_cache_file, "w", encoding="utf-8") as f:
                 f.write(response.text)
-            logger.info(f"[{source_name}] 成功获取并更新本地缓存: {cache_file}")
+            logger.info(f"[{source_name}] 网络拉取成功，缓存已更新")
         except Exception as write_err:
-            logger.error(f"[{source_name}] 写入本地缓存失败: {write_err}")
+            logger.error(f"[{source_name}] 写入 YAML 缓存失败: {write_err}")
 
-        return response.text
+        return response.text, saved_headers
 
     except Exception as e:
         logger.error(f"[{source_name}] 网络拉取失败: {str(e)}")
         
-        # 尝试使用本地缓存兜底
-        if cache_file.exists():
+        # 3. 灾难恢复：尝试读取本地 YAML 和 Headers
+        if yaml_cache_file.exists():
             try:
-                logger.warning(f"[{source_name}] !!! 启用灾难恢复，使用本地缓存文件 !!!")
-                with open(cache_file, "r", encoding="utf-8") as f:
-                    return f.read()
+                logger.warning(f"[{source_name}] !!! 启用灾难恢复，使用本地缓存 !!!")
+                
+                # 读取 YAML
+                with open(yaml_cache_file, "r", encoding="utf-8") as f:
+                    cached_yaml = f.read()
+                
+                # 读取 Headers
+                cached_headers = load_headers_from_disk(source_name)
+                
+                return cached_yaml, cached_headers
+
             except Exception as read_err:
                 logger.error(f"[{source_name}] 读取本地缓存失败: {read_err}")
-                raise e  # 读取缓存也失败，只能抛出原始异常
+                raise e
         else:
             logger.error(f"[{source_name}] 无本地缓存可用")
             raise e
 
 
 def filter_node_names(proxies):
-    """在内存中过滤节点名称，返回 (filtered_node_names, all_node_names)。"""
+    """在内存中过滤节点名称"""
     all_names = [
         proxy.get("name")
         for proxy in proxies
@@ -228,10 +216,7 @@ def filter_node_names(proxies):
         and not any(ex.lower() in n.lower() for ex in NODE_EXCLUDE_KEYWORDS)
     ]
     logger.info(
-        (
-            "节点过滤完成: 过滤 %d / 原始 %d 包含=%s 排除=%s"
-            % (len(filtered), len(all_names), NODE_KEYWORDS, NODE_EXCLUDE_KEYWORDS)
-        )
+        "节点过滤完成: 过滤 %d / 原始 %d" % (len(filtered), len(all_names))
     )
     return filtered, all_names
 
@@ -246,10 +231,10 @@ def filter_nodes_by_region(node_names, region_patterns):
             ):
                 if name not in [
                     p.upper() for p in region_patterns if len(p) <= 3
-                ]:  # 排除简单的区域代码
+                ]:
                     filtered_nodes.append(name)
                     break
-    return list(dict.fromkeys(filtered_nodes))  # 去重
+    return list(dict.fromkeys(filtered_nodes))
 
 
 def replace_fallback_nodes_in_group(
@@ -264,9 +249,6 @@ def replace_fallback_nodes_in_group(
             proxies.pop(index)
             for i, node in enumerate(filtered_nodes):
                 proxies.insert(index + i, node)
-            logger.info(
-                f"在代理组 '{group_name}' 中替换{fallback_name}为 {len(filtered_nodes)} 个实际节点"
-            )
 
 
 def process_proxy_config(proxy, up_pref: str, down_pref: str):
@@ -277,28 +259,22 @@ def process_proxy_config(proxy, up_pref: str, down_pref: str):
     proxy_type = proxy.get("type")
 
     if proxy_type == "hysteria2":
-        # 确保带宽值包含单位
         up_value = up_pref if "bps" in up_pref.lower() else f"{up_pref} Mbps"
         down_value = down_pref if "bps" in down_pref.lower() else f"{down_pref} Mbps"
-
         proxy.update({"up": up_value, "down": down_value, "skip-cert-verify": False})
 
     elif proxy_type == "vless":
         proxy.update({"skip-cert-verify": False, "packet-encoding": "xudp"})
-
-        # 仅在 vless 类型下，如果存在 client-fingerprint 键，则统一替换为 firefox
         try:
             if "client-fingerprint" in proxy:
                 proxy["client-fingerprint"] = CLIENT_FINGERPRINT
-
         except Exception:
-            logger.debug("在 vless 中设置 client-fingerprint 时发生异常")
+            pass
 
 
 def replace_proxy_groups_with_nodes(template_data, node_names):
     """用内存节点列表替换 fallback 组中的占位节点。"""
     if not node_names:
-        logger.info("无可用节点名称，跳过代理组替换。")
         return template_data
 
     region_configs = {
@@ -312,9 +288,6 @@ def replace_proxy_groups_with_nodes(template_data, node_names):
     region_nodes = {}
     for fallback_key, (patterns, _) in region_configs.items():
         region_nodes[fallback_key] = filter_nodes_by_region(node_names, patterns)
-        logger.info(
-            f"找到 {len(region_nodes[fallback_key])} 个{fallback_key.replace('_fallback', '')}节点"
-        )
 
     proxy_groups = template_data.get("proxy-groups", [])
     for group in proxy_groups:
@@ -335,15 +308,12 @@ def replace_proxy_groups_with_nodes(template_data, node_names):
 def process_yaml_content(
     yaml_text: str, template_path: Path, up_pref: str, down_pref: str
 ):
-    """处理上游YAML文本，返回字节串以便内存直传。"""
+    """处理上游YAML文本"""
     try:
-        # 解析YAML获取数据结构（直接从字符串）
         input_data = yaml.load(yaml_text)
-
         if not isinstance(input_data, dict):
             raise ValueError("YAML内容必须是有效的字典格式")
 
-        # 读取标准模板
         with open(template_path, "r", encoding="utf-8") as f:
             template_data = yaml.load(f)
 
@@ -351,11 +321,9 @@ def process_yaml_content(
         if not proxies_original:
             raise ValueError("YAML文件中未找到有效的proxies配置")
 
-        # 处理原始代理配置（仅用于生成/过滤节点名称）
         for proxy in proxies_original:
             process_proxy_config(proxy, up_pref, down_pref)
 
-        # 内存过滤节点
         filtered_names, all_names = filter_node_names(proxies_original)
 
         proxies = [
@@ -364,7 +332,7 @@ def process_yaml_content(
             if isinstance(p, dict) and p.get("name") in filtered_names
         ]
         if not proxies:
-            logger.warning("过滤后无匹配节点，使用全部原始节点 (0 filtered)")
+            logger.warning("过滤后无匹配节点，使用全部原始节点")
             proxies = proxies_original
 
         if ENABLE_NODE_REPLACEMENT:
@@ -372,7 +340,6 @@ def process_yaml_content(
                 template_data, filtered_names
             )
 
-        # 内存中生成 YAML 文本
         buf = io.StringIO()
         template_data["proxies"] = proxies
         set_flow_style_for_proxies(template_data.get("proxies", []))
@@ -385,7 +352,6 @@ def process_yaml_content(
         raise
 
 
-# 合并 mitce 和 bajie 路由为 /<source>
 @app.route("/<source>")
 def process_source(source):
     try:
@@ -404,13 +370,12 @@ def process_source(source):
         down_pref = HYSTERIA2_DOWN_M if config_val == "m" else HYSTERIA2_DOWN
         logger.info(f"处理URL({source}) 使用模板: {template_path}")
 
-        # [修改] 传递 source 参数以用于生成缓存文件名
-        yaml_text = fetch_yaml_text(yaml_url, source_name=source)
+        # [核心改动] 获取 YAML 和 Headers (优先网络，失败则走缓存)
+        yaml_text, headers_data = fetch_yaml_text(yaml_url, source_name=source)
         
         output_bytes = process_yaml_content(
             yaml_text, template_path, up_pref, down_pref
         )
-        cached_headers = get_headers_cache(yaml_url)
 
         response = send_file(
             io.BytesIO(output_bytes),
@@ -421,11 +386,10 @@ def process_source(source):
 
         response.headers["Content-Type"] = "application/yaml; charset=utf-8"
 
-        # 如果走了本地缓存，headers 缓存可能会过期或为空，这里只添加存在的 headers
-        if cached_headers:
-            for header, value in cached_headers.items():
-                if header.lower() in {h.lower() for h in INCLUDED_HEADERS}:
-                    response.headers[header] = value
+        # [核心改动] 写入缓存的 Headers
+        if headers_data:
+            for header, value in headers_data.items():
+                response.headers[header] = value
         
         return response
 
