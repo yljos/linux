@@ -122,7 +122,7 @@ def convert_url_to_yaml(url: str) -> str:
 
     # 添加自定义布尔值表示器，确保输出为小写 "true" / "false"
     def boolean_representer(dumper, data):
-        return dumper.represent_scalar('tag:yaml.org,2002:bool', str(data).lower())
+        return dumper.represent_scalar("tag:yaml.org,2002:bool", str(data).lower())
 
     yaml.add_representer(bool, boolean_representer)
 

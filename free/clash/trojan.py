@@ -43,7 +43,7 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
         "password": parsed.username,
         "udp": True,  # 默认启用UDP
         "sni": "",  # 服务器名称，根据sni参数设置
-        "skip-cert-verify": True, # <-- 关键修改：默认设置为 True
+        "skip-cert-verify": True,  # <-- 关键修改：默认设置为 True
     }
 
     # 处理SNI参数
@@ -60,14 +60,14 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
             # 如果明确要求验证证书，则将默认值覆盖为 False
             config["skip-cert-verify"] = False
     # --- 关键修改结束 ---
-    
+
     # 处理传输协议 (默认为 tcp)
-    network_type = query.get("type", [""])[0] 
-    
+    network_type = query.get("type", [""])[0]
+
     # 仅当 type 参数存在且不等于 "tcp" 时，才显式设置 network
     if network_type and network_type != "tcp":
         config["network"] = network_type
-    
+
     # 处理 WebSocket 配置
     if network_type == "ws":
         ws_opts: Dict[str, Any] = {}
@@ -113,7 +113,7 @@ def parse_trojan_url(url: str) -> Dict[str, Any]:
     # 在最终清理步骤之后，如果 skip-cert-verify 为 False，则不包含它
     if cleaned_config.get("skip-cert-verify") is False:
         del cleaned_config["skip-cert-verify"]
-        
+
     return cleaned_config
 
 
@@ -126,10 +126,10 @@ def convert_url_to_yaml(url: str) -> str:
 
     # 添加自定义布尔值表示器，确保输出为小写 "true" / "false"
     def boolean_representer(dumper, data):
-        return dumper.represent_scalar('tag:yaml.org,2002:bool', str(data).lower())
+        return dumper.represent_scalar("tag:yaml.org,2002:bool", str(data).lower())
 
     yaml.add_representer(bool, boolean_representer)
-    
+
     return yaml.dump(
         clash_config,
         default_flow_style=False,

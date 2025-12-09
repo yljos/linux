@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify, send_file
 import base64
 import os
 import requests
-import io # 导入内存I/O模块
+import io  # 导入内存I/O模块
 from ruamel.yaml import YAML
 
 # 导入现有的转换器模块
@@ -100,7 +100,9 @@ def extract_urls_from_text(text):
     lines = text.strip().split("\n")
     for line in lines:
         line = line.strip()
-        if line.startswith(("vless://", "ss://", "hysteria2://", "hy2://", "trojan://")):
+        if line.startswith(
+            ("vless://", "ss://", "hysteria2://", "hy2://", "trojan://")
+        ):
             urls.append(line)
     return urls
 
@@ -148,13 +150,15 @@ def process_nodes_from_path(url_path):
     try:
         decoded_content, subscription_userinfo = fetch_content_from_url(full_url)
         node_urls = extract_urls_from_text(decoded_content)
-        
+
         if not node_urls:
             return (
-                jsonify({
-                    "error": "未找到有效的节点URL",
-                    "url": full_url,
-                }),
+                jsonify(
+                    {
+                        "error": "未找到有效的节点URL",
+                        "url": full_url,
+                    }
+                ),
                 400,
             )
 
@@ -169,7 +173,9 @@ def process_nodes_from_path(url_path):
 
         if not nodes:
             return (
-                jsonify({"error": "所有节点解析都失败了", "errors": errors, "url": full_url}),
+                jsonify(
+                    {"error": "所有节点解析都失败了", "errors": errors, "url": full_url}
+                ),
                 400,
             )
 
@@ -182,9 +188,9 @@ def process_nodes_from_path(url_path):
 
         proxies = list(base_config.get("proxies", []))
         proxies.extend(nodes)
-        
+
         from ruamel.yaml.comments import CommentedSeq, CommentedMap
-        
+
         def dict_to_flow_map(d):
             if not isinstance(d, dict):
                 return d
@@ -213,19 +219,19 @@ def process_nodes_from_path(url_path):
         output_stream = io.StringIO()
         yaml_ruamel.width = 4096
         yaml_ruamel.dump(base_config, output_stream)
-        
+
         # 3. 将 StringIO 内容作为文件发送
         output_stream.seek(0)
-        
+
         # 使用 io.BytesIO 包装，以便 send_file 可以正确处理 MIME 类型和附件
         # 也可以直接返回 output_stream.getvalue()，但使用 send_file 兼容性更好
-        return_data = io.BytesIO(output_stream.getvalue().encode('utf-8'))
-        
+        return_data = io.BytesIO(output_stream.getvalue().encode("utf-8"))
+
         response = send_file(
             return_data,
             mimetype="text/yaml",
             as_attachment=True,
-            download_name="config.yaml"
+            download_name="config.yaml",
         )
         # --- 纯内存 YAML 处理结束 ---
 
