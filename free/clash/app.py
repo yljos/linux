@@ -12,15 +12,17 @@ import hmac
 import io
 from threading import RLock
 
-
 # =====================
 # .env 配置项直接常量化
 # =====================
 app = Flask(__name__)
 
-
 TEMPLATE_PATH_PC = Path("b.yaml")
 TEMPLATE_PATH_M = Path("b_shouji.yaml")
+# [新增] 定义本地文件缓存目录
+CACHE_DIR = Path("cache")
+CACHE_DIR.mkdir(exist_ok=True)  # 自动创建目录
+
 HEADERS_CACHE = {}
 HEADERS_CACHE_LOCK = RLock()
 
@@ -48,7 +50,6 @@ CLIENT_FINGERPRINT = "firefox"
 
 MITCE_URL_FILE = Path("mitce").absolute()
 BAJIE_URL_FILE = Path("bajie").absolute()
-# [修改 1] 定义新的 URL 文件路径
 WESTDATA_URL_FILE = Path("westdata").absolute()
 
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
@@ -69,7 +70,6 @@ if not TEMPLATE_PATH_PC.exists():
 if not TEMPLATE_PATH_M.exists():
     raise FileNotFoundError(f"模板文件不存在: {TEMPLATE_PATH_M}")
 
-# [修改 2] 验证 URL 文件存在 (加入 WESTDATA_URL_FILE)
 for _path in (MITCE_URL_FILE, BAJIE_URL_FILE, WESTDATA_URL_FILE):
     if not _path.exists():
         raise FileNotFoundError(f"URL 文件不存在: {_path}")
@@ -90,7 +90,6 @@ def read_url_from_file(path: Path) -> str:
 
 @app.before_request
 def restrict_paths():
-    # [修改 3] 允许的路径集合加入 /westdata
     allowed = {"/mitce", "/bajie", "/westdata"}
     if request.path not in allowed:
         return "Not Found", 404
@@ -171,18 +170,48 @@ def get_headers_cache(url):
         return None
 
 
-def fetch_yaml_text(url):
-    """获取上游 YAML 文本并缓存响应头（内存模式）。"""
+def fetch_yaml_text(url, source_name):
+    """
+    获取上游 YAML 文本。
+    1. 尝试网络请求并更新本地文件缓存。
+    2. 如果网络请求失败，尝试读取本地文件缓存作为兜底。
+    """
+    cache_file = CACHE_DIR / f"{source_name}.yaml"
+    
     try:
         headers = {"User-Agent": USER_AGENT}
-        response = requests.get(url, headers=headers, timeout=30)
+        # 设置超时时间，避免长时间挂起
+        response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
+        
+        # 网络请求成功，更新 Header 缓存
         save_headers_cache(url, response.headers)
-        logger.info("成功获取上游YAML文本")
+        
+        # 将内容写入本地文件缓存
+        try:
+            with open(cache_file, "w", encoding="utf-8") as f:
+                f.write(response.text)
+            logger.info(f"[{source_name}] 成功获取并更新本地缓存: {cache_file}")
+        except Exception as write_err:
+            logger.error(f"[{source_name}] 写入本地缓存失败: {write_err}")
+
         return response.text
+
     except Exception as e:
-        logger.error(f"获取YAML失败: {str(e)}")
-        raise
+        logger.error(f"[{source_name}] 网络拉取失败: {str(e)}")
+        
+        # 尝试使用本地缓存兜底
+        if cache_file.exists():
+            try:
+                logger.warning(f"[{source_name}] !!! 启用灾难恢复，使用本地缓存文件 !!!")
+                with open(cache_file, "r", encoding="utf-8") as f:
+                    return f.read()
+            except Exception as read_err:
+                logger.error(f"[{source_name}] 读取本地缓存失败: {read_err}")
+                raise e  # 读取缓存也失败，只能抛出原始异常
+        else:
+            logger.error(f"[{source_name}] 无本地缓存可用")
+            raise e
 
 
 def filter_node_names(proxies):
@@ -364,7 +393,6 @@ def process_source(source):
             yaml_url = unquote(read_url_from_file(MITCE_URL_FILE))
         elif source == "bajie":
             yaml_url = unquote(read_url_from_file(BAJIE_URL_FILE))
-        # [修改 4] 添加 westdata 路由处理
         elif source == "westdata":
             yaml_url = unquote(read_url_from_file(WESTDATA_URL_FILE))
         else:
@@ -376,7 +404,9 @@ def process_source(source):
         down_pref = HYSTERIA2_DOWN_M if config_val == "m" else HYSTERIA2_DOWN
         logger.info(f"处理URL({source}) 使用模板: {template_path}")
 
-        yaml_text = fetch_yaml_text(yaml_url)
+        # [修改] 传递 source 参数以用于生成缓存文件名
+        yaml_text = fetch_yaml_text(yaml_url, source_name=source)
+        
         output_bytes = process_yaml_content(
             yaml_text, template_path, up_pref, down_pref
         )
@@ -391,10 +421,12 @@ def process_source(source):
 
         response.headers["Content-Type"] = "application/yaml; charset=utf-8"
 
+        # 如果走了本地缓存，headers 缓存可能会过期或为空，这里只添加存在的 headers
         if cached_headers:
             for header, value in cached_headers.items():
                 if header.lower() in {h.lower() for h in INCLUDED_HEADERS}:
                     response.headers[header] = value
+        
         return response
 
     except Exception as e:
