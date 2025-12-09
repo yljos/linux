@@ -19,6 +19,7 @@ ExecStart=/usr/bin/podman run \
   -v /root/config/mitce:/app/mitce:Z \
   -v /root/config/bajie:/app/bajie:Z \
   -v /root/config/westdata:/app/westdata:Z \
+  -v /root/config/cache:/app/cache:Z \
   localhost/clash:latest
 
 ExecStop=/usr/bin/podman stop -t 10 clash
