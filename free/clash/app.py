@@ -158,15 +158,15 @@ def fetch_yaml_text(url, source_name):
     返回: (yaml_text, headers_dict)
     """
     yaml_cache_file = CACHE_DIR / f"{source_name}.yaml"
-    
+
     try:
         headers = {"User-Agent": USER_AGENT}
         response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
-        
+
         # 1. 网络请求成功，保存 Headers 到磁盘 (JSON)
         saved_headers = save_headers_to_disk(source_name, response.headers)
-        
+
         # 2. 保存 YAML 内容到磁盘
         try:
             with open(yaml_cache_file, "w", encoding="utf-8") as f:
@@ -179,19 +179,19 @@ def fetch_yaml_text(url, source_name):
 
     except Exception as e:
         logger.error(f"[{source_name}] 网络拉取失败: {str(e)}")
-        
+
         # 3. 灾难恢复：尝试读取本地 YAML 和 Headers
         if yaml_cache_file.exists():
             try:
                 logger.warning(f"[{source_name}] !!! 启用灾难恢复，使用本地缓存 !!!")
-                
+
                 # 读取 YAML
                 with open(yaml_cache_file, "r", encoding="utf-8") as f:
                     cached_yaml = f.read()
-                
+
                 # 读取 Headers
                 cached_headers = load_headers_from_disk(source_name)
-                
+
                 return cached_yaml, cached_headers
 
             except Exception as read_err:
@@ -215,9 +215,7 @@ def filter_node_names(proxies):
         if any(kw.lower() in n.lower() for kw in NODE_KEYWORDS)
         and not any(ex.lower() in n.lower() for ex in NODE_EXCLUDE_KEYWORDS)
     ]
-    logger.info(
-        "节点过滤完成: 过滤 %d / 原始 %d" % (len(filtered), len(all_names))
-    )
+    logger.info("节点过滤完成: 过滤 %d / 原始 %d" % (len(filtered), len(all_names)))
     return filtered, all_names
 
 
@@ -229,9 +227,7 @@ def filter_nodes_by_region(node_names, region_patterns):
             if pattern in name.upper() or any(
                 chinese in name for chinese in region_patterns if len(chinese) > 2
             ):
-                if name not in [
-                    p.upper() for p in region_patterns if len(p) <= 3
-                ]:
+                if name not in [p.upper() for p in region_patterns if len(p) <= 3]:
                     filtered_nodes.append(name)
                     break
     return list(dict.fromkeys(filtered_nodes))
@@ -372,7 +368,7 @@ def process_source(source):
 
         # [核心改动] 获取 YAML 和 Headers (优先网络，失败则走缓存)
         yaml_text, headers_data = fetch_yaml_text(yaml_url, source_name=source)
-        
+
         output_bytes = process_yaml_content(
             yaml_text, template_path, up_pref, down_pref
         )
@@ -390,7 +386,7 @@ def process_source(source):
         if headers_data:
             for header, value in headers_data.items():
                 response.headers[header] = value
-        
+
         return response
 
     except Exception as e:
