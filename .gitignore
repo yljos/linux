@@ -11,5 +11,6 @@
 **/westdata
 **/.pdm-python
 **/cache/
+**/.env
 
 
