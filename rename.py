@@ -1,12 +1,12 @@
 import re
 from pathlib import Path
-import sys # 新增导入
-import time # 新增导入
+import sys  # 新增导入
+import time  # 新增导入
 
 # --- 配置区 (新增) ---
 # 工作指示文件路径配置 (与 mp4_to_webm.py 保持一致)
-WORKING_FILE_PATH = Path(r"C:\shutdown\working") 
-CHECK_INTERVAL_SECONDS = 10 # 检查 working 文件的间隔时间
+WORKING_FILE_PATH = Path(r"C:\shutdown\working")
+CHECK_INTERVAL_SECONDS = 10  # 检查 working 文件的间隔时间
 # --- 配置区结束 ---
 
 
@@ -139,7 +139,7 @@ def process_directory_recursively(current_dir):
 
 
 if __name__ == "__main__":
-    
+
     # 检查工作指示文件
     if WORKING_FILE_PATH.exists():
         print("=" * 50)
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         print("      为避免文件路径冲突，本脚本将立即退出，不执行重命名操作。")
         print("=" * 50)
         # 立即退出，状态码 0 表示正常退出（只是不工作）
-        sys.exit(0) 
+        sys.exit(0)
 
     # 获取当前工作目录
     root_path = Path.cwd()

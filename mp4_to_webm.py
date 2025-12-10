@@ -10,17 +10,31 @@ VIDEO_EXTENSIONS = {".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv"}
 
 # 2. FFmpeg 参数配置 (保持不变)
 FFMPEG_PARAMS = [
-    "-c:v", "libvpx-vp9", "-crf", "33", "-b:v", "0",
-    "-speed", "2", "-threads", "2", "-row-mt", "1",
-    "-c:a", "libopus", "-b:a", "96k",
+    "-c:v",
+    "libvpx-vp9",
+    "-crf",
+    "33",
+    "-b:v",
+    "0",
+    "-speed",
+    "2",
+    "-threads",
+    "2",
+    "-row-mt",
+    "1",
+    "-c:a",
+    "libopus",
+    "-b:a",
+    "96k",
 ]
 
 # 3. 工作指示文件路径配置 (重要：指定到 C:\shutdown\working)
-WORKING_FILE_PATH = Path(r"C:\shutdown\working") 
+WORKING_FILE_PATH = Path(r"C:\shutdown\working")
 
 # --- 配置区结束 ---
 
 # --- 实用函数 (保持不变) ---
+
 
 def set_terminal_title(title):
     """
@@ -60,14 +74,14 @@ def convert_videos(source_dir):
         # 2. 检查扩展名
         if file_path.suffix.lower() not in VIDEO_EXTENSIONS:
             continue
-            
+
         output_path = file_path.with_suffix(".webm")
 
         if output_path.exists():
             print(f"[i] 跳过: 输出文件已存在 {output_path.name}")
             print("-" * 50)
             continue
-            
+
         print(f"[+] 开始处理: {file_path.name}")
         # relative_to 可以显示相对于起始目录的路径，看起来更整洁
         try:
@@ -133,21 +147,24 @@ def main():
     try:
         WORKING_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
     except OSError as e:
-        print(f"[!] 错误: 无法创建目录 {WORKING_FILE_PATH.parent}。请检查权限。", file=sys.stderr)
+        print(
+            f"[!] 错误: 无法创建目录 {WORKING_FILE_PATH.parent}。请检查权限。",
+            file=sys.stderr,
+        )
         sys.exit(1)
-        
+
     # 1. 创建工作指示文件
     try:
         # 使用 touch() 创建一个空文件，如果存在则更新时间戳
         WORKING_FILE_PATH.touch()
         print(f"[i] 创建指示文件成功: {WORKING_FILE_PATH}")
-        
+
         # 2. 执行视频转换
         convert_videos(source_directory_to_process)
-        
+
     except Exception as e:
         print(f"[!] 脚本运行发生错误: {e}", file=sys.stderr)
-    
+
     finally:
         # 3. 无论转换成功与否，都要尝试删除工作指示文件
         if WORKING_FILE_PATH.exists():
@@ -155,7 +172,10 @@ def main():
                 WORKING_FILE_PATH.unlink()
                 print(f"[i] 任务完成，删除指示文件: {WORKING_FILE_PATH.name}")
             except Exception as e:
-                 print(f"[!] 警告: 无法删除指示文件 {WORKING_FILE_PATH.name}: {e}", file=sys.stderr)
+                print(
+                    f"[!] 警告: 无法删除指示文件 {WORKING_FILE_PATH.name}: {e}",
+                    file=sys.stderr,
+                )
         else:
             # 这种情况通常是脚本被强制终止
             pass
