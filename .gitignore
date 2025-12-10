@@ -12,6 +12,5 @@
 **/.pdm-python
 **/cache/
 **/.env
-.env
 
 
