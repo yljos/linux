@@ -133,6 +133,7 @@ rules:
   - "RULE-SET,ad-ip,REJECT"
   - "PROCESS-NAME,com.eg.android.AlipayGphone,DIRECT"
   - "PROCESS-NAME,com.whmstr.whsmk,DIRECT"
+  - "PROCESS-NAME,com.unionpay, DIRECT"
   - "RULE-SET,cloudflare,Cloudflare_fallback"
   - "DOMAIN-KEYWORD,msftconnecttest.com,Microsoft"
   - "DOMAIN-KEYWORD,msftncsi.com,Microsoft"
