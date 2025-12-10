@@ -1,9 +1,16 @@
 import re
 from pathlib import Path
+import sys # 新增导入
+import time # 新增导入
+
+# --- 配置区 (新增) ---
+# 工作指示文件路径配置 (与 mp4_to_webm.py 保持一致)
+WORKING_FILE_PATH = Path(r"C:\shutdown\working") 
+CHECK_INTERVAL_SECONDS = 10 # 检查 working 文件的间隔时间
+# --- 配置区结束 ---
+
 
 # --- 辅助函数 (保持原有逻辑) ---
-
-
 def format_folder_name(name):
     """
     文件夹命名规则：
@@ -65,7 +72,6 @@ def process_directory_recursively(current_dir):
 
     # 1. 获取当前目录下所有内容，并转为列表 (固定列表，防止遍历时修改导致报错)
     try:
-        # iterdir() 是 pathlib 遍历当前目录的方法
         all_items = list(current_dir.iterdir())
     except PermissionError:
         print(f" [!] 权限拒绝，跳过: {current_dir}")
@@ -80,24 +86,18 @@ def process_directory_recursively(current_dir):
         old_name = folder_path.name
         new_name = format_folder_name(old_name)
 
-        # 如果计算出的新名字有效且不同
         if new_name and old_name != new_name:
-            # with_name 创建一个新的 Path 对象，仅替换文件名部分
             new_folder_path = folder_path.with_name(new_name)
             try:
-                # 执行重命名
                 folder_path.rename(new_folder_path)
                 print(f"  [文件夹] 已重命名: '{old_name}' -> '{new_name}'")
-                # 更新变量指向新的路径，以便后续递归使用
                 folder_path = new_folder_path
             except OSError as e:
                 print(f"  [!] 文件夹重命名失败 '{old_name}': {e}")
 
-        # **关键点**：递归调用自身，处理（可能已重命名的）子文件夹
         process_directory_recursively(folder_path)
 
     # --- 第二步: 处理 .webm 文件 ---
-    # 筛选并排序
     webm_files = sorted([f for f in files if f.suffix.lower() == ".webm"])
 
     if not webm_files:
@@ -107,14 +107,12 @@ def process_directory_recursively(current_dir):
     for file_path in webm_files:
         original_name = file_path.name
 
-        # 1. 清理前缀 (基于完整文件名)
+        # 1. 清理前缀
         name_without_prefix = clean_filename_prefix(original_name)
 
-        # 2. 分离文件名和后缀 (Pathlib 的 .stem 不带后缀)
-        # 注意：这里我们需要手动处理 string，因为 .stem 只能去一层后缀
-        # 为了稳妥，使用 pathlib 的 .stem 和 .suffix
+        # 2. 分离文件名和后缀
         file_stem = Path(name_without_prefix).stem
-        file_suffix = file_path.suffix  # .webm
+        file_suffix = file_path.suffix
 
         # 3. 格式化文件名主体
         cleaned_stem = format_file_name(file_stem)
@@ -141,6 +139,17 @@ def process_directory_recursively(current_dir):
 
 
 if __name__ == "__main__":
+    
+    # 检查工作指示文件
+    if WORKING_FILE_PATH.exists():
+        print("=" * 50)
+        print(f"[!!!] 检测到工作指示文件 '{WORKING_FILE_PATH}' 存在。")
+        print("      这意味着另一个脚本（例如视频转换）正在运行。")
+        print("      为避免文件路径冲突，本脚本将立即退出，不执行重命名操作。")
+        print("=" * 50)
+        # 立即退出，状态码 0 表示正常退出（只是不工作）
+        sys.exit(0) 
+
     # 获取当前工作目录
     root_path = Path.cwd()
 

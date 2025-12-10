@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import subprocess
 import sys
 import platform
@@ -8,30 +6,21 @@ from pathlib import Path
 # --- 配置区 ---
 
 # 1. 定义要查找的视频文件扩展名
-#    pathlib 的 .suffix 包含点号 (例如 .mp4)
 VIDEO_EXTENSIONS = {".mp4", ".avi", ".mkv", ".mov", ".flv", ".wmv"}
 
-# 2. FFmpeg 参数配置
+# 2. FFmpeg 参数配置 (保持不变)
 FFMPEG_PARAMS = [
-    "-c:v",
-    "libvpx-vp9",
-    "-crf",
-    "33",
-    "-b:v",
-    "0",
-    "-speed",
-    "2",
-    "-threads",
-    "2",
-    "-row-mt",
-    "1",
-    "-c:a",
-    "libopus",
-    "-b:a",
-    "96k",
+    "-c:v", "libvpx-vp9", "-crf", "33", "-b:v", "0",
+    "-speed", "2", "-threads", "2", "-row-mt", "1",
+    "-c:a", "libopus", "-b:a", "96k",
 ]
+
+# 3. 工作指示文件路径配置 (重要：指定到 C:\shutdown\working)
+WORKING_FILE_PATH = Path(r"C:\shutdown\working") 
+
 # --- 配置区结束 ---
 
+# --- 实用函数 (保持不变) ---
 
 def set_terminal_title(title):
     """
@@ -55,33 +44,30 @@ def convert_videos(source_dir):
     original_title = "FFmpeg 全自动转换脚本 (Pathlib版)"
     set_terminal_title(original_title)
 
-    # 将输入转换为 Path 对象并解析绝对路径
     source_path = Path(source_dir).resolve()
 
     print(f"[*] 开始自动扫描目录及其所有子目录: {source_path}")
     print("-" * 50)
 
-    # 使用 rglob('*') 递归遍历所有文件和文件夹
+    # ... (循环和转换逻辑保持不变) ...
+
     for file_path in source_path.rglob("*"):
 
         # 1. 必须是文件
         if not file_path.is_file():
             continue
 
-        # 2. 检查扩展名 (.suffix 包含点号，例如 .mp4)
+        # 2. 检查扩展名
         if file_path.suffix.lower() not in VIDEO_EXTENSIONS:
             continue
-
-        # --- Pathlib 核心优势：轻松替换后缀 ---
-        # input_path 就是 file_path 本身
+            
         output_path = file_path.with_suffix(".webm")
 
-        # 检查是否存在
         if output_path.exists():
             print(f"[i] 跳过: 输出文件已存在 {output_path.name}")
             print("-" * 50)
             continue
-
+            
         print(f"[+] 开始处理: {file_path.name}")
         # relative_to 可以显示相对于起始目录的路径，看起来更整洁
         try:
@@ -92,7 +78,6 @@ def convert_videos(source_dir):
 
         set_terminal_title(f"正在转换: {file_path.name}")
 
-        # 构建命令 (subprocess 需要字符串路径，所以这里做一次转换)
         command = ["ffmpeg", "-i", str(file_path), *FFMPEG_PARAMS, str(output_path)]
 
         try:
@@ -103,7 +88,7 @@ def convert_videos(source_dir):
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
                 encoding="utf-8",
-                errors="replace",  # 防止编码错误导致脚本崩溃
+                errors="replace",
             )
 
             # 逐行读取输出并添加前缀
@@ -130,21 +115,50 @@ def convert_videos(source_dir):
 
         print("-" * 50)
 
+    print("[*] 所有任务处理完毕。")
+
 
 def main():
     """
     主函数
     """
-    # 默认为当前目录 (.)
     source_directory_to_process = "."
 
     print("=" * 50)
     print("      ffmpeg 全自动转换脚本 (Pathlib 重构版)")
-    print("      将在当前目录及其子目录中查找视频文件")
+    print(f"      工作指示文件路径: {WORKING_FILE_PATH}")
     print("=" * 50)
 
-    convert_videos(source_directory_to_process)
-    print("[*] 所有任务处理完毕。")
+    # 确保 C:\shutdown 目录存在
+    try:
+        WORKING_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        print(f"[!] 错误: 无法创建目录 {WORKING_FILE_PATH.parent}。请检查权限。", file=sys.stderr)
+        sys.exit(1)
+        
+    # 1. 创建工作指示文件
+    try:
+        # 使用 touch() 创建一个空文件，如果存在则更新时间戳
+        WORKING_FILE_PATH.touch()
+        print(f"[i] 创建指示文件成功: {WORKING_FILE_PATH}")
+        
+        # 2. 执行视频转换
+        convert_videos(source_directory_to_process)
+        
+    except Exception as e:
+        print(f"[!] 脚本运行发生错误: {e}", file=sys.stderr)
+    
+    finally:
+        # 3. 无论转换成功与否，都要尝试删除工作指示文件
+        if WORKING_FILE_PATH.exists():
+            try:
+                WORKING_FILE_PATH.unlink()
+                print(f"[i] 任务完成，删除指示文件: {WORKING_FILE_PATH.name}")
+            except Exception as e:
+                 print(f"[!] 警告: 无法删除指示文件 {WORKING_FILE_PATH.name}: {e}", file=sys.stderr)
+        else:
+            # 这种情况通常是脚本被强制终止
+            pass
 
 
 if __name__ == "__main__":
