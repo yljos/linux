@@ -52,7 +52,7 @@ WESTDATA_URL_FILE = Path("westdata").absolute()
 ACCESS_KEY_SHA256 = os.getenv("ACCESS_KEY_SHA256")
 DEBUG = False
 PORT = 5002
-HOST = "0.0.0.0"
+HOST = "127.0.0.1"
 
 # 验证必要文件存在
 if not TEMPLATE_PATH_PC.exists():
