@@ -2,7 +2,6 @@ from flask import Flask, send_file, request
 from ruamel.yaml import YAML
 import requests
 from urllib.parse import unquote
-from datetime import datetime, timedelta
 import logging
 import os
 from pathlib import Path
@@ -13,23 +12,24 @@ import io
 import json  # [新增] 引入json处理
 
 # =====================
-# .env 配置项直接常量化
+# .env 配置项
 # =====================
+load_dotenv()
 app = Flask(__name__)
 
 TEMPLATE_PATH_PC = Path("b.yaml")
 TEMPLATE_PATH_M = Path("b_shouji.yaml")
 
+
+USER_AGENT = os.getenv("USER_AGENT")
+HYSTERIA2_UP = os.getenv("HYSTERIA2_UP")
+HYSTERIA2_DOWN = os.getenv("HYSTERIA2_DOWN")
+HYSTERIA2_UP_M = os.getenv("HYSTERIA2_UP_M")
+HYSTERIA2_DOWN_M = os.getenv("HYSTERIA2_DOWN_M")
+INCLUDED_HEADERS = os.getenv("INCLUDED_HEADERS").split(",")
 # 本地文件缓存目录
 CACHE_DIR = Path("cache")
 CACHE_DIR.mkdir(exist_ok=True)
-
-USER_AGENT = "clash verge"
-HYSTERIA2_UP = "40 Mbps"
-HYSTERIA2_DOWN = "200 Mbps"
-HYSTERIA2_UP_M = "20 Mbps"
-HYSTERIA2_DOWN_M = "40 Mbps"
-INCLUDED_HEADERS = set("Subscription-Userinfo".split(","))
 
 NODE_KEYWORDS = [
     k.strip()
@@ -42,16 +42,15 @@ NODE_EXCLUDE_KEYWORDS = [
     k.strip() for k in "官网,流量,倍率,剩余,10,Australia,到期".split(",") if k.strip()
 ]
 
-ENABLE_NODE_REPLACEMENT = False
-CLIENT_FINGERPRINT = "firefox"
+ENABLE_NODE_REPLACEMENT = os.getenv("ENABLE_NODE_REPLACEMENT").lower() in ("true", "1")
+CLIENT_FINGERPRINT = os.getenv("CLIENT_FINGERPRINT")
 
 MITCE_URL_FILE = Path("mitce").absolute()
 BAJIE_URL_FILE = Path("bajie").absolute()
 WESTDATA_URL_FILE = Path("westdata").absolute()
 
-ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
-
-DEBUG = True
+ACCESS_KEY_SHA256 = os.getenv("ACCESS_KEY_SHA256")
+DEBUG = False
 PORT = 5002
 HOST = "0.0.0.0"
 
