@@ -10,7 +10,7 @@ redir-port: 7892
 tproxy-port: 7893
 allow-lan: true
 bind-address: "*"
-find-process-mode: off # always, strict, off
+find-process-mode: strict # always, strict, off
 log-level: error # info, warning, error, debug
 ipv6: false
 udp: true
@@ -65,7 +65,7 @@ proxy-groups:
   - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: Netflix, proxies: [SG_fallback, JP_fallback, US_fallback, HK_fallback]}
-  - {<<: *select, name: Steam, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback]}
+  - {<<: *select, name: Steam, proxies: [HK_fallback, JP_fallback, SG_fallback, US_fallback]}
   - {<<: *select, name: PikPak, proxies: [SG_load-balance, JP_load-balance, HK_load-balance, US_load-balance]}
   - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, HK_fallback, DIRECT, US_fallback]}
