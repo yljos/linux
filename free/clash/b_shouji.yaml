@@ -66,8 +66,8 @@ proxy-groups:
   - {<<: *select, name: Netflix, proxies: [SG_fallback, JP_fallback, US_fallback, HK_fallback]}
   - {<<: *select, name: Steam, proxies: [HK_fallback, JP_fallback, SG_fallback, US_fallback]}
   - {<<: *select, name: PikPak, proxies: [SG_load-balance, HK_load-balance, JP_load-balance, US_load-balance]}
-  - {<<: *select, name: GitHub, proxies: [JP_fallback, SG_fallback, US_fallback, HK_fallback, DIRECT]}
-  - {<<: *select, name: Microsoft, proxies: [JP_fallback, SG_fallback, HK_fallback, DIRECT, US_fallback]}
+  - {<<: *select, name: GitHub, proxies: [HK_fallback, JP_fallback, SG_fallback, US_fallback, DIRECT]}
+  - {<<: *select, name: Microsoft, proxies: [DIRECT, HK_fallback, JP_fallback, SG_fallback, US_fallback]}
   - {<<: *fallback, name: Cloudflare_fallback, proxies: [M, DIRECT]}
   - {<<: *load-balance, name: HK_load-balance, filter: "(?i)(香港|hk|hongkong)"}
   - {<<: *load-balance, name: SG_load-balance, filter: "(?i)(新加坡|sg|singapore)"}
