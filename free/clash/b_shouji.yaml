@@ -18,6 +18,7 @@ unified-delay: true
 tcp-concurrent: true
 profile: {store-selected: true, store-fake-ip: true}
 external-controller: "127.0.0.1:9090"
+secret: ""
 authentication: ["huai:password12138"]
 skip-auth-prefixes: [127.0.0.1/8, 192.168.0.0/16]
 external-ui: ui
@@ -43,6 +44,7 @@ dns:
   nameserver-policy:
     "rule-set:microsoft": "https://cloudflare-dns.com/dns-query#Microsoft"
     "rule-set:ad-site": "rcode://refused"
+    "rule-set:huawei-site": "rcode://refused"
     "rule-set:openai": "https://cloudflare-dns.com/dns-query#OpenAi"
     "rule-set:steam-site-classical": "https://cloudflare-dns.com/dns-query#Steam"
     "rule-set:github": "https://cloudflare-dns.com/dns-query#GitHub"
@@ -59,16 +61,16 @@ dns:
 proxies: []
 proxy-groups:
   - {<<: *select, name: M, proxies: [JP_load-balance, HK_load-balance, SG_load-balance, US_load-balance]}
-  - {<<: *select, name: Default, type: select, include-all-proxies: false, proxies: [M, DIRECT, REJECT]}
+  - {<<: *select, name: Default, include-all-proxies: false, type: select, proxies: [M, DIRECT, REJECT]}
   - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: Netflix, proxies: [SG_fallback, JP_fallback, US_fallback, HK_fallback]}
   - {<<: *select, name: Steam, proxies: [HK_fallback, JP_fallback, SG_fallback, US_fallback]}
-  - {<<: *select, name: PikPak, proxies: [SG_load-balance, HK_load-balance, JP_load-balance, US_load-balance]}
+  - {<<: *select, name: PikPak, proxies: [SG_load-balance, JP_load-balance, HK_load-balance, US_load-balance]}
   - {<<: *select, name: GitHub, proxies: [HK_fallback, JP_fallback, SG_fallback, US_fallback, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [DIRECT, HK_fallback, JP_fallback, SG_fallback, US_fallback]}
-  - {<<: *fallback, name: Cloudflare_fallback, proxies: [M, DIRECT]}
+  - {<<: *fallback, name: Cloudflare_fallback,include-all-proxies: false, proxies: [M, DIRECT]}
   - {<<: *load-balance, name: HK_load-balance, filter: "(?i)(香港|hk|hongkong)"}
   - {<<: *load-balance, name: SG_load-balance, filter: "(?i)(新加坡|sg|singapore)"}
   - {<<: *load-balance, name: US_load-balance, filter: "(?i)(美国|us|united|america)"}
@@ -93,12 +95,16 @@ rule-providers:
   docker: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/docker.mrs}
   direct-site: {<<: *domain, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/direct/direct-site.mrs}
   direct-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/direct/direct-ip.mrs}
+  mobile: {<<: *classical, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/mobile/mobile-classical.yaml}
   mozilla: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/mozilla.mrs}
   gfw-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/gfw/gfw-site.mrs}
   github: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/github.mrs}
   google: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/google.mrs}
   google-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/google.mrs}
   googlefcm: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/googlefcm.mrs}
+  huawei-direct-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-direct-site.mrs}
+  huawei-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-site.mrs}
+  huawei-ip: {<<: *ipcidr, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-ip.mrs}
   javdb: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/javdb.mrs}
   jd: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/jd.mrs}
   local-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/local/local-ip.mrs}
@@ -130,9 +136,10 @@ rules:
   - "AND,((DST-PORT,443/8443),(NETWORK,UDP)),REJECT"
   - "RULE-SET,ad-site,REJECT"
   - "RULE-SET,ad-ip,REJECT"
-  - "PROCESS-NAME,com.eg.android.AlipayGphone,DIRECT"
-  - "PROCESS-NAME,com.whmstr.whsmk,DIRECT"
-  - "PROCESS-NAME,com.unionpay,DIRECT"
+  - "RULE-SET,huawei-site,REJECT"
+  - "RULE-SET,huawei-ip,REJECT"
+  - "RULE-SET,huawei-direct-site,DIRECT"
+  - "RULE-SET,mobile,DIRECT"
   - "RULE-SET,cloudflare,Cloudflare_fallback"
   - "DOMAIN-KEYWORD,msftconnecttest.com,Microsoft"
   - "DOMAIN-KEYWORD,msftncsi.com,Microsoft"
