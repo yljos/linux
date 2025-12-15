@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Hysteria2 URL to YAML converter
-转换为包含默认参数的Clash配置格式
+转换为包含默认参数的Clash/Sing-box配置格式
 """
 DEFAULT_UP_SPEED = "20"
 DEFAULT_DOWN_SPEED = "40"
@@ -34,7 +34,7 @@ def parse_hysteria2_url(url):
             f"URL缺少必要信息: server={parsed.hostname}, port={parsed.port}, password={parsed.username}"
         )
 
-    # 根据端口号确定端口范围
+    # 根据端口号确定端口范围 (原有逻辑保持不变)
     port = parsed.port
     if 1000 <= port <= 2000:
         ports_range = "1000-2000"
@@ -64,7 +64,13 @@ def parse_hysteria2_url(url):
     sni = query["sni"][0] if "sni" in query and query["sni"][0] else parsed.hostname
     up_speed = query.get("upmbps", query.get("up", [DEFAULT_UP_SPEED]))[0]
     down_speed = query.get("downmbps", query.get("down", [DEFAULT_DOWN_SPEED]))[0]
-    # 端口范围格式调整
+
+    # [Add 1] 获取 obfs 相关参数
+    # URL 示例: ...?obfs=salamander&obfs-password=yourpassword...
+    obfs_type = query.get("obfs", [None])[0]
+    obfs_password = query.get("obfs-password", [None])[0]
+
+    # 基础配置
     config = {
         "type": "hysteria2",
         "tag": node_name,
@@ -75,8 +81,18 @@ def parse_hysteria2_url(url):
         "password": parsed.username,
         "tls": {"enabled": True, "server_name": sni},
     }
+
+    # [Add 2] 如果存在 obfs 参数，注入 obfs 配置块
+    if obfs_type:
+        config["obfs"] = {
+            "type": obfs_type,
+            "password": obfs_password if obfs_password else ""
+        }
+
+    # 处理端口范围
     if ports_range:
         config["server_ports"] = ports_range.replace("-", ":")
+        
     return config
 
 
@@ -84,8 +100,11 @@ def convert_url_to_json(url):
     """
     将Hysteria2 URL转换为JSON字符串
     """
-    config = parse_hysteria2_url(url)
-    return json.dumps(config, ensure_ascii=False, indent=2)
+    try:
+        config = parse_hysteria2_url(url)
+        return json.dumps(config, ensure_ascii=False, indent=2)
+    except Exception as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
 
 
 def main(url):
@@ -94,4 +113,6 @@ def main(url):
 
 
 if __name__ == "__main__":
-    pass
+    # 测试代码
+    test_url = "hysteria2://myuser:mypass@example.com:15005?sni=example.com&obfs=salamander&obfs-password=xK9mN2pLq5vR8wB3#MyNode"
+    print(convert_url_to_json(test_url))
