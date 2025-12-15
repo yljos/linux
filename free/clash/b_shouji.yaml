@@ -61,7 +61,7 @@ dns:
 proxies: []
 proxy-groups:
   - {<<: *select, name: M, proxies: [JP_load-balance, HK_load-balance, SG_load-balance, US_load-balance]}
-  - {<<: *select, name: Default, include-all-proxies: false, type: select, proxies: [M, DIRECT, REJECT]}
+  - {<<: *select, name: Default, include-all-proxies: false, type: select, proxies: [REJECT, M, DIRECT]}
   - {<<: *select, name: Google, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: OpenAi, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
   - {<<: *select, name: Telegram, proxies: [JP_fallback, US_fallback, SG_fallback, HK_fallback]}
@@ -70,7 +70,7 @@ proxy-groups:
   - {<<: *select, name: PikPak, proxies: [SG_load-balance, JP_load-balance, HK_load-balance, US_load-balance]}
   - {<<: *select, name: GitHub, proxies: [HK_fallback, JP_fallback, SG_fallback, US_fallback, DIRECT]}
   - {<<: *select, name: Microsoft, proxies: [DIRECT, HK_fallback, JP_fallback, SG_fallback, US_fallback]}
-  - {<<: *fallback, name: Cloudflare_fallback,include-all-proxies: false, proxies: [M, DIRECT]}
+  - {<<: *fallback, name: Cloudflare_fallback, include-all-proxies: false, proxies: [M, DIRECT]}
   - {<<: *load-balance, name: HK_load-balance, filter: "(?i)(香港|hk|hongkong)"}
   - {<<: *load-balance, name: SG_load-balance, filter: "(?i)(新加坡|sg|singapore)"}
   - {<<: *load-balance, name: US_load-balance, filter: "(?i)(美国|us|united|america)"}
