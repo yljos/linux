@@ -86,13 +86,13 @@ def parse_hysteria2_url(url):
     if obfs_type:
         config["obfs"] = {
             "type": obfs_type,
-            "password": obfs_password if obfs_password else ""
+            "password": obfs_password if obfs_password else "",
         }
 
     # 处理端口范围
     if ports_range:
         config["server_ports"] = ports_range.replace("-", ":")
-        
+
     return config
 
 
