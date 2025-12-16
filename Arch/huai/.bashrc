@@ -1,7 +1,9 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+#export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+GPG_SSH_SOCK="${XDG_RUNTIME_DIR:-${HOME}/.gnupg}/gnupg/S.gpg-agent.ssh"
+export SSH_AUTH_SOCK="${GPG_SSH_SOCK}"
 export MAILCAPS="$HOME/.config/mutt/mailcap"
 export GPG_TTY=$(tty)
 export LANG=en_US.UTF-8
