@@ -16,9 +16,9 @@ ExecStart=/usr/bin/podman run \
   --log-driver=journald \
   -e TZ=Asia/Shanghai \
   -p 8096:8096 \
+  --userns=keep-id \
   -v /data/appdata/emby:/config:Z \
   -v /data/media:/media:ro,z \
-  -v /data/MiSans:/usr/local/share/fonts/truetype/MiSans:Z \
   --device=/dev/dri:/dev/dri \
   docker.io/emby/embyserver:latest
 
