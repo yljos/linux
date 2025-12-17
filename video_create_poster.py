@@ -1,11 +1,12 @@
 import os
 import subprocess
 import platform  # 用于检测操作系统
-import shutil    # 用于检查 ffmpeg 是否存在
+import shutil  # 用于检查 ffmpeg 是否存在
+
 
 def main():
     # 检测当前是否为 Windows 系统
-    is_windows = platform.system().lower() == 'windows'
+    is_windows = platform.system().lower() == "windows"
 
     # ================= 路径配置 =================
     if is_windows:
@@ -27,7 +28,8 @@ def main():
     # 检查 ffmpeg 是否可用
     if not shutil.which("ffmpeg"):
         print("❌ 错误: 未找到 ffmpeg 命令，请先安装或配置环境变量。")
-        if is_windows: input("按回车键退出...")
+        if is_windows:
+            input("按回车键退出...")
         return
 
     # Display path options
