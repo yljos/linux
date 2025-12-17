@@ -3,20 +3,46 @@ from pathlib import Path
 
 # ================= 配置区域 =================
 
-# 1. 扫描路径：当前脚本所在的目录
-TARGET_FOLDER = os.getcwd()
+# 1. 扫描路径
+TARGET_FOLDER = r'Z:\media\mv'
 
 # 2. 文件夹名 -> 合集名 的映射表
-# 格式: '文件夹名': '你想要的合集名',
-# 如果文件夹名字没有在这里定义，脚本会默认直接使用文件夹的名字作为合集名
 FOLDER_MAPPING = {
     'Girls_Generation': '少女时代',
-    'T-ara': 'T-ara 皇冠团',
-    'Aespa': 'Aespa 旷野',
-    # 你可以继续在下面添加...
+    'After_School': 'After School 下课',
+    'AOA': 'AOA',
+    'BILIBILI': '哔哩哔哩',
+    'DALSHABET': 'Dal Shabet',
+    'EXID': 'EXID',
+    'FIESTAR': 'Fiestar',
+    'Fourladies_4_Light': 'Four Ladies 4Light',
+    'GAINA': 'G.NA',
+    'Girl_Crush': 'Girl Crush',
+    'Gong_Yue_Fei': '龚玥菲',
+    'Hello_Venus': 'Hello Venus',
+    'HYUNA': '泫雅',
+    'Idance_Studio': 'iDance Studio',
+    'LAYSHA': 'LAYSHA',
+    'Liu_Yi_Fei': '刘亦菲',
+    'MMD': 'MMD',
+    'MOMOLAND': 'MOMOLAND',
+    'Nine_Muses': 'Nine Muses 九Muses',
+    'Ns_Yoon_G': 'NS Yoon-G',
+    'Pao_Fu_Mao': '泡芙猫',
+    'Rainbow_Blaxx': 'Rainbow Blaxx',
+    'SECRET': 'SECRET',
+    'SISTAR': 'SISTAR',
+    'Song_Jieun': '宋智恩',
+    'STELLAR': 'STELLAR',
+    'TARA': 'T-ARA',
+    'Wonder_Girls': 'Wonder Girls',
+    'Xia_Zhen': '夏真',
+    'Yi_Neng_Jing': '伊能静',
+    'Yu_Shan_Shan': '鱼闪闪',
+    'Z_N_K_K': '甄妮可可'
 }
 
-# 3. 视频文件的后缀名
+# 3. 视频文件的后缀名 (严格按照您的要求，仅限 mp4 和 webm)
 VIDEO_EXTS = ['.mp4', '.webm']
 
 # 4. 是否覆盖已存在的 NFO 文件？
@@ -29,6 +55,7 @@ def generate_nfo():
     
     if not root_folder.exists():
         print(f"❌ 错误：找不到路径 {TARGET_FOLDER}")
+        print("   请确认 Z: 盘已挂载且路径正确。")
         return
 
     print(f"📂 正在递归扫描目录: {TARGET_FOLDER}")
@@ -46,7 +73,6 @@ def generate_nfo():
             parent_folder_name = file_path.parent.name
             
             # 3. 决定合集名称
-            # 逻辑：如果在映射表里，就用映射的名字；否则直接用文件夹名
             collection_name = FOLDER_MAPPING.get(parent_folder_name, parent_folder_name)
             
             # 4. 生成 NFO 路径
@@ -71,7 +97,6 @@ def generate_nfo():
             try:
                 with open(nfo_path, 'w', encoding='utf-8') as f:
                     f.write(nfo_content)
-                # 打印日志：显示 [合集名] 文件名
                 print(f"✅ [{collection_name}] 生成: {file_path.name}")
                 count += 1
             except Exception as e:
