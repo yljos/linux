@@ -18,8 +18,8 @@ sudo ufw allow proto tcp to any port 445
 sudo ufw allow in on podman0
 
 # HTTP 和 HTTPS 端口
-sudo ufw allow proto tcp to any port 80  # HTTP
-sudo ufw allow proto tcp to any port 8080  # HTTP
+sudo ufw allow proto tcp to any port 80   # HTTP
+sudo ufw allow proto tcp to any port 8080 # HTTP
 # sudo ufw allow proto tcp to any port 8443 # HTTPS
 
 # NFSv4 端口
