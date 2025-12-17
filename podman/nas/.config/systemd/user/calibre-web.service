@@ -7,13 +7,12 @@ After=network-online.target
 Restart=always
 RestartSec=5s
 
-# 关键修改：添加了 --userns=keep-id 和 PUID/PGID
 ExecStart=/usr/bin/podman run \
   --rm \
   --name=calibre-web \
   -e TZ=Asia/Shanghai \
-  -e PUID=1000 \
-  -e PGID=1000 \
+  -e PUID=0 \
+  -e PGID=0 \
   -e DOCKER_MODS=linuxserver/mods:universal-calibre \
   -e OAUTHLIB_RELAX_TOKEN_SCOPE=1 \
   -p 8083:8083 \
