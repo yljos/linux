@@ -36,11 +36,11 @@ def main():
         print(f"{key}: {path}")
 
     # Get user selection
-    choice = input("Please enter option number (1, 2, or 3): ").strip()
+    choice = input("Please enter option number (1, 2): ").strip()
 
     # Validate user input
     if choice not in predefined_paths:
-        print("Invalid option, please run the script again and select 1, 2, or 3.")
+        print("Invalid option, please run the script again and select 1, 2")
         return
 
     video_dir = predefined_paths[choice]
