@@ -77,7 +77,7 @@ def main():
                     "-i",
                     video_path,  # Input video path
                     "-ss",
-                    "00:00:01",  # Select frame at 1 second, time can be adjusted
+                    "00:00:07",  # Select frame at 1 second, time can be adjusted
                     "-vframes",
                     "1",  # Extract one frame
                     "-q:v",
