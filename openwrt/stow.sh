@@ -7,9 +7,9 @@ ln -sf /root/linux/openwrt/openwrt/root/json.sh /root/json.sh
 # rm -rf /root/ddns-go
 # ln -sf /root/linux/openwrt/openwrt/root/ddns-go /root/ddns-go
 rm -rf /root/.p10k.zsh
-ln -sf /root/linux/openwrt/openwrt/root/.p10k.zsh /root/.p10k.zsh
+# ln -sf /root/linux/openwrt/openwrt/root/.p10k.zsh /root/.p10k.zsh
 rm -rf /root/.zshrc
-ln -sf /root/linux/openwrt/openwrt/root/.zshrc /root/.zshrc
+# ln -sf /root/linux/openwrt/openwrt/root/.zshrc /root/.zshrc
 # 配置文件链接到 /etc
 rm -rf /etc/config/dhcp
 ln -sf /root/linux/openwrt/openwrt/etc/config/dhcp /etc/config/dhcp
