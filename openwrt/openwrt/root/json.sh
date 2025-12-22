@@ -34,7 +34,7 @@ PASSWORD=$2
 temp_dir=$(mktemp -d)
 
 # 从远程下载zip文件
-if ! curl -s -o "$temp_dir/sing-box.zip" "http://192.168.31.21/sing-box.zip"; then
+if ! curl -s -o -A "sing-box" "$temp_dir/sing-box.zip" "http://192.168.31.21/sing-box.zip"; then
 	echo "错误：下载 sing-box.zip 失败"
 	rm -rf "$temp_dir"
 	exit 1
