@@ -15,6 +15,10 @@
       {"domain_keyword": "googleapis", "strategy": "ipv4_only", "server": "dns_google"},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "googlefcm", "strategy": "ipv4_only", "server": "dns_google"},
+      {"rule_set": "direct-site", "strategy": "ipv4_only", "server": "dns_direct"},
+      {"rule_set": "alibaba-site", "strategy": "ipv4_only", "server": "dns_direct"},
+      {"rule_set": "tencent", "strategy": "ipv4_only", "server": "dns_direct"},
+      {"rule_set": "jd", "strategy": "ipv4_only", "server": "dns_direct"},
       {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"},
       {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
     ],
@@ -46,7 +50,7 @@
   ],
   "route": {
     "rules": [
-      {"inbound": ["tproxy-in", "mixed-in"], "action": "sniff", "timeout": "300ms"},
+      {"inbound": ["tproxy-in", "mixed-in"], "action": "sniff", "timeout": "500ms"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject"},
       {"rule_set": "ad-site", "action": "reject"},
