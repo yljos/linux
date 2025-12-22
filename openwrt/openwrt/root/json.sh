@@ -61,7 +61,7 @@ echo "使用订阅源：$SUBSCRIPTION"
 echo "最终 URL：$url_part"
 
 # 下载配置文件
-if ! curl -o -A "sing-box" /etc/sing-box/config.json "$url_part"; then
+if ! curl -A "sing-box" -o /etc/sing-box/config.json "$url_part"; then
 	echo "错误：下载 config.json 文件失败"
 	rm -rf "$temp_dir"
 	exit 1
