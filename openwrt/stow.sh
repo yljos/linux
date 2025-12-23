@@ -8,6 +8,8 @@ ln -sf /root/linux/openwrt/openwrt/root/json.sh /root/json.sh
 # ln -sf /root/linux/openwrt/openwrt/root/ddns-go /root/ddns-go
 rm -rf /root/.p10k.zsh
 # ln -sf /root/linux/openwrt/openwrt/root/.p10k.zsh /root/.p10k.zsh
+rm -rf /root/.bashrc
+ln -sf /root/linux/openwrt/openwrt/root/.bashrc /root/.bashrc
 rm -rf /root/.zshrc
 # ln -sf /root/linux/openwrt/openwrt/root/.zshrc /root/.zshrc
 # 配置文件链接到 /etc
