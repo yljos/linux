@@ -44,7 +44,10 @@ run_silent() {
 # 	dunst &
 # 	sleep 0.5 # 稍微给点面子等待一下
 # fi
-
+# mako
+killall mako >/dev/null 2>&1
+mako &
+sleep 0.5 # 稍微给点面子等待一下
 # 壁纸守护进程
 run_silent "swww-daemon" "swww-daemon" "swww 守护进程"
 
