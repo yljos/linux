@@ -40,10 +40,10 @@ run_silent() {
 # Dunst (通知服务)
 # 注意: dunst 必须先活下来，否则后面的 notify-send 发不出去
 # 这里为了保险，我们可以稍微特殊处理，不放后台等待，确保它起来
-if ! pgrep -x "dunst" >/dev/null; then
-	dunst &
-	sleep 0.5 # 稍微给点面子等待一下
-fi
+# if ! pgrep -x "dunst" >/dev/null; then
+# 	dunst &
+# 	sleep 0.5 # 稍微给点面子等待一下
+# fi
 
 # 壁纸守护进程
 run_silent "swww-daemon" "swww-daemon" "swww 守护进程"
