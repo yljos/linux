@@ -43,7 +43,7 @@ dns:
   direct-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
   nameserver-policy:
     "rule-set:microsoft-site": "https://cloudflare-dns.com/dns-query#Microsoft"
-    # "rule-set:ad-site": "rcode://refused"
+    "rule-set:ad-site": "rcode://refused"
     "rule-set:huawei-site": "rcode://refused"
     "rule-set:openai-site": "https://cloudflare-dns.com/dns-query#OpenAi"
     "rule-set:steam-site-classical": "https://cloudflare-dns.com/dns-query#Steam"
@@ -82,7 +82,7 @@ proxy-groups:
 rule-providers:
   archlinux-site: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/archlinux.mrs}
   adguard-site: {<<: *domain, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs}
-  # ad-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site.mrs}
+  ad-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site.mrs}
   ad-ip: {<<: *ipcidr, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-ip.mrs}
   alibaba-site: {<<: *domain, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-site.mrs}
   alibaba-ip: {<<: *ipcidr, url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-ip.mrs}
@@ -134,7 +134,7 @@ rule-providers:
   facebook-ip: {<<: *ipcidr, url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs}
 rules:
   - "AND,((DST-PORT,443),(NETWORK,UDP)),REJECT"
-  # - "RULE-SET,ad-site,REJECT"
+  - "RULE-SET,ad-site,REJECT"
   - "RULE-SET,ad-ip,REJECT"
   - "RULE-SET,huawei-site,REJECT"
   - "RULE-SET,huawei-ip,REJECT"
