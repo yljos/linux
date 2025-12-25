@@ -26,13 +26,23 @@ log() {
     [ "$DEBUG" -eq 1 ] && printf '%s\n' "$@" >&2
 }
 
-boot() {
-    ( sleep 10 && start_service ) &
-}
+# boot() {
+#     ( sleep 10 && start_service ) &
+# }
 
 service_triggers() {
+    # 1. 监听防火墙重载
+    # 当用户执行 /etc/init.d/firewall restart 或防火墙配置变动时，
+    # 自动重载此脚本，确保持久化规则不丢失。
     procd_add_reload_trigger "firewall"
-    procd_add_reload_trigger "network"
+
+    # 2. 监听特定接口变动 (关键点)
+    # 当 "lan" 接口获取到 IP 或状态变动时，触发重载。
+    # 这解决了 LAN_IF 自动检测可能失败的问题，替代了 sleep 10。
+    procd_add_interface_trigger "interface.*" "lan" /etc/init.d/tproxy reload
+    
+    # 如果你有 WAN 口的变动需求（例如 PPPoE 重拨后需要重新挂载），也可以加上：
+    # procd_add_interface_trigger "interface.*" "wan" /etc/init.d/tproxy reload
 }
 
 # 加载内核模块 (静默失败，防止报错刷屏)
