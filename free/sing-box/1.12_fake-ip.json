@@ -1,5 +1,5 @@
 {
-  "log": {"disabled": false, "level": "info", "output": "sing-box.log", "timestamp": true},
+  "log": {"disabled": false, "level": "error", "timestamp": true},
   "dns": {
     "servers": [
       {"tag": "dns_resolver", "type": "udp", "server": "223.5.5.5", "server_port": 53, "detour": "D"},
@@ -20,7 +20,7 @@
       {"rule_set": "tencent-site", "strategy": "ipv4_only", "server": "dns_direct"},
       {"rule_set": "jd-site", "strategy": "ipv4_only", "server": "dns_direct"},
       {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"},
-      {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": false}
+      {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
     ],
     "final": "dns_proxy",
     "strategy": "ipv4_only",
@@ -164,5 +164,5 @@
     "default_mark": "0x29a",
     "default_domain_resolver": {"server": "dns_direct", "rewrite_ttl": 10}
   },
-  "experimental": {"clash_api": {"external_controller": "0.0.0.0:9090", "external_ui": "ui", "secret": "101300", "external_ui_download_url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}, "cache_file": {"enabled": true, "path": "cache.db", "cache_id": "", "store_fakeip": false, "store_rdrc": true, "rdrc_timeout": "7d"}}
+  "experimental": {"clash_api": {"external_controller": "0.0.0.0:9090", "external_ui": "ui", "secret": "101300", "external_ui_download_url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}}
 }
