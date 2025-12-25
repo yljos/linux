@@ -48,7 +48,6 @@
   ],
   "route": {
     "rules": [
-      {"inbound": ["tproxy-in", "mixed-in"], "action": "resolve", "strategy": "prefer_ipv4"},
       {"inbound": ["tproxy-in", "mixed-in"], "action": "sniff", "timeout": "500ms"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject"},
