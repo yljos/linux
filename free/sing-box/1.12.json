@@ -1,5 +1,5 @@
 {
-  "log": {"disabled": false, "level": "info", "timestamp": true},
+  "log": {"disabled": false, "level": "error", "timestamp": true},
   "dns": {
     "servers": [
       {"tag": "dns_resolver", "type": "udp", "server": "223.5.5.5", "server_port": 53, "detour": "D"},
@@ -31,7 +31,7 @@
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
     {"type": "block", "tag": "R"},
-    {"tag": "Default", "type": "selector", "outbounds": ["M", "R", "D"], "default": "R"},
+    {"tag": "Default", "type": "selector", "outbounds": ["M", "R", "D"], "default": "M"},
     {"tag": "M", "type": "selector", "outbounds": ["SG", "JP", "HK", "US"], "default": "JP"},
     {"tag": "Google", "type": "selector", "outbounds": ["SG", "JP", "US", "HK"], "default": "JP"},
     {"tag": "OpenAi", "type": "selector", "outbounds": ["SG", "JP", "US", "HK"], "default": "JP"},
