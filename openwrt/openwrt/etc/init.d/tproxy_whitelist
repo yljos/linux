@@ -1,5 +1,5 @@
 #!/bin/sh /etc/rc.common
-# singbox-tproxy - Whitelist Mode (Production Fixed)
+# singbox-tproxy - Whitelist Mode (Production Perfect)
 
 START=99
 STOP=10
@@ -7,6 +7,7 @@ USE_PROCD=1
 
 # --- Configuration ---
 PROXY_PORT=7893
+# 必须与 sing-box config.json 中的 "routing_mark" 一致
 ROUTING_MARK=666
 PROXY_FWMARK=0x1
 TABLE_ID=100
@@ -97,18 +98,18 @@ load_nft_rules() {
         done
     fi
 
-    # 4. Whitelist Rules (Fixed Syntax & Cleaning)
+    # 4. Whitelist Rules
     if [ -n "$PROXY_SOURCES" ]; then
-        # 【关键修复】清洗 IP 字符串，去除隐形字符
+        # 清洗 IP 字符串
         CLEAN_IP=$(echo "$PROXY_SOURCES" | tr -d '\r' | tr -s '[:space:]' ' ')
         
         for ip in $CLEAN_IP; do
-            # 【关键修复】IPv4: 必须使用 'tproxy ip to'
+            # IPv4 TProxy
             nft add rule $NFT_TABLE $CHAIN_PRE ip saddr $ip meta l4proto { tcp, udp } \
                 tproxy ip to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Whitelist_IPv4" 2>/dev/null || \
                 log "❌ Error adding IPv4 rule for $ip"
             
-            # 【关键修复】IPv6: 必须使用 'tproxy ip6 to'
+            # IPv6 TProxy
             nft add rule $NFT_TABLE $CHAIN_PRE ip6 saddr $ip meta l4proto { tcp, udp } \
                 tproxy ip6 to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Whitelist_IPv6" 2>/dev/null || true
         done
@@ -117,9 +118,16 @@ load_nft_rules() {
     fi
 
     # 5. Output Rules (Localhost)
+    # 5.1 Bypass Loopback
     nft add rule $NFT_TABLE $CHAIN_OUT meta oifname "lo" return
+    
+    # 5.2 【关键修复】防止死循环：Singbox 自己的流量(Mark 666)直接放行
+    nft add rule $NFT_TABLE $CHAIN_OUT meta mark $ROUTING_MARK return comment "Bypass_Singbox_Self"
+    
+    # 5.3 Bypass Private IPs (本机访问局域网不走代理)
     nft add rule $NFT_TABLE $CHAIN_OUT ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } return
-    # Localhost 规则通用，不需要改
+    
+    # 5.4 代理本机其他流量
     nft add rule $NFT_TABLE $CHAIN_OUT meta l4proto { tcp, udp } meta mark set $PROXY_FWMARK accept
 
     # 6. Policy Routing
@@ -160,7 +168,6 @@ clear_nft_rules() {
         *) FWMARK_DEC=$PROXY_FWMARK ;;
     esac
 
-    # 循环删除直到干净
     while ip rule show | grep -q "fwmark $PROXY_FWMARK"; do
         ip rule del fwmark $FWMARK_DEC table $TABLE_ID 2>/dev/null
     done
