@@ -122,11 +122,11 @@ load_nft_rules() {
             case "$ip" in
                 *:*) 
                     # IPv6
-                    nft add rule $NFT_TABLE $CHAIN_PRE ip6 saddr $ip meta l4proto { tcp, udp } tproxy to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Action_Proxy_Whitelist" 2>/dev/null || true 
+                    nft add rule $NFT_TABLE $CHAIN_PRE ip6 saddr $ip meta l4proto { tcp, udp } tproxy to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Action_Proxy_Whitelist"  || true 
                     ;;
                 *)   
                     # IPv4
-                    nft add rule $NFT_TABLE $CHAIN_PRE ip saddr $ip meta l4proto { tcp, udp } tproxy to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Action_Proxy_Whitelist" 2>/dev/null || true 
+                    nft add rule $NFT_TABLE $CHAIN_PRE ip saddr $ip meta l4proto { tcp, udp } tproxy to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Action_Proxy_Whitelist" || true 
                     ;;
             esac
         done
