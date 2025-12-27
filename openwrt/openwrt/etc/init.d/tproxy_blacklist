@@ -88,7 +88,7 @@ load_nft_rules() {
     nft add rule $NFT_TABLE $CHAIN_PRE ct status dnat return comment "Bypass_DNAT"
 
     # ============================================================
-    # 4. Source IP Bypass (优先放行直连设备)
+    # 4. Source IP Bypass (优先放行直连设备) - 【修复：输入清洗】
     # ============================================================
     if [ -n "$BYPASS_SOURCES" ]; then
         CLEAN_IP=$(echo "$BYPASS_SOURCES" | tr -d '\r' | tr -s '[:space:]' ' ')
@@ -113,7 +113,7 @@ load_nft_rules() {
     fi
 
     # ============================================================
-    # 6. Global TProxy (剩余流量全部劫持)
+    # 6. Global TProxy (剩余流量全部劫持) - 【修复：语法拆分】
     # ============================================================
     # IPv4
     nft add rule $NFT_TABLE $CHAIN_PRE meta l4proto { tcp, udp } meta mark set $PROXY_FWMARK tproxy ip to :$PROXY_PORT accept comment "Proxy_All_IPv4" 2>/dev/null || \
@@ -125,7 +125,7 @@ load_nft_rules() {
     # 7. Output Rules (Localhost)
     nft add rule $NFT_TABLE $CHAIN_OUT meta oifname "lo" return
     
-    # 【关键修复】防止死循环
+    # 【修复：明确防死循环】
     nft add rule $NFT_TABLE $CHAIN_OUT meta mark $ROUTING_MARK return comment "Bypass_Singbox_Self"
 
     nft add rule $NFT_TABLE $CHAIN_OUT ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } return
