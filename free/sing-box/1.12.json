@@ -26,7 +26,7 @@
   },
   "inbounds": [
     {"type": "tproxy", "tag": "tproxy-in", "listen": "::", "listen_port": 7893},
-    {"type": "mixed", "tag": "mixed-in", "users": [{"Username": "huai", "Password": "password12138"}], "listen": "::", "listen_port": 12138}
+    {"type": "mixed", "tag": "mixed-in", "listen": "::", "listen_port": 12138}
   ],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
@@ -48,7 +48,7 @@
   ],
   "route": {
     "rules": [
-      {"inbound": ["tproxy-in", "mixed-in"], "action": "sniff", "timeout": "500ms","sniffer": []},
+      {"inbound": ["tproxy-in", "mixed-in"], "action": "sniff", "timeout": "500ms", "sniffer": []},
       {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject"},
       {"rule_set": "ad-site", "action": "reject"},
