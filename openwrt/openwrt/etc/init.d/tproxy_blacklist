@@ -39,7 +39,7 @@ service_triggers() {
     # 2. 监听特定接口变动 (关键点)
     # 当 "lan" 接口获取到 IP 或状态变动时，触发重载。
     # 这解决了 LAN_IF 自动检测可能失败的问题，替代了 sleep 10。
-    procd_add_interface_trigger "interface.*" "lan" /etc/init.d/tproxy_blacklist reload
+    procd_add_interface_trigger "interface.*" "lan" "$initscript" reload
     
     # 如果你有 WAN 口的变动需求（例如 PPPoE 重拨后需要重新挂载），也可以加上：
     # procd_add_interface_trigger "interface.*" "wan" /etc/init.d/tproxy reload
@@ -59,7 +59,7 @@ load_nft_rules() {
     CHAIN_PRE="singbox_prerouting"
     CHAIN_OUT="singbox_output"
 
-    log "Initializing TProxy rules(Blcaklist Mode)..."
+    log "Initializing TProxy rules(Blacklist Mode)..."
 
     # 0. 自动检测 LAN_IF
     if [ -z "$LAN_IF" ] || ! ip link show "$LAN_IF" >/dev/null 2>&1 ; then

@@ -17,7 +17,7 @@ DEBUG=0
 # 【核心修改】指定走代理的设备 IP (白名单模式)
 # 留空则没有任何局域网设备走代理
 # 格式：空格分隔 IP，例如 "192.168.31.8 192.168.31.9"
-PROXY_SOURCES="192.168.31.8"
+PROXY_SOURCES="192.168.31.25 192.168.31.15 192.168.31.21 192.168.31.2 192.168.31.19 192.168.31.23 192.168.31.8"
 
 # 额外的目的地址旁路 (强制不走代理的目标 IP/网段)
 EXTRA_BYPASS=""
@@ -31,7 +31,7 @@ log() {
 service_triggers() {
     procd_add_reload_trigger "firewall"
     # 监听 LAN 接口变动 [cite: 4]
-    procd_add_interface_trigger "interface.*" "lan" /etc/init.d/tproxy_whitelist reload
+    procd_add_interface_trigger "interface.*" "lan" "$initscript" reload
 }
 
 # 加载内核模块
