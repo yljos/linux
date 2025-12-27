@@ -15,7 +15,7 @@ DEBUG=0
 
 # 【白名单配置】
 # 格式：空格分隔 IP
-PROXY_SOURCES="192.168.31.25"
+PROXY_SOURCES="192.168.31.25 192.168.31.15 192.168.31.21 192.168.31.2 192.168.31.19 192.168.31.23 192.168.31.8"
 
 # 额外直连
 EXTRA_BYPASS=""
@@ -41,7 +41,7 @@ load_nft_rules() {
     CHAIN_PRE="singbox_prerouting"
     CHAIN_OUT="singbox_output"
 
-    log "Initializing rules (Whitelist)..."
+    log "Initializing rules (Whitelist Mode)..."
 
     # 0. Detect LAN_IF
     if [ -z "$LAN_IF" ] || ! ip link show "$LAN_IF" >/dev/null 2>&1 ; then
@@ -51,6 +51,9 @@ load_nft_rules() {
             LAN_IF=$(ip -o -4 addr show | awk '/inet (10\.|172\.16\.|192\.168\.)/ {print $2; exit}')
             [ -z "$LAN_IF" ] && LAN_IF=$(ip -o link show | awk -F': ' '$2!="lo"{print $2; exit}')
         fi
+        log "Auto-detected LAN_IF='$LAN_IF'"
+    else
+        log "Using configured LAN_IF='$LAN_IF'"
     fi
 
     # 1. Setup Chains
@@ -94,27 +97,29 @@ load_nft_rules() {
         done
     fi
 
-    # 4. Whitelist Rules (Fixed Syntax)
+    # 4. Whitelist Rules (Fixed Syntax & Cleaning)
     if [ -n "$PROXY_SOURCES" ]; then
-        # Clean up input string
+        # 【关键修复】清洗 IP 字符串，去除隐形字符
         CLEAN_IP=$(echo "$PROXY_SOURCES" | tr -d '\r' | tr -s '[:space:]' ' ')
         
         for ip in $CLEAN_IP; do
-            # IPv4: explicit 'tproxy ip to'
+            # 【关键修复】IPv4: 必须使用 'tproxy ip to'
             nft add rule $NFT_TABLE $CHAIN_PRE ip saddr $ip meta l4proto { tcp, udp } \
                 tproxy ip to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Whitelist_IPv4" 2>/dev/null || \
-                log "Error adding IPv4 rule for $ip"
+                log "❌ Error adding IPv4 rule for $ip"
             
-            # IPv6: explicit 'tproxy ip6 to'
+            # 【关键修复】IPv6: 必须使用 'tproxy ip6 to'
             nft add rule $NFT_TABLE $CHAIN_PRE ip6 saddr $ip meta l4proto { tcp, udp } \
                 tproxy ip6 to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Whitelist_IPv6" 2>/dev/null || true
         done
+    else
+        log "Warning: No IP configured in PROXY_SOURCES."
     fi
 
     # 5. Output Rules (Localhost)
     nft add rule $NFT_TABLE $CHAIN_OUT meta oifname "lo" return
     nft add rule $NFT_TABLE $CHAIN_OUT ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } return
-    # Localhost uses generic tproxy (no ip saddr matching needed)
+    # Localhost 规则通用，不需要改
     nft add rule $NFT_TABLE $CHAIN_OUT meta l4proto { tcp, udp } meta mark set $PROXY_FWMARK accept
 
     # 6. Policy Routing
@@ -130,7 +135,7 @@ load_nft_rules() {
             ip -6 rule add fwmark $PROXY_FWMARK lookup $TABLE_ID pref 9000 2>/dev/null
     fi
 
-    log "Rules loaded."
+    log "Rules loaded successfully."
 }
 
 clear_nft_rules() {
@@ -155,6 +160,7 @@ clear_nft_rules() {
         *) FWMARK_DEC=$PROXY_FWMARK ;;
     esac
 
+    # 循环删除直到干净
     while ip rule show | grep -q "fwmark $PROXY_FWMARK"; do
         ip rule del fwmark $FWMARK_DEC table $TABLE_ID 2>/dev/null
     done
