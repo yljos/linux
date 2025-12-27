@@ -1,5 +1,5 @@
 #!/bin/sh /etc/rc.common
-# singbox-tproxy - Whitelist Mode (Production Perfect)
+# singbox-tproxy - Whitelist Mode (DNS First Fixed)
 
 START=99
 STOP=10
@@ -7,7 +7,7 @@ USE_PROCD=1
 
 # --- Configuration ---
 PROXY_PORT=7893
-# 必须与 sing-box config.json 中的 "routing_mark" 一致
+# ⚠️ 必须与 sing-box config.json 中的 "routing_mark" 一致 (例如 666)
 ROUTING_MARK=666
 PROXY_FWMARK=0x1
 TABLE_ID=100
@@ -16,7 +16,7 @@ DEBUG=0
 
 # 【白名单配置】
 # 格式：空格分隔 IP
-PROXY_SOURCES="192.168.31.25 192.168.31.15 192.168.31.21 192.168.31.2 192.168.31.19 192.168.31.23 192.168.31.8"
+PROXY_SOURCES="192.168.31.25"
 
 # 额外直连
 EXTRA_BYPASS=""
@@ -42,7 +42,7 @@ load_nft_rules() {
     CHAIN_PRE="singbox_prerouting"
     CHAIN_OUT="singbox_output"
 
-    log "Initializing rules (Whitelist Mode)..."
+    log "Initializing rules (Whitelist DNS-Fix)..."
 
     # 0. Detect LAN_IF
     if [ -z "$LAN_IF" ] || ! ip link show "$LAN_IF" >/dev/null 2>&1 ; then
@@ -81,11 +81,29 @@ load_nft_rules() {
         nft insert rule $NFT_TABLE mangle_output jump $CHAIN_OUT comment "Singbox_Out_Hook"
     fi
 
-    # 3. Direct Rules (Bypass)
+    # 3. Direct Rules (DHCP/ICMP)
     nft add rule $NFT_TABLE $CHAIN_PRE udp dport { 67, 68 } return comment "Bypass_DHCP"
     nft add rule $NFT_TABLE $CHAIN_PRE ip6 nexthdr icmpv6 return comment "Bypass_IPv6_ICMP"
     [ -n "$LAN_IF" ] && nft add rule $NFT_TABLE $CHAIN_PRE fib daddr oifname "$LAN_IF" return comment "Bypass_PD_LAN_Traffic"
     nft add rule $NFT_TABLE $CHAIN_PRE ct status dnat return comment "Bypass_DNAT"
+
+    # ============================================================
+    # 【重点修改】1. 优先劫持白名单 DNS (防止被 Local Bypass 跳过)
+    # ============================================================
+    if [ -n "$PROXY_SOURCES" ]; then
+        CLEAN_IP=$(echo "$PROXY_SOURCES" | tr -d '\r' | tr -s '[:space:]' ' ')
+        for ip in $CLEAN_IP; do
+            # 无论目标是谁(包括路由器)，只要是 53 端口，强制进 Singbox
+            nft add rule $NFT_TABLE $CHAIN_PRE ip saddr $ip udp dport 53 \
+                tproxy ip to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_DNS_IPv4" 2>/dev/null || true
+            nft add rule $NFT_TABLE $CHAIN_PRE ip6 saddr $ip udp dport 53 \
+                tproxy ip6 to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_DNS_IPv6" 2>/dev/null || true
+        done
+    fi
+
+    # ============================================================
+    # 2. Local Bypass (现在可以安全放行其他本地流量了，如 Web/SSH)
+    # ============================================================
     nft add rule $NFT_TABLE $CHAIN_PRE fib daddr type local return comment "Bypass_Local"
     
     # Private Addresses
@@ -98,39 +116,32 @@ load_nft_rules() {
         done
     fi
 
-    # 4. Whitelist Rules
+    # ============================================================
+    # 3. 劫持白名单的其他流量 (Web, App 等)
+    # ============================================================
     if [ -n "$PROXY_SOURCES" ]; then
-        # 清洗 IP 字符串
-        CLEAN_IP=$(echo "$PROXY_SOURCES" | tr -d '\r' | tr -s '[:space:]' ' ')
-        
         for ip in $CLEAN_IP; do
-            # IPv4 TProxy
             nft add rule $NFT_TABLE $CHAIN_PRE ip saddr $ip meta l4proto { tcp, udp } \
-                tproxy ip to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Whitelist_IPv4" 2>/dev/null || \
+                tproxy ip to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Data_IPv4" 2>/dev/null || \
                 log "❌ Error adding IPv4 rule for $ip"
             
-            # IPv6 TProxy
             nft add rule $NFT_TABLE $CHAIN_PRE ip6 saddr $ip meta l4proto { tcp, udp } \
-                tproxy ip6 to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Whitelist_IPv6" 2>/dev/null || true
+                tproxy ip6 to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Data_IPv6" 2>/dev/null || true
         done
     else
         log "Warning: No IP configured in PROXY_SOURCES."
     fi
 
-    # 5. Output Rules (Localhost)
-    # 5.1 Bypass Loopback
+    # 4. Output Rules (Localhost & Anti-Loop)
     nft add rule $NFT_TABLE $CHAIN_OUT meta oifname "lo" return
     
-    # 5.2 【关键修复】防止死循环：Singbox 自己的流量(Mark 666)直接放行
+    # ⚠️ 关键：防止 Sing-box 自己发出的 DNS 请求被再次劫持造成死循环
     nft add rule $NFT_TABLE $CHAIN_OUT meta mark $ROUTING_MARK return comment "Bypass_Singbox_Self"
     
-    # 5.3 Bypass Private IPs (本机访问局域网不走代理)
     nft add rule $NFT_TABLE $CHAIN_OUT ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } return
-    
-    # 5.4 代理本机其他流量
     nft add rule $NFT_TABLE $CHAIN_OUT meta l4proto { tcp, udp } meta mark set $PROXY_FWMARK accept
 
-    # 6. Policy Routing
+    # 5. Policy Routing
     ip route show table $TABLE_ID | grep -q "local default" || \
         ip route add local default dev lo table $TABLE_ID
     ip rule show table $TABLE_ID | grep -q "fwmark $PROXY_FWMARK" || \
@@ -143,7 +154,7 @@ load_nft_rules() {
             ip -6 rule add fwmark $PROXY_FWMARK lookup $TABLE_ID pref 9000 2>/dev/null
     fi
 
-    log "Rules loaded successfully."
+    log "Rules loaded."
 }
 
 clear_nft_rules() {
