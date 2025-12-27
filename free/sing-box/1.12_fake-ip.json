@@ -28,7 +28,7 @@
   },
   "inbounds": [
     {"type": "tproxy", "tag": "tproxy-in", "listen": "::", "listen_port": 7893},
-    {"type": "mixed", "tag": "mixed-in", "users": [{"Username": "huai", "Password": "password12138"}], "listen": "::", "listen_port": 12138}
+    {"type": "mixed", "tag": "mixed-in", "listen": "::", "listen_port": 12138}
   ],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},

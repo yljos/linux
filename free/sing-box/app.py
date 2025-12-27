@@ -21,7 +21,7 @@ from hysteria2_converter import parse_hysteria2_url
 
 NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡", "日本"]
 NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10"]
-CONFIG_TEMPLATE_FILENAME = "1.12.json"
+CONFIG_TEMPLATE_FILENAME = "1.12_fake-ip.json"
 # 密码哈希和API地址文件
 MITCE_PASSWORD_HASH = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 MITCE_API_FILE = "mitce"  # 当前目录下的 mitce 文件
