@@ -22,7 +22,10 @@ ln -sf /root/linux/openwrt/openwrt/etc/config/rpcd /etc/config/rpcd
 rm -rf /usr/share/rpcd/acl.d/homepage.json
 ln -sf /root/linux/openwrt/openwrt//usr/share/rpcd/acl.d/homepage.json /usr/share/rpcd/acl.d/homepage.json
 rm -rf /etc/init.d/tproxy
-ln -sf /root/linux/openwrt/openwrt/etc/init.d/tproxy /etc/init.d/tproxy
+rm -rf /etc/init.d/tproxy_whitelist
+rm -rf /etc/init.d/tproxy_blacklist
+ln -sf /root/linux/openwrt/openwrt/etc/init.d/tproxy_whitelist /etc/init.d/tproxy_whitelist
+ln -sf /root/linux/openwrt/openwrt/etc/init.d/tproxy_blacklist /etc/init.d/tproxy_blacklist
 
 # nftables 配置目录
 rm -rf /etc/nftables.d/11-sing-box.nft
