@@ -1,0 +1,8 @@
+# /etc/systemd/network/20-enp1s0.network
+[Match]
+Name=enp1s0
+
+[Network]
+Address=10.0.0.21/24
+Gateway=10.0.0.1
+

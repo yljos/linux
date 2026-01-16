@@ -1,0 +1,267 @@
+from flask import Flask, send_file, request
+import yaml as pyyaml
+import requests
+from urllib.parse import unquote
+import logging
+from pathlib import Path
+import hashlib
+import hmac
+import io
+import json
+
+app = Flask(__name__)
+
+# 配置项
+TEMPLATE_PATH_PC = Path("pc.yaml")
+TEMPLATE_PATH_MTUN = Path("mtun.yaml")
+TEMPLATE_PATH_OPENWRT = Path("openwrt.yaml")
+TEMPLATE_PATH_M = Path("m.yaml")
+TEMPLATE_PATH_DEFAULT = Path("b.yaml")
+
+USER_AGENT = "clash verge"
+HYSTERIA2_UP = "40 Mbps"
+HYSTERIA2_DOWN = "200 Mbps"
+HYSTERIA2_UP_M = "20 Mbps"
+HYSTERIA2_DOWN_M = "60 Mbps"
+INCLUDED_HEADERS = ["Subscription-Userinfo"]
+
+CACHE_DIR = Path("cache")
+CACHE_DIR.mkdir(exist_ok=True)
+
+raw_keywords = (
+    "US,HK,Hong Kong,Singapore,Japan,United States,SG,JP,美国,香港,新加坡,日本"
+)
+NODE_KEYWORDS = [k.strip() for k in raw_keywords.split(",") if k.strip()]
+
+raw_exclude = "官网,流量,倍率,剩余,Australia,到期"
+NODE_EXCLUDE_KEYWORDS = [k.strip() for k in raw_exclude.split(",") if k.strip()]
+
+CLIENT_FINGERPRINT = "firefox"
+MITCE_URL_FILE = Path("mitce").absolute()
+BAJIE_URL_FILE = Path("bajie").absolute()
+ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
+PORT = 5002
+HOST = "0.0.0.0"
+
+# 日志配置
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s",
+    datefmt="%H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+
+
+def read_url_from_file(path: Path) -> str:
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            url = line.strip()
+            if url:
+                return url
+    raise ValueError(f"URL 文件为空: {path}")
+
+
+def is_valid_clash_yaml(text: str) -> bool:
+    """仅通过标准关键字 proxies: 判断有效性"""
+    if not text:
+        return False
+    return "proxies:" in text
+
+
+@app.before_request
+def restrict_paths():
+    allowed = {"/mitce", "/bajie"}
+    if request.path not in allowed:
+        return "Not Found", 404
+    key = request.args.get("key")
+    if not key:
+        return "Unauthorized", 401
+    provided_hash = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    if not hmac.compare_digest(provided_hash, ACCESS_KEY_SHA256):
+        return "Unauthorized", 401
+
+
+def save_headers_to_disk(source_name, headers):
+    try:
+        filtered = {
+            k: v
+            for k, v in headers.items()
+            if k.lower() in {h.lower() for h in INCLUDED_HEADERS}
+        }
+        if not filtered:
+            return {}
+        file_path = CACHE_DIR / f"{source_name}.headers.json"
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(filtered, f, ensure_ascii=False, indent=2)
+        return filtered
+    except Exception as e:
+        logger.error(f"保存 Headers 失败: {e}")
+        return {}
+
+
+def load_headers_from_disk(source_name):
+    file_path = CACHE_DIR / f"{source_name}.headers.json"
+    if not file_path.exists():
+        return {}
+    with open(file_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def fetch_yaml_text(url, source_name):
+    yaml_cache_file = CACHE_DIR / f"{source_name}.yaml"
+
+    try:
+        headers = {"User-Agent": USER_AGENT}
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()
+        text_content = response.text.lstrip("\ufeff").replace("\r\n", "\n")
+
+        # 校验：包含 proxies: 关键字才更新缓存
+        if is_valid_clash_yaml(text_content):
+            save_headers_to_disk(source_name, response.headers)
+            with open(yaml_cache_file, "w", encoding="utf-8") as f:
+                f.write(text_content)
+            logger.info(f"[{source_name}] 拉取成功并更新缓存")
+            return text_content, response.headers
+        else:
+            logger.warning(f"[{source_name}] 拉取失败,启用灾难缓存")
+
+    except Exception as e:
+        logger.error(f"[{source_name}] 网络拉取失败: {e}")
+
+    if yaml_cache_file.exists():
+        logger.info(f"[{source_name}] 载入缓存成功")
+        with open(yaml_cache_file, "r", encoding="utf-8") as f:
+            return f.read(), load_headers_from_disk(source_name)
+
+    raise RuntimeError(f"[{source_name}] 获取失败且无本地缓存")
+
+
+def filter_node_names(proxies):
+    all_names = [p.get("name") for p in proxies if isinstance(p, dict) and "name" in p]
+    filtered = [
+        n
+        for n in all_names
+        if any(kw.lower() in n.lower() for kw in NODE_KEYWORDS)
+        and not any(ex.lower() in n.lower() for ex in NODE_EXCLUDE_KEYWORDS)
+    ]
+    return filtered, all_names
+
+
+def process_proxy_config(proxy, up_pref, down_pref):
+    if not isinstance(proxy, dict):
+        return
+    p_type = proxy.get("type")
+    up_pref, down_pref = str(up_pref or "100"), str(down_pref or "100")
+
+    if p_type == "hysteria2":
+        up_v = up_pref if "bps" in up_pref.lower() else f"{up_pref} Mbps"
+        down_v = down_pref if "bps" in down_pref.lower() else f"{down_pref} Mbps"
+        proxy.update({"up": up_v, "down": down_v, "skip-cert-verify": False})
+    elif p_type == "vless":
+        proxy.update({"skip-cert-verify": False, "packet-encoding": "xudp"})
+        if "client-fingerprint" in proxy:
+            proxy["client-fingerprint"] = CLIENT_FINGERPRINT
+
+
+def process_yaml_content(
+    yaml_text: str, template_path: Path, up_pref: str, down_pref: str
+):
+    try:
+        input_data = pyyaml.safe_load(yaml_text)
+        if not isinstance(input_data, dict):
+            raise ValueError("无效的YAML格式")
+
+        with open(template_path, "r", encoding="utf-8") as f:
+            template_data = pyyaml.safe_load(f)
+
+        proxies_orig = input_data.get("proxies", [])
+        for p in proxies_orig:
+            process_proxy_config(p, up_pref, down_pref)
+
+        filtered_names, _ = filter_node_names(proxies_orig)
+        proxies = [
+            p
+            for p in proxies_orig
+            if isinstance(p, dict) and p.get("name") in filtered_names
+        ]
+
+        if not proxies:
+            proxies = proxies_orig
+        template_data["proxies"] = proxies
+
+        output = pyyaml.dump(
+            template_data,
+            allow_unicode=True,
+            sort_keys=False,
+            default_flow_style=False,
+            width=4096,
+        )
+        return output.encode("utf-8")
+    except Exception as e:
+        logger.error(f"解析YAML内容失败: {e}")
+        raise
+
+
+@app.route("/<source>")
+def process_source(source):
+    try:
+        if source == "mitce":
+            url = read_url_from_file(MITCE_URL_FILE)
+        elif source == "bajie":
+            url = read_url_from_file(BAJIE_URL_FILE)
+        else:
+            return "Not Found", 404
+
+        ua = request.headers.get("User-Agent", "")
+
+        if "ClashMetaForAndroid" in ua:
+            detected_config = "mtun"
+        elif "clash_pc" in ua:
+            detected_config = "pc"
+        elif "clash_openwrt" in ua:
+            detected_config = "openwrt"
+        elif "clash_m" in ua:
+            detected_config = "m"
+        else:
+            detected_config = "b"
+
+        config_val = request.args.get("config", detected_config)
+
+        config_map = {
+            "m": (TEMPLATE_PATH_M, HYSTERIA2_UP_M, HYSTERIA2_DOWN_M),
+            "mtun": (TEMPLATE_PATH_MTUN, HYSTERIA2_UP_M, HYSTERIA2_DOWN_M),
+            "pc": (TEMPLATE_PATH_PC, HYSTERIA2_UP, HYSTERIA2_DOWN),
+            "openwrt": (TEMPLATE_PATH_OPENWRT, HYSTERIA2_UP, HYSTERIA2_DOWN),
+            "b": (TEMPLATE_PATH_DEFAULT, HYSTERIA2_UP, HYSTERIA2_DOWN),
+        }
+
+        template_path, up, down = config_map.get(config_val, config_map["b"])
+
+        # 恢复要求的详细日志格式
+        logger.info(
+            f"请求拉取: {source} | 识别模板: {detected_config} | 指定模板: {config_val} | 最终模板: {template_path}"
+        )
+
+        yaml_text, headers_data = fetch_yaml_text(unquote(url), source)
+        output_bytes = process_yaml_content(yaml_text, template_path, up, down)
+
+        response = send_file(
+            io.BytesIO(output_bytes),
+            mimetype="text/yaml",
+            as_attachment=True,
+            download_name="config.yaml",
+        )
+
+        if headers_data:
+            for h, v in headers_data.items():
+                if h.lower() in {ih.lower() for ih in INCLUDED_HEADERS}:
+                    response.headers[h] = v
+        return response
+    except Exception as e:
+        logger.error(f"处理请求失败: {e}")
+        return str(e), 500
+
+
+if __name__ == "__main__":
+    app.run(debug=False, port=PORT, host=HOST)

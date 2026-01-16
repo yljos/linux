@@ -1,0 +1,28 @@
+[Unit]
+Description=Jellyfin Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --init \
+  --name=jellyfin \
+  --log-driver=journald \
+  -e TZ=Asia/Shanghai \
+  -p 8096:8096 \
+  -v /data/appdata/jellyfin:/config:Z \
+  -v /data/media:/media:ro,z \
+  -v /data/MiSans:/usr/local/share/fonts/truetype/MiSans:Z \
+  --device=/dev/dri:/dev/dri \
+  docker.io/jellyfin/jellyfin:latest
+
+ExecStop=/usr/bin/podman stop -t 10 jellyfin
+
+[Install]
+WantedBy=default.target

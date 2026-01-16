@@ -1,0 +1,42 @@
+! 隐藏所有含有弹幕时间戳的元素（bili-danmaku-x-show 和 bili-danmaku-x-cmtime）
+bilibili.com##.bili-danmaku-x-show.bili-danmaku-x-cmtime
+
+! B站弹幕相关元素屏蔽规则 - 优化版
+
+! 屏蔽投票弹幕
+bilibili.com##.bili-danmaku-x-vote.bili-danmaku-x-show
+
+! 屏蔽引导弹幕
+bilibili.com##.bili-danmaku-x-guide-all.bili-danmaku-x-guide.bili-danmaku-x-show
+bilibili.com##.bpx-player-cmd-dm-wrap .bili-danmaku-x-guide-three:nth-of-type(1)
+
+! 屏蔽评分弹幕
+bilibili.com##.bili-danmaku-x-score
+
+! 屏蔽链接弹幕
+bilibili.com##.bpx-player-cmd-dm-wrap .bili-danmaku-x-link.bili-danmaku-x-show
+
+! 屏蔽预约弹幕
+bilibili.com##.bpx-player-cmd-dm-inside .bili-danmaku-x-reserve.bili-danmaku-x-show
+
+! 屏蔽常见的交互式弹幕
+bilibili.com##.bili-danmaku-x-command-dm
+bilibili.com##.bili-danmaku-x-up-vote
+bilibili.com##.bili-danmaku-x-show[data-type="vote"]
+bilibili.com##.bili-danmaku-x-show[data-type="up"]
+bilibili.com##.bili-danmaku-x-show[data-type="link"]
+
+! 通用规则 - 屏蔽所有交互式弹幕
+bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-vote)
+bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-guide)
+bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-score)
+
+! 屏蔽广告拦截提示
+bilibili.com##.adblock-tips
+
+
+! Outlook 屏蔽规则
+outlook.live.com##div[id^="MainModule"] div:last-child.GssDD
+
+youtube.com##[id^="neat"]
+bilibili.com##[id^="neat"]

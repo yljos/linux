@@ -1,0 +1,20 @@
+# 保留黑名单
+blacklist ${HOME}/下载
+blacklist ${HOME}/Documents
+blacklist ${HOME}/Desktop
+
+# VAAPI / 硬件加速
+env MOZ_ENABLE_WAYLAND=1
+env MOZ_ACCELERATED=1
+env MOZ_USE_HWDEC=1
+env MOZ_IGNORE_GPU_BLACKLIST=1
+
+# Fcitx5 中文输入
+env GTK_IM_MODULE=fcitx
+env QT_IM_MODULE=fcitx
+env XMODIFIERS=@im=fcitx
+env INPUT_METHOD=fcitx
+env SDL_IM_MODULE=fcitx
+env GLFW_IM_MODULE=fcitx
+
+

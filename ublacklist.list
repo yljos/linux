@@ -1,0 +1,20 @@
+// 屏蔽 CSDN 主域名及其子域名
+*://*.csdn.net/*
+*://*.csdn.com/*
+*://*.csdnimg.cn/*
+*://*.csdn.cn/*
+*://*.csdnimg.com/*
+*://*.csdnstatic.com/*
+
+// 通配符规则，屏蔽所有包含 "csdn" 的域名
+*://*csdn*/*
+
+// 可能的镜像或代理域名
+*://*.blog.csdn.*/*
+*://*.download.csdn.*/*
+*://*.edu.csdn.*/*
+*://*.so.csdn.*/*
+*://*.bbs.csdn.*/*
+*://*.ask.csdn.*/*
+*://*.gitcode.csdn.*/*
+

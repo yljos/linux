@@ -1,0 +1,10 @@
+blacklist ${HOME}/下载
+blacklist ${HOME}/Documents
+blacklist ${HOME}/Desktop
+
+# 禁用一些可能绕过限制的功能
+ignore private-etc
+ignore private-bin
+ignore dbus-user filter
+ignore dbus-user.own
+

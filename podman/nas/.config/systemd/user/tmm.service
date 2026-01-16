@@ -1,0 +1,30 @@
+[Unit]
+Description=TinyMediaManager Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --init \
+  --name=tmm \
+  --log-driver=journald \
+  --userns=keep-id \
+  --user=root \
+  -e TZ=Asia/Shanghai \
+  -e ALLOW_DIRECT_VNC=true \
+  -p 5900:5900 \
+  -p 4000:4000 \
+  -v /data/appdata/tinymediamanager:/data:Z \
+  -v /data/media:/media:Z \
+  docker.io/tinymediamanager/tinymediamanager:latest
+
+ExecStop=/usr/bin/podman stop -t 10 tmm
+
+[Install]
+WantedBy=default.target

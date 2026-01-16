@@ -1,0 +1,148 @@
+# 基础系统命令
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias c="clear"
+alias ..='cd ..'
+alias ~='cd ~'
+
+# 系统操作
+alias update="sudo pacman -Syyu"
+alias P="sleep 60 && shutdown now"
+alias R="systemctl reboot"
+alias rsyncdir="rsync -avzh --delete" 
+
+# 配置文件编辑
+alias zshconfig="vim /workspace/linux/arch/huai/.zshrc"
+alias bashconfig="vim /workspace/linux/arch/huai/.bashrc"
+
+# 目录导航
+alias cdconfig="cd /home/huai/.config"
+alias cdfree="cd /workspace/linux/free"
+alias cdlinux="cd /workspace/linux"
+alias cdpodman="cd /workspace/linux/podman"
+alias cddwl="cd /workspace/dwl"
+alias cddata="mount-data; cd /data"
+alias cdappdata="mount-data; cd /data/appdata"
+alias cdusb="cd /home/huai/usb"
+alias cdwww="mount-data; cd /data/www"
+alias cdmedia="mount-data; cd /data/media"
+alias cdmutt="cd /home/huai/.config/mutt"
+
+# 音频控制
+alias 0="pactl set-default-sink alsa_output.usb-DeSheng_Electronics_Inc._Star_Y360-00.analog-stereo; vol 50"
+alias 1="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 60"
+alias 2="pactl set-default-sink bluez_output.E6_30_6D_65_E0_5F.1;vol 90" 
+vol() {
+    # 1. 调整音量
+    pactl set-sink-volume @DEFAULT_SINK@ "${1}%"
+
+    # 2. 发送信号给 dwl_status.sh
+
+    pkill -RTMIN+2 -f dwl_status.sh
+}
+alias volup="vol +10%"
+alias voldown="vol -10%"
+alias volmute="pactl set-sink-mute @DEFAULT_SINK@ toggle"
+
+# MPC控制
+alias s="mpc stop"
+alias p="mpc play"
+alias nm="mpc next"
+alias mpause="mpc pause"
+alias pl="vim /home/huai/.config/mpd/playlists/all.m3u"
+
+# Git相关
+alias gaa='git add -A'
+gc() {
+    if [ $# -eq 0 ]; then
+        # 没参数：执行 git commit -v
+        git commit -v
+    else
+        # 有参数：把所有参数拼成一句话，传给 -m
+        # 例如：gc 修复 bug -> git commit -m "修复 bug"
+        git commit -m "$*"
+    fi
+}
+alias gpl='git pull'
+alias gpu='github && gitea'
+alias gcl='git clone'
+alias gst='git status'
+alias gl='git log'
+_git_push_helper() {
+  # 第一个参数是远程仓库的名称 (e.g., "codeberg" or "github")
+  local remote_name="$1"
+  # 'shift' 命令会移除第一个参数, 剩下的参数 ($@) 就是用户可能附加的 git push 选项
+  shift
+
+  # 你的 ssh-agent 检查
+  ssh_add_check
+
+  # 检查用户是否提供了自定义参数 (比如指定了其他分支名或 --force)
+  if [ $# -eq 0 ]; then
+    # 如果没有参数, 自动获取当前分支名
+    local current_branch
+    current_branch=$(git branch --show-current)
+
+    # 检查是否成功获取了分支名 (比如在一个 detached HEAD 状态下, 这条命令会返回空)
+    if [ -n "$current_branch" ]; then
+      echo "检测到当前分支: ${current_branch}. 推送到 ${remote_name}..."
+      git push "$remote_name" "$current_branch"
+    else
+      echo "错误: 无法检测到当前 Git 分支."
+      return 1
+    fi
+  else
+    # 如果用户提供了参数, 则原封不动地传递给 git push
+    echo "使用自定义参数推送到 ${remote_name}..."
+    git push "$remote_name" "$@"
+  fi
+}
+
+# 用于 codeberg 的推送函数
+codeberg() {
+  # 调用辅助函数, 并将 "codeberg" 和所有接收到的参数传递给它
+  _git_push_helper codeberg "$@"
+}
+gitea() {
+  # 调用辅助函数, 并将 "codeberg" 和所有接收到的参数传递给它
+  _git_push_helper gitea "$@"
+}
+# 用于 github 的推送函数
+github() {
+  # 调用辅助函数, 并将 "github" 和所有接收到的参数传递给它
+  _git_push_helper github "$@"
+}
+# 检查 SSH 代理并自动添加密钥
+ssh_add_check() {
+    if [ -z "$(ssh-add -l 2>/dev/null | grep -v 'The agent has no identities.')" ]; then
+	ssh-add <(gpg -d /home/huai/.ssh/id_ed25519.gpg) 
+    fi
+}
+# 为 /data 目录创建的 NFS 挂载函数 (静默版)
+mount-data() {
+    if ! mountpoint -q /data; then
+        sudo mount -t nfs4 -o sec=sys 10.0.0.21:/ /data
+    fi
+}
+
+# 脚本和程序
+alias win="/usr/bin/bash /home/huai/.config/windows.sh"
+alias repo="sh /home/huai/.config/repo.sh"
+np() {
+    if [ -f "$HOME/.config/wallpaperchange.sh" ]; then
+        sh "$HOME/.config/wallpaperchange.sh"
+    else
+        sh "$HOME/.config/swww.sh"
+    fi
+}
+alias py="python3"
+x() {
+    if [ -f "$HOME/.xinitrc" ]; then
+        if command -v dwm >/dev/null 2>&1; then
+            startx
+            return 
+        fi         
+    fi             
+    
+    /usr/bin/bash /home/huai/.config/dwl/dwl_status.sh | dwl
+}

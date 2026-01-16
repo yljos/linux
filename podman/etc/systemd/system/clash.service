@@ -1,0 +1,28 @@
+[Unit]
+Description=Clash Python Service (Podman Container)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+
+ExecStart=/usr/bin/podman run \
+  --name clash \
+  --replace \
+  --rm \
+  --init \
+  --log-driver=journald \
+  --env PYTHONUNBUFFERED=1 \
+  -p 5002:5002 \
+  -v /root/config/mitce:/app/mitce:Z \
+  -v /root/config/bajie:/app/bajie:Z \
+  -v /root/config/westdata:/app/westdata:Z \
+  -v /root/config/cache:/app/cache:Z \
+  localhost/clash:latest
+
+ExecStop=/usr/bin/podman stop -t 10 clash
+
+[Install]
+WantedBy=multi-user.target

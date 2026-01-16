@@ -1,0 +1,21 @@
+BOT_TOKEN=
+ADMIN_IDS=
+S_CANID=
+URL =
+# 运行模式: poll 或 webhook
+MODE=webhook
+
+# Webhook 配置 (反向代理设置)
+# 这里填写公网可访问的完整URL，包括https://
+WEBHOOK_HOST=https://
+WEBHOOK_PORT=5005
+WEBHOOK_LISTEN=0.0.0.0
+WEBHOOK_SECRET_TOKEN=rTg8BPzMZAf2jLq9FwcYvN5E3kDhXsSp6V7eUKJR4HtQxGnW2bCymdi1aL0uZI4o
+WEBHOOK_PATH=/bot+${BOT_TOKEN}
+
+# 在反向代理后运行时，通常不需要证书配置
+# 因为SSL/TLS终止在反向代理层
+# mc
+RCON_HOST=127.0.0.1
+RCON_PORT=25575
+RCON_PASSWORD=你的RCON密码

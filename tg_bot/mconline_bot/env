@@ -1,0 +1,6 @@
+# Telegram Bot 配置
+TELEGRAM_BOT_TOKEN=YOUR_TELEGRAM_BOT_TOKEN
+TELEGRAM_CHAT_ID=YOUR_CHAT_ID
+
+# 可选：日志文件路径（默认 yao_online.txt）
+LOG_FILE=yao_online.txt

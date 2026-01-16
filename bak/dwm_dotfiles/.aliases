@@ -1,0 +1,69 @@
+#!/bin/bash
+# 通用别名配置文件
+# 可以被 .bashrc 和 .zshrc 同时引用
+
+# 基础系统命令
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias c="clear"
+alias ..='cd ..'
+alias ~='cd ~'
+
+# 系统操作
+alias update="sudo pacman -Syyu"
+alias P="sleep 60 && shutdown now"
+alias R="systemctl reboot"
+alias rsyncdir="rsync -avzh --delete"  # 同步目录，删除目标端多余文件
+
+# 配置文件编辑
+alias zshconfig="vim ~/.zshrc"
+alias bashconfig="vim ~/.bashrc"
+alias hyprconfig="vim ~/.config/hypr/hyprland.conf"
+# 目录导航
+alias cdconfig="cd /home/huai/.config"
+alias cdfree="cd /home/huai/free"
+alias cdlinux="cd /home/huai/linux"
+alias cdstacks="cd /home/huai/stacks"
+alias cddata="cd /home/huai/data"
+alias cdappdata="cd /home/huai/data/appdata"
+alias cdusb="cd /home/huai/usb"
+alias cdwww="cd /home/huai/data/www"
+alias cdsingbox="cd /home/huai/data/appdata/singbox"
+alias cdclash="cd /home/huai/data/appdata/clash"
+
+# 音频控制
+alias 0="pactl set-default-sink alsa_output.usb-DeSheng_Electronics_Inc._Star_Y360-00.analog-stereo"
+alias 1="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo"
+vol() {
+    pactl set-sink-volume @DEFAULT_SINK@ ${1}%
+}
+alias volup="vol +10%"
+alias voldown="vol -10%"
+alias volmute="pactl set-sink-mute @DEFAULT_SINK@ toggle"
+
+# MPD控制
+alias s="mpc stop"
+alias p="mpc play"
+alias nm="mpc next"
+alias mpause="mpc pause"
+alias pl="vim /home/huai/.config/mpd/playlists/all.m3u"
+
+# 远程连接
+alias nas="ssh huai@nas"
+alias cloud="ssh root@ssh.202309.xyz"
+alias scpsingbox="scp -r singbox root@ssh.202309.xyz:/root"
+alias scpclash="scp -r clash root@ssh.202309.xyz:/root"
+alias openwrt="ssh root@openwrt"
+alias ax6s="ssh root@ax6s"
+
+# Git相关
+# alias gaa='git add -A'
+# alias gc='git commit -v'
+# alias ggpush='git push origin main'
+# alias gpull='git pull'
+
+# 脚本和程序
+alias h="Hyprland"
+alias win="sh /home/huai/.config/windows.sh"
+alias repo="sh /home/huai/.config/repo.sh"
+alias np="sh /home/huai/.config/swww.sh"

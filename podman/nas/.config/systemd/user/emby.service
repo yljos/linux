@@ -1,0 +1,31 @@
+[Unit]
+Description=Emby Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# === 新增：启动前等待 10 秒 ===
+ExecStartPre=/usr/bin/sleep 10
+
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=emby \
+  --log-driver=journald \
+  -e TZ=Asia/Shanghai \
+  -p 8096:8096 \
+  -e PUID=0 \
+  -e PGID=0 \
+  -v /data/appdata/emby:/config:Z \
+  -v /data/media:/media:ro,z \
+  --device=/dev/dri:/dev/dri \
+  docker.io/linuxserver/emby:latest
+
+ExecStop=/usr/bin/podman stop -t 10 emby
+
+[Install]
+WantedBy=default.target

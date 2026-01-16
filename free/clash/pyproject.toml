@@ -1,0 +1,16 @@
+[project]
+name = "clash-convert"
+version = "1.0.0"
+description = "Default template for PDM package"
+dependencies = [
+    "Flask==3.1.2",
+    "Requests==2.32.5",
+    "PyYAML==6.0.2",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false

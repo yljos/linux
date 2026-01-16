@@ -1,0 +1,30 @@
+[Unit]
+Description=Calibre Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=calibre \
+  --log-driver=journald \
+  -e TZ=Asia/Shanghai \
+  -e PUID=0 \
+  -e PGID=0 \
+  -e PASSWORD=110 \
+  -e CLI_ARGS=abc \
+  -p 8081:8181 \
+  -v /data/appdata/calibre:/config:Z \
+  -v "/data/books:/config/calibre library:z" \
+  -v /data/epub:/epub:Z \
+  lscr.io/linuxserver/calibre:latest
+
+ExecStop=/usr/bin/podman stop -t 10 calibre
+
+[Install]
+WantedBy=default.target

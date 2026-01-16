@@ -1,0 +1,27 @@
+[Unit]
+Description=Gitea Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# 核心启动命令
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=gitea \
+  --log-driver=journald \
+  -p 3001:3000 \
+  -p 2222:22 \
+  -v /data/appdata/gitea/data:/data:Z \
+  -v /etc/localtime:/etc/localtime:ro \
+  docker.gitea.com/gitea:latest
+
+# 停止命令
+ExecStop=/usr/bin/podman stop -t 10 gitea
+
+[Install]
+WantedBy=default.target

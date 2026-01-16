@@ -1,0 +1,664 @@
+mixed-port: 12138
+tproxy-port: 7893
+allow-lan: true
+bind-address: "*"
+find-process-mode: strict
+log-level: error
+ipv6: false
+udp: true
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-selected: false
+  store-fake-ip: true
+external-controller: 127.0.0.1:9090
+external-ui: ui
+global-client-fingerprint: firefox
+external-ui-url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/dist.zip
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  override-destination: true
+  sniff:
+    TLS:
+      ports:
+        - 443
+        - 8443
+    HTTP:
+      ports:
+        - 80
+        - 8080-8880
+      override-destination: true
+  skip-domain:
+    - Mijia Cloud
+    - dlg.io.mi.com
+tun:
+  enable: true
+  device: clash
+  stack: system
+  dns-hijack:
+    - 0.0.0.0:53
+  auto-route: true
+  udp-timeout: 60
+  mtu: 1500
+  auto-detect-interface: true
+  auto-redirect: true
+  strict-route: true
+  endpoint-independent-nat: true
+hosts:
+  homeassistant.local: 10.0.0.21
+  nas.lan: 10.0.0.21
+  openwrt.lan: 10.0.0.1
+  ax6s.lan: 10.0.0.2
+  huai-PC.lan: 10.0.0.15
+dns:
+  enable: true
+  prefer-h3: false
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - +.lan
+    - +.local
+    - localhost.ptlogin2.qq.com
+    - +.msftconnecttest.com
+    - +.msftncsi.com
+    - +.googleapis.com
+    - +.googleapis.cn
+    - rule-set:googlefcm-site
+    - rule-set:cloudflare-site
+  use-hosts: true
+  default-nameserver:
+    - 223.5.5.5#DIRECT
+  proxy-server-nameserver:
+    - https://dns.alidns.com/dns-query#DIRECT
+  nameserver:
+    - https://cloudflare-dns.com/dns-query#M
+  direct-nameserver:
+    - https://dns.alidns.com/dns-query#DIRECT
+  nameserver-policy:
+    rule-set:microsoft-site: https://cloudflare-dns.com/dns-query#Microsoft
+    rule-set:ad-site: rcode://refused
+    rule-set:huawei-site: rcode://refused
+    rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
+    rule-set:steam-site-classical: https://cloudflare-dns.com/dns-query#Steam
+    rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
+    rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
+    rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
+    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_fallback
+    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_fallback
+    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_fallback
+    rule-set:netflix-site: https://cloudflare-dns.com/dns-query#Netflix
+    rule-set:youtube-site: https://dns.google/dns-query#Google
+    rule-set:googlefcm-site: https://dns.google/dns-query#Google
+    rule-set:google-site: https://dns.google/dns-query#Google
+    rule-set:speedtest-site: https://cloudflare-dns.com/dns-query#M
+proxies: []
+proxy-groups:
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: M
+    proxies:
+      - SG_fallback
+      - JP_fallback
+      - HK_fallback
+      - US_fallback
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: false
+    name: Default
+    proxies:
+      - M
+      - REJECT
+      - DIRECT
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: Google
+    proxies:
+      - US_fallback
+      - JP_fallback
+      - SG_fallback
+      - HK_fallback
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: OpenAi
+    proxies:
+      - JP_fallback
+      - US_fallback
+      - SG_fallback
+      - HK_fallback
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: Telegram
+    proxies:
+      - JP_fallback
+      - US_fallback
+      - SG_fallback
+      - HK_fallback
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: Netflix
+    proxies:
+      - SG_fallback
+      - JP_fallback
+      - US_fallback
+      - HK_fallback
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: Steam
+    proxies:
+      - HK_fallback
+      - JP_fallback
+      - SG_fallback
+      - US_fallback
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: PikPak
+    proxies:
+      - SG_fallback
+      - JP_fallback
+      - HK_fallback
+      - US_fallback
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: GitHub
+    proxies:
+      - HK_fallback
+      - JP_fallback
+      - SG_fallback
+      - US_fallback
+      - DIRECT
+  - type: select
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    include-all-proxies: true
+    name: Microsoft
+    proxies:
+      - JP_fallback
+      - DIRECT
+      - HK_fallback
+      - SG_fallback
+      - US_fallback
+  - type: fallback
+    url: https://www.gstatic.com/generate_204
+    interval: 60
+    hidden: true
+    timeout: 600
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: JP_fallback
+    filter: (?i)(日本|jp|japan)
+  - type: fallback
+    url: https://www.gstatic.com/generate_204
+    interval: 60
+    hidden: true
+    timeout: 600
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: US_fallback
+    filter: (?i)(美国|us|united|america)
+  - type: fallback
+    url: https://www.gstatic.com/generate_204
+    interval: 60
+    hidden: true
+    timeout: 600
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: SG_fallback
+    filter: (?i)(新加坡|sg|singapore)
+  - type: fallback
+    url: https://www.gstatic.com/generate_204
+    interval: 60
+    hidden: true
+    timeout: 600
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: HK_fallback
+    filter: (?i)(香港|hk|hongkong)
+rule-providers:
+  archlinux-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/archlinux.mrs
+  adguard-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs
+  ad-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site.mrs
+  ad-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-ip.mrs
+  alibaba-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-site.mrs
+  alibaba-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-ip.mrs
+  apkpure-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/apkpure.mrs
+  codeberg-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/codeberg.mrs
+  cloudflare-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cloudflare.mrs
+  cloudflare-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cloudflare.mrs
+  cn-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/cn/cn-site.mrs
+  cn-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/cn/cn-ip.mrs
+  docker-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/docker.mrs
+  direct-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/direct/direct-site.mrs
+  direct-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/direct/direct-ip.mrs
+  mobile:
+    proxy: M
+    type: http
+    interval: 86400
+    behavior: classical
+    format: yaml
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/mobile/mobile-classical.yaml
+  mozilla-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/mozilla.mrs
+  gfw-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/gfw/gfw-site.mrs
+  github-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/github.mrs
+  google-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/google.mrs
+  google-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/google.mrs
+  googlefcm-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/googlefcm.mrs
+  huawei-direct-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-direct-site.mrs
+  huawei-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-site.mrs
+  huawei-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-ip.mrs
+  javdb-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/javdb.mrs
+  jd-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/jd.mrs
+  local-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/local/local-ip.mrs
+  microsoft-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/microsoft.mrs
+  netflix-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/netflix.mrs
+  netflix-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/netflix.mrs
+  openai-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs
+  openwrt-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openwrt.mrs
+  pikpak-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash//pikpak/pikpak-site.mrs
+  pikpak-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/pikpak/pikpak-ip.mrs
+  proxy-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/proxy/proxy-site.mrs
+  reddit-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/reddit.mrs
+  speedtest-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: yaml
+    behavior: classical
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/speedtest/speedtest-site-classical.yaml
+  spotify-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/spotify.mrs
+  steam-site-classical:
+    proxy: M
+    type: http
+    interval: 86400
+    behavior: classical
+    format: yaml
+    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/steam/steam-site-classical.yaml
+  telegram-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/telegram/telegram-site.mrs
+  telegram-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/telegram/telegram-ip.mrs
+  tiktok-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tiktok.mrs
+  tmdb-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tmdb.mrs
+  twitter-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/twitter.mrs
+  twitter-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs
+  wikimedia-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/wikimedia.mrs
+  wechat-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/wechat/wechat-ip.mrs
+  youtube-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/youtube.mrs
+  f-droid-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/f-droid.mrs
+  tencent-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tencent.mrs
+  facebook-site:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: domain
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/facebook.mrs
+  facebook-ip:
+    proxy: M
+    interval: 86400
+    type: http
+    format: mrs
+    behavior: ipcidr
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs
+rules:
+  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
+  - RULE-SET,ad-site,REJECT
+  - RULE-SET,ad-ip,REJECT
+  - RULE-SET,huawei-site,REJECT
+  - RULE-SET,huawei-ip,REJECT
+  - RULE-SET,huawei-direct-site,DIRECT
+  - RULE-SET,mobile,DIRECT
+  - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
+  - RULE-SET,cloudflare-site,M
+  - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
+  - DOMAIN-KEYWORD,msftncsi.com,Microsoft
+  - DOMAIN-KEYWORD,googleapis,Google
+  - RULE-SET,direct-site,DIRECT
+  - RULE-SET,pikpak-site,PikPak
+  - RULE-SET,alibaba-site,DIRECT
+  - RULE-SET,jd-site,DIRECT
+  - RULE-SET,tencent-site,DIRECT
+  - RULE-SET,googlefcm-site,DIRECT
+  - RULE-SET,proxy-site,M
+  - RULE-SET,github-site,GitHub
+  - RULE-SET,codeberg-site,GitHub
+  - RULE-SET,docker-site,M
+  - RULE-SET,archlinux-site,M
+  - RULE-SET,openwrt-site,M
+  - RULE-SET,mozilla-site,M
+  - RULE-SET,microsoft-site,Microsoft
+  - RULE-SET,openai-site,OpenAi
+  - RULE-SET,youtube-site,Google
+  - RULE-SET,google-site,Google
+  - RULE-SET,netflix-site,Netflix
+  - RULE-SET,tiktok-site,JP_fallback
+  - RULE-SET,tmdb-site,M
+  - RULE-SET,telegram-site,Telegram
+  - RULE-SET,twitter-site,US_fallback
+  - RULE-SET,facebook-site,US_fallback
+  - RULE-SET,reddit-site,M
+  - RULE-SET,adguard-site,M
+  - RULE-SET,speedtest-site,M
+  - RULE-SET,wikimedia-site,M
+  - RULE-SET,javdb-site,M
+  - RULE-SET,apkpure-site,M
+  - RULE-SET,f-droid-site,M
+  - RULE-SET,spotify-site,M
+  - RULE-SET,steam-site-classical,Steam
+  - RULE-SET,gfw-site,M
+  - RULE-SET,cn-site,DIRECT
+  - RULE-SET,local-ip,DIRECT
+  - RULE-SET,direct-ip,DIRECT
+  - RULE-SET,wechat-ip,DIRECT
+  - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-ip)),DIRECT
+  - RULE-SET,cloudflare-ip,M
+  - RULE-SET,pikpak-ip,PikPak
+  - RULE-SET,alibaba-ip,DIRECT
+  - RULE-SET,telegram-ip,Telegram
+  - RULE-SET,twitter-ip,US_fallback
+  - RULE-SET,facebook-ip,US_fallback
+  - RULE-SET,netflix-ip,Netflix
+  - RULE-SET,google-ip,Google
+  - RULE-SET,cn-ip,DIRECT
+  - MATCH,Default

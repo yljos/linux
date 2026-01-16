@@ -1,0 +1,26 @@
+[Unit]
+Description=Calibre-Web Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=always
+RestartSec=5s
+
+ExecStart=/usr/bin/podman run \
+  --rm \
+  --name=calibre-web \
+  -e TZ=Asia/Shanghai \
+  -e PUID=0 \
+  -e PGID=0 \
+  -e DOCKER_MODS=linuxserver/mods:universal-calibre \
+  -e OAUTHLIB_RELAX_TOKEN_SCOPE=1 \
+  -p 8083:8083 \
+  -v /data/appdata/calibre-web:/config:Z \
+  -v /data/books:/books:z \
+  lscr.io/linuxserver/calibre-web:latest
+
+ExecStop=/usr/bin/podman stop -t 10 calibre-web
+
+[Install]
+WantedBy=default.target

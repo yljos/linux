@@ -1,0 +1,16 @@
+
+**/.config/mpd/log
+**/.config/mpd/state
+**/.config/mpd/socket
+**/huai/.config/mpd/sticker.sql
+**/.idea/
+**/.venv/
+**/__pycache__/
+**/bajie
+**/mitce
+**/westdata
+**/.pdm-python
+**/cache/
+**/.env
+
+

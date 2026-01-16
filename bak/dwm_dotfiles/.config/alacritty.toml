@@ -1,0 +1,28 @@
+[font]
+   size = 9.5
+[font.normal]
+   family = "Liberation Mono"
+   style = "Regular"
+[font.italic]
+   family = "Liberation Mono"
+   style = "Italic"
+[font.bold]
+   family = "Liberation Mono"
+   style = "Bold"
+[font.bold_italic]
+   family = "Liberation Mono"
+   style = "Bold Italic"
+[window]
+   opacity = 0.7  
+[colors]
+# Normal colors
+[colors.normal]
+black = '#000000'
+red = '#ff0000'
+green = '#00ff00'
+yellow = '#ffff00'
+blue = '#a277ff'
+magenta = '#ff00ff'
+cyan = '#00ffff'
+white = '#ffffff'
+

@@ -1,0 +1,1 @@
+go build -v -tags "with_quic,with_utls,with_clash_api" -ldflags "-s -w -X 'github.com/sagernet/sing-box/constant.Version=1.12.16'" ./cmd/sing-box
