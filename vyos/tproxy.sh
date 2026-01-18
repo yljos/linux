@@ -33,33 +33,25 @@ nft delete table ip mihomo 2>/dev/null
 # 创建表
 nft add table ip mihomo
 
-# 创建 Prerouting 链
+# 创建 Prerouting 链 (使用单引号包裹防止 VyOS Shell 语法冲突)
 nft 'add chain ip mihomo prerouting { type filter hook prerouting priority mangle; policy accept; }'
 
-# ================= 关键逻辑开始 =================
-
-# A. 特殊排除 (最高优先级)
-# 1. 排除 DHCP 流量 (UDP 67/68)，确保设备能获取 IP
+# A. 排除逻辑 (Bypass)
+# 1. 排除 DHCP 流量 (防止设备无法获取 IP)
 nft add rule ip mihomo prerouting udp dport { 67, 68 } return
 
-# B. DNS 强行劫持 (修复 DNS 泄露)
-# 必须放在“排除私有网段”之前！
-# 含义：只要是 TCP/UDP 53 端口，无论目的 IP 是谁(包括路由器网关)，统统转发给 TProxy
-nft add rule ip mihomo prerouting iifname "$LAN_IF" meta l4proto { tcp, udp } th dport 53 counter tproxy to :$PROXY_PORT accept
-
-# C. 排除私有网段 (Bypass)
-# 排除本地私有网段、组播、广播，确保能直连访问局域网设备和路由器后台
-# 注意：此时 DNS(53) 流量已经被上面的规则处理过了，不会走到这一步，所以不会被排除
+# 2. 排除本地私有网段、组播、广播 (防止局域网内访无法直连)
+# 即使只劫持 eth0，也必须排除这些，否则你无法通过 eth0 访问路由器自身或局域网其他设备
 nft add rule ip mihomo prerouting ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4, 255.255.255.255 } return
 
-# D. 通用流量劫持
-# 1. 标记流量：仅对从 $LAN_IF 进入的剩余 TCP/UDP 流量打标记
+# B. 劫持逻辑
+# 1. 严格限制：仅对从 $LAN_IF 进入的流量打上策略路由标记
 nft add rule ip mihomo prerouting iifname "$LAN_IF" meta l4proto { tcp, udp } meta mark set $PROXY_FWMARK
 
-# 2. 转发流量：将带标记的流量转发至 Mihomo 监听端口
+# 2. 将带标记的流量转发至 Mihomo 监听端口
+# 添加 counter 以便通过 'nft list table' 查看是否有流量命中
 nft add rule ip mihomo prerouting meta mark $PROXY_FWMARK meta l4proto tcp counter tproxy to :$PROXY_PORT accept
 nft add rule ip mihomo prerouting meta mark $PROXY_FWMARK meta l4proto udp counter tproxy to :$PROXY_PORT accept
 
 echo "配置完成！"
-echo "DNS 泄露修复验证：客户端 DNS 请求应被重定向到端口 $PROXY_PORT"
 echo "检查命令：sudo nft list table ip mihomo"
