@@ -1,8 +1,3 @@
-"""
-Flask应用 - 处理base64编码的节点信息，生成config.json
-支持从URL参数获取base64编码数据，并将其节点注入到JSON模板中。
-"""
-
 import base64
 import requests
 import json
@@ -12,7 +7,6 @@ import sys
 import hashlib
 from typing import Any, Dict, List, Tuple, Union
 
-# 修复：这里添加了 abort
 from flask import Flask, request, jsonify, Response, abort
 from vless_converter import parse_vless_url
 from ss_converter import parse_shadowsocks_url as parse_ss_url
@@ -25,17 +19,21 @@ NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡",
 NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10"]
 
 # 模板文件映射配置
-# 访问时使用 ?config=xxx 来匹配这里的键，如果不传或匹配不到则使用 default
 TEMPLATE_MAP = {
     "default": "openwrt.json",
-    "pc": "pc.json",  # 对应 ?config=pc
-    "m": "m.json",  # 示例：对应 ?config=m
+    "pc": "pc.json",
+    "m": "m.json",
 }
 
 # 密码哈希和API地址文件
 MITCE_PASSWORD_HASH = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
-MITCE_API_FILE = "mitce"  # 当前目录下的 mitce 文件
-BAJIE_API_FILE = "bajie"  # 当前目录下的 bajie 文件
+MITCE_API_FILE = "mitce"
+BAJIE_API_FILE = "bajie"
+
+# ===== 缓存配置 =====
+CACHE_DIR = "cache"
+if not os.path.exists(CACHE_DIR):
+    os.makedirs(CACHE_DIR)
 
 app = Flask(__name__)
 
@@ -45,7 +43,6 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     # 1. 获取 User-Agent 并决定默认模板
     ua = request.headers.get("User-Agent", "")
 
-    # 匹配逻辑：SFA 优先级最高（因为它包含 sing-box 字符串）
     if "SFA" in ua:
         detected_config = "m"
     elif "sing-box_openwrt" in ua:
@@ -53,13 +50,12 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     elif "sing-box" in ua:
         detected_config = "pc"
     else:
-        # 未知 UA 直接返回 404 Not Found
         abort(404)
 
-    # 2. 获取参数，若 URL 显式带了 ?config=xxx 则覆盖自动识别
+    # 2. 获取参数
     config_param = request.args.get("config", detected_config)
 
-    # 3. 鉴权 (Key 校验)
+    # 3. 鉴权
     key = request.args.get("key", "")
     if not key:
         return jsonify({"error": "未授权访问"}), 403
@@ -68,9 +64,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     if key_hash != MITCE_PASSWORD_HASH:
         return jsonify({"error": "未鉴权访问"}), 403
 
-    # ... 后续模板读取逻辑 ...
-
-    # 选择文件
+    # 选择源文件
     if source == "mitce":
         api_file = MITCE_API_FILE
     elif source == "bajie":
@@ -78,18 +72,56 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     else:
         return jsonify({"error": "不支持的参数"}), 403
 
-    # 读取文件内容作为 base64 链接
-    file_path = os.path.join(os.path.dirname(__file__), api_file)
+    # 定义缓存路径
+    cache_file_path = os.path.join(CACHE_DIR, f"{source}.txt")
+    decoded_content = ""
+
+    # 4. 获取数据逻辑：优先网络 -> 验证有效性 -> 写入缓存 -> 失败则读取缓存
     try:
+        # 读取存储URL的文件
+        file_path = os.path.join(os.path.dirname(__file__), api_file)
         with open(file_path, "r", encoding="utf-8") as f:
             url = f.read().strip()
             if not url:
                 raise ValueError(f"{source} 文件内容为空")
-    except Exception as e:
-        return jsonify({"error": f"读取 {source} 文件失败: {str(e)}"}), 500
 
+        # 尝试联网获取并解码
+        fetched_content, _ = fetch_content_from_url(url)
+        
+        # ===== 新增：内容验证 =====
+        # 检查拉取到的内容是否包含至少一个有效节点
+        # 如果解析不出任何 URL，说明订阅链接可能返回了 200 OK 但内容是“维护中”或空页面
+        validation_urls = extract_urls_from_text(fetched_content)
+        if not validation_urls:
+            raise ValueError(f"网络内容验证失败：未发现有效节点 (Content Length: {len(fetched_content)})")
+
+        # 验证通过，更新变量并写入缓存
+        decoded_content = fetched_content
+        
+        try:
+            with open(cache_file_path, "w", encoding="utf-8") as f:
+                f.write(decoded_content)
+            print(f"[{source}] 网络拉取并验证成功，缓存已更新", file=sys.stdout)
+        except Exception as cache_err:
+            print(f"[{source}] 缓存写入失败: {cache_err}", file=sys.stderr)
+
+    except Exception as e:
+        # 网络获取失败 或 验证失败，尝试读取本地缓存
+        print(f"[{source}] 获取/验证失败 ({str(e)})，尝试使用本地缓存...", file=sys.stderr)
+        
+        if os.path.exists(cache_file_path):
+            try:
+                with open(cache_file_path, "r", encoding="utf-8") as f:
+                    decoded_content = f.read()
+                print(f"[{source}] 成功加载本地缓存", file=sys.stdout)
+            except Exception as read_err:
+                return jsonify({"error": f"网络失败且读取缓存出错: {str(read_err)}"}), 500
+        else:
+            # 既没有网络数据，也没有缓存文件
+            return jsonify({"error": f"获取失败且无本地缓存: {str(e)}"}), 500
+
+    # 5. 解析节点内容 (后续逻辑保持不变)
     try:
-        decoded_content, _ = fetch_content_from_url(url)
         node_urls = extract_urls_from_text(decoded_content)
         if not node_urls:
             return (
@@ -106,7 +138,8 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 ),
                 400,
             )
-
+        
+        # ... 以下代码与之前一致 ...
         nodes, errors = [], []
         for i, node_url in enumerate(node_urls):
             try:
@@ -129,7 +162,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 400,
             )
 
-        # ===== 核心修改：根据 config 参数选择模板文件 =====
+        # 6. 模板处理与合并
         template_filename = TEMPLATE_MAP.get(config_param, TEMPLATE_MAP["default"])
         config_path = os.path.join(os.path.dirname(__file__), template_filename)
 
