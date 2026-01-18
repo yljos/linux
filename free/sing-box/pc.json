@@ -7,7 +7,8 @@
       {"tag": "dns_proxy", "type": "https", "server": "cloudflare-dns.com", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "M"},
       {"tag": "dns_google", "type": "https", "server": "dns.google", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "Google"},
       {"tag": "dns_microsoft", "type": "https", "server": "cloudflare-dns.com", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "Microsoft"},
-      {"tag": "dns_direct", "type": "https", "server": "dns.alidns.com", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "D"}
+      {"tag": "dns_direct", "type": "https", "server": "dns.alidns.com", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "D"},
+      {"tag": "dns_fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"}
     ],
     "rules": [
       {"domain": ["cdn.jsdmirror.com", "ntp.aliyun.com"], "strategy": "ipv4_only", "server": "dns_direct"},
@@ -20,7 +21,8 @@
       {"rule_set": "alibaba-site", "strategy": "ipv4_only", "server": "dns_direct"},
       {"rule_set": "tencent-site", "strategy": "ipv4_only", "server": "dns_direct"},
       {"rule_set": "jd-site", "strategy": "ipv4_only", "server": "dns_direct"},
-      {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"}
+      {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"},
+      {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
     ],
     "final": "dns_proxy",
     "strategy": "ipv4_only",
@@ -49,7 +51,7 @@
     "rules": [
       {"inbound": "mixed-in", "action": "sniff", "timeout": "1000ms"},
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
-      { "port": 53, "action": "hijack-dns" },
+      {"port": 53, "action": "hijack-dns"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject"},
       {"rule_set": "ad-site", "action": "reject"},
@@ -161,7 +163,7 @@
     "default_domain_resolver": {"server": "dns_direct", "rewrite_ttl": 10}
   },
   "experimental": {
-    "cache_file": {"enabled": true, "path": "cache.db", "cache_id": "", "store_fakeip": false, "store_rdrc": true, "rdrc_timeout": "7d"},
+    "cache_file": {"enabled": true, "path": "cache.db", "cache_id": "", "store_fakeip": true, "store_rdrc": true, "rdrc_timeout": "7d"},
     "clash_api": {"external_controller": "127.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/yacd.zip", "external_ui_download_detour": "D", "default_mode": "rule"}
   }
 }
