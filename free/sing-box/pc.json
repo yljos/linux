@@ -7,20 +7,16 @@
       {"tag": "dns_proxy", "type": "https", "server": "cloudflare-dns.com", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "M"},
       {"tag": "dns_google", "type": "https", "server": "dns.google", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "Google"},
       {"tag": "dns_microsoft", "type": "https", "server": "cloudflare-dns.com", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "Microsoft"},
-      {"tag": "dns_direct", "type": "https", "server": "dns.alidns.com", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "D"}
+      {"tag": "dns_direct", "type": "https", "server": "dns.alidns.com", "server_port": 443, "domain_resolver": "dns_resolver", "detour": "D"},
+      {"tag": "dns_fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"}
     ],
     "rules": [
-      {"domain": ["cdn.jsdmirror.com", "ntp.aliyun.com"], "strategy": "ipv4_only", "server": "dns_direct"},
+      {"domain": ["ntp.aliyun.com"], "strategy": "ipv4_only", "server": "dns_direct"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "strategy": "ipv4_only", "server": "dns_microsoft"},
       {"domain_keyword": "googleapis", "strategy": "ipv4_only", "server": "dns_google"},
       {"rule_set": "googlefcm-site", "strategy": "ipv4_only", "server": "dns_google"},
       {"rule_set": "ad-site", "action": "reject"},
-      {"rule_set": "cloudflare-site", "strategy": "ipv4_only", "server": "dns_direct"},
-      {"rule_set": "direct-site", "strategy": "ipv4_only", "server": "dns_direct"},
-      {"rule_set": "alibaba-site", "strategy": "ipv4_only", "server": "dns_direct"},
-      {"rule_set": "tencent-site", "strategy": "ipv4_only", "server": "dns_direct"},
-      {"rule_set": "jd-site", "strategy": "ipv4_only", "server": "dns_direct"},
-      {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"}
+      {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
     ],
     "final": "dns_proxy",
     "strategy": "ipv4_only",
