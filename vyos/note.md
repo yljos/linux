@@ -118,6 +118,7 @@ set container name mihomo restart 'on-failure'
 
 # 1. 设置镜像 (使用 Docker Hub 源)
 set container name sing-box image 'ghcr.io/sagernet/sing-box:latest'
+set container name sing-box image 'ghcr.io/yljos/sing-box:latest'
 
 # 2. 权限设置 (TUN/TProxy 模式必需)
 set container name sing-box capability 'net-admin'
@@ -139,7 +140,7 @@ set container name sing-box arguments 'run -D /etc/sing-box/'
 set container name sing-box restart 'on-failure'
 
 add container image ghcr.io/sagernet/sing-box:latest
-
+add container image ghcr.io/yljos/sing-box:latest
 commit
 save
 exit
@@ -153,12 +154,3 @@ sudo podman load -i /tmp/mihomo.tar
 # 对应的手动拉取命令
 add container image docker.io/metacubex/mihomo:latest
 
-# 1. 静态路由表
-set protocols static table 100 route 0.0.0.0/0 interface lo
-
-# 2. 策略路由：匹配标记 1 并查找表 100
-set policy route TPROXY_ROUTE rule 10 mark 1
-set policy route TPROXY_ROUTE rule 10 set table 100
-
-# 3. 将策略绑定到 LAN 接口
-set policy route TPROXY_ROUTE interface eth0
