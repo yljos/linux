@@ -43,7 +43,7 @@
   ],
   "route": {
     "rules": [
-      {"inbound": ["tun-in"], "action": "sniff", "timeout": "1000ms"},
+      {"inbound": ["tun-in"], "action": "sniff", "timeout": "300ms"},
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
       {"port": 53, "action": "hijack-dns"},
       {"protocol": "dns", "action": "hijack-dns"},
