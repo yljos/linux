@@ -7,6 +7,7 @@ import sys
 import hashlib
 from typing import Any, Dict, List, Tuple, Union
 
+# 修复：这里添加了 abort
 from flask import Flask, request, jsonify, Response, abort
 from vless_converter import parse_vless_url
 from ss_converter import parse_shadowsocks_url as parse_ss_url
@@ -36,6 +37,22 @@ if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
 
 app = Flask(__name__)
+
+
+def decode_base64_content(content: str) -> str:
+    """解码 Base64 字符串，处理可能的格式差异"""
+    try:
+        content = content.strip()
+        # 移除可能存在的换行符
+        content = content.replace("\n", "").replace("\r", "")
+        content = content.replace("-", "+").replace("_", "/")
+        padding = len(content) % 4
+        if padding:
+            content += "=" * (4 - padding)
+        decoded_bytes = base64.b64decode(content)
+        return decoded_bytes.decode("utf-8")
+    except Exception as e:
+        raise ValueError(f"Base64解码失败: {str(e)}")
 
 
 @app.route("/<source>", methods=["GET"])
@@ -76,7 +93,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     cache_file_path = os.path.join(CACHE_DIR, f"{source}.txt")
     decoded_content = ""
 
-    # 4. 获取数据逻辑：优先网络 -> 验证有效性 -> 写入缓存 -> 失败则读取缓存
+    # 4. 获取数据逻辑
     try:
         # 读取存储URL的文件
         file_path = os.path.join(os.path.dirname(__file__), api_file)
@@ -85,39 +102,55 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             if not url:
                 raise ValueError(f"{source} 文件内容为空")
 
-        # 尝试联网获取并解码
-        fetched_content, _ = fetch_content_from_url(url)
+        # --- 网络请求 ---
+        headers = {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0"
+        }
+        # 设置超时
+        response = requests.get(url, headers=headers, timeout=5)
+        response.raise_for_status()
         
-        # ===== 新增：内容验证 =====
-        # 检查拉取到的内容是否包含至少一个有效节点
-        # 如果解析不出任何 URL，说明订阅链接可能返回了 200 OK 但内容是“维护中”或空页面
-        validation_urls = extract_urls_from_text(fetched_content)
+        # 获取原始 Base64 内容
+        raw_content = response.text.strip()
+        
+        # --- 验证环节 ---
+        # 先试着解码，确保它不是坏数据
+        temp_decoded = decode_base64_content(raw_content)
+        validation_urls = extract_urls_from_text(temp_decoded)
+        
         if not validation_urls:
-            raise ValueError(f"网络内容验证失败：未发现有效节点 (Content Length: {len(fetched_content)})")
+            raise ValueError(f"网络内容验证失败：解码后未发现有效节点")
 
-        # 验证通过，更新变量并写入缓存
-        decoded_content = fetched_content
-        
+        # --- 验证通过：保存原始 Base64 到缓存 ---
         try:
             with open(cache_file_path, "w", encoding="utf-8") as f:
-                f.write(decoded_content)
-            print(f"[{source}] 网络拉取并验证成功，缓存已更新", file=sys.stdout)
+                f.write(raw_content) # <--- 关键修改：保存未解码的内容
+            print(f"[{source}] 网络拉取成功，原始Base64已写入缓存", file=sys.stdout)
         except Exception as cache_err:
             print(f"[{source}] 缓存写入失败: {cache_err}", file=sys.stderr)
 
+        # 使用解码后的内容继续
+        decoded_content = temp_decoded
+
     except Exception as e:
-        # 网络获取失败 或 验证失败，尝试读取本地缓存
-        print(f"[{source}] 获取/验证失败 ({str(e)})，尝试使用本地缓存...", file=sys.stderr)
+        # --- 降级处理：读取缓存 ---
+        print(f"[{source}] 网络/验证失败 ({str(e)})，尝试使用本地缓存...", file=sys.stderr)
         
         if os.path.exists(cache_file_path):
             try:
                 with open(cache_file_path, "r", encoding="utf-8") as f:
-                    decoded_content = f.read()
-                print(f"[{source}] 成功加载本地缓存", file=sys.stdout)
+                    cached_raw = f.read().strip()
+                
+                if not cached_raw:
+                    raise ValueError("缓存文件为空")
+
+                # --- 关键修改：读取缓存后必须解码 ---
+                decoded_content = decode_base64_content(cached_raw)
+                print(f"[{source}] 成功加载本地缓存并解码", file=sys.stdout)
+                
             except Exception as read_err:
-                return jsonify({"error": f"网络失败且读取缓存出错: {str(read_err)}"}), 500
+                return jsonify({"error": f"读取或解码缓存失败: {str(read_err)}"}), 500
         else:
-            # 既没有网络数据，也没有缓存文件
             return jsonify({"error": f"获取失败且无本地缓存: {str(e)}"}), 500
 
     # 5. 解析节点内容 (后续逻辑保持不变)
@@ -138,8 +171,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 ),
                 400,
             )
-        
-        # ... 以下代码与之前一致 ...
+
         nodes, errors = [], []
         for i, node_url in enumerate(node_urls):
             try:
@@ -243,19 +275,9 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         )
 
 
-def decode_base64_content(content: str) -> str:
-    try:
-        content = content.replace("-", "+").replace("_", "/")
-        padding = len(content) % 4
-        if padding:
-            content += "=" * (4 - padding)
-        decoded_bytes = base64.b64decode(content)
-        return decoded_bytes.decode("utf-8")
-    except Exception as e:
-        raise ValueError(f"Base64解码失败: {str(e)}")
-
-
 def fetch_content_from_url(url: str) -> Tuple[str, str]:
+    # 该辅助函数现在仅保留用于可能的其他用途
+    # 主逻辑已经内联到 process_nodes_from_source 以便更好地控制 raw/decode 流程
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0"
