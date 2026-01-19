@@ -188,6 +188,13 @@ def process_yaml_content(
 
         if not proxies:
             proxies = proxies_orig
+        # ===在这里插入 dns-out 节点===
+        # 方式 1: 插入到列表最前面 (推荐，方便查看)
+        # proxies.insert(0, {"name": "dns-out", "type": "dns"})
+        
+        # 或者 方式 2: 追加到列表最后面
+        proxies.append({"name": "dns-out", "type": "dns"})
+        # ==========================
         template_data["proxies"] = proxies
 
         output = pyyaml.dump(
