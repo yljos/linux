@@ -13,7 +13,7 @@ profile:
 external-controller: 10.0.0.1:9090
 external-ui: ui
 global-client-fingerprint: firefox
-external-ui-url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/yacd.zip
+external-ui-url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/ui_openwrt.zip
 sniffer:
   enable: true
   force-dns-mapping: true
