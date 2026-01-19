@@ -1,4 +1,4 @@
-from flask import Flask, send_file, request
+from flask import Flask, send_file, request, abort
 import yaml as pyyaml
 import requests
 from urllib.parse import unquote
@@ -16,9 +16,8 @@ TEMPLATE_PATH_PC = Path("pc.yaml")
 TEMPLATE_PATH_MTUN = Path("mtun.yaml")
 TEMPLATE_PATH_OPENWRT = Path("openwrt.yaml")
 TEMPLATE_PATH_M = Path("m.yaml")
-TEMPLATE_PATH_DEFAULT = Path("b.yaml")
 
-USER_AGENT = "clash verge"
+USER_AGENT = "clash-verge"
 HYSTERIA2_UP = "40 Mbps"
 HYSTERIA2_DOWN = "200 Mbps"
 HYSTERIA2_UP_M = "20 Mbps"
@@ -231,7 +230,7 @@ def process_source(source):
         elif "clash_m" in ua:
             detected_config = "m"
         else:
-            detected_config = "b"
+            abort(404)
 
         config_val = request.args.get("config", detected_config)
 
@@ -240,10 +239,15 @@ def process_source(source):
             "mtun": (TEMPLATE_PATH_MTUN, HYSTERIA2_UP_M, HYSTERIA2_DOWN_M),
             "pc": (TEMPLATE_PATH_PC, HYSTERIA2_UP, HYSTERIA2_DOWN),
             "openwrt": (TEMPLATE_PATH_OPENWRT, HYSTERIA2_UP, HYSTERIA2_DOWN),
-            "b": (TEMPLATE_PATH_DEFAULT, HYSTERIA2_UP, HYSTERIA2_DOWN),
         }
 
-        template_path, up, down = config_map.get(config_val, config_map["b"])
+        # 1. 先判断是否存在
+        if config_val not in config_map:
+        # 如果参数不对，直接返回 400 错误
+            return "Invalid Config Type", 400
+
+        # 2. 再获取（因为确定存在，所以不需要 get 的默认值了）
+        template_path, up, down = config_map[config_val]
 
         # 恢复要求的详细日志格式
         logger.info(
