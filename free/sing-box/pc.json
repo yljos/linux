@@ -14,7 +14,8 @@
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "strategy": "ipv4_only", "server": "dns_microsoft"},
       {"domain_keyword": "googleapis", "strategy": "ipv4_only", "server": "dns_google"},
       {"rule_set": "googlefcm-site", "strategy": "ipv4_only", "server": "dns_google"},
-      {"rule_set": "ad-site", "action": "reject"}
+      {"rule_set": "ad-site", "action": "reject"},
+      {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"}
     ],
     "final": "dns_proxy",
     "strategy": "ipv4_only",
