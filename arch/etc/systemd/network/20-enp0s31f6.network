@@ -3,7 +3,7 @@ Name=enp0s31f6
 
 [Network]
 Address=10.0.0.25/24
-Gateway=1.1.1.1
+Gateway=10.0.0.1
 
 
 [Link]
