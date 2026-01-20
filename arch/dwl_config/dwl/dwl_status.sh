@@ -168,7 +168,7 @@ update_ime() {
 	fi
 }
 
-update_time() { TIME_STATUS=$(printf "%(%Y-%m-%d %a %H:%M)T" -1); }
+update_time() { TIME_STATUS=$(date "+%Y-%m-%d %a %H:%M"); }
 
 print_status_bar() {
 	local weather_str=""
