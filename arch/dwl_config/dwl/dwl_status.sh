@@ -60,7 +60,6 @@ update_music_socket() {
 
     if [[ "$state" == "play" ]]; then
         local display="${title:-$name}"
-        [[ -n "$artist" ]] && display="$artist - $title"
         MUSIC_STATUS="${display:-Unknown}"
     fi
 }
