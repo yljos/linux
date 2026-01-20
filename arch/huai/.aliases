@@ -3,8 +3,8 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias c="clear"
 alias ..='cd ..'
-alias ~='cd ~'
-
+# 同时显示 UTC 和 北京时间
+alias now='echo "UTC: $(date -u +%H:%M:%S) | CST: $(TZ=Asia/Shanghai date +%H:%M:%S)"'
 # 系统操作
 alias update="sudo pacman -Syyu"
 alias P="sleep 60 && shutdown now"
