@@ -1,7 +1,7 @@
 mixed-port: 12138
 allow-lan: true
 bind-address: "*"
-find-process-mode: strict
+find-process-mode: "off"
 log-level: error
 ipv6: false
 udp: true
