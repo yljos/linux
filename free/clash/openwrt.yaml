@@ -99,7 +99,7 @@ proxies: []
 proxy-groups:
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: A
     proxies:
       - SG_fallback
@@ -116,7 +116,7 @@ proxy-groups:
       - DIRECT
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: Google
     proxies:
       - US_fallback
@@ -125,7 +125,7 @@ proxy-groups:
       - HK_fallback
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: OpenAi
     proxies:
       - JP_fallback
@@ -134,7 +134,7 @@ proxy-groups:
       - HK_fallback
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: Telegram
     proxies:
       - JP_fallback
@@ -143,7 +143,7 @@ proxy-groups:
       - HK_fallback
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: Netflix
     proxies:
       - SG_fallback
@@ -152,7 +152,7 @@ proxy-groups:
       - HK_fallback
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: Steam
     proxies:
       - HK_fallback
@@ -161,7 +161,7 @@ proxy-groups:
       - US_fallback
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: PikPak
     proxies:
       - SG_fallback
@@ -170,7 +170,7 @@ proxy-groups:
       - US_fallback
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: GitHub
     proxies:
       - HK_fallback
@@ -180,7 +180,7 @@ proxy-groups:
       - DIRECT
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: true
+    include-all-proxies: false
     name: Microsoft
     proxies:
       - JP_fallback
