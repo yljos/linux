@@ -145,8 +145,8 @@ commit
 save
 exit
 # note 拉取失败 
-docker pull metacubex/mihomo:latest
-docker save -o mihomo.tar metacubex/mihomo:latest
+podman pull metacubex/mihomo:latest
+podman save -o mihomo.tar metacubex/mihomo:latest
 scp mihomo.tar vyos:/tmp/
 
 sudo podman load -i /tmp/mihomo.tar
