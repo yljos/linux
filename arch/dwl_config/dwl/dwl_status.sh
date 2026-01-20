@@ -52,7 +52,6 @@ update_music_socket() {
     local artist="" title="" state="" name=""
     while read -r line <&3; do
         if [[ "$line" == "state: play"* ]]; then state="play"; fi
-        if [[ "$line" == "Artist: "* ]]; then artist="${line#Artist: }"; fi
         if [[ "$line" == "Title: "* ]]; then title="${line#Title: }"; fi
         if [[ "$line" == "Name: "* ]]; then name="${line#Name: }"; fi
     done
