@@ -13,7 +13,6 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --name=calibre \
   --log-driver=journald \
-  -e TZ=Asia/Shanghai \
   -e PUID=0 \
   -e PGID=0 \
   -e PASSWORD=110 \

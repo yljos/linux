@@ -16,7 +16,6 @@ ExecStart=/usr/bin/podman run \
   --log-driver=journald \
   --userns=keep-id \
   --user=root \
-  -e TZ=Asia/Shanghai \
   -e ALLOW_DIRECT_VNC=true \
   -p 5900:5900 \
   -p 4000:4000 \

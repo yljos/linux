@@ -14,12 +14,10 @@ ExecStart=/usr/bin/podman run \
   --name=ha \
   --log-driver=journald \
   --env PYTHONUNBUFFERED=1 \
-  -e TZ=Asia/Shanghai \
   -p 8123:8123 \
   -p 1900:1900/udp \
   -p 5353:5353/udp \
   -v /data/appdata/ha:/config:Z \
-  -v /etc/localtime:/etc/localtime:ro \
   ghcr.io/home-assistant/home-assistant:stable
 
 ExecStop=/usr/bin/podman stop -t 10 ha

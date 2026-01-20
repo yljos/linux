@@ -16,7 +16,6 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --name=emby \
   --log-driver=journald \
-  -e TZ=Asia/Shanghai \
   -p 8096:8096 \
   -e PUID=0 \
   -e PGID=0 \

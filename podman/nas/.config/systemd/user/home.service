@@ -16,7 +16,6 @@ ExecStart=/usr/bin/podman run \
   --log-driver=journald \
   --network=host \
   -e PORT=80 \
-  -e TZ=Asia/Shanghai \
   -e HOMEPAGE_ALLOWED_HOSTS=* \
   -v /data/appdata/homepage:/app/config:Z \
   -v /data/appdata/homepage/icons:/app/public/icons:Z \
