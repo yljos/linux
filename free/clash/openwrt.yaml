@@ -14,6 +14,12 @@ external-controller: 10.0.0.1:9090
 external-ui: ui
 global-client-fingerprint: firefox
 external-ui-url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/ui_openwrt.zip
+ntp:
+  enable: true
+  write-to-system: false
+  server: ntp.aliyun.com
+  port: 123
+  interval: 30
 sniffer:
   enable: true
   force-dns-mapping: true
@@ -32,19 +38,6 @@ sniffer:
   skip-domain:
     - Mijia Cloud
     - dlg.io.mi.com
-tun:
-  enable: false
-  device: clash
-  stack: system
-  dns-hijack:
-    - 0.0.0.0:53
-  auto-route: true
-  udp-timeout: 60
-  mtu: 1500
-  auto-detect-interface: true
-  auto-redirect: true
-  strict-route: true
-  endpoint-independent-nat: true
 hosts:
   homeassistant.local: 10.0.0.21
   nas.lan: 10.0.0.21
@@ -603,10 +596,10 @@ rule-providers:
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,53,dns-out
-  - RULE-SET,ad-site,REJECT
-  - RULE-SET,ad-ip,REJECT
-  - RULE-SET,huawei-site,REJECT
-  - RULE-SET,huawei-ip,REJECT
+  - RULE-SET,ad-site,REJECT-DROP
+  - RULE-SET,ad-ip,REJECT-DROP
+  - RULE-SET,huawei-site,REJECT-DROP
+  - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
   - RULE-SET,cloudflare-site,A
