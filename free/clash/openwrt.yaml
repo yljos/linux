@@ -596,10 +596,10 @@ rule-providers:
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,53,dns-out
-  - RULE-SET,ad-site,REJECT
-  - RULE-SET,ad-ip,REJECT
-  - RULE-SET,huawei-site,REJECT
-  - RULE-SET,huawei-ip,REJECT
+  - RULE-SET,ad-site,REJECT-DROP
+  - RULE-SET,ad-ip,REJECT-DROP
+  - RULE-SET,huawei-site,REJECT-DROP
+  - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
   - RULE-SET,cloudflare-site,A
