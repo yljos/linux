@@ -13,7 +13,6 @@ profile:
 external-controller: 127.0.0.1:9090
 external-ui: ui
 global-client-fingerprint: firefox
-external-ui-url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/ui.zip
 ntp:
   enable: true
   write-to-system: false

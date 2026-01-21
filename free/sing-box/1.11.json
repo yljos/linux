@@ -178,5 +178,5 @@
     "auto_detect_interface": true,
     "default_mark": "0x29a"
   },
-  "experimental": {"clash_api": {"external_controller": "0.0.0.0:9090", "external_ui": "ui", "secret": "101300", "external_ui_download_url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/ui.zip", "external_ui_download_detour": "D", "default_mode": "rule"}}
+  "experimental": {"clash_api": {"external_controller": "0.0.0.0:9090", "external_ui": "ui", "secret": "101300", "external_ui_download_url": "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}}
 }
