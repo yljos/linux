@@ -51,12 +51,6 @@ tun:
   auto-redirect: true
   strict-route: true
   endpoint-independent-nat: true
-hosts:
-  homeassistant.local: 10.0.0.21
-  nas.lan: 10.0.0.21
-  openwrt.lan: 10.0.0.1
-  ax6s.lan: 10.0.0.2
-  huai-PC.lan: 10.0.0.15
 dns:
   enable: true
   prefer-h3: false
