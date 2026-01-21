@@ -12,6 +12,20 @@ MAX_WORKERS = 20
 print_lock = threading.Lock()
 
 
+def is_protected(path_obj: Path, root: Path) -> bool:
+    """
+    检查路径是否受保护：
+    如果路径中（相对于根目录）的任意一部分（文件夹或文件名）以 # 开头，则视为受保护。
+    """
+    try:
+        # 获取相对于根目录的路径部分
+        parts = path_obj.relative_to(root).parts
+        # 只要有一部分以 # 开头，就返回 True
+        return any(part.startswith("#") for part in parts)
+    except ValueError:
+        return False
+
+
 def delete_file(path_obj: Path):
     try:
         path_obj.unlink(missing_ok=False)
@@ -30,10 +44,15 @@ def delete_empty_folders(directory: Path):
 
     while True:
         removed = 0
+        # 由深到浅遍历文件夹
         for folder in sorted(
             directory.rglob("*"), key=lambda p: len(str(p)), reverse=True
         ):
             if folder.is_dir() and folder.absolute() != root:
+                # --- 修改点：检查文件夹是否受保护 ---
+                if is_protected(folder, root):
+                    continue
+
                 try:
                     folder.rmdir()
                     deleted += 1
@@ -57,11 +76,12 @@ def should_delete_file(path_obj: Path, target_mp4_set, size_threshold_bytes):
         if filename.endswith((".mkv", ".avi")):
             return False
 
-        # 删除黑名单中的文件 (优先级高于 # 号规则，如果黑名单文件也带 #，依然会被删)
+        # 删除黑名单中的文件
         if path_obj.stem.lower() in target_mp4_set:
             return True
 
-        # --- 新增规则：如果文件名以 # 开头，直接保留 (即使小于 80MB) ---
+        # 注意：文件名以 # 开头的保护逻辑现已包含在 main 的 is_protected 检查中，
+        # 但保留此处逻辑作为双重保险无妨。
         if path_obj.name.startswith("#"):
             return False
 
@@ -83,17 +103,18 @@ def main():
     size_threshold_bytes = MP4_SIZE_THRESHOLD_MB * 1024 * 1024
 
     print(f"目录: {current_directory}")
-    # 更新提示信息
-    print(f"保留: .mp4 (≥ {MP4_SIZE_THRESHOLD_MB}MB 或 以#开头) | .mkv | .avi")
+    print(f"保留: .mp4 (≥ {MP4_SIZE_THRESHOLD_MB}MB) | .mkv | .avi | 路径含 #")
     if target_mp4_set:
         print(f"黑名单: {', '.join(TARGET_MP4_NAMES)}.mp4")
     print("-" * 40)
 
+    # 收集文件时，先排除掉受保护路径
     files_to_delete = [
         f
         for f in current_directory.rglob("*")
         if f.is_file()
-        and f.absolute() != script_path.absolute()  # 避免删除脚本自身
+        and f.absolute() != script_path.absolute()
+        and not is_protected(f, current_directory)  # --- 修改点：排除路径带 # 的文件 ---
         and should_delete_file(f, target_mp4_set, size_threshold_bytes)
     ]
 
