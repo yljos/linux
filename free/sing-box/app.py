@@ -262,7 +262,8 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
 
         base_config["outbounds"] = filtered_outbounds
 
-        json_str = json.dumps(base_config, ensure_ascii=False, indent=2)
+        # json_str = json.dumps(base_config, ensure_ascii=False, indent=2)
+        json_str = json.dumps(base_config, ensure_ascii=False, separators=(',', ':'))
         return Response(
             json_str,
             mimetype="application/json",
