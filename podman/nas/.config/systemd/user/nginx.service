@@ -18,7 +18,7 @@ ExecStart=/usr/bin/podman run \
   --network=host \
   --log-driver=journald \
   -v /data/appdata/nginx:/etc/nginx:Z \
-  -v /data/www:/data/www:ro,z \
+  -v /data/www:/usr/share/nginx/html:ro,z \
   docker.io/nginx:latest
 
 ExecStop=/usr/bin/podman stop -t 10 nginx
