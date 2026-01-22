@@ -135,11 +135,6 @@ def process_hysteria2(
         "insecure": proxy.get("skip-cert-verify", False),
         "server_name": proxy.get("sni", ""),
     }
-    if not tls["server_name"]:
-        tls["server_name"] = proxy.get("servername", base_node["server"])
-    fingerprint = proxy.get("client-fingerprint") or proxy.get("fingerprint")
-    if fingerprint:
-        tls["utls"] = {"enabled": True, "fingerprint": fingerprint}
     node["tls"] = tls
     return node
 
