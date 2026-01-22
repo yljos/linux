@@ -158,6 +158,6 @@
     "default_domain_resolver": {"server": "dns_direct", "rewrite_ttl": 10}
   },
   "experimental": {
-    "cache_file": {"enabled": true, "path": "cache.db", "cache_id": "", "store_fakeip": false, "store_rdrc": true, "rdrc_timeout": "7d"}
+    "cache_file": {"enabled": true, "path": "cache.db", "store_rdrc": true, "rdrc_timeout": "168h0m0s"}
   }
 }
