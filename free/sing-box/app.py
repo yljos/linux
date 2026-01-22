@@ -109,22 +109,22 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         # 设置超时
         response = requests.get(url, headers=headers, timeout=5)
         response.raise_for_status()
-        
+
         # 获取原始 Base64 内容
         raw_content = response.text.strip()
-        
+
         # --- 验证环节 ---
         # 先试着解码，确保它不是坏数据
         temp_decoded = decode_base64_content(raw_content)
         validation_urls = extract_urls_from_text(temp_decoded)
-        
+
         if not validation_urls:
             raise ValueError(f"网络内容验证失败：解码后未发现有效节点")
 
         # --- 验证通过：保存原始 Base64 到缓存 ---
         try:
             with open(cache_file_path, "w", encoding="utf-8") as f:
-                f.write(raw_content) # <--- 关键修改：保存未解码的内容
+                f.write(raw_content)  # <--- 关键修改：保存未解码的内容
             print(f"[{source}] 网络拉取成功，原始Base64已写入缓存", file=sys.stdout)
         except Exception as cache_err:
             print(f"[{source}] 缓存写入失败: {cache_err}", file=sys.stderr)
@@ -134,20 +134,22 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
 
     except Exception as e:
         # --- 降级处理：读取缓存 ---
-        print(f"[{source}] 网络/验证失败 ({str(e)})，尝试使用本地缓存...", file=sys.stderr)
-        
+        print(
+            f"[{source}] 网络/验证失败 ({str(e)})，尝试使用本地缓存...", file=sys.stderr
+        )
+
         if os.path.exists(cache_file_path):
             try:
                 with open(cache_file_path, "r", encoding="utf-8") as f:
                     cached_raw = f.read().strip()
-                
+
                 if not cached_raw:
                     raise ValueError("缓存文件为空")
 
                 # --- 关键修改：读取缓存后必须解码 ---
                 decoded_content = decode_base64_content(cached_raw)
                 print(f"[{source}] 成功加载本地缓存并解码", file=sys.stdout)
-                
+
             except Exception as read_err:
                 return jsonify({"error": f"读取或解码缓存失败: {str(read_err)}"}), 500
         else:
@@ -263,7 +265,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         base_config["outbounds"] = filtered_outbounds
 
         # json_str = json.dumps(base_config, ensure_ascii=False, indent=2)
-        json_str = json.dumps(base_config, ensure_ascii=False, separators=(',', ':'))
+        json_str = json.dumps(base_config, ensure_ascii=False, separators=(",", ":"))
         return Response(
             json_str,
             mimetype="application/json",

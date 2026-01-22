@@ -114,7 +114,9 @@ def main():
         for f in current_directory.rglob("*")
         if f.is_file()
         and f.absolute() != script_path.absolute()
-        and not is_protected(f, current_directory)  # --- 修改点：排除路径带 # 的文件 ---
+        and not is_protected(
+            f, current_directory
+        )  # --- 修改点：排除路径带 # 的文件 ---
         and should_delete_file(f, target_mp4_set, size_threshold_bytes)
     ]
 
