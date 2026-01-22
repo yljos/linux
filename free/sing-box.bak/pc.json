@@ -21,7 +21,10 @@
     "strategy": "ipv4_only",
     "disable_cache": true
   },
-  "inbounds": [{"type": "tproxy", "tag": "tproxy-in", "listen": "::", "listen_port": 7893}],
+  "inbounds": [
+    {"type": "direct", "listen": "::", "tag": "dns-in", "listen_port": 1053},
+    {"type": "mixed", "tag": "mixed-in", "listen": "::", "listen_port": 12138}
+  ],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
     {"type": "block", "tag": "R"},
@@ -42,8 +45,9 @@
   ],
   "route": {
     "rules": [
-      {"inbound": ["tproxy-in"], "action": "sniff", "timeout": "300ms"},
+      {"inbound": "mixed-in", "action": "sniff", "timeout": "300ms"},
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
+      {"inbound": ["dns-in"], "action": "hijack-dns"},
       {"port": 53, "action": "hijack-dns"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject"},
@@ -53,7 +57,6 @@
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "outbound": "Microsoft"},
       {"domain_keyword": "googleapis", "outbound": "Google"},
       {"rule_set": "direct-site", "outbound": "D"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.21/32"]}, {"rule_set": ["cloudflare-site"]}], "outbound": "D"},
       {"rule_set": "cloudflare-site", "outbound": "A"},
       {"rule_set": "proxy-site", "outbound": "A"},
       {"rule_set": "openai-site", "outbound": "OpenAi"},
@@ -90,9 +93,7 @@
       {"rule_set": "cn-site", "outbound": "D"},
       {"rule_set": "direct-ip", "outbound": "D"},
       {"rule_set": "local-ip", "outbound": "D"},
-      {"rule_set": "github-ip", "outbound": "GitHub"},
       {"rule_set": "wechat-ip", "outbound": "D"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.21/32"]}, {"rule_set": ["cloudflare-ip"]}], "outbound": "D"},
       {"rule_set": "cloudflare-ip", "outbound": "A"},
       {"rule_set": "pikpak-ip", "outbound": "PikPak"},
       {"rule_set": "alibaba-ip", "outbound": "D"},
@@ -124,7 +125,6 @@
       {"tag": "facebook-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/facebook.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "gfw-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/gfw/gfw-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "github-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/github.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "github-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/github/github-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "google-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/google.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "google-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/google.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "googlefcm-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/googlefcm.srs", "download_detour": "D", "update_interval": "12h0m0s"},
@@ -157,11 +157,10 @@
     ],
     "final": "Default",
     "auto_detect_interface": true,
-    "default_mark": 666,
     "default_domain_resolver": {"server": "dns_direct", "rewrite_ttl": 10}
   },
   "experimental": {
     "cache_file": {"enabled": true, "path": "cache.db", "cache_id": "", "store_fakeip": false, "store_rdrc": true, "rdrc_timeout": "7d"},
-    "clash_api": {"external_controller": "10.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}
+    "clash_api": {"external_controller": "127.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}
   }
 }

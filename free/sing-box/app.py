@@ -1,65 +1,164 @@
-import base64
 import requests
 import json
 import re
 import os
 import sys
 import hashlib
+import yaml  # pip install pyyaml
 from typing import Any, Dict, List, Tuple, Union
-
-# 修复：这里添加了 abort
 from flask import Flask, request, jsonify, Response, abort
-from vless_converter import parse_vless_url
-from ss_converter import parse_shadowsocks_url as parse_ss_url
-from hysteria2_converter import parse_hysteria2_url
 
-
-# ===== 可修改配置项 =====
+# ================= 配置区域 =================
 
 NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡", "日本"]
-NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10"]
+NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10", "重置", "流量"]
 
-# 模板文件映射配置
 TEMPLATE_MAP = {
     "default": "openwrt.json",
     "pc": "pc.json",
     "m": "m.json",
 }
 
-# 密码哈希和API地址文件
 MITCE_PASSWORD_HASH = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 MITCE_API_FILE = "mitce"
 BAJIE_API_FILE = "bajie"
 
-# ===== 缓存配置 =====
 CACHE_DIR = "cache"
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
 
 app = Flask(__name__)
 
+# ================= 核心转换逻辑 =================
 
-def decode_base64_content(content: str) -> str:
-    """解码 Base64 字符串，处理可能的格式差异"""
+
+def process_shadowsocks(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
+    node = base_node.copy()
+    node["type"] = "shadowsocks"
+    # 直接读取 port
+    node["server_port"] = int(proxy["port"])
+    node["method"] = proxy.get("cipher")
+    node["password"] = proxy.get("password")
+    if "plugin" in proxy:
+        plugin = proxy.get("plugin")
+        plugin_opts = proxy.get("plugin-opts", {})
+        if plugin == "obfs":
+            node["plugin"] = "obfs-local"
+            node["plugin_opts"] = {
+                "mode": plugin_opts.get("mode", "http"),
+                "host": plugin_opts.get("host", ""),
+            }
+    return node
+
+
+def process_vless(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+    node = base_node.copy()
+    node["type"] = "vless"
+    # 1. 端口 (直接读取)
+    node["server_port"] = int(proxy["port"])
+    node["uuid"] = proxy.get("uuid")
+    node["flow"] = proxy.get("flow", "")
+    # === 新增：处理 packet_encoding (如 xudp) ===
+    if "packet-encoding" in proxy:
+        node["packet_encoding"] = proxy["packet-encoding"]
+    # ==========================================
+    # 3. 传输层配置
+    network = proxy.get("network", "tcp")
+    transport = {}
+    if network == "ws":
+        transport["type"] = "ws"
+        ws_opts = proxy.get("ws-opts", {})
+        transport["path"] = ws_opts.get("path", "/")
+        if "headers" in ws_opts and "Host" in ws_opts["headers"]:
+            transport["headers"] = {"Host": ws_opts["headers"]["Host"]}
+    elif network == "grpc":
+        transport["type"] = "grpc"
+        grpc_opts = proxy.get("grpc-opts", {})
+        transport["service_name"] = grpc_opts.get("grpc-service-name", "")
+    if transport:
+        node["transport"] = transport
+    # 4. TLS 配置
+    if proxy.get("tls") or proxy.get("reality-opts"):
+        tls = {
+            "enabled": True,
+            "insecure": proxy.get("skip-cert-verify", False),
+            "server_name": proxy.get("servername", ""),
+        }
+        if "reality-opts" in proxy:
+            reality_opts = proxy.get("reality-opts", {})
+            tls["reality"] = {
+                "enabled": True,
+                "public_key": reality_opts.get("public-key"),
+                "short_id": reality_opts.get("short-id"),
+            }
+            if not tls["server_name"]:
+                tls["server_name"] = proxy.get("sni", "")
+        # === 修改：指纹处理 ===
+        fingerprint = "firefox"
+        tls["utls"] = {"enabled": True, "fingerprint": fingerprint}
+        node["tls"] = tls
+    return node
+
+
+def process_hysteria2(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
+    node = base_node.copy()
+    node["type"] = "hysteria2"
+    node["password"] = proxy.get("password")
+    # [修复] 优先读取 ports，如果没有则尝试读取单端口 port
+    if "ports" in proxy:
+        node["server_ports"] = proxy["ports"]
+    elif "port" in proxy:
+        node["server_port"] = int(proxy["port"])
+    # 宽带速度处理 (默认: 上传 40 / 下载 200)
     try:
-        content = content.strip()
-        # 移除可能存在的换行符
-        content = content.replace("\n", "").replace("\r", "")
-        content = content.replace("-", "+").replace("_", "/")
-        padding = len(content) % 4
-        if padding:
-            content += "=" * (4 - padding)
-        decoded_bytes = base64.b64decode(content)
-        return decoded_bytes.decode("utf-8")
-    except Exception as e:
-        raise ValueError(f"Base64解码失败: {str(e)}")
+        # 尝试获取并移除 " Mbps"
+        up_val = str(proxy.get("up", "")).replace(" Mbps", "").strip()
+        node["up_mbps"] = int(up_val) if up_val else 40
+    except (ValueError, TypeError):
+        node["up_mbps"] = 40
+    try:
+        down_val = str(proxy.get("down", "")).replace(" Mbps", "").strip()
+        node["down_mbps"] = int(down_val) if down_val else 200
+    except (ValueError, TypeError):
+        node["down_mbps"] = 200
+    if "obfs" in proxy:
+        node["obfs"] = {
+            "type": "salamander",
+            "password": proxy.get("obfs-password", ""),
+        }
+    tls = {
+        "enabled": True,
+        "insecure": proxy.get("skip-cert-verify", False),
+        "server_name": proxy.get("sni", ""),
+    }
+    node["tls"] = tls
+    return node
+
+
+def clash_to_singbox(proxy: Dict[str, Any]) -> Union[Dict[str, Any], None]:
+    p_type = proxy.get("type", "").lower()
+    # base_node 只有 tag 和 server
+    base_node = {"tag": proxy.get("name"), "server": proxy.get("server")}
+    if p_type == "ss":
+        return process_shadowsocks(proxy, base_node)
+    elif p_type == "vless":
+        return process_vless(proxy, base_node)
+    elif p_type == "hysteria2":
+        return process_hysteria2(proxy, base_node)
+    else:
+        return None
+
+
+# ================= 路由处理逻辑 =================
 
 
 @app.route("/<source>", methods=["GET"])
 def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, int]]:
-    # 1. 获取 User-Agent 并决定默认模板
     ua = request.headers.get("User-Agent", "")
-
     if "SFA" in ua:
         detected_config = "m"
     elif "sing-box_openwrt" in ua:
@@ -68,144 +167,86 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         detected_config = "pc"
     else:
         abort(404)
-
-    # 2. 获取参数
     config_param = request.args.get("config", detected_config)
-
-    # 3. 鉴权
     key = request.args.get("key", "")
     if not key:
         return jsonify({"error": "未授权访问"}), 403
-
     key_hash = hashlib.sha256(key.encode("utf-8")).hexdigest()
     if key_hash != MITCE_PASSWORD_HASH:
         return jsonify({"error": "未鉴权访问"}), 403
-
-    # 选择源文件
     if source == "mitce":
         api_file = MITCE_API_FILE
     elif source == "bajie":
         api_file = BAJIE_API_FILE
     else:
         return jsonify({"error": "不支持的参数"}), 403
-
-    # 定义缓存路径
-    cache_file_path = os.path.join(CACHE_DIR, f"{source}.txt")
-    decoded_content = ""
-
-    # 4. 获取数据逻辑
+    cache_file_path = os.path.join(CACHE_DIR, f"{source}.yaml")
+    yaml_content = ""
+    # 3. 网络请求 (无 Base64 解码)
     try:
-        # 读取存储URL的文件
         file_path = os.path.join(os.path.dirname(__file__), api_file)
         with open(file_path, "r", encoding="utf-8") as f:
             url = f.read().strip()
             if not url:
                 raise ValueError(f"{source} 文件内容为空")
-
-        # --- 网络请求 ---
-        headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0"
-        }
-        # 设置超时
-        response = requests.get(url, headers=headers, timeout=5)
+        # 严格只使用指定的 UA
+        headers = {"User-Agent": "clash-verge"}
+        print(f"[{source}] 正在拉取: {url[:25]}...")
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-
-        # 获取原始 Base64 内容
-        raw_content = response.text.strip()
-
-        # --- 验证环节 ---
-        # 先试着解码，确保它不是坏数据
-        temp_decoded = decode_base64_content(raw_content)
-        validation_urls = extract_urls_from_text(temp_decoded)
-
-        if not validation_urls:
-            raise ValueError(f"网络内容验证失败：解码后未发现有效节点")
-
-        # --- 验证通过：保存原始 Base64 到缓存 ---
-        try:
-            with open(cache_file_path, "w", encoding="utf-8") as f:
-                f.write(raw_content)  # <--- 关键修改：保存未解码的内容
-            print(f"[{source}] 网络拉取成功，原始Base64已写入缓存", file=sys.stdout)
-        except Exception as cache_err:
-            print(f"[{source}] 缓存写入失败: {cache_err}", file=sys.stderr)
-
-        # 使用解码后的内容继续
-        decoded_content = temp_decoded
-
+        temp_content = response.text.strip()
+        # === 核心校验 ===
+        # 拉取完立即检查是否有 proxies:
+        if "proxies:" not in temp_content:
+            raise ValueError(
+                "校验失败: 返回内容未包含 'proxies:' 关键字，可能不是有效的 Clash 配置文件"
+            )
+        print(f"[{source}] 校验通过 (包含 proxies:)")
+        yaml_content = temp_content
+        # 校验通过后再写入缓存
+        with open(cache_file_path, "w", encoding="utf-8") as f:
+            f.write(yaml_content)
     except Exception as e:
-        # --- 降级处理：读取缓存 ---
-        print(
-            f"[{source}] 网络/验证失败 ({str(e)})，尝试使用本地缓存...", file=sys.stderr
-        )
-
+        print(f"[{source}] 网络/校验错误，尝试使用缓存", file=sys.stderr)
         if os.path.exists(cache_file_path):
-            try:
-                with open(cache_file_path, "r", encoding="utf-8") as f:
-                    cached_raw = f.read().strip()
-
-                if not cached_raw:
-                    raise ValueError("缓存文件为空")
-
-                # --- 关键修改：读取缓存后必须解码 ---
-                decoded_content = decode_base64_content(cached_raw)
-                print(f"[{source}] 成功加载本地缓存并解码", file=sys.stdout)
-
-            except Exception as read_err:
-                return jsonify({"error": f"读取或解码缓存失败: {str(read_err)}"}), 500
+            with open(cache_file_path, "r", encoding="utf-8") as f:
+                yaml_content = f.read()
         else:
-            return jsonify({"error": f"获取失败且无本地缓存: {str(e)}"}), 500
-
-    # 5. 解析节点内容 (后续逻辑保持不变)
+            return jsonify({"error": f"获取失败且无本地缓存"}), 500
+    # 4. 解析 YAML 并转换
     try:
-        node_urls = extract_urls_from_text(decoded_content)
-        if not node_urls:
+        try:
+            clash_data = yaml.safe_load(yaml_content)
+        except yaml.YAMLError as ye:
             return (
                 jsonify(
                     {
-                        "error": "未找到有效的节点URL",
-                        "decoded_content": (
-                            decoded_content[:500] + "..."
-                            if len(decoded_content) > 500
-                            else decoded_content
-                        ),
-                        "source": source,
+                        "error": f"YAML 解析失败: {str(ye)}",
+                        "preview": yaml_content[:100],
                     }
                 ),
                 400,
             )
-
-        nodes, errors = [], []
-        for i, node_url in enumerate(node_urls):
+        if not isinstance(clash_data, dict) or "proxies" not in clash_data:
+            return jsonify({"error": "无效的 Clash 配置：未找到 proxies 字段"}), 400
+        raw_proxies = clash_data["proxies"]
+        nodes = []
+        for proxy in raw_proxies:
             try:
-                node_config = parse_node_url(node_url)
-                if "name" in node_config and "tag" not in node_config:
-                    node_config["tag"] = node_config["name"]
-                nodes.append(node_config)
-            except Exception as e:
-                errors.append(f"节点 {i + 1} 解析失败: {str(e)}")
-
+                sb_node = clash_to_singbox(proxy)
+                if sb_node:
+                    nodes.append(sb_node)
+            except Exception:
+                continue
         if not nodes:
-            return (
-                jsonify(
-                    {
-                        "error": "所有节点解析都失败了",
-                        "errors": errors,
-                        "source": source,
-                    }
-                ),
-                400,
-            )
-
-        # 6. 模板处理与合并
+            return jsonify({"error": "没有转换成功的节点"}), 400
+        # 5. 模板加载与合并
         template_filename = TEMPLATE_MAP.get(config_param, TEMPLATE_MAP["default"])
         config_path = os.path.join(os.path.dirname(__file__), template_filename)
-
         if not os.path.exists(config_path):
             return jsonify({"error": f"模板文件未找到: {template_filename}"}), 500
-
         with open(config_path, "r", encoding="utf-8") as f:
             base_config = json.load(f)
-
         outbounds = base_config.get("outbounds", [])
         existing_tags = {o.get("tag") for o in outbounds}
         new_nodes = [
@@ -213,6 +254,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         ]
         outbounds.extend(new_nodes)
 
+        # 6. 关键词过滤
         def node_tag_valid(tag: str) -> bool:
             tag_upper = tag.upper() if tag else ""
             if not any(region.upper() in tag_upper for region in NODE_REGION_KEYWORDS):
@@ -225,46 +267,39 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             o
             for o in outbounds
             if node_tag_valid(o.get("tag", ""))
-            or o.get("type") in ["urltest", "selector", "direct", "block"]
+            or o.get("type") in ["urltest", "selector", "direct", "block", "dns"]
         ]
-
+        # 7. 策略组处理
         for outbound in filtered_outbounds:
-            if outbound.get("type") == "urltest" and "filter" in outbound:
+            if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
                 regex_list = [
                     reg
                     for f in outbound.get("filter", [])
                     for reg in f.get("regex", [])
                 ]
+                del outbound["filter"]
                 if not regex_list:
-                    del outbound["filter"]
                     continue
-
                 pattern = "|".join(regex_list)
                 try:
                     compiled = re.compile(pattern, re.IGNORECASE)
-                    all_node_tags = [
+                    all_valid_tags = [
                         o.get("tag")
                         for o in filtered_outbounds
-                        if o.get("tag")
-                        and o.get("type")
-                        not in ["urltest", "selector", "direct", "block"]
+                        if o.get("type")
+                        not in ["urltest", "selector", "direct", "block", "dns"]
                     ]
                     matched_tags = [
-                        tag for tag in all_node_tags if compiled.search(tag)
+                        tag for tag in all_valid_tags if compiled.search(tag)
                     ]
                     if matched_tags:
                         outbound["outbounds"] = matched_tags
                     else:
-                        outbound["outbounds"] = ["D"]
+                        outbound["outbounds"] = ["DIRECT"]
                 except re.error as e:
                     print(f"无效的正则表达式 '{pattern}': {e}", file=sys.stderr)
-                    continue
-
-                del outbound["filter"]
-
         base_config["outbounds"] = filtered_outbounds
-
-        # json_str = json.dumps(base_config, ensure_ascii=False, indent=2)
+        print(f"[{source}] 处理完成，返回 {len(new_nodes)} 个新节点")
         json_str = json.dumps(base_config, ensure_ascii=False, separators=(",", ":"))
         return Response(
             json_str,
@@ -272,48 +307,11 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             headers={"Content-Disposition": "attachment; filename=config.json"},
         )
     except Exception as e:
-        return (
-            jsonify({"error": f"处理过程中发生错误: {str(e)}", "source": source}),
-            500,
-        )
+        import traceback
 
-
-def fetch_content_from_url(url: str) -> Tuple[str, str]:
-    # 该辅助函数现在仅保留用于可能的其他用途
-    # 主逻辑已经内联到 process_nodes_from_source 以便更好地控制 raw/decode 流程
-    try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0"
-        }
-        response = requests.get(url, headers=headers, timeout=5)
-        response.raise_for_status()
-        content = response.text.strip()
-        decoded_content = decode_base64_content(content)
-        return decoded_content, ""
-    except Exception as e:
-        raise ValueError(f"获取URL内容失败: {str(e)}")
-
-
-def extract_urls_from_text(text: str) -> List[str]:
-    urls = []
-    for line in text.strip().split("\n"):
-        line = line.strip()
-        if line and line.startswith(("vless://", "ss://", "hysteria2://", "hy2://")):
-            urls.append(line)
-    return urls
-
-
-def parse_node_url(url: str) -> Dict[str, Any]:
-    url = url.strip()
-    if url.startswith("vless://"):
-        return parse_vless_url(url)
-    elif url.startswith("ss://"):
-        return parse_ss_url(url)
-    elif url.startswith(("hysteria2://", "hy2://")):
-        return parse_hysteria2_url(url)
-    else:
-        raise ValueError(f"不支持的协议类型: {url[:20]}...")
+        traceback.print_exc()
+        return jsonify({"error": f"服务器内部错误: {str(e)}", "source": source}), 500
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
