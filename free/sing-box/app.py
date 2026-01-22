@@ -41,11 +41,11 @@ def process_shadowsocks(
     node["server_port"] = int(proxy["port"])
     node["method"] = proxy.get("cipher")
     node["password"] = proxy.get("password")
-    
+
     if "plugin" in proxy:
         plugin = proxy.get("plugin")
         plugin_opts = proxy.get("plugin-opts", {})
-        
+
         # 针对 obfs 的特殊处理：必须拼接成字符串
         if plugin == "obfs":
             node["plugin"] = "obfs-local"
@@ -53,7 +53,7 @@ def process_shadowsocks(
             host = plugin_opts.get("host", "")
             # 修正为字符串格式 "obfs=http;obfs-host=xxx"
             node["plugin_opts"] = f"obfs={mode};obfs-host={host}"
-            
+
     return node
 
 
@@ -202,9 +202,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         # === 核心校验 ===
         # 拉取完立即检查是否有 proxies:
         if "proxies:" not in temp_content:
-            raise ValueError(
-                "拉取校验失败"
-            )
+            raise ValueError("拉取校验失败")
         print(f"[{source}] 拉取通过")
         yaml_content = temp_content
         # 校验通过后再写入缓存
