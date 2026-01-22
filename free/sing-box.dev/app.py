@@ -11,7 +11,7 @@ from flask import Flask, request, jsonify, Response, abort
 
 # ================= 配置区域 =================
 
-NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "TW", "美国", "香港", "新加坡", "日本", "台湾"]
+NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡", "日本"]
 NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10", "重置", "流量"]
 
 TEMPLATE_MAP = {
@@ -32,12 +32,13 @@ app = Flask(__name__)
 
 # ================= 核心转换逻辑 =================
 
+
 def get_safe_port(proxy: Dict[str, Any]) -> int:
     raw_port = proxy.get("port")
     if raw_port is None:
         raw_ports = proxy.get("ports")
         if raw_ports:
-            match = re.search(r'(\d+)', str(raw_ports))
+            match = re.search(r"(\d+)", str(raw_ports))
             if match:
                 raw_port = match.group(1)
     try:
@@ -45,12 +46,15 @@ def get_safe_port(proxy: Dict[str, Any]) -> int:
     except (ValueError, TypeError):
         return 443
 
-def process_shadowsocks(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+
+def process_shadowsocks(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
     node = base_node.copy()
     node["type"] = "shadowsocks"
     node["method"] = proxy.get("cipher")
     node["password"] = proxy.get("password")
-    
+
     if "plugin" in proxy:
         plugin = proxy.get("plugin")
         plugin_opts = proxy.get("plugin-opts", {})
@@ -58,19 +62,20 @@ def process_shadowsocks(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dic
             node["plugin"] = "obfs-local"
             node["plugin_opts"] = {
                 "mode": plugin_opts.get("mode", "http"),
-                "host": plugin_opts.get("host", "")
+                "host": plugin_opts.get("host", ""),
             }
     return node
+
 
 def process_vless(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
     node = base_node.copy()
     node["type"] = "vless"
     node["uuid"] = proxy.get("uuid")
     node["flow"] = proxy.get("flow", "")
-    
+
     network = proxy.get("network", "tcp")
     transport = {}
-    
+
     if network == "ws":
         transport["type"] = "ws"
         ws_opts = proxy.get("ws-opts", {})
@@ -81,7 +86,7 @@ def process_vless(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str,
         transport["type"] = "grpc"
         grpc_opts = proxy.get("grpc-opts", {})
         transport["service_name"] = grpc_opts.get("grpc-service-name", "")
-    
+
     if transport:
         node["transport"] = transport
 
@@ -89,104 +94,82 @@ def process_vless(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str,
         tls = {
             "enabled": True,
             "insecure": proxy.get("skip-cert-verify", False),
-            "server_name": proxy.get("servername", "")
+            "server_name": proxy.get("servername", ""),
         }
         if "reality-opts" in proxy:
             reality_opts = proxy.get("reality-opts", {})
             tls["reality"] = {
                 "enabled": True,
                 "public_key": reality_opts.get("public-key"),
-                "short_id": reality_opts.get("short-id")
+                "short_id": reality_opts.get("short-id"),
             }
-            if not tls["server_name"]: 
+            if not tls["server_name"]:
                 tls["server_name"] = proxy.get("sni", "")
-        
+
         fingerprint = proxy.get("client-fingerprint") or proxy.get("fingerprint")
         if fingerprint:
-            tls["utls"] = {
-                "enabled": True,
-                "fingerprint": fingerprint
-            }
+            tls["utls"] = {"enabled": True, "fingerprint": fingerprint}
         node["tls"] = tls
     return node
 
-def process_hysteria2(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+
+def process_hysteria2(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
     node = base_node.copy()
     node["type"] = "hysteria2"
     node["password"] = proxy.get("password")
-    
-    # === 核心修改：添加 server_ports 端口跳跃范围逻辑 ===
-    port = base_node["server_port"]
-    ports_range = None
-    
-    if 1000 <= port <= 2000:
-        ports_range = "1000-2000"
-    elif 3000 <= port <= 4000:
-        ports_range = "3000-4000"
-    elif 5000 <= port <= 6000:
-        ports_range = "5000-6000"
-    elif 7000 <= port <= 8000:
-        ports_range = "7000-8000"
-    elif 9000 <= port <= 10000:
-        ports_range = "9000-10000"
-    elif 11000 <= port <= 12000:
-        ports_range = "11000-12000"
-    elif 13000 <= port <= 14000:
-        ports_range = "13000-14000"
-    elif 15000 <= port <= 16000:
-        ports_range = "15000-16000"
-    elif 17000 <= port <= 18000:
-        ports_range = "17000-18000"
-    elif 19000 <= port <= 20000:
-        ports_range = "19000-20000"
-        
-    if ports_range:
-        node["server_ports"] = ports_range
+
+    # 直接读取源数据的 ports 字段给 sing-box 的 server_ports
+    # 如果源数据没有 ports 字段，sing-box 默认只使用单端口
+    if "ports" in proxy:
+        node["server_ports"] = proxy["ports"]
+
     # ==================================================
-    
+
     if "up" in proxy:
         try:
             node["up_mbps"] = int(str(proxy.get("up", "0")).replace(" Mbps", ""))
-        except: pass
+        except:
+            pass
     if "down" in proxy:
         try:
             node["down_mbps"] = int(str(proxy.get("down", "0")).replace(" Mbps", ""))
-        except: pass
+        except:
+            pass
 
     if "obfs" in proxy:
         node["obfs"] = {
             "type": "salamander",
-            "password": proxy.get("obfs-password", "")
+            "password": proxy.get("obfs-password", ""),
         }
-        
+
     tls = {
         "enabled": True,
         "insecure": proxy.get("skip-cert-verify", False),
-        "server_name": proxy.get("sni", "")
+        "server_name": proxy.get("sni", ""),
     }
-    
+
     if not tls["server_name"]:
         tls["server_name"] = proxy.get("servername", base_node["server"])
-        
+
     fingerprint = proxy.get("client-fingerprint") or proxy.get("fingerprint")
     if fingerprint:
-        tls["utls"] = {
-            "enabled": True,
-            "fingerprint": fingerprint
-        }
-    
+        tls["utls"] = {"enabled": True, "fingerprint": fingerprint}
+
     node["tls"] = tls
     return node
 
+
 def clash_to_singbox(proxy: Dict[str, Any]) -> Union[Dict[str, Any], None]:
     p_type = proxy.get("type", "").lower()
-    
+
     base_node = {
-        "tag": proxy.get("name", "unnamed"),
+        "tag": proxy.get("name"),
         "server": proxy.get("server"),
         "server_port": get_safe_port(proxy),
     }
-    
+
     if p_type == "ss":
         return process_shadowsocks(proxy, base_node)
     elif p_type == "vless":
@@ -196,7 +179,9 @@ def clash_to_singbox(proxy: Dict[str, Any]) -> Union[Dict[str, Any], None]:
     else:
         return None
 
+
 # ================= 路由处理逻辑 =================
+
 
 @app.route("/<source>", methods=["GET"])
 def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, int]]:
@@ -208,7 +193,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     elif "sing-box" in ua:
         detected_config = "pc"
     else:
-        detected_config = "default"
+        abort(404)
 
     config_param = request.args.get("config", detected_config)
     key = request.args.get("key", "")
@@ -238,20 +223,20 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 raise ValueError(f"{source} 文件内容为空")
 
         # 严格只使用指定的 UA
-        headers = {
-            "User-Agent": "clash-verge"
-        }
-        
+        headers = {"User-Agent": "clash-verge"}
+
         print(f"[{source}] 正在拉取: {url[:25]}...")
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-        
+
         temp_content = response.text.strip()
-        
+
         # === 核心校验 ===
         # 拉取完立即检查是否有 proxies:
         if "proxies:" not in temp_content:
-            raise ValueError("校验失败: 返回内容未包含 'proxies:' 关键字，可能不是有效的 Clash 配置文件")
+            raise ValueError(
+                "校验失败: 返回内容未包含 'proxies:' 关键字，可能不是有效的 Clash 配置文件"
+            )
 
         print(f"[{source}] 校验通过 (包含 proxies:)")
         yaml_content = temp_content
@@ -261,26 +246,34 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             f.write(yaml_content)
 
     except Exception as e:
-        print(f"[{source}] 网络/校验错误 ({str(e)})，尝试使用缓存...", file=sys.stderr)
+        print(f"[{source}] 网络/校验错误，尝试使用缓存", file=sys.stderr)
         if os.path.exists(cache_file_path):
             with open(cache_file_path, "r", encoding="utf-8") as f:
                 yaml_content = f.read()
         else:
-            return jsonify({"error": f"获取失败且无本地缓存: {str(e)}"}), 500
+            return jsonify({"error": f"获取失败且无本地缓存"}), 500
 
     # 4. 解析 YAML 并转换
     try:
         try:
             clash_data = yaml.safe_load(yaml_content)
         except yaml.YAMLError as ye:
-            return jsonify({"error": f"YAML 解析失败: {str(ye)}", "preview": yaml_content[:100]}), 400
+            return (
+                jsonify(
+                    {
+                        "error": f"YAML 解析失败: {str(ye)}",
+                        "preview": yaml_content[:100],
+                    }
+                ),
+                400,
+            )
 
         if not isinstance(clash_data, dict) or "proxies" not in clash_data:
             return jsonify({"error": "无效的 Clash 配置：未找到 proxies 字段"}), 400
 
         raw_proxies = clash_data["proxies"]
         nodes = []
-        
+
         for proxy in raw_proxies:
             try:
                 sb_node = clash_to_singbox(proxy)
@@ -304,7 +297,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
 
         outbounds = base_config.get("outbounds", [])
         existing_tags = {o.get("tag") for o in outbounds}
-        
+
         new_nodes = [
             n for n in nodes if n.get("tag") and n.get("tag") not in existing_tags
         ]
@@ -320,8 +313,9 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             return True
 
         filtered_outbounds = [
-            o for o in outbounds
-            if node_tag_valid(o.get("tag", "")) 
+            o
+            for o in outbounds
+            if node_tag_valid(o.get("tag", ""))
             or o.get("type") in ["urltest", "selector", "direct", "block", "dns"]
         ]
 
@@ -329,12 +323,13 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         for outbound in filtered_outbounds:
             if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
                 regex_list = [
-                    reg for f in outbound.get("filter", [])
+                    reg
+                    for f in outbound.get("filter", [])
                     for reg in f.get("regex", [])
                 ]
-                
+
                 del outbound["filter"]
-                
+
                 if not regex_list:
                     continue
 
@@ -342,11 +337,15 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 try:
                     compiled = re.compile(pattern, re.IGNORECASE)
                     all_valid_tags = [
-                        o.get("tag") for o in filtered_outbounds
-                        if o.get("type") not in ["urltest", "selector", "direct", "block", "dns"]
+                        o.get("tag")
+                        for o in filtered_outbounds
+                        if o.get("type")
+                        not in ["urltest", "selector", "direct", "block", "dns"]
                     ]
-                    matched_tags = [tag for tag in all_valid_tags if compiled.search(tag)]
-                    
+                    matched_tags = [
+                        tag for tag in all_valid_tags if compiled.search(tag)
+                    ]
+
                     if matched_tags:
                         outbound["outbounds"] = matched_tags
                     else:
@@ -357,18 +356,20 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         base_config["outbounds"] = filtered_outbounds
         print(f"[{source}] 处理完成，返回 {len(new_nodes)} 个新节点")
 
-        json_str = json.dumps(base_config, ensure_ascii=False, indent=2)
+        # json_str = json.dumps(base_config, ensure_ascii=False, indent=2)
+        json_str = json.dumps(base_config, ensure_ascii=False, separators=(',', ':'))
         return Response(
             json_str,
             mimetype="application/json",
             headers={"Content-Disposition": "attachment; filename=config.json"},
         )
-        
+
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         return jsonify({"error": f"服务器内部错误: {str(e)}", "source": source}), 500
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
