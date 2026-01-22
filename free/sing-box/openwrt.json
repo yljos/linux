@@ -21,7 +21,10 @@
     "strategy": "ipv4_only",
     "disable_cache": true
   },
-  "inbounds": [{"type": "tproxy", "tag": "tproxy-in", "listen": "::", "listen_port": 7893}],
+  "inbounds": [
+    {"type": "direct", "listen": "::", "tag": "dns-in", "listen_port": 1053},
+    {"type": "tproxy", "tag": "tproxy-in", "listen": "::", "listen_port": 7893}
+  ],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
     {"type": "block", "tag": "R"},
@@ -44,6 +47,7 @@
     "rules": [
       {"inbound": ["tproxy-in"], "action": "sniff", "timeout": "300ms"},
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
+      {"inbound": ["dns-in"],"action":"hijack-dns"},
       {"port": 53, "action": "hijack-dns"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject"},
