@@ -41,15 +41,19 @@ def process_shadowsocks(
     node["server_port"] = int(proxy["port"])
     node["method"] = proxy.get("cipher")
     node["password"] = proxy.get("password")
+    
     if "plugin" in proxy:
         plugin = proxy.get("plugin")
         plugin_opts = proxy.get("plugin-opts", {})
+        
+        # 针对 obfs 的特殊处理：必须拼接成字符串
         if plugin == "obfs":
             node["plugin"] = "obfs-local"
-            node["plugin_opts"] = {
-                "mode": plugin_opts.get("mode", "http"),
-                "host": plugin_opts.get("host", ""),
-            }
+            mode = plugin_opts.get("mode", "http")
+            host = plugin_opts.get("host", "")
+            # 修正为字符串格式 "obfs=http;obfs-host=xxx"
+            node["plugin_opts"] = f"obfs={mode};obfs-host={host}"
+            
     return node
 
 
