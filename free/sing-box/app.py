@@ -4,32 +4,26 @@ import re
 import os
 import sys
 import hashlib
-import yaml  
+import yaml  # pip install pyyaml
 from typing import Any, Dict, List, Tuple, Union
 
 from flask import Flask, request, jsonify, Response, abort
 
 # ================= 配置区域 =================
 
-# 节点筛选：必须包含这些地区关键词
 NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "TW", "美国", "香港", "新加坡", "日本", "台湾"]
-
-# 节点过滤：如果包含这些词则剔除
 NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10", "重置", "流量"]
 
-# 模板文件映射
 TEMPLATE_MAP = {
     "default": "openwrt.json",
     "pc": "pc.json",
     "m": "m.json",
 }
 
-# 鉴权配置
 MITCE_PASSWORD_HASH = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 MITCE_API_FILE = "mitce"
 BAJIE_API_FILE = "bajie"
 
-# 缓存目录
 CACHE_DIR = "cache"
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
@@ -39,19 +33,13 @@ app = Flask(__name__)
 # ================= 核心转换逻辑 =================
 
 def get_safe_port(proxy: Dict[str, Any]) -> int:
-    """
-    辅助函数：安全提取端口，处理 'port' 为 None 或 'ports' 范围端口的情况
-    """
     raw_port = proxy.get("port")
-    
-    # 如果 port 为空，尝试查找 ports (Hysteria2 端口跳跃特性)
     if raw_port is None:
         raw_ports = proxy.get("ports")
         if raw_ports:
             match = re.search(r'(\d+)', str(raw_ports))
             if match:
                 raw_port = match.group(1)
-    
     try:
         return int(str(raw_port))
     except (ValueError, TypeError):
@@ -103,7 +91,6 @@ def process_vless(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str,
             "insecure": proxy.get("skip-cert-verify", False),
             "server_name": proxy.get("servername", "")
         }
-        
         if "reality-opts" in proxy:
             reality_opts = proxy.get("reality-opts", {})
             tls["reality"] = {
@@ -127,6 +114,35 @@ def process_hysteria2(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[
     node = base_node.copy()
     node["type"] = "hysteria2"
     node["password"] = proxy.get("password")
+    
+    # === 核心修改：添加 server_ports 端口跳跃范围逻辑 ===
+    port = base_node["server_port"]
+    ports_range = None
+    
+    if 1000 <= port <= 2000:
+        ports_range = "1000-2000"
+    elif 3000 <= port <= 4000:
+        ports_range = "3000-4000"
+    elif 5000 <= port <= 6000:
+        ports_range = "5000-6000"
+    elif 7000 <= port <= 8000:
+        ports_range = "7000-8000"
+    elif 9000 <= port <= 10000:
+        ports_range = "9000-10000"
+    elif 11000 <= port <= 12000:
+        ports_range = "11000-12000"
+    elif 13000 <= port <= 14000:
+        ports_range = "13000-14000"
+    elif 15000 <= port <= 16000:
+        ports_range = "15000-16000"
+    elif 17000 <= port <= 18000:
+        ports_range = "17000-18000"
+    elif 19000 <= port <= 20000:
+        ports_range = "19000-20000"
+        
+    if ports_range:
+        node["server_ports"] = ports_range
+    # ==================================================
     
     if "up" in proxy:
         try:
@@ -213,7 +229,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     cache_file_path = os.path.join(CACHE_DIR, f"{source}.yaml")
     yaml_content = ""
 
-    # 3. 网络请求 (无任何解码逻辑)
+    # 3. 网络请求 (无 Base64 解码)
     try:
         file_path = os.path.join(os.path.dirname(__file__), api_file)
         with open(file_path, "r", encoding="utf-8") as f:
@@ -221,24 +237,31 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             if not url:
                 raise ValueError(f"{source} 文件内容为空")
 
+        # 严格只使用指定的 UA
         headers = {
-            "User-Agent": "clash-verge",
+            "User-Agent": "clash-verge"
         }
         
         print(f"[{source}] 正在拉取: {url[:25]}...")
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         
-        # === 核心修改：直接获取文本，不做任何解码尝试 ===
-        yaml_content = response.text.strip()
-        print(f"[{source}] 拉取成功，内容长度: {len(yaml_content)}")
+        temp_content = response.text.strip()
+        
+        # === 核心校验 ===
+        # 拉取完立即检查是否有 proxies:
+        if "proxies:" not in temp_content:
+            raise ValueError("校验失败: 返回内容未包含 'proxies:' 关键字，可能不是有效的 Clash 配置文件")
 
-        # 写入缓存
+        print(f"[{source}] 校验通过 (包含 proxies:)")
+        yaml_content = temp_content
+
+        # 校验通过后再写入缓存
         with open(cache_file_path, "w", encoding="utf-8") as f:
             f.write(yaml_content)
 
     except Exception as e:
-        print(f"[{source}] 网络错误 ({str(e)})，尝试使用缓存...", file=sys.stderr)
+        print(f"[{source}] 网络/校验错误 ({str(e)})，尝试使用缓存...", file=sys.stderr)
         if os.path.exists(cache_file_path):
             with open(cache_file_path, "r", encoding="utf-8") as f:
                 yaml_content = f.read()
@@ -267,7 +290,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 continue
 
         if not nodes:
-            return jsonify({"error": "没有转换成功的节点 (可能是协议不支持或过滤完)"}), 400
+            return jsonify({"error": "没有转换成功的节点"}), 400
 
         # 5. 模板加载与合并
         template_filename = TEMPLATE_MAP.get(config_param, TEMPLATE_MAP["default"])
