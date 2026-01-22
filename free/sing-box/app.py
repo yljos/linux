@@ -4,142 +4,186 @@ import re
 import os
 import sys
 import hashlib
-import yaml  # 必须安装: pip install pyyaml
+import yaml  
 from typing import Any, Dict, List, Tuple, Union
 
 from flask import Flask, request, jsonify, Response, abort
 
-# ===== 可修改配置项 =====
+# ================= 配置区域 =================
 
-# 只要包含这些关键词的节点才会保留
+# 节点筛选：必须包含这些地区关键词
 NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "TW", "美国", "香港", "新加坡", "日本", "台湾"]
-# 包含这些关键词的节点会被剔除
+
+# 节点过滤：如果包含这些词则剔除
 NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10", "重置", "流量"]
 
-# 模板文件映射配置
+# 模板文件映射
 TEMPLATE_MAP = {
     "default": "openwrt.json",
     "pc": "pc.json",
     "m": "m.json",
 }
 
-# 密码哈希和API地址文件
+# 鉴权配置
 MITCE_PASSWORD_HASH = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 MITCE_API_FILE = "mitce"
 BAJIE_API_FILE = "bajie"
 
-# ===== 缓存配置 =====
+# 缓存目录
 CACHE_DIR = "cache"
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
 
 app = Flask(__name__)
 
+# ================= 核心转换逻辑 =================
 
-def clash_to_singbox(proxy: Dict[str, Any]) -> Dict[str, Any]:
+def get_safe_port(proxy: Dict[str, Any]) -> int:
     """
-    核心函数：将 Clash 节点格式转换为 Sing-box 出站格式
+    辅助函数：安全提取端口，处理 'port' 为 None 或 'ports' 范围端口的情况
     """
-    p_type = proxy.get("type", "").lower()
-    node = {
-        "tag": proxy.get("name", "unnamed"),
-        "server": proxy.get("server"),
-        "server_port": proxy.get("port"),
-    }
+    raw_port = proxy.get("port")
+    
+    # 如果 port 为空，尝试查找 ports (Hysteria2 端口跳跃特性)
+    if raw_port is None:
+        raw_ports = proxy.get("ports")
+        if raw_ports:
+            match = re.search(r'(\d+)', str(raw_ports))
+            if match:
+                raw_port = match.group(1)
+    
+    try:
+        return int(str(raw_port))
+    except (ValueError, TypeError):
+        return 443
 
-    # === Shadowsocks ===
-    if p_type == "ss":
-        node["type"] = "shadowsocks"
-        node["method"] = proxy.get("cipher")
-        node["password"] = proxy.get("password")
-        if "plugin" in proxy:
-            plugin = proxy.get("plugin")
-            plugin_opts = proxy.get("plugin-opts", {})
-            if plugin == "obfs":
-                node["plugin"] = "obfs-local"
-                node["plugin_opts"] = {
-                    "mode": plugin_opts.get("mode", "http"),
-                    "host": plugin_opts.get("host", "")
-                }
-
-    # === VMess ===
-    elif p_type == "vmess":
-        node["type"] = "vmess"
-        node["uuid"] = proxy.get("uuid")
-        node["alter_id"] = proxy.get("alterId", 0)
-        node["security"] = proxy.get("cipher", "auto")
-        
-        network = proxy.get("network", "tcp")
-        transport = {}
-        
-        if network == "ws":
-            transport["type"] = "ws"
-            ws_opts = proxy.get("ws-opts", {})
-            transport["path"] = ws_opts.get("path", "/")
-            if "headers" in ws_opts and "Host" in ws_opts["headers"]:
-                transport["headers"] = {"Host": ws_opts["headers"]["Host"]}
-        elif network == "grpc":
-            transport["type"] = "grpc"
-            grpc_opts = proxy.get("grpc-opts", {})
-            transport["service_name"] = grpc_opts.get("grpc-service-name", "")
-            
-        if transport:
-            node["transport"] = transport
-
-        if proxy.get("tls"):
-            tls = {"enabled": True}
-            if proxy.get("servername"):
-                tls["server_name"] = proxy.get("servername")
-            if proxy.get("skip-cert-verify"):
-                tls["insecure"] = True
-            node["tls"] = tls
-
-    # === Trojan ===
-    elif p_type == "trojan":
-        node["type"] = "trojan"
-        node["password"] = proxy.get("password")
-        tls = {"enabled": True}
-        if proxy.get("sni"):
-            tls["server_name"] = proxy.get("sni")
-        if proxy.get("skip-cert-verify"):
-            tls["insecure"] = True
-        node["tls"] = tls
-        
-        network = proxy.get("network", "tcp")
-        if network == "ws":
-             transport = {"type": "ws"}
-             ws_opts = proxy.get("ws-opts", {})
-             transport["path"] = ws_opts.get("path", "/")
-             if "headers" in ws_opts and "Host" in ws_opts["headers"]:
-                transport["headers"] = {"Host": ws_opts["headers"]["Host"]}
-             node["transport"] = transport
-
-    # === Hysteria2 ===
-    elif p_type == "hysteria2":
-        node["type"] = "hysteria2"
-        node["password"] = proxy.get("password")
-        if "obfs" in proxy:
-            node["obfs"] = {
-                "type": "salamander",
-                "password": proxy.get("obfs-password", "")
+def process_shadowsocks(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+    node = base_node.copy()
+    node["type"] = "shadowsocks"
+    node["method"] = proxy.get("cipher")
+    node["password"] = proxy.get("password")
+    
+    if "plugin" in proxy:
+        plugin = proxy.get("plugin")
+        plugin_opts = proxy.get("plugin-opts", {})
+        if plugin == "obfs":
+            node["plugin"] = "obfs-local"
+            node["plugin_opts"] = {
+                "mode": plugin_opts.get("mode", "http"),
+                "host": plugin_opts.get("host", "")
             }
+    return node
+
+def process_vless(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+    node = base_node.copy()
+    node["type"] = "vless"
+    node["uuid"] = proxy.get("uuid")
+    node["flow"] = proxy.get("flow", "")
+    
+    network = proxy.get("network", "tcp")
+    transport = {}
+    
+    if network == "ws":
+        transport["type"] = "ws"
+        ws_opts = proxy.get("ws-opts", {})
+        transport["path"] = ws_opts.get("path", "/")
+        if "headers" in ws_opts and "Host" in ws_opts["headers"]:
+            transport["headers"] = {"Host": ws_opts["headers"]["Host"]}
+    elif network == "grpc":
+        transport["type"] = "grpc"
+        grpc_opts = proxy.get("grpc-opts", {})
+        transport["service_name"] = grpc_opts.get("grpc-service-name", "")
+    
+    if transport:
+        node["transport"] = transport
+
+    if proxy.get("tls") or proxy.get("reality-opts"):
         tls = {
             "enabled": True,
-            "insecure": proxy.get("skip-cert-verify", False)
+            "insecure": proxy.get("skip-cert-verify", False),
+            "server_name": proxy.get("servername", "")
         }
-        if proxy.get("sni"):
-            tls["server_name"] = proxy.get("sni")
+        
+        if "reality-opts" in proxy:
+            reality_opts = proxy.get("reality-opts", {})
+            tls["reality"] = {
+                "enabled": True,
+                "public_key": reality_opts.get("public-key"),
+                "short_id": reality_opts.get("short-id")
+            }
+            if not tls["server_name"]: 
+                tls["server_name"] = proxy.get("sni", "")
+        
+        fingerprint = proxy.get("client-fingerprint") or proxy.get("fingerprint")
+        if fingerprint:
+            tls["utls"] = {
+                "enabled": True,
+                "fingerprint": fingerprint
+            }
         node["tls"] = tls
+    return node
 
+def process_hysteria2(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+    node = base_node.copy()
+    node["type"] = "hysteria2"
+    node["password"] = proxy.get("password")
+    
+    if "up" in proxy:
+        try:
+            node["up_mbps"] = int(str(proxy.get("up", "0")).replace(" Mbps", ""))
+        except: pass
+    if "down" in proxy:
+        try:
+            node["down_mbps"] = int(str(proxy.get("down", "0")).replace(" Mbps", ""))
+        except: pass
+
+    if "obfs" in proxy:
+        node["obfs"] = {
+            "type": "salamander",
+            "password": proxy.get("obfs-password", "")
+        }
+        
+    tls = {
+        "enabled": True,
+        "insecure": proxy.get("skip-cert-verify", False),
+        "server_name": proxy.get("sni", "")
+    }
+    
+    if not tls["server_name"]:
+        tls["server_name"] = proxy.get("servername", base_node["server"])
+        
+    fingerprint = proxy.get("client-fingerprint") or proxy.get("fingerprint")
+    if fingerprint:
+        tls["utls"] = {
+            "enabled": True,
+            "fingerprint": fingerprint
+        }
+    
+    node["tls"] = tls
+    return node
+
+def clash_to_singbox(proxy: Dict[str, Any]) -> Union[Dict[str, Any], None]:
+    p_type = proxy.get("type", "").lower()
+    
+    base_node = {
+        "tag": proxy.get("name", "unnamed"),
+        "server": proxy.get("server"),
+        "server_port": get_safe_port(proxy),
+    }
+    
+    if p_type == "ss":
+        return process_shadowsocks(proxy, base_node)
+    elif p_type == "vless":
+        return process_vless(proxy, base_node)
+    elif p_type == "hysteria2":
+        return process_hysteria2(proxy, base_node)
     else:
         return None
 
-    return node
-
+# ================= 路由处理逻辑 =================
 
 @app.route("/<source>", methods=["GET"])
 def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, int]]:
-    # 1. 自动检测配置模板
     ua = request.headers.get("User-Agent", "")
     if "SFA" in ua:
         detected_config = "m"
@@ -150,10 +194,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     else:
         detected_config = "default"
 
-    # 2. 获取参数
     config_param = request.args.get("config", detected_config)
-
-    # 3. 鉴权
     key = request.args.get("key", "")
     if not key:
         return jsonify({"error": "未授权访问"}), 403
@@ -162,7 +203,6 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     if key_hash != MITCE_PASSWORD_HASH:
         return jsonify({"error": "未鉴权访问"}), 403
 
-    # 选择源文件
     if source == "mitce":
         api_file = MITCE_API_FILE
     elif source == "bajie":
@@ -173,7 +213,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     cache_file_path = os.path.join(CACHE_DIR, f"{source}.yaml")
     yaml_content = ""
 
-    # 4. 获取数据逻辑
+    # 3. 网络请求 (无任何解码逻辑)
     try:
         file_path = os.path.join(os.path.dirname(__file__), api_file)
         with open(file_path, "r", encoding="utf-8") as f:
@@ -181,33 +221,31 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             if not url:
                 raise ValueError(f"{source} 文件内容为空")
 
-        # --- 网络请求 ---
         headers = {
             "User-Agent": "clash-verge",
         }
         
+        print(f"[{source}] 正在拉取: {url[:25]}...")
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         
         # === 核心修改：直接获取文本，不做任何解码尝试 ===
         yaml_content = response.text.strip()
-        
+        print(f"[{source}] 拉取成功，内容长度: {len(yaml_content)}")
+
         # 写入缓存
         with open(cache_file_path, "w", encoding="utf-8") as f:
             f.write(yaml_content)
-            
-        print(f"[{source}] 网络拉取成功", file=sys.stdout)
 
     except Exception as e:
-        # --- 降级处理：读取缓存 ---
-        print(f"[{source}] 网络失败 ({str(e)})，使用本地缓存...", file=sys.stderr)
+        print(f"[{source}] 网络错误 ({str(e)})，尝试使用缓存...", file=sys.stderr)
         if os.path.exists(cache_file_path):
             with open(cache_file_path, "r", encoding="utf-8") as f:
                 yaml_content = f.read()
         else:
             return jsonify({"error": f"获取失败且无本地缓存: {str(e)}"}), 500
 
-    # 5. 解析 YAML 并转换为 Sing-box 格式
+    # 4. 解析 YAML 并转换
     try:
         try:
             clash_data = yaml.safe_load(yaml_content)
@@ -229,9 +267,9 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 continue
 
         if not nodes:
-            return jsonify({"error": "没有转换成功的节点"}), 400
+            return jsonify({"error": "没有转换成功的节点 (可能是协议不支持或过滤完)"}), 400
 
-        # 6. 模板处理与合并
+        # 5. 模板加载与合并
         template_filename = TEMPLATE_MAP.get(config_param, TEMPLATE_MAP["default"])
         config_path = os.path.join(os.path.dirname(__file__), template_filename)
 
@@ -249,7 +287,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         ]
         outbounds.extend(new_nodes)
 
-        # --- 过滤逻辑 ---
+        # 6. 关键词过滤
         def node_tag_valid(tag: str) -> bool:
             tag_upper = tag.upper() if tag else ""
             if not any(region.upper() in tag_upper for region in NODE_REGION_KEYWORDS):
@@ -264,7 +302,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             or o.get("type") in ["urltest", "selector", "direct", "block", "dns"]
         ]
 
-        # --- 处理 Selector/URLTest 的正则筛选 ---
+        # 7. 策略组处理
         for outbound in filtered_outbounds:
             if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
                 regex_list = [
@@ -289,11 +327,12 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                     if matched_tags:
                         outbound["outbounds"] = matched_tags
                     else:
-                        outbound["outbounds"] = ["DIRECT"] 
+                        outbound["outbounds"] = ["DIRECT"]
                 except re.error as e:
                     print(f"无效的正则表达式 '{pattern}': {e}", file=sys.stderr)
 
         base_config["outbounds"] = filtered_outbounds
+        print(f"[{source}] 处理完成，返回 {len(new_nodes)} 个新节点")
 
         json_str = json.dumps(base_config, ensure_ascii=False, indent=2)
         return Response(
@@ -303,7 +342,9 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         )
         
     except Exception as e:
-        return jsonify({"error": f"处理过程中发生错误: {str(e)}", "source": source}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"服务器内部错误: {str(e)}", "source": source}), 500
 
 
 if __name__ == "__main__":
