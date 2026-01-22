@@ -108,11 +108,11 @@ def process_hysteria2(
     node = base_node.copy()
     node["type"] = "hysteria2"
     node["password"] = proxy.get("password")
-    # Hy2 依旧只读 ports
+    # [修复] 优先读取 ports，如果没有则尝试读取单端口 port
     if "ports" in proxy:
         node["server_ports"] = proxy["ports"]
-    # ... (其余 Hy2 代码保持不变) ...
-    # ==================================================
+    elif "port" in proxy:
+        node["server_port"] = int(proxy["port"])
     # 宽带速度处理 (默认: 上传 40 / 下载 200)
     try:
         # 尝试获取并移除 " Mbps"
