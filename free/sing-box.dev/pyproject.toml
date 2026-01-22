@@ -6,6 +6,7 @@ description = "Default template for PDM package"
 dependencies = [
     "Flask==3.1.2",
     "requests==2.32.5",
+    "pyyaml>=6.0.3",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
