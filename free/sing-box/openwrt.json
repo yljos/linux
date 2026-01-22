@@ -157,7 +157,6 @@
     ],
     "final": "Default",
     "auto_detect_interface": true,
-    "default_mark": 666,
     "default_domain_resolver": {"server": "dns_direct", "rewrite_ttl": 10}
   },
   "experimental": {
