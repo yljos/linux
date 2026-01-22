@@ -1,7 +1,6 @@
 import requests
 import os
 import time
-from datetime import datetime
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -70,12 +69,17 @@ if __name__ == "__main__":
                 # 检查状态码，如果不是 200 会抛出 HTTPError 异常
                 response.raise_for_status()
 
-                # 写入文件 (使用 response.content 获取二进制内容)
-                with open(save_path, "wb") as f:
-                    f.write(response.content)
+                # [新增] 校验：检查下载内容是否包含 'proxies:'
+                if "proxies:" in response.text:
+                    # 写入文件 (使用 response.content 获取二进制内容)
+                    with open(save_path, "wb") as f:
+                        f.write(response.content)
 
-                save_update_time()
-                print(f"配置文件更新成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                    save_update_time()
+                    print(f"配置文件更新成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                else:
+                    # 如果校验失败
+                    print(f"校验失败：下载内容不包含 'proxies:'，跳过写入 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
             except requests.exceptions.HTTPError as e:
                 print(f"HTTP 错误: {e}")
