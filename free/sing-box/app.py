@@ -186,13 +186,13 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         return jsonify({"error": "不支持的参数"}), 403
     cache_file_path = os.path.join(CACHE_DIR, f"{source}.yaml")
     yaml_content = ""
-    # 3. 网络请求 (无 Base64 解码)
+    # 3. 网络请求
     try:
         file_path = os.path.join(os.path.dirname(__file__), api_file)
         with open(file_path, "r", encoding="utf-8") as f:
             url = f.read().strip()
             if not url:
-                raise ValueError(f"{source} 文件内容为空")
+                raise ValueError(f"{source} 内容为空")
         # 严格只使用指定的 UA
         headers = {"User-Agent": "clash-verge"}
         print(f"[{source}] 正在拉取: {url[:25]}...")
@@ -203,20 +203,20 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         # 拉取完立即检查是否有 proxies:
         if "proxies:" not in temp_content:
             raise ValueError(
-                "校验失败: 返回内容未包含 'proxies:' 关键字，可能不是有效的 Clash 配置文件"
+                "拉取校验失败"
             )
-        print(f"[{source}] 校验通过 (包含 proxies:)")
+        print(f"[{source}] 拉取通过")
         yaml_content = temp_content
         # 校验通过后再写入缓存
         with open(cache_file_path, "w", encoding="utf-8") as f:
             f.write(yaml_content)
     except Exception as e:
-        print(f"[{source}] 网络/校验错误，尝试使用缓存", file=sys.stderr)
+        print(f"[{source}] 网络/校验错误，使用缓存", file=sys.stderr)
         if os.path.exists(cache_file_path):
             with open(cache_file_path, "r", encoding="utf-8") as f:
                 yaml_content = f.read()
         else:
-            return jsonify({"error": f"获取失败且无本地缓存"}), 500
+            return jsonify({"error": f"拉取失败且无缓存"}), 500
     # 4. 解析 YAML 并转换
     try:
         try:
@@ -232,7 +232,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 400,
             )
         if not isinstance(clash_data, dict) or "proxies" not in clash_data:
-            return jsonify({"error": "无效的 Clash 配置：未找到 proxies 字段"}), 400
+            return jsonify({"error": "无效的 Clash 配置"}), 400
         raw_proxies = clash_data["proxies"]
         nodes = []
         for proxy in raw_proxies:
