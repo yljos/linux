@@ -31,7 +31,10 @@ app = Flask(__name__)
 
 # ================= 核心转换逻辑 =================
 
-def process_shadowsocks(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+
+def process_shadowsocks(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
     node = base_node.copy()
     node["type"] = "shadowsocks"
     # 直接读取 port
@@ -99,7 +102,9 @@ def process_vless(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str,
     return node
 
 
-def process_hysteria2(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+def process_hysteria2(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
     node = base_node.copy()
     node["type"] = "hysteria2"
     node["password"] = proxy.get("password")
@@ -151,6 +156,7 @@ def clash_to_singbox(proxy: Dict[str, Any]) -> Union[Dict[str, Any], None]:
         return process_hysteria2(proxy, base_node)
     else:
         return None
+
 
 # ================= 路由处理逻辑 =================
 
@@ -248,8 +254,11 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             base_config = json.load(f)
         outbounds = base_config.get("outbounds", [])
         existing_tags = {o.get("tag") for o in outbounds}
-        new_nodes = [n for n in nodes if n.get("tag") and n.get("tag") not in existing_tags]
+        new_nodes = [
+            n for n in nodes if n.get("tag") and n.get("tag") not in existing_tags
+        ]
         outbounds.extend(new_nodes)
+
         # 6. 关键词过滤
         def node_tag_valid(tag: str) -> bool:
             tag_upper = tag.upper() if tag else ""
@@ -258,6 +267,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             if any(exclude in tag for exclude in NODE_EXCLUDE_KEYWORDS):
                 return False
             return True
+
         filtered_outbounds = [
             o
             for o in outbounds
@@ -267,7 +277,11 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         # 7. 策略组处理
         for outbound in filtered_outbounds:
             if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
-                regex_list = [reg for f in outbound.get("filter", []) for reg in f.get("regex", [])]
+                regex_list = [
+                    reg
+                    for f in outbound.get("filter", [])
+                    for reg in f.get("regex", [])
+                ]
                 del outbound["filter"]
                 if not regex_list:
                     continue
@@ -280,7 +294,9 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                         if o.get("type")
                         not in ["urltest", "selector", "direct", "block", "dns"]
                     ]
-                    matched_tags = [tag for tag in all_valid_tags if compiled.search(tag)]
+                    matched_tags = [
+                        tag for tag in all_valid_tags if compiled.search(tag)
+                    ]
                     if matched_tags:
                         outbound["outbounds"] = matched_tags
                     else:
@@ -297,6 +313,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         )
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         return jsonify({"error": f"服务器内部错误: {str(e)}", "source": source}), 500
 
