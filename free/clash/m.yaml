@@ -177,7 +177,7 @@ proxy-groups:
       - SG_fallback
       - US_fallback
   - type: fallback
-    url: https://www.gstatic.com/generate_204
+    url: https://cp.cloudflare.com
     interval: 60
     hidden: true
     timeout: 600
@@ -187,7 +187,7 @@ proxy-groups:
     name: JP_fallback
     filter: (?i)(日本|jp|japan)
   - type: fallback
-    url: https://www.gstatic.com/generate_204
+    url: https://cp.cloudflare.com
     interval: 60
     hidden: true
     timeout: 600
@@ -197,7 +197,7 @@ proxy-groups:
     name: US_fallback
     filter: (?i)(美国|us|united|america)
   - type: fallback
-    url: https://www.gstatic.com/generate_204
+    url: https://cp.cloudflare.com
     interval: 60
     hidden: true
     timeout: 600
@@ -207,7 +207,7 @@ proxy-groups:
     name: SG_fallback
     filter: (?i)(新加坡|sg|singapore)
   - type: fallback
-    url: https://www.gstatic.com/generate_204
+    url: https://cp.cloudflare.com
     interval: 60
     hidden: true
     timeout: 600
