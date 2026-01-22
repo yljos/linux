@@ -1,0 +1,27 @@
+[Unit]
+Description=Nginx Container (Host Network)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# === 关键修改 ===
+# 1. 移除 -p 端口映射 (Host 模式下无效且不需要)
+# 2. 添加 --network=host (让容器共享宿主机网络，解决 127.0.0.1 转发问题)
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=nginx \
+  --network=host \
+  --log-driver=journald \
+  -v /data/appdata/nginx:/etc/nginx:Z \
+  -v /data/www:/data/www:ro,z \
+  docker.io/nginx:latest
+
+ExecStop=/usr/bin/podman stop -t 10 nginx
+
+[Install]
+WantedBy=default.target
