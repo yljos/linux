@@ -33,8 +33,9 @@ nft add rule ip sing-box prerouting udp dport { 67, 68 } return
 # 2. 绝对劫持：DNS (UDP/TCP 53)
 # 只要是 53 端口，不管目标 IP 是公网还是内网，先打标记送走
 # 配合 Sing-box 的 sniff 功能，这会完美处理所有 DNS
-nft add rule ip sing-box prerouting iifname "$LAN_IF" meta l4proto { tcp, udp } th dport 53 meta mark set $PROXY_FWMARK
-nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto { tcp, udp } counter tproxy to :$PROXY_PORT accept
+# nft add rule ip sing-box prerouting iifname "$LAN_IF" meta l4proto { tcp, udp } th dport 53 meta mark set $PROXY_FWMARK
+# nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto { tcp, udp } counter tproxy to :$PROXY_PORT accept
+nft add rule ip sing-box PREROUTING udp dport 53 redirect to :1053
 
 # 3. 条件排除：私有网段 (Bypass)
 # 只有非 DNS 的内网流量才会走到这一步，被放行
