@@ -50,11 +50,6 @@ def should_update():
 if __name__ == "__main__":
     print("自动更新脚本已启动 (使用 requests 库)...")
 
-    # 预检查：确保 URL 存在
-    if not url:
-        print("错误: 环境变量中未找到 URL，请检查 .env 文件")
-        exit(1)
-
     while True:
         if should_update():
             try:
