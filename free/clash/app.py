@@ -69,15 +69,16 @@ def is_valid_clash_yaml(text: str) -> bool:
 
 @app.before_request
 def restrict_paths():
-    allowed = {"/mitce", "/bajie"}
-    if request.path not in allowed:
-        return "Not Found", 404
+    if request.path not in {"/mitce", "/bajie"}:
+        abort(404)
+
     key = request.args.get("key")
     if not key:
-        return "Unauthorized", 401
-    provided_hash = hashlib.sha256(key.encode("utf-8")).hexdigest()
-    if not hmac.compare_digest(provided_hash, ACCESS_KEY_SHA256):
-        return "Unauthorized", 401
+        abort(404)
+
+    digest = hashlib.sha256(key.encode()).hexdigest()
+    if not hmac.compare_digest(digest, ACCESS_KEY_SHA256):
+        abort(404)
 
 
 def save_headers_to_disk(source_name, headers):
@@ -212,12 +213,15 @@ def process_yaml_content(
 @app.route("/<source>")
 def process_source(source):
     try:
+        # 因为 restrict_paths 保证了 source 必然是这两者之一
+        # 我们可以直接根据名字读取对应的文件
         if source == "mitce":
             url = read_url_from_file(MITCE_URL_FILE)
-        elif source == "bajie":
+        else: 
+            # 逻辑上这就一定是 "bajie" 了
             url = read_url_from_file(BAJIE_URL_FILE)
-        else:
-            return "Not Found", 404
+            
+        # ... 后面的代码保持不变 ...
 
         ua = request.headers.get("User-Agent", "")
 
