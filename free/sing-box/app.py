@@ -118,17 +118,8 @@ def process_hysteria2(
     elif "port" in proxy:
         node["server_port"] = int(proxy["port"])
     # 宽带速度处理 (默认: 上传 40 / 下载 200)
-    try:
-        # 尝试获取并移除 " Mbps"
-        up_val = str(proxy.get("up", "")).replace(" Mbps", "").strip()
-        node["up_mbps"] = int(up_val) if up_val else 40
-    except (ValueError, TypeError):
-        node["up_mbps"] = 40
-    try:
-        down_val = str(proxy.get("down", "")).replace(" Mbps", "").strip()
-        node["down_mbps"] = int(down_val) if down_val else 200
-    except (ValueError, TypeError):
-        node["down_mbps"] = 200
+    node["up_mbps"] = 40
+    node["down_mbps"] = 200
     if "obfs" in proxy:
         node["obfs"] = {
             "type": "salamander",
@@ -167,6 +158,8 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         detected_config = "m"
     elif "sing-box_openwrt" in ua:
         detected_config = "default"
+    elif "sing-box_m" in ua:
+        detected_config = "default"       
     elif "sing-box_pc" in ua:
         detected_config = "pc"
     else:
