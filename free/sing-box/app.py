@@ -167,7 +167,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         detected_config = "m"
     elif "sing-box_openwrt" in ua:
         detected_config = "default"
-    elif "sing-box" in ua:
+    elif "sing-box_pc" in ua:
         detected_config = "pc"
     else:
         abort(404)
