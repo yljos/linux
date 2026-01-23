@@ -213,66 +213,68 @@ def process_yaml_content(
 @app.route("/<source>")
 def process_source(source):
     try:
-        # 因为 restrict_paths 保证了 source 必然是这两者之一
-        # 我们可以直接根据名字读取对应的文件
-        if source == "mitce":
-            url = read_url_from_file(MITCE_URL_FILE)
-        else: 
-            # 逻辑上这就一定是 "bajie" 了
-            url = read_url_from_file(BAJIE_URL_FILE)
-            
-        # ... 后面的代码保持不变 ...
 
-        ua = request.headers.get("User-Agent", "")
-
-        if "ClashMetaForAndroid" in ua:
-            detected_config = "mtun"
-        elif "clash_pc" in ua:
-            detected_config = "pc"
-        elif "clash_openwrt" in ua:
-            detected_config = "openwrt"
-        elif "clash_m" in ua:
-            detected_config = "m"
-        else:
-            abort(404)
-
-        config_val = request.args.get("config", detected_config)
-
-        config_map = {
-            "m": (TEMPLATE_PATH_M, HYSTERIA2_UP_M, HYSTERIA2_DOWN_M),
-            "mtun": (TEMPLATE_PATH_MTUN, HYSTERIA2_UP_M, HYSTERIA2_DOWN_M),
-            "pc": (TEMPLATE_PATH_PC, HYSTERIA2_UP, HYSTERIA2_DOWN),
-            "openwrt": (TEMPLATE_PATH_OPENWRT, HYSTERIA2_UP, HYSTERIA2_DOWN),
+        SOURCE_MAP = {
+            "mitce": MITCE_URL_FILE,
+            "bajie": BAJIE_URL_FILE,
         }
 
-        # 1. 先判断是否存在
-        if config_val not in config_map:
-            # 如果参数不对，直接返回 400 错误
-            return "Invalid Config Type", 400
+        path = SOURCE_MAP.get(source)
+        if not path:
+            abort(404)
 
-        # 2. 再获取（因为确定存在，所以不需要 get 的默认值了）
-        template_path, up, down = config_map[config_val]
+            url = read_url_from_file(path)
 
-        # 恢复要求的详细日志格式
-        logger.info(
-            f"请求拉取: {source} | 识别模板: {detected_config} | 指定模板: {config_val} | 最终模板: {template_path}"
-        )
+            ua = request.headers.get("User-Agent", "")
 
-        yaml_text, headers_data = fetch_yaml_text(unquote(url), source)
-        output_bytes = process_yaml_content(yaml_text, template_path, up, down)
+            if "ClashMetaForAndroid" in ua:
+                detected_config = "mtun"
+            elif "clash_pc" in ua:
+                detected_config = "pc"
+            elif "clash_openwrt" in ua:
+                detected_config = "openwrt"
+            elif "clash_m" in ua:
+                detected_config = "m"
+            else:
+                abort(404)
 
-        response = send_file(
-            io.BytesIO(output_bytes),
-            mimetype="text/yaml",
-            as_attachment=True,
-            download_name="config.yaml",
-        )
+            config_val = request.args.get("config", detected_config)
 
-        if headers_data:
-            for h, v in headers_data.items():
-                if h.lower() in {ih.lower() for ih in INCLUDED_HEADERS}:
-                    response.headers[h] = v
-        return response
+            config_map = {
+                "m": (TEMPLATE_PATH_M, HYSTERIA2_UP_M, HYSTERIA2_DOWN_M),
+                "mtun": (TEMPLATE_PATH_MTUN, HYSTERIA2_UP_M, HYSTERIA2_DOWN_M),
+                "pc": (TEMPLATE_PATH_PC, HYSTERIA2_UP, HYSTERIA2_DOWN),
+                "openwrt": (TEMPLATE_PATH_OPENWRT, HYSTERIA2_UP, HYSTERIA2_DOWN),
+            }
+
+            # 1. 先判断是否存在
+            if config_val not in config_map:
+                # 如果参数不对，直接返回 400 错误
+                return "Invalid Config Type", 400
+
+            # 2. 再获取（因为确定存在，所以不需要 get 的默认值了）
+            template_path, up, down = config_map[config_val]
+
+            # 恢复要求的详细日志格式
+            logger.info(
+                f"请求拉取: {source} | 识别模板: {detected_config} | 指定模板: {config_val} | 最终模板: {template_path}"
+            )
+
+            yaml_text, headers_data = fetch_yaml_text(unquote(url), source)
+            output_bytes = process_yaml_content(yaml_text, template_path, up, down)
+
+            response = send_file(
+                io.BytesIO(output_bytes),
+                mimetype="text/yaml",
+                as_attachment=True,
+                download_name="config.yaml",
+            )
+
+            if headers_data:
+                for h, v in headers_data.items():
+                    if h.lower() in {ih.lower() for ih in INCLUDED_HEADERS}:
+                        response.headers[h] = v
+            return response
     except Exception as e:
         logger.error(f"处理请求失败: {e}")
         return str(e), 500
