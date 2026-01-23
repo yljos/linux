@@ -38,6 +38,10 @@ NODE_EXCLUDE_KEYWORDS = [k.strip() for k in raw_exclude.split(",") if k.strip()]
 CLIENT_FINGERPRINT = "firefox"
 MITCE_URL_FILE = Path("mitce").absolute()
 BAJIE_URL_FILE = Path("bajie").absolute()
+source_map = {
+            "mitce": MITCE_URL_FILE,
+            "bajie": BAJIE_URL_FILE,
+        }
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 PORT = 5002
 HOST = "0.0.0.0"
