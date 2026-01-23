@@ -43,8 +43,6 @@ source_map = {
     "bajie": BAJIE_URL_FILE,
 }
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
-PORT = 5002
-HOST = "0.0.0.0"
 
 # 日志配置
 logging.basicConfig(
@@ -218,7 +216,6 @@ def process_source(source):
         if not path:
             abort(404)
 
-        # === ⚠️ 修正点：下面这部分代码必须和 if 保持对齐，不能缩进在 if 里面 ===
         url = read_url_from_file(path)
 
         ua = request.headers.get("User-Agent", "")
@@ -273,4 +270,4 @@ def process_source(source):
 
 
 if __name__ == "__main__":
-    app.run(debug=False, port=PORT, host=HOST)
+    app.run(debug=False, port=5002, host="0.0.0.0")
