@@ -24,7 +24,7 @@
   "inbounds": [{"type": "tun", "tag": "tun-in", "interface_name": "sing-box", "address": ["172.18.0.1/30"], "auto_route": true, "strict_route": true, "stack": "system", "mtu": 9000, "endpoint_independent_nat": true, "udp_timeout": "5m", "platform": {"http_proxy": {"enabled": true, "server": "127.0.0.1", "server_port": 12138}}}],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": {"server": "dns_direct"}},
-    {"type": "block", "tag": "R"},
+    {"tag": "R", "type": "block"},
     {"tag": "Default", "type": "selector", "outbounds": ["A", "R", "D"], "default": "A"},
     {"tag": "A", "type": "selector", "outbounds": ["SG", "JP", "HK", "US"], "default": "SG"},
     {"tag": "Google", "type": "selector", "outbounds": ["SG", "JP", "US", "HK"], "default": "US"},

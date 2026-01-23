@@ -24,7 +24,7 @@
   "inbounds": [{"type": "mixed", "tag": "mixed-in", "listen": "::", "listen_port": 12138}],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
-    {"type": "block", "tag": "R"},
+    {"tag": "R", "type": "block"},
     {"tag": "Default", "type": "selector", "outbounds": ["A", "R", "D"], "default": "A"},
     {"tag": "A", "type": "selector", "outbounds": ["SG", "JP", "HK", "US"], "default": "SG"},
     {"tag": "Google", "type": "selector", "outbounds": ["SG", "JP", "US", "HK"], "default": "US"},
@@ -35,10 +35,10 @@
     {"tag": "PikPak", "type": "selector", "outbounds": ["SG", "JP", "HK", "US"], "default": "SG"},
     {"tag": "GitHub", "type": "selector", "outbounds": ["SG", "JP", "HK", "US"], "default": "JP"},
     {"tag": "Microsoft", "type": "selector", "outbounds": ["JP", "SG", "HK", "US", "D"], "default": "JP"},
-    {"tag": "HK", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(hk|香港|hongkong))(?!.*(小众)).*$"]}]},
-    {"tag": "SG", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(新加坡|sg|singapore))(?!.*(小众)).*$"]}]},
-    {"tag": "JP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(jp|日本|japan))(?!.*(小众)).*$"]}]},
-    {"tag": "US", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(us|美国|united states|america))(?!.*(小众)).*$"]}]}
+    {"tag": "HK", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(hk|香港|hongkong))(?!.*(小众)).*$"]}]},
+    {"tag": "SG", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(新加坡|sg|singapore))(?!.*(小众)).*$"]}]},
+    {"tag": "JP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(jp|日本|japan))(?!.*(小众)).*$"]}]},
+    {"tag": "US", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(us|美国|united states|america))(?!.*(小众)).*$"]}]}
   ],
   "route": {
     "rules": [

@@ -4,7 +4,7 @@ import re
 import os
 import sys
 import hashlib
-import yaml  # pip install pyyaml
+import yaml
 from typing import Any, Dict, List, Tuple, Union
 from flask import Flask, request, jsonify, Response, abort
 
@@ -174,16 +174,16 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
     config_param = request.args.get("config", detected_config)
     key = request.args.get("key", "")
     if not key:
-        return jsonify({"error": "未授权访问"}), 403
+        abort(404)
     key_hash = hashlib.sha256(key.encode("utf-8")).hexdigest()
     if key_hash != MITCE_PASSWORD_HASH:
-        return jsonify({"error": "未鉴权访问"}), 403
+        abort(404)
     if source == "mitce":
         api_file = MITCE_API_FILE
     elif source == "bajie":
         api_file = BAJIE_API_FILE
     else:
-        return jsonify({"error": "不支持的参数"}), 403
+        abort(404)
     cache_file_path = os.path.join(CACHE_DIR, f"{source}.yaml")
     yaml_content = ""
     # 3. 网络请求
