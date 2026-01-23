@@ -74,7 +74,9 @@ if __name__ == "__main__":
                     print(f"配置文件更新成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
                 else:
                     # 如果校验失败
-                    print(f"校验失败：下载内容不包含 'proxies:'，跳过写入 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                    print(
+                        f"校验失败：下载内容不包含 'proxies:'，跳过写入 - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+                    )
 
             except requests.exceptions.HTTPError as e:
                 print(f"HTTP 错误: {e}")
