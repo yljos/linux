@@ -214,11 +214,6 @@ def process_yaml_content(
 @app.route("/<source>")
 def process_source(source):
     try:
-        source_map = {
-            "mitce": MITCE_URL_FILE,
-            "bajie": BAJIE_URL_FILE,
-        }
-
         path = source_map.get(source)
         if not path:
             abort(404)
