@@ -22,6 +22,7 @@ ExecStart=/usr/bin/podman run \
   -e VERSION=docker \
   -v /data/appdata/plex:/config:Z \
   -v /data/media/Music:/media/Music:ro,z \
+  -v /data/media/mv:/media/mv:ro,z \
   --device=/dev/dri:/dev/dri \
   docker.io/linuxserver/plex:latest
 
