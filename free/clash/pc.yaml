@@ -233,6 +233,7 @@ proxy-groups:
     timeout: 500
     max-failed-times: 3
     include-all-proxies: true
+    hidden: true
     name: HK_auto
     filter: (?i)(香港|hk|hongkong)
   - type: url-test
@@ -242,6 +243,7 @@ proxy-groups:
     timeout: 500
     max-failed-times: 3
     include-all-proxies: true
+    hidden: true
     name: JP_auto
     filter: (?i)(日本|jp|japan)
   - type: url-test
@@ -251,6 +253,7 @@ proxy-groups:
     timeout: 500
     max-failed-times: 3
     include-all-proxies: true
+    hidden: true
     name: SG_auto
     filter: (?i)(新加坡|sg|singapore)
   - type: url-test
@@ -260,6 +263,7 @@ proxy-groups:
     timeout: 500
     max-failed-times: 3
     include-all-proxies: true
+    hidden: true
     name: US_auto
     filter: (?i)(美国|us|united|america)
 rule-providers:
