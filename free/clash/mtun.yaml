@@ -97,8 +97,6 @@ dns:
 proxies: []
 proxy-groups:
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: A
     proxies:
       - SG_auto
@@ -106,16 +104,12 @@ proxy-groups:
       - HK_auto
       - US_auto
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: Default
     proxies:
       - A
       - REJECT
       - DIRECT
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: Google
     proxies:
       - SG_auto
@@ -123,8 +117,6 @@ proxy-groups:
       - HK_auto
       - US_auto
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: OpenAi
     proxies:
       - SG_auto
@@ -132,8 +124,6 @@ proxy-groups:
       - HK_auto
       - US_auto
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: Telegram
     proxies:
       - SG_auto
@@ -141,8 +131,6 @@ proxy-groups:
       - HK_auto
       - US_auto
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: Netflix
     proxies:
       - SG_auto
@@ -150,8 +138,6 @@ proxy-groups:
       - HK_auto
       - US_auto
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: Steam
     proxies:
       - SG_auto
@@ -159,8 +145,6 @@ proxy-groups:
       - HK_auto
       - US_auto
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: PikPak
     proxies:
       - SG_auto
@@ -168,8 +152,6 @@ proxy-groups:
       - HK_auto
       - US_auto
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: GitHub
     proxies:
       - SG_auto
@@ -178,8 +160,6 @@ proxy-groups:
       - US_auto
       - DIRECT
   - type: select
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    include-all-proxies: false
     name: Microsoft
     proxies:
       - DIRECT
