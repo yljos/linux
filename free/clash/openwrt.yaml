@@ -74,9 +74,9 @@ dns:
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
-    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_fallback
-    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_fallback
-    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_fallback
+    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_auto
+    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_auto
+    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_auto
     rule-set:netflix-site: https://cloudflare-dns.com/dns-query#Netflix
     rule-set:youtube-site: https://dns.google/dns-query#Google
     rule-set:googlefcm-site: https://dns.google/dns-query#Google
@@ -91,7 +91,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -110,10 +110,10 @@ proxy-groups:
     include-all-proxies: false
     name: Google
     proxies:
-      - US_fallback
-      - JP_fallback
       - SG_fallback
-      - HK_fallback
+      - JP_fallback
+      - HK_fallback 
+      - US_fallback
       - SG_auto
       - JP_auto
       - HK_auto
@@ -123,10 +123,10 @@ proxy-groups:
     include-all-proxies: false
     name: OpenAi
     proxies:
-      - JP_fallback
-      - US_fallback
       - SG_fallback
-      - HK_fallback
+      - JP_fallback
+      - HK_fallback 
+      - US_fallback
       - SG_auto
       - JP_auto
       - HK_auto
@@ -136,10 +136,10 @@ proxy-groups:
     include-all-proxies: false
     name: Telegram
     proxies:
-      - JP_fallback
-      - US_fallback
       - SG_fallback
-      - HK_fallback
+      - JP_fallback
+      - HK_fallback 
+      - US_fallback
       - SG_auto
       - JP_auto
       - HK_auto
@@ -151,8 +151,8 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
+      - HK_fallback 
       - US_fallback
-      - HK_fallback
       - SG_auto
       - JP_auto
       - HK_auto
@@ -162,9 +162,9 @@ proxy-groups:
     include-all-proxies: false
     name: Steam
     proxies:
-      - HK_fallback
-      - JP_fallback
       - SG_fallback
+      - JP_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -177,7 +177,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -188,11 +188,10 @@ proxy-groups:
     include-all-proxies: false
     name: GitHub
     proxies:
-      - HK_fallback
-      - JP_fallback
       - SG_fallback
+      - JP_fallback
+      - HK_fallback 
       - US_fallback
-      - DIRECT
       - SG_auto
       - JP_auto
       - HK_auto
@@ -202,10 +201,9 @@ proxy-groups:
     include-all-proxies: false
     name: Microsoft
     proxies:
-      - JP_fallback
-      - DIRECT
-      - HK_fallback
       - SG_fallback
+      - JP_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto

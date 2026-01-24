@@ -92,7 +92,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -113,7 +113,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -126,7 +126,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -139,7 +139,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -152,7 +152,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -165,7 +165,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -178,7 +178,7 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
@@ -191,23 +191,22 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
       - SG_auto
       - JP_auto
       - HK_auto
       - US_auto
-      - DIRECT
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: Microsoft
     proxies:
-      - DIRECT
       - SG_fallback
       - JP_fallback
-      - HK_fallback
+      - HK_fallback 
       - US_fallback
+      - DIRECT      
       - SG_auto
       - JP_auto
       - HK_auto
