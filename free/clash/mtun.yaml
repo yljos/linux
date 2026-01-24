@@ -174,7 +174,6 @@ proxy-groups:
     timeout: 500
     max-failed-times: 3
     include-all-proxies: true
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     name: HK_auto
     filter: (?i)(香港|hk|hongkong)
   - type: url-test
@@ -184,7 +183,6 @@ proxy-groups:
     timeout: 500
     max-failed-times: 3
     include-all-proxies: true
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     name: JP_auto
     filter: (?i)(日本|jp|japan)
   - type: url-test
@@ -194,7 +192,6 @@ proxy-groups:
     timeout: 500
     max-failed-times: 3
     include-all-proxies: true
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     name: SG_auto
     filter: (?i)(新加坡|sg|singapore)
   - type: url-test
@@ -204,7 +201,6 @@ proxy-groups:
     timeout: 500
     max-failed-times: 3
     include-all-proxies: true
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     name: US_auto
     filter: (?i)(美国|us|united|america)
 rule-providers:
