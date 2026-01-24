@@ -10,7 +10,8 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/li
 
 # 定义变量
 BASE_DIR="/root/linux/free"
-SERVICES="sing-box clash"
+SERVICES="clash"
+# SERVICES="sing-box clash"
 
 log "脚本启动"
 
