@@ -16,7 +16,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --name=plex \
   --log-driver=journald \
-  --net=host \
+  -p 32400:32400 \
   -e PUID=0 \
   -e PGID=0 \
   -e VERSION=docker \
