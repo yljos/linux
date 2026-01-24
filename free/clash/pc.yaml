@@ -93,6 +93,10 @@ proxy-groups:
       - JP_fallback
       - HK_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -110,6 +114,10 @@ proxy-groups:
       - JP_fallback
       - SG_fallback
       - HK_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -119,6 +127,10 @@ proxy-groups:
       - US_fallback
       - SG_fallback
       - HK_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -128,6 +140,10 @@ proxy-groups:
       - US_fallback
       - SG_fallback
       - HK_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -137,6 +153,10 @@ proxy-groups:
       - JP_fallback
       - US_fallback
       - HK_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -146,6 +166,10 @@ proxy-groups:
       - JP_fallback
       - SG_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -155,6 +179,10 @@ proxy-groups:
       - JP_fallback
       - HK_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -164,6 +192,10 @@ proxy-groups:
       - JP_fallback
       - SG_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
       - DIRECT
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
@@ -175,11 +207,15 @@ proxy-groups:
       - HK_fallback
       - SG_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: fallback
     url: https://cp.cloudflare.com
     interval: 60
     hidden: true
-    timeout: 600
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
@@ -189,7 +225,7 @@ proxy-groups:
     url: https://cp.cloudflare.com
     interval: 60
     hidden: true
-    timeout: 600
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
@@ -199,7 +235,7 @@ proxy-groups:
     url: https://cp.cloudflare.com
     interval: 60
     hidden: true
-    timeout: 600
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
@@ -209,12 +245,52 @@ proxy-groups:
     url: https://cp.cloudflare.com
     interval: 60
     hidden: true
-    timeout: 600
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     name: HK_fallback
     filter: (?i)(香港|hk|hongkong)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: HK_auto
+    filter: (?i)(香港|hk|hongkong)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: JP_auto
+    filter: (?i)(日本|jp|japan)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: SG_auto
+    filter: (?i)(新加坡|sg|singapore)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: US_auto
+    filter: (?i)(美国|us|united|america)
 rule-providers:
   archlinux-site:
     proxy: A

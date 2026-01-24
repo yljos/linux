@@ -86,9 +86,9 @@ dns:
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
-    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_fallback
-    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_fallback
-    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_fallback
+    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_auto
+    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_auto
+    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_auto
     rule-set:netflix-site: https://cloudflare-dns.com/dns-query#Netflix
     rule-set:youtube-site: https://dns.google/dns-query#Google
     rule-set:googlefcm-site: https://dns.google/dns-query#Google
@@ -101,10 +101,10 @@ proxy-groups:
     include-all-proxies: false
     name: A
     proxies:
-      - SG_fallback
-      - JP_fallback
-      - HK_fallback
-      - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -118,115 +118,115 @@ proxy-groups:
     include-all-proxies: false
     name: Google
     proxies:
-      - US_fallback
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: OpenAi
     proxies:
-      - JP_fallback
-      - US_fallback
-      - SG_fallback
-      - HK_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: Telegram
     proxies:
-      - JP_fallback
-      - US_fallback
-      - SG_fallback
-      - HK_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: Netflix
     proxies:
-      - SG_fallback
-      - JP_fallback
-      - US_fallback
-      - HK_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: Steam
     proxies:
-      - HK_fallback
-      - JP_fallback
-      - SG_fallback
-      - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: PikPak
     proxies:
-      - SG_fallback
-      - JP_fallback
-      - HK_fallback
-      - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: GitHub
     proxies:
-      - HK_fallback
-      - JP_fallback
-      - SG_fallback
-      - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
       - DIRECT
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: Microsoft
     proxies:
-      - JP_fallback
       - DIRECT
-      - HK_fallback
-      - SG_fallback
-      - US_fallback
-  - type: fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
+  - type: url-test
     url: https://cp.cloudflare.com
-    interval: 60
-    hidden: true
-    timeout: 600
+    interval: 30
+    tolerance: 300
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    name: JP_fallback
-    filter: (?i)(日本|jp|japan)
-  - type: fallback
-    url: https://cp.cloudflare.com
-    interval: 60
-    hidden: true
-    timeout: 600
-    max-failed-times: 3
-    include-all-proxies: true
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    name: US_fallback
-    filter: (?i)(美国|us|united|america)
-  - type: fallback
-    url: https://cp.cloudflare.com
-    interval: 60
-    hidden: true
-    timeout: 600
-    max-failed-times: 3
-    include-all-proxies: true
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    name: SG_fallback
-    filter: (?i)(新加坡|sg|singapore)
-  - type: fallback
-    url: https://cp.cloudflare.com
-    interval: 60
-    hidden: true
-    timeout: 600
-    max-failed-times: 3
-    include-all-proxies: true
-    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
-    name: HK_fallback
+    name: HK_auto
     filter: (?i)(香港|hk|hongkong)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: JP_auto
+    filter: (?i)(日本|jp|japan)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: SG_auto
+    filter: (?i)(新加坡|sg|singapore)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: US_auto
+    filter: (?i)(美国|us|united|america)
 rule-providers:
   archlinux-site:
     proxy: A
@@ -629,11 +629,11 @@ rules:
   - RULE-SET,youtube-site,Google
   - RULE-SET,google-site,Google
   - RULE-SET,netflix-site,Netflix
-  - RULE-SET,tiktok-site,JP_fallback
+  - RULE-SET,tiktok-site,JP_auto
   - RULE-SET,tmdb-site,A
   - RULE-SET,telegram-site,Telegram
-  - RULE-SET,twitter-site,US_fallback
-  - RULE-SET,facebook-site,US_fallback
+  - RULE-SET,twitter-site,US_auto
+  - RULE-SET,facebook-site,US_auto
   - RULE-SET,reddit-site,A
   - RULE-SET,adguard-site,A
   - RULE-SET,speedtest-site,A
@@ -652,8 +652,8 @@ rules:
   - RULE-SET,pikpak-ip,PikPak
   - RULE-SET,alibaba-ip,DIRECT
   - RULE-SET,telegram-ip,Telegram
-  - RULE-SET,twitter-ip,US_fallback
-  - RULE-SET,facebook-ip,US_fallback
+  - RULE-SET,twitter-ip,US_auto
+  - RULE-SET,facebook-ip,US_auto
   - RULE-SET,netflix-ip,Netflix
   - RULE-SET,google-ip,Google
   - RULE-SET,cn-ip,DIRECT

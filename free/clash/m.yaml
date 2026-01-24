@@ -67,7 +67,7 @@ dns:
     - https://dns.alidns.com/dns-query#DIRECT
   nameserver-policy:
     rule-set:microsoft-site: https://cloudflare-dns.com/dns-query#Microsoft
-    rule-set:cloudflare-site: https://cloudflare-dns.com/dns-query#Cloudflare_fallback
+    rule-set:cloudflare-site: https://cloudflare-dns.com/dns-query#A
     rule-set:ad-site: rcode://refused
     rule-set:huawei-site: rcode://refused
     rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
@@ -75,9 +75,9 @@ dns:
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
-    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_fallback
-    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_fallback
-    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_fallback
+    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_auto
+    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_auto
+    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_auto
     rule-set:netflix-site: https://cloudflare-dns.com/dns-query#Netflix
     rule-set:youtube-site: https://dns.google/dns-query#Google
     rule-set:googlefcm-site: https://dns.google/dns-query#Google
@@ -94,6 +94,10 @@ proxy-groups:
       - JP_fallback
       - HK_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -107,28 +111,40 @@ proxy-groups:
     include-all-proxies: false
     name: Google
     proxies:
-      - US_fallback
-      - JP_fallback
       - SG_fallback
+      - JP_fallback
       - HK_fallback
+      - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: OpenAi
     proxies:
-      - JP_fallback
-      - US_fallback
       - SG_fallback
+      - JP_fallback
       - HK_fallback
+      - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: Telegram
     proxies:
-      - JP_fallback
-      - US_fallback
       - SG_fallback
+      - JP_fallback
       - HK_fallback
+      - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -136,17 +152,25 @@ proxy-groups:
     proxies:
       - SG_fallback
       - JP_fallback
-      - US_fallback
       - HK_fallback
+      - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: Steam
     proxies:
-      - HK_fallback
-      - JP_fallback
       - SG_fallback
+      - JP_fallback
+      - HK_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
@@ -156,31 +180,43 @@ proxy-groups:
       - JP_fallback
       - HK_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: GitHub
     proxies:
-      - HK_fallback
-      - JP_fallback
       - SG_fallback
+      - JP_fallback
+      - HK_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
       - DIRECT
   - type: select
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     include-all-proxies: false
     name: Microsoft
     proxies:
-      - JP_fallback
       - DIRECT
-      - HK_fallback
       - SG_fallback
+      - JP_fallback
+      - HK_fallback
       - US_fallback
+      - SG_auto
+      - JP_auto
+      - HK_auto
+      - US_auto
   - type: fallback
     url: https://cp.cloudflare.com
     interval: 60
     hidden: true
-    timeout: 600
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
@@ -190,7 +226,7 @@ proxy-groups:
     url: https://cp.cloudflare.com
     interval: 60
     hidden: true
-    timeout: 600
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
@@ -200,7 +236,7 @@ proxy-groups:
     url: https://cp.cloudflare.com
     interval: 60
     hidden: true
-    timeout: 600
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
@@ -210,12 +246,52 @@ proxy-groups:
     url: https://cp.cloudflare.com
     interval: 60
     hidden: true
-    timeout: 600
+    timeout: 500
     max-failed-times: 3
     include-all-proxies: true
     exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
     name: HK_fallback
     filter: (?i)(香港|hk|hongkong)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: HK_auto
+    filter: (?i)(香港|hk|hongkong)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: JP_auto
+    filter: (?i)(日本|jp|japan)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: SG_auto
+    filter: (?i)(新加坡|sg|singapore)
+  - type: url-test
+    url: https://cp.cloudflare.com
+    interval: 30
+    tolerance: 300
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    exclude-filter: (?i).*(kr|tw|Traffic|Expire|官网|0\.[0-9]|剩余|到期).*
+    name: US_auto
+    filter: (?i)(美国|us|united|america)
 rule-providers:
   archlinux-site:
     proxy: A
