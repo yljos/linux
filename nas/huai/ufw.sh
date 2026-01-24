@@ -28,6 +28,7 @@ sudo ufw allow proto tcp from 10.0.0.25 to any port 2049 # NFSv4 主端口
 
 # Podman 容器 TCP 端口
 sudo ufw allow proto tcp to any port 8096 # jellyfin server
+sudo ufw allow proto tcp to any port 32400 # plex server
 sudo ufw allow proto tcp to any port 6800 # aria2-pro
 sudo ufw allow proto tcp to any port 6888 # aria2-pro
 sudo ufw allow proto tcp to any port 6880 # ariang
