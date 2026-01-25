@@ -245,25 +245,27 @@ def process_yaml_content(
         # =================================================================
         if "proxy-groups" in template_data:
             raw_groups = template_data["proxy-groups"]
-            
+
             # 1. 获取所有有效节点的名称集合
             all_node_names = [p["name"] for p in final_proxies]
-            
+
             # 临时列表：第一步处理正则筛选 (Filter)
             temp_groups = []
-            
+
             for group in raw_groups:
                 # 如果包含 filter (Mihomo/Meta 格式或自定义)，则进行正则匹配
                 if "filter" in group:
                     pattern = group["filter"]
                     # 无论结果如何，先删除 filter 字段 (由 Python 接管生成静态列表)
                     del group["filter"]
-                    
+
                     try:
                         matcher = re.compile(pattern, re.IGNORECASE)
                         # 在所有节点中寻找匹配项
-                        matched_proxies = [n for n in all_node_names if matcher.search(n)]
-                        
+                        matched_proxies = [
+                            n for n in all_node_names if matcher.search(n)
+                        ]
+
                         if matched_proxies:
                             group["proxies"] = matched_proxies
                             temp_groups.append(group)
@@ -276,26 +278,23 @@ def process_yaml_content(
 
             # 2. 清洗引用链 (处理静态分组中的无效引用)
             final_groups = []
-            
+
             # 获取第一步后“幸存”下来的分组名
             surviving_group_names = {g["name"] for g in temp_groups if "name" in g}
             # Clash 内置关键字白名单
-            BUILT_IN = {"DIRECT", "REJECT", "no-resolve", "PASS"} 
+            BUILT_IN = {"DIRECT", "REJECT", "no-resolve", "PASS"}
             # 有效的目标 = 实际节点 + 幸存的分组 + 内置关键字
             valid_targets = set(all_node_names) | surviving_group_names | BUILT_IN
-            
+
             for group in temp_groups:
                 original_refs = group.get("proxies", [])
                 if not original_refs:
                     # 列表本身为空且没有 filter，直接丢弃
                     continue
-                
+
                 # 过滤引用：只保留存在于 valid_targets 中的项
-                cleaned_refs = [
-                    ref for ref in original_refs 
-                    if ref in valid_targets
-                ]
-                
+                cleaned_refs = [ref for ref in original_refs if ref in valid_targets]
+
                 # 如果清洗后不为空，才保留该分组
                 if cleaned_refs:
                     group["proxies"] = cleaned_refs

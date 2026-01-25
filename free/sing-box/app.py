@@ -325,11 +325,11 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             if node_tag_valid(o.get("tag", ""))
             or o.get("type") in ["urltest", "selector", "direct", "block", "dns"]
         ]
-# 7. 策略组处理
-        
+        # 7. 策略组处理
+
         # --- 第一步：处理正则过滤 (删除无节点生成的动态分组) ---
         temp_outbounds = []
-        
+
         # 提取所有基础节点 Tag (保持原有顺序，供正则匹配使用)
         all_node_tags = [
             o.get("tag")
@@ -346,9 +346,9 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                     for reg in f.get("regex", [])
                 ]
                 del outbound["filter"]  # 清理字段
-                
+
                 if not regex_list:
-                    continue # 无规则则跳过
+                    continue  # 无规则则跳过
 
                 pattern = "|".join(regex_list)
                 try:
@@ -357,7 +357,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                     matched_tags = [
                         tag for tag in all_node_tags if compiled.search(tag)
                     ]
-                    
+
                     if matched_tags:
                         outbound["outbounds"] = matched_tags
                         temp_outbounds.append(outbound)
@@ -370,11 +370,20 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
 
         # --- 第二步：清洗引用链 (如果子分组被删，父分组也要清理对应引用) ---
         final_outbounds = []
-        
+
         # 获取第一步后幸存的所有 Tag (包括节点和分组)，用于白名单校验
         surviving_tags = {o.get("tag") for o in temp_outbounds if o.get("tag")}
         # 补充 Sing-box 内置/保留 Tag，防止误删
-        BUILT_IN_TAGS = {"DIRECT", "direct", "BLOCK", "block", "DNS", "dns-out", "NOOP", "noop"}
+        BUILT_IN_TAGS = {
+            "DIRECT",
+            "direct",
+            "BLOCK",
+            "block",
+            "DNS",
+            "dns-out",
+            "NOOP",
+            "noop",
+        }
 
         for outbound in temp_outbounds:
             # 如果该项有子引用列表 (outbounds 字段)
@@ -382,17 +391,18 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 original_refs = outbound["outbounds"]
                 # 过滤引用：只保留 幸存Tag 或 内置Tag
                 cleaned_refs = [
-                    tag for tag in original_refs 
+                    tag
+                    for tag in original_refs
                     if tag in surviving_tags or tag in BUILT_IN_TAGS
                 ]
-                
+
                 outbound["outbounds"] = cleaned_refs
-                
+
                 # 如果清洗后列表为空，则删除该父分组 (满足 "如果为空也要删除" 的要求)
                 if not cleaned_refs:
                     # print(f"分组 {outbound.get('tag')} 引用为空，已移除", file=sys.stderr)
-                    continue 
-            
+                    continue
+
             final_outbounds.append(outbound)
 
         base_config["outbounds"] = final_outbounds
