@@ -532,6 +532,8 @@ rule-providers:
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
+  - DST-PORT,853,REJECT
+  - DST-PORT,53,dns-out  
   - RULE-SET,cloudflare-site,A
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
   - DOMAIN-KEYWORD,msftncsi.com,Microsoft

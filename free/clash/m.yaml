@@ -69,7 +69,6 @@ dns:
     rule-set:microsoft-site: https://cloudflare-dns.com/dns-query#Microsoft
     rule-set:cloudflare-site: https://cloudflare-dns.com/dns-query#A
     rule-set:ad-site: rcode://refused
-    rule-set:huawei-site: rcode://refused
     rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
     rule-set:steam-site-classical: https://cloudflare-dns.com/dns-query#Steam
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
@@ -350,27 +349,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/googlefcm.mrs
-  huawei-direct-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-direct-site.mrs
-  huawei-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-site.mrs
-  huawei-ip:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-ip.mrs
   javdb-site:
     proxy: A
     interval: 86400
@@ -571,9 +549,8 @@ rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - RULE-SET,ad-site,REJECT-DROP
   - RULE-SET,ad-ip,REJECT-DROP
-  - RULE-SET,huawei-site,REJECT-DROP
-  - RULE-SET,huawei-ip,REJECT-DROP
-  - RULE-SET,huawei-direct-site,DIRECT
+  - DST-PORT,853,REJECT
+  - DST-PORT,53,dns-out
   - RULE-SET,mobile,DIRECT
   - RULE-SET,cloudflare-site,A
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
