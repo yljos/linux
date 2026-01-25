@@ -215,21 +215,19 @@ def process_yaml_content(
 
         proxies_orig = input_data.get("proxies", [])
 
-        # 1. 先进行过滤（确保基于原始名字剔除垃圾节点，如"官网"、"剩余"等）
+        # 1. 先进行过滤（确保基于原始名字剔除垃圾节点）
         filtered_names, _ = filter_node_names(proxies_orig)
 
         final_proxies = []
         for p in proxies_orig:
-            # 只处理被筛选留下的节点
             if isinstance(p, dict) and p.get("name") in filtered_names:
-                # 2. 清洗名字 (中文转英文 + 去除图标/非ASCII)
+                # 2. 清洗名字
                 p["name"] = clean_node_name(p["name"])
-
-                # 3. 处理速度和其他配置
+                # 3. 处理配置
                 process_proxy_config(p, up_pref, down_pref)
                 final_proxies.append(p)
 
-        # 灾难恢复：如果过滤完是空的，保留原始列表但进行清洗
+        # 灾难恢复
         if not final_proxies and proxies_orig:
             logger.warning("过滤后节点为空，回退使用全部节点")
             for p in proxies_orig:
@@ -240,8 +238,72 @@ def process_yaml_content(
 
         # 追加 dns-out
         final_proxies.append({"name": "dns-out", "type": "dns"})
-
         template_data["proxies"] = final_proxies
+
+        # =================================================================
+        # 新增逻辑：策略组 (Proxy Groups) 动态清洗
+        # =================================================================
+        if "proxy-groups" in template_data:
+            raw_groups = template_data["proxy-groups"]
+            
+            # 1. 获取所有有效节点的名称集合
+            all_node_names = [p["name"] for p in final_proxies]
+            
+            # 临时列表：第一步处理正则筛选 (Filter)
+            temp_groups = []
+            
+            for group in raw_groups:
+                # 如果包含 filter (Mihomo/Meta 格式或自定义)，则进行正则匹配
+                if "filter" in group:
+                    pattern = group["filter"]
+                    # 无论结果如何，先删除 filter 字段 (由 Python 接管生成静态列表)
+                    del group["filter"]
+                    
+                    try:
+                        matcher = re.compile(pattern, re.IGNORECASE)
+                        # 在所有节点中寻找匹配项
+                        matched_proxies = [n for n in all_node_names if matcher.search(n)]
+                        
+                        if matched_proxies:
+                            group["proxies"] = matched_proxies
+                            temp_groups.append(group)
+                        # else: 匹配结果为空，丢弃该分组 (不加入 temp_groups)
+                    except Exception as e:
+                        logger.error(f"分组 {group.get('name')} 正则错误: {e}")
+                else:
+                    # 没有 filter 的静态分组，暂时保留进入下一轮
+                    temp_groups.append(group)
+
+            # 2. 清洗引用链 (处理静态分组中的无效引用)
+            final_groups = []
+            
+            # 获取第一步后“幸存”下来的分组名
+            surviving_group_names = {g["name"] for g in temp_groups if "name" in g}
+            # Clash 内置关键字白名单
+            BUILT_IN = {"DIRECT", "REJECT", "no-resolve", "PASS"} 
+            # 有效的目标 = 实际节点 + 幸存的分组 + 内置关键字
+            valid_targets = set(all_node_names) | surviving_group_names | BUILT_IN
+            
+            for group in temp_groups:
+                original_refs = group.get("proxies", [])
+                if not original_refs:
+                    # 列表本身为空且没有 filter，直接丢弃
+                    continue
+                
+                # 过滤引用：只保留存在于 valid_targets 中的项
+                cleaned_refs = [
+                    ref for ref in original_refs 
+                    if ref in valid_targets
+                ]
+                
+                # 如果清洗后不为空，才保留该分组
+                if cleaned_refs:
+                    group["proxies"] = cleaned_refs
+                    final_groups.append(group)
+                # else: 清洗后为空 (例如所有子分组都被删了)，则删除该父分组
+
+            template_data["proxy-groups"] = final_groups
+        # =================================================================
 
         output = pyyaml.dump(
             template_data,
