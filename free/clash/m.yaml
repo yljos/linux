@@ -75,9 +75,9 @@ dns:
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
-    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_auto
-    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_auto
-    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_auto
+    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#US_Auto
+    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#US_Auto
+    rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#JP_Auto
     rule-set:netflix-site: https://cloudflare-dns.com/dns-query#Netflix
     rule-set:youtube-site: https://dns.google/dns-query#Google
     rule-set:googlefcm-site: https://dns.google/dns-query#Google
@@ -88,10 +88,10 @@ proxy-groups:
   - type: select
     name: A
     proxies:
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: select
     name: Default
     proxies:
@@ -101,60 +101,60 @@ proxy-groups:
   - type: select
     name: Google
     proxies:
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: select
     name: OpenAi
     proxies:
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: select
     name: Telegram
     proxies:
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: select
     name: Netflix
     proxies:
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: select
     name: Steam
     proxies:
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: select
     name: PikPak
     proxies:
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: select
     name: GitHub
     proxies:
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: select
     name: Microsoft
     proxies:
       - DIRECT
-      - JP_auto
-      - SG_auto
-      - HK_auto
-      - US_auto
+      - JP_Auto
+      - SG_Auto
+      - HK_Auto
+      - US_Auto
   - type: url-test
     url: https://cp.cloudflare.com
     interval: 30
@@ -163,7 +163,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: HK_auto
+    name: HK_Auto
     filter: (?i)(香港|hk|hongkong)
   - type: url-test
     url: https://cp.cloudflare.com
@@ -173,7 +173,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: JP_auto
+    name: JP_Auto
     filter: (?i)(日本|jp|japan)
   - type: url-test
     url: https://cp.cloudflare.com
@@ -183,7 +183,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: SG_auto
+    name: SG_Auto
     filter: (?i)(新加坡|sg|singapore)
   - type: url-test
     url: https://cp.cloudflare.com
@@ -193,7 +193,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: US_auto
+    name: US_Auto
     filter: (?i)(美国|us|united|america)
 rule-providers:
   archlinux-site:
@@ -597,11 +597,11 @@ rules:
   - RULE-SET,youtube-site,Google
   - RULE-SET,google-site,Google
   - RULE-SET,netflix-site,Netflix
-  - RULE-SET,tiktok-site,JP_fallback
+  - RULE-SET,tiktok-site,JP_Auto
   - RULE-SET,tmdb-site,A
   - RULE-SET,telegram-site,Telegram
-  - RULE-SET,twitter-site,US_fallback
-  - RULE-SET,facebook-site,US_fallback
+  - RULE-SET,twitter-site,JP_Auto
+  - RULE-SET,facebook-site,JP_Auto
   - RULE-SET,reddit-site,A
   - RULE-SET,adguard-site,A
   - RULE-SET,speedtest-site,A
@@ -620,8 +620,8 @@ rules:
   - RULE-SET,pikpak-ip,PikPak
   - RULE-SET,alibaba-ip,DIRECT
   - RULE-SET,telegram-ip,Telegram
-  - RULE-SET,twitter-ip,US_fallback
-  - RULE-SET,facebook-ip,US_fallback
+  - RULE-SET,twitter-ip,JP_Auto
+  - RULE-SET,facebook-ip,JP_Auto
   - RULE-SET,netflix-ip,Netflix
   - RULE-SET,google-ip,Google
   - RULE-SET,cn-ip,DIRECT
