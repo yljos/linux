@@ -29,8 +29,8 @@ alias cdmedia="mount-data; cd /data/media"
 alias cdmutt="cd /home/huai/.config/mutt"
 
 # 音频控制
-alias 0="pactl set-default-sink alsa_output.usb-DeSheng_Electronics_Inc._Star_Y360-00.analog-stereo; vol 50"
-alias 1="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 60"
+alias 0="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 60"
+alias 1="pactl set-default-sink ialsa_output.pci-0000_00_1f.3.analog-stereo; vol 50"
 alias 2="pactl set-default-sink bluez_output.E6_30_6D_65_E0_5F.1;vol 90" 
 vol() {
     # 1. 调整音量
