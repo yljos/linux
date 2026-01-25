@@ -32,7 +32,7 @@ raw_keywords = (
 )
 NODE_KEYWORDS = [k.strip() for k in raw_keywords.split(",") if k.strip()]
 
-raw_exclude = "官网,流量,倍率,剩余,Australia,到期"
+raw_exclude = "官网,流量,倍率,剩余,Australia,到期,HK3-HY2,HK4-HY2,HK5-HY2"
 NODE_EXCLUDE_KEYWORDS = [k.strip() for k in raw_exclude.split(",") if k.strip()]
 
 CLIENT_FINGERPRINT = "firefox"

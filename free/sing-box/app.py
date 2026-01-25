@@ -11,7 +11,17 @@ from flask import Flask, request, jsonify, Response, abort
 # ================= 配置区域 =================
 
 NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡", "日本"]
-NODE_EXCLUDE_KEYWORDS = ["到期", "官网", "剩余", "10", "重置", "流量"]
+NODE_EXCLUDE_KEYWORDS = [
+    "到期",
+    "官网",
+    "剩余",
+    "重置",
+    "流量",
+    "倍率",
+    "HK3-HY2",
+    "HK4-HY2",
+    "HK5-HY2",
+]
 
 TEMPLATE_MAP = {
     "default": "openwrt.json",
