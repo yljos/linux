@@ -44,9 +44,10 @@
     "rules": [
       {"inbound": ["tproxy-in"], "action": "sniff", "timeout": "300ms"},
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
+      {"port": 853, "action": "reject", "no_drop": true},
       {"port": 53, "action": "hijack-dns"},
       {"protocol": "dns", "action": "hijack-dns"},
-      {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject"},
+      {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject", "no_drop": true},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "ad-ip", "action": "reject"},
       {"domain": ["cdn.jsdmirror.com", "ntp.aliyun.com"], "outbound": "D"},
