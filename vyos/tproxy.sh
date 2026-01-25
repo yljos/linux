@@ -8,8 +8,8 @@ LAN_IF="eth0"
 
 # 检查 root 权限
 if [ "$EUID" -ne 0 ]; then
-	echo "错误：请使用 sudo 运行此脚本"
-	exit 1
+    echo "错误：请使用 sudo 运行此脚本"
+    exit 1
 fi
 
 echo "正在配置 sing-box TProxy (智能防泄露版)..."
@@ -30,6 +30,11 @@ nft 'add chain ip sing-box prerouting { type filter hook prerouting priority man
 # 1. 绝对排除：DHCP 必须直连
 nft add rule ip sing-box prerouting udp dport { 67, 68 } return
 
+# [新增] 1.5. 强制降级：阻断 DoT (853)
+# 核心逻辑：直接向客户端发送 TCP Reset 信号。
+# 效果：Android/iOS 会认为 DoT 不可用，立即回落到 UDP 53，随后被下方的规则 2 捕获。
+nft add rule ip sing-box prerouting iifname "$LAN_IF" tcp dport 853 reject with tcp reset
+
 # 2. 绝对劫持：DNS (UDP/TCP 53)
 # 只要是 53 端口，不管目标 IP 是公网还是内网，先打标记送走
 # 配合 sing-box 的 sniff 功能，这会完美处理所有 DNS
@@ -48,4 +53,4 @@ nft add rule ip sing-box prerouting iifname "$LAN_IF" meta l4proto { tcp, udp } 
 nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto tcp counter tproxy to :$PROXY_PORT accept
 nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto udp counter tproxy to :$PROXY_PORT accept
 
-echo "配置完成！DNS 和流量已强制接管。"
+echo "配置完成！已阻断 DoT (853)，DNS 和流量已强制接管。"
