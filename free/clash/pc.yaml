@@ -85,14 +85,14 @@ proxy-groups:
   - type: select
     name: A
     proxies:
-      - SG_fallback
-      - JP_fallback
-      - HK_fallback
-      - US_fallback
       - SG_auto
       - JP_auto
       - HK_auto
       - US_auto
+      - SG_fallback
+      - JP_fallback
+      - HK_fallback
+      - US_fallback
   - type: select
     name: Default
     proxies:
