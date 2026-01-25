@@ -87,12 +87,12 @@ proxy-groups:
   - type: select
     name: A
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
@@ -104,89 +104,89 @@ proxy-groups:
   - type: select
     name: Google
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: OpenAi
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: Telegram
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: Netflix
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: Steam
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: PikPak
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: GitHub
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: Microsoft
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: fallback

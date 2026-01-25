@@ -85,12 +85,12 @@ proxy-groups:
   - type: select
     name: A
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
   - type: select
@@ -103,97 +103,97 @@ proxy-groups:
     hidden: true
     name: Google
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     hidden: true
     name: OpenAi
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     hidden: true
     name: Telegram
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     hidden: true
     name: Netflix
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     hidden: true
     name: Steam
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     hidden: true
     name: PikPak
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     hidden: true
     name: GitHub
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     hidden: true
     name: Microsoft
     proxies:
-      - SG_fallback
       - JP_fallback
+      - SG_fallback
       - HK_fallback
       - US_fallback
       - DIRECT
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: fallback

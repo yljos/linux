@@ -99,8 +99,8 @@ proxy-groups:
   - type: select
     name: A
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
@@ -112,50 +112,50 @@ proxy-groups:
   - type: select
     name: Google
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: OpenAi
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: Telegram
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: Netflix
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: Steam
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: PikPak
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: select
     name: GitHub
     proxies:
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
       - DIRECT
@@ -163,8 +163,8 @@ proxy-groups:
     name: Microsoft
     proxies:
       - DIRECT
-      - SG_auto
       - JP_auto
+      - SG_auto
       - HK_auto
       - US_auto
   - type: url-test
