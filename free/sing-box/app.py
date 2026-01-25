@@ -8,9 +8,14 @@ import yaml
 from typing import Any, Dict, List, Tuple, Union
 from flask import Flask, request, jsonify, Response, abort
 
+app = Flask(__name__)
+
 # ================= 配置区域 =================
 
+# 1. 区域关键词 (保留这些地区)
 NODE_REGION_KEYWORDS = ["JP", "SG", "HK", "US", "美国", "香港", "新加坡", "日本"]
+
+# 2. 排除关键词 (黑名单)
 NODE_EXCLUDE_KEYWORDS = [
     "到期",
     "官网",
@@ -22,6 +27,15 @@ NODE_EXCLUDE_KEYWORDS = [
     "HK4-HY2",
     "HK5-HY2",
 ]
+
+# 3. 节点重命名映射表 (中文 -> 英文)
+RENAME_MAP = {
+    "香港": "HK",
+    "美国": "US",
+    "新加坡": "SG",
+    "日本": "JP",
+    "家宽": "Home", 
+}
 
 TEMPLATE_MAP = {
     "default": "openwrt.json",
@@ -37,7 +51,28 @@ CACHE_DIR = "cache"
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
 
-app = Flask(__name__)
+
+# ================= 辅助函数 =================
+
+
+def clean_node_name(name: str) -> str:
+    """清洗节点名称：替换国家名 -> 移除图标/特殊字符 -> 去空格"""
+    if not name:
+        return name
+
+    # 1. 关键词替换 (中文 -> 英文)
+    for k, v in RENAME_MAP.items():
+        name = name.replace(k, v)
+
+    # 2. 移除所有非 ASCII 字符 (暴力去除图标、旗帜、剩余中文)
+    # [^\x00-\x7F] 匹配所有非英文字符
+    name = re.sub(r"[^\x00-\x7F]+", "", name)
+
+    # 3. 清理多余空格 (例如 "US   Node" -> "US Node")
+    name = re.sub(r"\s+", " ", name).strip()
+
+    return name
+
 
 # ================= 核心转换逻辑 =================
 
@@ -234,17 +269,31 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             )
         if not isinstance(clash_data, dict) or "proxies" not in clash_data:
             return jsonify({"error": "无效的 Clash 配置"}), 400
+
         raw_proxies = clash_data["proxies"]
         nodes = []
         for proxy in raw_proxies:
             try:
+                original_name = proxy.get("name", "")
+
+                # 【新增】Step 1: 优先进行黑名单排除
+                # 必须在清洗前判断，否则"剩余流量"清洗后变空，可能被错误保留
+                if any(ex in original_name for ex in NODE_EXCLUDE_KEYWORDS):
+                    continue
+
+                # 【新增】Step 2: 清洗节点名称
+                proxy["name"] = clean_node_name(original_name)
+
+                # Step 3: 转换为 Sing-box 格式
                 sb_node = clash_to_singbox(proxy)
                 if sb_node:
                     nodes.append(sb_node)
             except Exception:
                 continue
+
         if not nodes:
             return jsonify({"error": "没有转换成功的节点"}), 400
+
         # 5. 模板加载与合并
         template_filename = TEMPLATE_MAP.get(config_param, TEMPLATE_MAP["default"])
         config_path = os.path.join(os.path.dirname(__file__), template_filename)
@@ -259,11 +308,13 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         ]
         outbounds.extend(new_nodes)
 
-        # 6. 关键词过滤
+        # 6. 关键词过滤 (白名单检查)
+        # 注意：这里的过滤是基于【清洗后】的名字进行的
         def node_tag_valid(tag: str) -> bool:
             tag_upper = tag.upper() if tag else ""
             if not any(region.upper() in tag_upper for region in NODE_REGION_KEYWORDS):
                 return False
+            # 这里的 Exclude 检查作为兜底，虽然上面循环里已经检查过了
             if any(exclude in tag for exclude in NODE_EXCLUDE_KEYWORDS):
                 return False
             return True

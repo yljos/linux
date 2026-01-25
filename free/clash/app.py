@@ -1,3 +1,4 @@
+import re
 from flask import Flask, send_file, request, abort
 import yaml as pyyaml
 import requests
@@ -11,7 +12,8 @@ import json
 
 app = Flask(__name__)
 
-# 配置项
+# ================= 配置区域 =================
+
 TEMPLATE_PATH_PC = Path("pc.yaml")
 TEMPLATE_PATH_MTUN = Path("mtun.yaml")
 TEMPLATE_PATH_OPENWRT = Path("openwrt.yaml")
@@ -27,13 +29,24 @@ INCLUDED_HEADERS = ["Subscription-Userinfo"]
 CACHE_DIR = Path("cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
+# 1. 包含关键词 (保留这些区域)
 raw_keywords = (
     "US,HK,Hong Kong,Singapore,Japan,United States,SG,JP,美国,香港,新加坡,日本"
 )
 NODE_KEYWORDS = [k.strip() for k in raw_keywords.split(",") if k.strip()]
 
+# 2. 排除关键词 (在这里维护你的黑名单)
 raw_exclude = "官网,流量,倍率,剩余,Australia,到期,HK3-HY2,HK4-HY2,HK5-HY2"
 NODE_EXCLUDE_KEYWORDS = [k.strip() for k in raw_exclude.split(",") if k.strip()]
+
+# 3. 节点重命名映射表 (中文 -> 英文)
+RENAME_MAP = {
+    "香港": "HK",
+    "美国": "US",
+    "新加坡": "SG",
+    "日本": "JP",
+    "家宽": "Home",
+}
 
 CLIENT_FINGERPRINT = "firefox"
 MITCE_URL_FILE = Path("mitce").absolute()
@@ -44,13 +57,16 @@ source_map = {
 }
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 
-# 日志配置
+# ================= 日志配置 =================
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(message)s",
     datefmt="%H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+
+
+# ================= 辅助函数 =================
 
 
 def read_url_from_file(path: Path) -> str:
@@ -67,6 +83,25 @@ def is_valid_clash_yaml(text: str) -> bool:
     if not text:
         return False
     return "proxies:" in text
+
+
+def clean_node_name(name: str) -> str:
+    """清洗节点名称：替换国家名 -> 移除图标/特殊字符 -> 去空格"""
+    if not name:
+        return name
+
+    # 1. 关键词替换 (中文 -> 英文)
+    for k, v in RENAME_MAP.items():
+        name = name.replace(k, v)
+
+    # 2. 移除所有非 ASCII 字符 (暴力去除图标、旗帜、剩余中文)
+    # [^\x00-\x7F] 匹配所有非英文字符
+    name = re.sub(r"[^\x00-\x7F]+", "", name)
+
+    # 3. 清理多余空格 (例如 "US   Node" -> "US Node")
+    name = re.sub(r"\s+", " ", name).strip()
+
+    return name
 
 
 @app.before_request
@@ -140,6 +175,7 @@ def fetch_yaml_text(url, source_name):
 
 
 def filter_node_names(proxies):
+    """过滤逻辑：保留在白名单中 且 不在黑名单中的节点"""
     all_names = [p.get("name") for p in proxies if isinstance(p, dict) and "name" in p]
     filtered = [
         n
@@ -178,23 +214,34 @@ def process_yaml_content(
             template_data = pyyaml.safe_load(f)
 
         proxies_orig = input_data.get("proxies", [])
-        for p in proxies_orig:
-            process_proxy_config(p, up_pref, down_pref)
 
+        # 1. 先进行过滤（确保基于原始名字剔除垃圾节点，如"官网"、"剩余"等）
         filtered_names, _ = filter_node_names(proxies_orig)
-        proxies = [
-            p
-            for p in proxies_orig
-            if isinstance(p, dict) and p.get("name") in filtered_names
-        ]
 
-        if not proxies:
-            proxies = proxies_orig
+        final_proxies = []
+        for p in proxies_orig:
+            # 只处理被筛选留下的节点
+            if isinstance(p, dict) and p.get("name") in filtered_names:
+                # 2. 清洗名字 (中文转英文 + 去除图标/非ASCII)
+                p["name"] = clean_node_name(p["name"])
+
+                # 3. 处理速度和其他配置
+                process_proxy_config(p, up_pref, down_pref)
+                final_proxies.append(p)
+
+        # 灾难恢复：如果过滤完是空的，保留原始列表但进行清洗
+        if not final_proxies and proxies_orig:
+            logger.warning("过滤后节点为空，回退使用全部节点")
+            for p in proxies_orig:
+                if isinstance(p, dict):
+                    p["name"] = clean_node_name(p.get("name", ""))
+                    process_proxy_config(p, up_pref, down_pref)
+            final_proxies = proxies_orig
 
         # 追加 dns-out
-        proxies.append({"name": "dns-out", "type": "dns"})
+        final_proxies.append({"name": "dns-out", "type": "dns"})
 
-        template_data["proxies"] = proxies
+        template_data["proxies"] = final_proxies
 
         output = pyyaml.dump(
             template_data,
