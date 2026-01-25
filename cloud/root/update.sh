@@ -10,18 +10,22 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/li
 
 # 定义变量
 BASE_DIR="/root/linux/free"
-SERVICES="clash"
-# SERVICES="sing-box clash"
+# 在这里添加 sing-box 即可，脚本会自动处理
+SERVICES="clash sing-box" 
+
+# 记录上次构建成功的 Hash 值的文件名
+HASH_FILE=".last_built_hash"
 
 log "脚本启动"
 
-# 进入父目录执行一次性更新
+# 1. 进入父目录执行 Git Pull
 cd "$BASE_DIR" || {
     log "错误: 无法进入目录 $BASE_DIR"
     exit 1
 }
 
 # 捕获 git pull 的输出
+log "正在检查 Git 仓库更新..."
 GIT_OUTPUT=$(git pull)
 EXIT_CODE=$?
 
@@ -31,28 +35,57 @@ if [ $EXIT_CODE -ne 0 ]; then
     exit 1
 fi
 
-# 检查是否有更新
-if echo "$GIT_OUTPUT" | grep -q "Already up to date"; then
-    log "当前已是最新，无需更新。"
-    exit 0
-fi
+# 注意：这里去掉了“Already up to date”直接退出的逻辑
+# 因为我们需要进入循环检查具体的子目录 Hash，
+# 以防上次 Git 更新了但构建失败的情况。
 
-log "检测到代码更新，开始构建服务..."
-
-# 循环构建和重启服务
+# 2. 循环检查每个服务
 for SERVICE in $SERVICES; do
     WORKDIR="$BASE_DIR/$SERVICE"
 
-    if cd "$WORKDIR"; then
-        log "正在构建镜像: $SERVICE"
-        if podman build -t "$SERVICE" .; then
-            log "构建成功，正在重启服务: $SERVICE"
-            systemctl restart "$SERVICE"
+    # 检查目录是否存在
+    if [ ! -d "$WORKDIR" ]; then
+        log "警告: 服务目录不存在，跳过: $WORKDIR"
+        continue
+    fi
 
-            # 缓冲一下，避免 CPU 飙升
-            sleep 3
+    if cd "$WORKDIR"; then
+        # === 核心逻辑：获取哈希值 ===
+        # 获取该目录(.)最近一次提交的完整 Commit Hash
+        CURRENT_HASH=$(git log -n 1 --pretty=format:%H -- .)
+        
+        # 读取上次构建成功的 Hash (如果文件不存在则为空)
+        if [ -f "$HASH_FILE" ]; then
+            LAST_HASH=$(cat "$HASH_FILE")
         else
-            log "错误: $SERVICE 构建镜像失败"
+            LAST_HASH=""
+        fi
+
+        # === 核心逻辑：对比哈希值 ===
+        if [ "$CURRENT_HASH" == "$LAST_HASH" ]; then
+            log "[$SERVICE] 目录无变更 (Hash: ${CURRENT_HASH:0:7})，跳过构建。"
+        else
+            log "[$SERVICE] 检测到变更或无构建记录"
+            log "  -> 旧 Hash: ${LAST_HASH:0:7}"
+            log "  -> 新 Hash: ${CURRENT_HASH:0:7}"
+            log "  -> 正在构建镜像: $SERVICE"
+
+            # 执行构建
+            if podman build -t "$SERVICE" .; then
+                log "[$SERVICE] 构建成功，正在重启服务..."
+                
+                # 重启服务
+                systemctl restart "$SERVICE"
+                
+                # === 关键：构建成功后，更新本地 Hash 记录 ===
+                echo "$CURRENT_HASH" > "$HASH_FILE"
+                log "[$SERVICE] Hash 记录已更新。"
+
+                # 缓冲一下，避免 CPU 飙升
+                sleep 3
+            else
+                log "错误: [$SERVICE] 构建镜像失败！Hash 记录未更新，下次将重试。"
+            fi
         fi
     else
         log "警告: 无法进入服务目录 $WORKDIR"
