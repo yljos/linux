@@ -34,7 +34,7 @@ RENAME_MAP = {
     "美国": "US",
     "新加坡": "SG",
     "日本": "JP",
-    "家宽": "Home", 
+    "家宽": "Home",
 }
 
 TEMPLATE_MAP = {
