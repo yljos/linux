@@ -21,7 +21,7 @@ TEMPLATE_PATH_M = Path("m.yaml")
 
 USER_AGENT = "clash-verge"
 HYSTERIA2_UP = "40 Mbps"
-HYSTERIA2_DOWN = "200 Mbps"
+HYSTERIA2_DOWN = "100 Mbps"
 HYSTERIA2_UP_M = "30 Mbps"
 HYSTERIA2_DOWN_M = "60 Mbps"
 INCLUDED_HEADERS = ["Subscription-Userinfo"]
