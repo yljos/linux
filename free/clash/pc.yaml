@@ -89,10 +89,6 @@ proxy-groups:
       - SG_auto
       - HK_auto
       - US_auto
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
   - type: select
     name: Default
     proxies:
@@ -103,10 +99,6 @@ proxy-groups:
     hidden: true
     name: Google
     proxies:
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
       - JP_auto
       - SG_auto
       - HK_auto
@@ -115,10 +107,6 @@ proxy-groups:
     hidden: true
     name: OpenAi
     proxies:
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
       - JP_auto
       - SG_auto
       - HK_auto
@@ -127,10 +115,6 @@ proxy-groups:
     hidden: true
     name: Telegram
     proxies:
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
       - JP_auto
       - SG_auto
       - HK_auto
@@ -139,10 +123,6 @@ proxy-groups:
     hidden: true
     name: Netflix
     proxies:
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
       - JP_auto
       - SG_auto
       - HK_auto
@@ -151,10 +131,6 @@ proxy-groups:
     hidden: true
     name: Steam
     proxies:
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
       - JP_auto
       - SG_auto
       - HK_auto
@@ -163,10 +139,6 @@ proxy-groups:
     hidden: true
     name: PikPak
     proxies:
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
       - JP_auto
       - SG_auto
       - HK_auto
@@ -175,10 +147,6 @@ proxy-groups:
     hidden: true
     name: GitHub
     proxies:
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
       - JP_auto
       - SG_auto
       - HK_auto
@@ -187,51 +155,11 @@ proxy-groups:
     hidden: true
     name: Microsoft
     proxies:
-      - JP_fallback
-      - SG_fallback
-      - HK_fallback
-      - US_fallback
       - DIRECT
       - JP_auto
       - SG_auto
       - HK_auto
       - US_auto
-  - type: fallback
-    url: https://cp.cloudflare.com
-    interval: 60
-    hidden: true
-    timeout: 500
-    max-failed-times: 3
-    include-all-proxies: true
-    name: JP_fallback
-    filter: (?i)(日本|jp|japan)
-  - type: fallback
-    url: https://cp.cloudflare.com
-    interval: 60
-    hidden: true
-    timeout: 500
-    max-failed-times: 3
-    include-all-proxies: true
-    name: US_fallback
-    filter: (?i)(美国|us|united|america)
-  - type: fallback
-    url: https://cp.cloudflare.com
-    interval: 60
-    hidden: true
-    timeout: 500
-    max-failed-times: 3
-    include-all-proxies: true
-    name: SG_fallback
-    filter: (?i)(新加坡|sg|singapore)
-  - type: fallback
-    url: https://cp.cloudflare.com
-    interval: 60
-    hidden: true
-    timeout: 500
-    max-failed-times: 3
-    include-all-proxies: true
-    name: HK_fallback
-    filter: (?i)(香港|hk|hongkong)
   - type: url-test
     url: https://cp.cloudflare.com
     interval: 30
