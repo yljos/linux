@@ -162,9 +162,9 @@ def process_hysteria2(
         node["server_ports"] = proxy["ports"]
     elif "port" in proxy:
         node["server_port"] = int(proxy["port"])
-    # 宽带速度处理 (默认: 上传 40 / 下载 200)
+    # 宽带速度处理 (默认: 上传 40 / 下载 100)
     node["up_mbps"] = 40
-    node["down_mbps"] = 200
+    node["down_mbps"] = 100
     if "obfs" in proxy:
         node["obfs"] = {
             "type": "salamander",
@@ -325,36 +325,77 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
             if node_tag_valid(o.get("tag", ""))
             or o.get("type") in ["urltest", "selector", "direct", "block", "dns"]
         ]
-        # 7. 策略组处理
+# 7. 策略组处理
+        
+        # --- 第一步：处理正则过滤 (删除无节点生成的动态分组) ---
+        temp_outbounds = []
+        
+        # 提取所有基础节点 Tag (保持原有顺序，供正则匹配使用)
+        all_node_tags = [
+            o.get("tag")
+            for o in filtered_outbounds
+            if o.get("type") not in ["urltest", "selector", "direct", "block", "dns"]
+        ]
+
         for outbound in filtered_outbounds:
+            # 检查是否为动态策略组
             if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
                 regex_list = [
                     reg
                     for f in outbound.get("filter", [])
                     for reg in f.get("regex", [])
                 ]
-                del outbound["filter"]
+                del outbound["filter"]  # 清理字段
+                
                 if not regex_list:
-                    continue
+                    continue # 无规则则跳过
+
                 pattern = "|".join(regex_list)
                 try:
                     compiled = re.compile(pattern, re.IGNORECASE)
-                    all_valid_tags = [
-                        o.get("tag")
-                        for o in filtered_outbounds
-                        if o.get("type")
-                        not in ["urltest", "selector", "direct", "block", "dns"]
-                    ]
+                    # 匹配基础节点
                     matched_tags = [
-                        tag for tag in all_valid_tags if compiled.search(tag)
+                        tag for tag in all_node_tags if compiled.search(tag)
                     ]
+                    
                     if matched_tags:
                         outbound["outbounds"] = matched_tags
-                    else:
-                        outbound["outbounds"] = ["DIRECT"]
+                        temp_outbounds.append(outbound)
+                    # else: 匹配为空，不加入 temp_outbounds (即删除该国家/地区分组)
                 except re.error as e:
                     print(f"无效的正则表达式 '{pattern}': {e}", file=sys.stderr)
-        base_config["outbounds"] = filtered_outbounds
+            else:
+                # 静态分组或普通节点，进入待处理列表
+                temp_outbounds.append(outbound)
+
+        # --- 第二步：清洗引用链 (如果子分组被删，父分组也要清理对应引用) ---
+        final_outbounds = []
+        
+        # 获取第一步后幸存的所有 Tag (包括节点和分组)，用于白名单校验
+        surviving_tags = {o.get("tag") for o in temp_outbounds if o.get("tag")}
+        # 补充 Sing-box 内置/保留 Tag，防止误删
+        BUILT_IN_TAGS = {"DIRECT", "direct", "BLOCK", "block", "DNS", "dns-out", "NOOP", "noop"}
+
+        for outbound in temp_outbounds:
+            # 如果该项有子引用列表 (outbounds 字段)
+            if "outbounds" in outbound and isinstance(outbound["outbounds"], list):
+                original_refs = outbound["outbounds"]
+                # 过滤引用：只保留 幸存Tag 或 内置Tag
+                cleaned_refs = [
+                    tag for tag in original_refs 
+                    if tag in surviving_tags or tag in BUILT_IN_TAGS
+                ]
+                
+                outbound["outbounds"] = cleaned_refs
+                
+                # 如果清洗后列表为空，则删除该父分组 (满足 "如果为空也要删除" 的要求)
+                if not cleaned_refs:
+                    # print(f"分组 {outbound.get('tag')} 引用为空，已移除", file=sys.stderr)
+                    continue 
+            
+            final_outbounds.append(outbound)
+
+        base_config["outbounds"] = final_outbounds
         print(f"[{source}] 处理完成，返回 {len(new_nodes)} 个新节点")
         json_str = json.dumps(base_config, ensure_ascii=False, separators=(",", ":"))
         return Response(
