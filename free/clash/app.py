@@ -256,8 +256,12 @@ def process_yaml_content(
                 # 如果包含 filter (Mihomo/Meta 格式或自定义)，则进行正则匹配
                 if "filter" in group:
                     pattern = group["filter"]
-                    # 无论结果如何，先删除 filter 字段 (由 Python 接管生成静态列表)
+                    
+                    # =========================================================
+                    # 修改：处理节点替换时，一并删除 filter 和 include-all-proxies
+                    # =========================================================
                     del group["filter"]
+                    group.pop("include-all-proxies", None)
 
                     try:
                         matcher = re.compile(pattern, re.IGNORECASE)
