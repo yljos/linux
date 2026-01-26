@@ -204,3 +204,38 @@ while true; do
 	sleep 1
 	((SEC++))
 done
+
+# 5. 蓝牙 (修复版)
+update_bluetooth() {
+	BLUETOOTH_STATUS=""
+
+	# 检查蓝牙守护进程是否运行
+	if ! pgrep -x 'bluetoothd' >/dev/null 2>&1; then return; fi
+
+	# 1. 获取第一个 "已连接" (Connected) 的设备信息
+	# 输出格式通常为: Device AA:BB:CC:DD:EE:FF DeviceName
+	local connected_line
+	connected_line=$(bluetoothctl devices Connected | head -n 1)
+
+	# 如果没有设备连接，直接返回 (BLUETOOTH_STATUS 保持为空)
+	if [[ -z "$connected_line" ]]; then
+		return
+	fi
+
+	# 2. 提取 MAC 地址 (第二列)
+	local mac
+	mac=$(echo "$connected_line" | awk '{print $2}')
+
+	# 3. 指定 MAC 地址查询电量
+	# bluetoothctl info <MAC> 输出中包含: Battery Percentage: 0x5a (90)
+	local level
+	level=$(bluetoothctl info "$mac" | grep -oP 'Battery Percentage:.*\(\K\d+')
+
+	if [[ -n "$level" ]]; then
+		# 情况 A: 已连接且读取到电量
+		BLUETOOTH_STATUS="${ICON_BT}${level}%"
+	else
+		# 情况 B: 已连接但该设备不报告电量 (显示 Conn 或设备名)
+		BLUETOOTH_STATUS="${ICON_BT}Conn"
+	fi
+}
