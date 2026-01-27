@@ -277,7 +277,6 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 original_name = proxy.get("name", "")
 
                 # 【新增】Step 1: 优先进行黑名单排除
-                # 必须在清洗前判断，否则"剩余流量"清洗后变空，可能被错误保留
                 if any(ex in original_name for ex in NODE_EXCLUDE_KEYWORDS):
                     continue
 
@@ -330,7 +329,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         # --- 第一步：处理正则过滤 (删除无节点生成的动态分组) ---
         temp_outbounds = []
 
-        # 提取所有基础节点 Tag (保持原有顺序，供正则匹配使用)
+        # 提取所有基础节点 Tag
         all_node_tags = [
             o.get("tag")
             for o in filtered_outbounds
@@ -353,7 +352,6 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                 pattern = "|".join(regex_list)
                 try:
                     compiled = re.compile(pattern, re.IGNORECASE)
-                    # 匹配基础节点
                     matched_tags = [
                         tag for tag in all_node_tags if compiled.search(tag)
                     ]
@@ -361,19 +359,16 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
                     if matched_tags:
                         outbound["outbounds"] = matched_tags
                         temp_outbounds.append(outbound)
-                    # else: 匹配为空，不加入 temp_outbounds (即删除该国家/地区分组)
+                    # else: 匹配为空，不加入 temp_outbounds
                 except re.error as e:
                     print(f"无效的正则表达式 '{pattern}': {e}", file=sys.stderr)
             else:
-                # 静态分组或普通节点，进入待处理列表
+                # 静态分组或普通节点
                 temp_outbounds.append(outbound)
 
         # --- 第二步：清洗引用链 (如果子分组被删，父分组也要清理对应引用) ---
         final_outbounds = []
-
-        # 获取第一步后幸存的所有 Tag (包括节点和分组)，用于白名单校验
         surviving_tags = {o.get("tag") for o in temp_outbounds if o.get("tag")}
-        # 补充 Sing-box 内置/保留 Tag，防止误删
         BUILT_IN_TAGS = {
             "DIRECT",
             "direct",
@@ -386,24 +381,31 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
         }
 
         for outbound in temp_outbounds:
-            # 如果该项有子引用列表 (outbounds 字段)
             if "outbounds" in outbound and isinstance(outbound["outbounds"], list):
                 original_refs = outbound["outbounds"]
-                # 过滤引用：只保留 幸存Tag 或 内置Tag
                 cleaned_refs = [
                     tag
                     for tag in original_refs
                     if tag in surviving_tags or tag in BUILT_IN_TAGS
                 ]
-
                 outbound["outbounds"] = cleaned_refs
-
-                # 如果清洗后列表为空，则删除该父分组 (满足 "如果为空也要删除" 的要求)
                 if not cleaned_refs:
-                    # print(f"分组 {outbound.get('tag')} 引用为空，已移除", file=sys.stderr)
                     continue
-
             final_outbounds.append(outbound)
+
+        # === 【新增】Step 8: 修正 Selector 的 Default 值 ===
+        # 避免 default 指向了一个不存在的 tag (例如 JP-TCP 被删除了，或者该分组只包含 JP-UDP)
+        for outbound in final_outbounds:
+            if outbound.get("type") == "selector":
+                current_outbounds = outbound.get("outbounds", [])
+                current_default = outbound.get("default", "")
+
+                # 如果列表非空，且当前 default 不在列表中
+                if current_outbounds and current_default not in current_outbounds:
+                    # 自动修正为列表中的第一个
+                    outbound["default"] = current_outbounds[0]
+                    # 可选：打印日志方便调试
+                    # print(f"Fix default for {outbound.get('tag')}: {current_default} -> {outbound['default']}")
 
         base_config["outbounds"] = final_outbounds
         print(f"[{source}] 处理完成，返回 {len(new_nodes)} 个新节点")
