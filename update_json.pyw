@@ -76,10 +76,10 @@ def restart_service():
         # check=True 如果启动失败(配置错误等)，会抛出异常
         subprocess.run(["net", "start", SERVICE_NAME], check=True, shell=True)
         
-        print(f"✅ 服务 {SERVICE_NAME} 重启成功，新配置已生效。")
+        print(f"服务 {SERVICE_NAME} 重启成功，新配置已生效。")
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ 服务启动失败: {e}")
+        print(f"服务启动失败: {e}")
         print("请检查配置文件(config.json)是否有语法错误。")
     except Exception as e:
         print(f"重启服务时发生未知错误: {e}")
