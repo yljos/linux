@@ -76,10 +76,10 @@ def restart_service():
         # check=True 如果启动失败(配置错误等)，会抛出异常
         subprocess.run(["net", "start", SERVICE_NAME], check=True, shell=True)
         
-        print(f"服务 {SERVICE_NAME} 重启成功，新配置已生效。")
+        print(f"[成功] 服务 {SERVICE_NAME} 重启成功，新配置已生效。")
         
     except subprocess.CalledProcessError as e:
-        print(f"服务启动失败: {e}")
+        print(f"[失败] 服务启动失败: {e}")
         print("请检查配置文件(config.json)是否有语法错误。")
     except Exception as e:
         print(f"重启服务时发生未知错误: {e}")
@@ -95,47 +95,59 @@ if __name__ == "__main__":
     print(f"自动更新脚本已启动 (目标服务: {SERVICE_NAME})...")
     
     if not url:
+        # [恢复原样] 这里的提示语改回你原来的版本
         print("错误: 未在环境变量中找到 URL，请检查 .env 文件。")
         time.sleep(10)
         exit(1)
 
-    while True:
-        if should_update():
-            try:
-                os.makedirs(os.path.dirname(save_path), exist_ok=True)
-                print(f"开始下载配置... (User-Agent: {headers['User-Agent']})")
-
-                response = requests.get(url, headers=headers, timeout=(10, 30))
-                response.raise_for_status()
-                response.encoding = 'utf-8'
-
+    # [新增] 外层包裹 try...except 以捕获停止信号
+    try:
+        while True:
+            if should_update():
                 try:
-                    config_data = response.json()
-                    
-                    if "outbounds" in config_data:
-                        # 写入文件
-                        with open(save_path, "wb") as f:
-                            f.write(response.content)
+                    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                    print(f"开始下载配置... (User-Agent: {headers['User-Agent']})")
 
-                        save_update_time()
-                        print(f"配置文件下载成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                    response = requests.get(url, headers=headers, timeout=(10, 30))
+                    response.raise_for_status()
+                    response.encoding = 'utf-8'
+
+                    try:
+                        config_data = response.json()
                         
-                        # [核心修改] 下载成功后，执行重启服务
-                        if is_admin():
-                            restart_service()
+                        if "outbounds" in config_data:
+                            # 写入文件
+                            with open(save_path, "wb") as f:
+                                f.write(response.content)
+
+                            save_update_time()
+                            print(f"配置文件下载成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                            
+                            # [恢复原样] 这里的逻辑保持你原来的
+                            if is_admin():
+                                restart_service()
+                            else:
+                                print("跳过服务重启（权限不足），请手动重启 Sing-box 服务。")
                         else:
-                            print("跳过服务重启（权限不足），请手动重启 Sing-box 服务。")
-                    else:
-                        print(f"校验失败：JSON 缺少 'outbounds' 字段 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
-                        
-                except json.JSONDecodeError:
-                    print(f"校验失败：内容不是有效的 JSON - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                            print(f"校验失败：JSON 缺少 'outbounds' 字段 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                            
+                    except json.JSONDecodeError:
+                        print(f"校验失败：内容不是有效的 JSON - {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
-            except requests.exceptions.HTTPError as e:
-                print(f"HTTP 错误: {e}")
-            except requests.exceptions.ConnectionError:
-                print("网络连接失败")
-            except Exception as e:
-                print(f"发生意外错误: {e}")
-        # 每 10 秒检查一次，反应极其灵敏，且无性能压力
-        time.sleep(10)
+                except requests.exceptions.HTTPError as e:
+                    print(f"HTTP 错误: {e}")
+                except requests.exceptions.ConnectionError:
+                    print("网络连接失败")
+                except Exception as e:
+                    print(f"发生意外错误: {e}")
+            
+            # 每 10 秒检查一次
+            time.sleep(10)
+
+    # [新增] 专门捕获 NSSM 停止服务时发送的信号
+    except KeyboardInterrupt:
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 服务已手动停止。")
+    
+    # [新增] 捕获其他未知致命错误
+    except Exception as e:
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 发生致命错误导致停止: {e}")
