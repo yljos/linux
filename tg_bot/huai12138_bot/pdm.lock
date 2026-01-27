@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:dbee055e6b06593c8a9bd2954d7f2516184f48dce937f42e9a38abc18e0b574c"
+content_hash = "sha256:c6d5bc568a6e4f37770160e67a1a1156c2e066d577bdee648daece00fd38d477"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -89,15 +89,6 @@ groups = ["default"]
 files = [
     {file = "idna-3.11-py3-none-any.whl", hash = "sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea"},
     {file = "idna-3.11.tar.gz", hash = "sha256:795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902"},
-]
-
-[[package]]
-name = "mcrcon"
-version = "0.7.0"
-summary = "A client for handling Remote Commands (RCON) to a Minecraft server."
-groups = ["default"]
-files = [
-    {file = "mcrcon-0.7.0.tar.gz", hash = "sha256:c2f1caf2467e283e0ccd2436f1ce21f04242b03c5fafb3860e3924d764a910d4"},
 ]
 
 [[package]]

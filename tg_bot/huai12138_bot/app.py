@@ -1,6 +1,4 @@
 import logging
-import asyncio
-import time
 import httpx
 import json
 import os
@@ -13,15 +11,16 @@ from telegram.ext import (
     CallbackContext,
 )
 from dotenv import load_dotenv
-from mcrcon import MCRcon
 
 # ========== 加载环境变量 ==========
 load_dotenv()
 
-# ========== 配置日志 ==========
+# ========== 配置日志 (WARNING级别) ==========
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", 
+    level=logging.WARNING
 )
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # ========== Telegram 配置 ==========
 token = os.getenv("BOT_TOKEN")
@@ -38,20 +37,6 @@ if not token or not admin_ids_str or not webhook_host or not s_canid:
 admin_ids = set(admin_ids_str.split(","))
 primary_admin_id = admin_ids_str.split(",")[0]
 s_canid_list = set(s_canid.split(","))
-
-# ========== RCON 配置 ==========
-rcon_host = os.getenv("RCON_HOST")
-rcon_port = int(os.getenv("RCON_PORT"))
-rcon_password = os.getenv("RCON_PASSWORD")
-
-
-def run_rcon(cmd: str) -> str:
-    """通过 RCON 执行命令"""
-    try:
-        with MCRcon(rcon_host, rcon_password, port=rcon_port) as mcr:
-            return mcr.command(cmd)
-    except Exception as e:
-        return f"RCON error: {e}"
 
 
 # ========== 封禁列表 ==========
@@ -102,13 +87,10 @@ def save_whitelist_users():
 
 load_whitelist_users()
 
-# ========== 已移除 30s 超时验证相关的数据结构和常量 ==========
-# pending_verification = {}  # {user_id: deadline_timestamp}   <- 已移除
-# VERIFY_TIMEOUT = 30  # 秒  <- 已移除
 
 # ========== 常量与策略配置 ==========
 MAX_MSG_LEN = 15
-CHAT_CACHE_TTL = 60  # 预留: 用户信息缓存TTL (暂未实现缓存逻辑)
+CHAT_CACHE_TTL = 60 
 
 
 # ========== 封禁策略函数列表 ==========
@@ -204,19 +186,12 @@ async def ban_user(
     user_obj=None,
     actor_admin_id: str | None = None,
 ):
-    # 原先这里会清除 pending_verification，现已移除相关结构
-
     add_to_blocklist(user_id)
-    try:
-        await context.bot.send_message(user_id, "Banned!")
-    except Exception:
-        pass
-    # ========== 关键修改开始 ==========
-    # 1. 如果原因是 "验证失败秒封"，直接返回，不通知管理员
-    if reason == "Immediate Ban: Unauthorized message (not 'Hi')":
+    
+    # 静默封禁，不通知管理员自动封禁事件
+    if reason.startswith("Immediate Ban") or reason.startswith("Message too long") or reason == "Non-text message":
         return
-    # ========== 关键修改结束 ==========
-    # 如果是主管理员手动操作，避免重复向其发送格式化通知
+
     if actor_admin_id == primary_admin_id:
         return
     try:
@@ -250,23 +225,15 @@ async def unban_user(
         logging.error(f"管理员通知解封失败: {e}")
 
 
-# ========== 已移除 verification_sweeper (超时封禁协程) ==========
-# async def verification_sweeper(application: Application):
-#     ...
-# 已删除整个函数体
-
-
 # ========== 提取用户ID的辅助函数 ==========
 def extract_user_id_from_text(text: str):
     try:
-        # 优先匹配带标签的行：用户ID 或 User ID
         for label in ("用户ID:", "User ID:"):
             if label in text:
                 part = text.split(label, 1)[1].strip()
                 line = part.split("\n", 1)[0].strip()
                 digits = "".join(ch for ch in line if ch.isdigit())
                 return digits if digits else None
-        # 兜底：捕获文本中首个较长的数字串
         buf = []
         for ch in text:
             if ch.isdigit():
@@ -286,6 +253,11 @@ def extract_user_id_from_text(text: str):
 async def start(update: Update, context: CallbackContext):
     if not update.effective_user:
         return
+    
+    # 仅允许私聊
+    if update.effective_chat.type != "private":
+        return
+
     user_id = str(update.effective_user.id)
 
     if user_id in admin_ids:
@@ -293,14 +265,12 @@ async def start(update: Update, context: CallbackContext):
         return
 
     if user_id in blocked_users:
-        await update.message.reply_text("Banned!")
         return
 
     if user_id in whitelist_users:
         await update.message.reply_text("You are already verified.")
         return
 
-    # 原先这里会记录 pending_verification 并带有 30s 超时，现已移除超时记录
     await update.message.reply_text(
         'Send "Hi" to complete verification (case-sensitive)'
     )
@@ -320,8 +290,7 @@ async def s_command(update: Update, _context: CallbackContext):
         return
     user_id = str(update.effective_user.id)
     if user_id in blocked_users:
-        await update.message.reply_text("Banned!")
-        return
+        return 
     if user_id not in admin_ids and user_id not in s_canid_list:
         await ban_user(
             _context,
@@ -344,8 +313,7 @@ async def s_command(update: Update, _context: CallbackContext):
 
 async def ban(update: Update, context: CallbackContext):
     if str(update.effective_user.id) not in admin_ids:
-        await update.message.reply_text("Admins only")
-        return
+        return 
     try:
         user_to_ban = None
         if update.message.reply_to_message:
@@ -365,7 +333,7 @@ async def ban(update: Update, context: CallbackContext):
                 chat,
                 actor_admin_id=str(update.effective_user.id),
             )
-            # 通知已由 ban_user 内部处理，这里仅给管理员反馈
+            # 仅给管理员反馈
             try:
                 name = getattr(chat, "first_name", None) if chat else None
                 username = getattr(chat, "username", None) if chat else None
@@ -383,8 +351,7 @@ async def ban(update: Update, context: CallbackContext):
 
 async def unban(update: Update, context: CallbackContext):
     if str(update.effective_user.id) not in admin_ids:
-        await update.message.reply_text("Admins only")
-        return
+        return 
     try:
         user_to_unban = None
         if update.message.reply_to_message:
@@ -406,8 +373,12 @@ async def unban(update: Update, context: CallbackContext):
                     actor_admin_id=str(update.effective_user.id),
                 )
                 try:
-                    name = getattr(chat, "first_name", None) if chat else None
-                    username = getattr(chat, "username", None) if chat else None
+                    name = (
+                        getattr(chat, "first_name", None) if chat else None
+                    )
+                    username = (
+                        getattr(chat, "username", None) if chat else None
+                    )
                     text = _render_unban_notice(
                         user_to_unban, name, username, "Manual unban"
                     )
@@ -429,7 +400,6 @@ async def forward_to_admin(update: Update, context: CallbackContext):
     if not message:
         return
 
-    # 安全获取 User，防止在 Channel 消息中崩溃
     user = message.from_user
     if not user:
         return
@@ -438,21 +408,16 @@ async def forward_to_admin(update: Update, context: CallbackContext):
     user_id = str(chat_id)
 
     if user_id in blocked_users:
-        await message.reply_text("Banned!")
         return
 
     # ========== 严格验证逻辑 ==========
-    # 如果用户不是管理员
     if user_id not in admin_ids:
         # 1. 严格匹配 "Hi"
         if message.text == "Hi":
-            # 如果不在白名单，则通过验证
             if user_id not in whitelist_users:
-                # 原先这里会删除 pending_verification（已移除）
                 add_to_whitelist(user_id)
                 await update.message.reply_text("Success! You are verified.")
 
-                # 通知管理员有新用户通过
                 admin_msg = f"New user verified:\nName: {user.first_name} (@{user.username if user.username else 'No username'})\nUser ID: {user_id}"
                 await context.bot.send_message(primary_admin_id, admin_msg)
                 return
@@ -571,38 +536,11 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 logging.error(f"回复消息时出错: {e}")
                 await update.message.reply_text("Reply failed.")
         else:
-            # 管理员直接给 bot 发非命令纯文本时，使用 title 黄色文字播报
+            # 管理员发送非指令的纯文本（且未回复消息），以前是广播，现在直接提示回复
             if message.text and not message.text.startswith("/"):
-                cmd_text = message.text.strip()
-                # 清理换行，转义 JSON 特殊字符
-                safe_text = cmd_text.replace("\n", " ")
-                json_text = safe_text.replace("\\", "\\\\").replace('"', '\\"')
-                rcon_cmd = f'tellraw @a {{"text":"{json_text}","color":"yellow"}}'
-                rcon_result = run_rcon(rcon_cmd)
-                if not rcon_result:
-                    rcon_result = "(no output)"
-                # await update.message.reply_text(f"execute broadcast executed. Result: {rcon_result}")
-            else:
-                # 非文本或命令，保持现状给出提示
                 await update.message.reply_text(
-                    "Send plain text to broadcast via /mc say, or reply to a user card."
+                    "Please reply to a user message to send a reply."
                 )
-
-
-# ========== 新增 /mc 命令 ==========
-async def mc_command(update: Update, context: CallbackContext):
-    user_id = str(update.effective_user.id)
-    if user_id not in admin_ids:
-        await update.message.reply_text("Admins only")
-        return
-    if not context.args:
-        await update.message.reply_text("Usage: /mc <command>")
-        return
-    cmd = " ".join(context.args)
-    result = run_rcon(cmd)
-    if not result:
-        result = "(no output)"
-    await update.message.reply_text(f"{result}")
 
 
 # ========== /zh 命令 - 设置中文语言 ==========
@@ -617,9 +555,6 @@ async def set_chinese(update: Update, context: CallbackContext):
 async def post_initialization(application: Application):
     try:
         await application.bot.send_message(chat_id=primary_admin_id, text="I'm online")
-        logging.info("成功发送上线通知给主管理员。")
-        # 已移除 verification_sweeper 的创建
-        # application.create_task(verification_sweeper(application))
     except Exception as e:
         logging.error(f"发送上线通知时出错: {e}")
 
@@ -636,10 +571,11 @@ def main():
     application.add_handler(CommandHandler("unban", unban))
     application.add_handler(CommandHandler("s", s_command))
     application.add_handler(CommandHandler("ping", ping))
-    application.add_handler(CommandHandler("mc", mc_command))
     application.add_handler(CommandHandler("zh", set_chinese))
+    
+    # 仅接收文本消息
     application.add_handler(
-        MessageHandler(filters.ALL & ~filters.COMMAND, forward_to_admin)
+        MessageHandler(filters.TEXT & ~filters.COMMAND, forward_to_admin)
     )
 
     # Webhook 启动
@@ -653,10 +589,10 @@ def main():
 
     clean_webhook_host = webhook_host.rstrip("/")
     webhook_url = f"{clean_webhook_host}{webhook_path}"
-
-    logging.info("以 Webhook 模式启动机器人")
-    logging.info(f"监听地址: {webhook_listen}:{webhook_port}")
-    logging.info(f"Webhook URL: {webhook_url}")
+    
+    print(f"以 Webhook 模式启动机器人 (无MC功能)")
+    print(f"监听地址: {webhook_listen}:{webhook_port}")
+    print(f"Webhook URL: {webhook_url}")
 
     url_path = webhook_path.lstrip("/") if webhook_path else token
 
@@ -666,6 +602,8 @@ def main():
         url_path=url_path,
         webhook_url=webhook_url,
         secret_token=webhook_secret_token,
+        # 只接收 Message 更新
+        allowed_updates=["message"]
     )
 
 

@@ -3,7 +3,6 @@ name = "huai12138_bot"
 version = "1.0.0"
 description = "Default template for PDM package"
 dependencies = [
-    "mcrcon==0.7.0",
     "httpx==0.28.1",
     "python-dotenv==1.1.1",
     "python-telegram-bot==22.3",
