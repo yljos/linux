@@ -11,169 +11,168 @@ NC='\033[0m'        # Reset color
 echo -e "${BLUE}===== Oh My Zsh Installation Script =====${NC}"
 sleep 1
 
-# Check if zsh is installed
-if command -v zsh &>/dev/null; then
-	echo -e "${GREEN}>> zsh is already installed, skipping installation${NC}"
-	sleep 1
+# ==========================================
+# Root Privilege Check
+# ==========================================
+if [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+    echo -e "${YELLOW}>> Running as root, sudo will NOT be used for package management${NC}"
 else
-	echo -e "${YELLOW}>> Installing zsh${NC}"
-	# Detect package manager and install zsh
-	if command -v apt &>/dev/null; then
-		# Debian, Ubuntu, etc.
-		echo -e "${CYAN}>> Using apt package manager${NC}"
-		sudo apt update && sudo apt install -y zsh
-		sleep 1
-	elif command -v pacman &>/dev/null; then
-		# Arch Linux
-		echo -e "${CYAN}>> Using pacman package manager${NC}"
-		sudo pacman -S --noconfirm zsh
-		sleep 1
-	elif command -v opkg &>/dev/null; then
-		# openwrt
-		echo -e "${CYAN}>> Using opkg package manager${NC}"
-		opkg update && opkg install zsh
-		sleep 1
-	else
-		echo -e "${RED}>> Could not detect compatible package manager. Please install zsh manually.${NC}"
-		sleep 1
-		exit 1
-	fi
+    # Check if sudo is actually available
+    if command -v sudo &>/dev/null; then
+        SUDO="sudo"
+        echo -e "${YELLOW}>> Running as non-root, sudo WILL be used for package management${NC}"
+    else
+        echo -e "${RED}>> Error: Running as non-root but 'sudo' command not found.${NC}"
+        exit 1
+    fi
+fi
+sleep 1
+
+# ==========================================
+# Function: Install Package
+# ==========================================
+# Minimalist helper to avoid repeating package manager logic
+install_package() {
+    local PACKAGE_NAME=$1
+    if command -v "$PACKAGE_NAME" &>/dev/null; then
+        echo -e "${GREEN}>> $PACKAGE_NAME is already installed${NC}"
+        return
+    fi
+
+    echo -e "${YELLOW}>> Installing $PACKAGE_NAME${NC}"
+    if command -v apt &>/dev/null; then
+        echo -e "${CYAN}>> Using apt package manager${NC}"
+        ${SUDO} apt update && ${SUDO} apt install -y "$PACKAGE_NAME"
+    elif command -v pacman &>/dev/null; then
+        echo -e "${CYAN}>> Using pacman package manager${NC}"
+        ${SUDO} pacman -S --noconfirm "$PACKAGE_NAME"
+    else
+        echo -e "${RED}>> Could not detect compatible package manager (apt/pacman). Please install $PACKAGE_NAME manually.${NC}"
+        exit 1
+    fi
+    sleep 1
+}
+
+# ==========================================
+# Dependency Installation
+# ==========================================
+# Install zsh, git, and curl (Required for OMZ installer)
+install_package "zsh"
+install_package "git"
+install_package "curl" 
+
+# ==========================================
+# Shell Configuration
+# ==========================================
+ZSH_PATH=$(which zsh)
+
+# Ensure zsh is in /etc/shells before changing shell
+if ! grep -q "$ZSH_PATH" /etc/shells; then
+    echo -e "${YELLOW}>> Adding zsh to /etc/shells${NC}"
+    echo "$ZSH_PATH" | ${SUDO} tee -a /etc/shells > /dev/null
 fi
 
-# Set zsh as default shell if it's not already
-if [[ "$SHELL" != *"zsh"* ]]; then
-	echo -e "${YELLOW}>> Setting zsh as default shell${NC}"
-	chsh -s $(which zsh)
-	sleep 1
-	echo -e "${GREEN}>> zsh is already set as default shell${NC}"
+# Set zsh as default shell
+if [[ "$SHELL" != *"$ZSH_PATH"* ]]; then
+    echo -e "${YELLOW}>> Setting zsh as default shell${NC}"
+    # Use standard chsh. Note: This may prompt for password.
+    chsh -s "$ZSH_PATH"
+    echo -e "${GREEN}>> zsh set as default shell${NC}"
 else
-	echo -e "${GREEN}>> zsh is already set as default shell${NC}"
-	sleep 1
+    echo -e "${GREEN}>> zsh is already set as default shell${NC}"
 fi
+sleep 1
 
-# Install oh-my-zsh
+# ==========================================
+# Oh My Zsh Installation
+# ==========================================
 if [ -d ~/.oh-my-zsh ]; then
-	rm -rf ~/.oh-my-zsh/
-	echo -e "${YELLOW}>> Installing oh-my-zsh${NC}"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
-	sleep 1
-	rm -rf ~/.oh-my-zsh/.git
-	echo -e "${GREEN}>> oh-my-zsh is already installed${NC}"
-	sleep 1
+    rm -rf ~/.oh-my-zsh/
+    echo -e "${YELLOW}>> Re-installing oh-my-zsh${NC}"
 else
-	echo -e "${YELLOW}>> Installing oh-my-zsh${NC}"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
-	sleep 1
-	rm -rf ~/.oh-my-zsh/.git
-	echo -e "${GREEN}>> oh-my-zsh installation completed${NC}"
-	sleep 1
+    echo -e "${YELLOW}>> Installing oh-my-zsh${NC}"
 fi
 
-# Install powerlevel10k theme
-if [ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k ]; then
-	rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k
-	sleep 1
-	echo -e "${YELLOW}>> Installing powerlevel10k theme${NC}"
-	git clone --depth 1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k/.git
-	sleep 1
-	echo -e "${GREEN}>> powerlevel10k theme is already installed${NC}"
-else
-	echo -e "${YELLOW}>> Installing powerlevel10k theme${NC}"
-	git clone --depth 1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k/.git
-	sleep 1
-	echo -e "${GREEN}>> powerlevel10k theme installation completed${NC}"
-fi
-
-# Install zsh-autosuggestions plugin
-if [ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions ]; then
-	rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-	sleep 1
-	echo -e "${YELLOW}>> Installing zsh-autosuggestions plugin${NC}"
-	git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git
-	sleep 1
-	echo -e "${GREEN}>> zsh-autosuggestions plugin is already installed${NC}"
-else
-	echo -e "${YELLOW}>> Installing zsh-autosuggestions plugin${NC}"
-	git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/.git
-	sleep 1
-	echo -e "${GREEN}>> zsh-autosuggestions plugin installation completed${NC}"
-fi
-
-# Install zsh-syntax-highlighting plugin
-if [ -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting ]; then
-	rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-	sleep 1
-	echo -e "${YELLOW}>> Installing zsh-syntax-highlighting plugin${NC}"
-	git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git
-	sleep 1
-	echo -e "${GREEN}>> zsh-syntax-highlighting plugin is already installed${NC}"
-else
-	echo -e "${YELLOW}>> Installing zsh-syntax-highlighting plugin${NC}"
-	git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting && rm -rf ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/.git
-	sleep 1
-	echo -e "${GREEN}>> zsh-syntax-highlighting plugin installation completed${NC}"
-fi
-
-# Configure oh-my-zsh
-echo -e "${BLUE}>> Configuring oh-my-zsh${NC}"
+# Run installer (using curl which we just ensured exists)
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
 sleep 1
 
-# Set theme to powerlevel10k (only if not already set)
+# Minimalist cleanup: remove .git to save space
+rm -rf ~/.oh-my-zsh/.git
+echo -e "${GREEN}>> oh-my-zsh installation completed${NC}"
+sleep 1
+
+# ==========================================
+# Theme & Plugins
+# ==========================================
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+# Function to install custom plugins/themes
+install_zsh_extension() {
+    local TYPE=$1 # themes or plugins
+    local NAME=$2
+    local REPO=$3
+    local TARGET_DIR="$ZSH_CUSTOM/$TYPE/$NAME"
+
+    if [ -d "$TARGET_DIR" ]; then
+        rm -rf "$TARGET_DIR"
+    fi
+    
+    echo -e "${YELLOW}>> Installing $NAME $TYPE${NC}"
+    git clone --depth 1 "$REPO" "$TARGET_DIR"
+    
+    # Minimalist cleanup
+    rm -rf "$TARGET_DIR/.git"
+    echo -e "${GREEN}>> $NAME installed${NC}"
+    sleep 1
+}
+
+install_zsh_extension "themes" "powerlevel10k" "https://github.com/romkatv/powerlevel10k.git"
+install_zsh_extension "plugins" "zsh-autosuggestions" "https://github.com/zsh-users/zsh-autosuggestions"
+install_zsh_extension "plugins" "zsh-syntax-highlighting" "https://github.com/zsh-users/zsh-syntax-highlighting"
+
+# ==========================================
+# Configuration (.zshrc)
+# ==========================================
+echo -e "${BLUE}>> Configuring .zshrc${NC}"
+sleep 1
+
+# Set theme
 if grep -q 'ZSH_THEME="powerlevel10k/powerlevel10k"' ~/.zshrc; then
-	echo -e "${GREEN}>> Theme already set to powerlevel10k, skipping configuration${NC}"
-	sleep 1
+    echo -e "${GREEN}>> Theme already set${NC}"
 else
-	echo -e "${CYAN}>> Setting theme to powerlevel10k${NC}"
-	sed -i 's/ZSH_THEME=".*"/ZSH_THEME="powerlevel10k\/powerlevel10k"/' ~/.zshrc
-	sleep 1
+    echo -e "${CYAN}>> Setting theme to powerlevel10k${NC}"
+    sed -i 's/ZSH_THEME=".*"/ZSH_THEME="powerlevel10k\/powerlevel10k"/' ~/.zshrc
 fi
 
-# Add plugins to .zshrc (only if not already added)
+# Configure plugins
 if grep -q 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting)' ~/.zshrc; then
-	echo -e "${GREEN}>> Plugins already configured, skipping configuration${NC}"
-	sleep 1
+    echo -e "${GREEN}>> Plugins already configured${NC}"
 else
-	echo -e "${CYAN}>> Configuring plugins${NC}"
-	sed -i '/plugins=(git)/c\plugins=(git zsh-autosuggestions zsh-syntax-highlighting)' ~/.zshrc
-	sleep 1
+    echo -e "${CYAN}>> Configuring plugins${NC}"
+    sed -i '/^plugins=(git)/c\plugins=(git zsh-autosuggestions zsh-syntax-highlighting)' ~/.zshrc
 fi
 
-# Add environment variables to .zshrc (only if not already added)
-echo -e "${BLUE}>> Checking and adding environment variables${NC}"
-sleep 1
+# Helper to append env vars if missing
+append_if_missing() {
+    local VAR_NAME=$1
+    local CMD=$2
+    if grep -q "$VAR_NAME" ~/.zshrc; then
+        echo -e "${GREEN}>> $VAR_NAME already set${NC}"
+    else
+        echo -e "${CYAN}>> Adding $VAR_NAME${NC}"
+        echo "$CMD" >> ~/.zshrc
+    fi
+}
 
-# Add LANG environment variable
-if grep -q 'export LANG=en_US.UTF-8' ~/.zshrc; then
-	echo -e "${GREEN}>> LANG environment variable already set, skipping${NC}"
-	sleep 1
-else
-	echo -e "${CYAN}>> Adding LANG environment variable${NC}"
-	echo 'export LANG=en_US.UTF-8' >>~/.zshrc
-	sleep 1
-fi
-
-# Add VISUAL environment variable
-if grep -q 'export VISUAL=vim' ~/.zshrc; then
-	echo -e "${GREEN}>> VISUAL environment variable already set, skipping${NC}"
-	sleep 1
-else
-	echo -e "${CYAN}>> Adding VISUAL environment variable${NC}"
-	echo 'export VISUAL=vim' >>~/.zshrc
-	sleep 1
-fi
-
-# Add EDITOR environment variable
-if grep -q 'export EDITOR=vim' ~/.zshrc; then
-	echo -e "${GREEN}>> EDITOR environment variable already set, skipping${NC}"
-	sleep 1
-else
-	echo -e "${CYAN}>> Adding EDITOR environment variable${NC}"
-	echo 'export EDITOR=vim' >>~/.zshrc
-	sleep 1
-fi
+echo -e "${BLUE}>> Checking environment variables${NC}"
+append_if_missing "export LANG=" "export LANG=en_US.UTF-8"
+append_if_missing "export VISUAL=" "export VISUAL=vim"
+append_if_missing "export EDITOR=" "export EDITOR=vim"
+append_if_missing "export TERM=" "export TERM=xterm-256color"
 
 # Completion message
-echo -e "${GREEN}Installation completed! Please restart your terminal or run 'source ~/.zshrc' to apply changes.${NC}"
+echo -e "${GREEN}Installation completed! Please restart your terminal or run 'source ~/.zshrc'.${NC}"
 sleep 1
 echo -e "${BLUE}===== Oh My Zsh Setup Finished =====${NC}"
-sleep 1
