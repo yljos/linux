@@ -67,7 +67,7 @@ SHUTDOWN_SCRIPT="$HOME/.config/shutdown.sh"
 run_silent "$SHUTDOWN_SCRIPT" "sh $SHUTDOWN_SCRIPT" "shutdown.sh"
 
 # Firefox
-run_silent "firefox" "firefox" "Firefox 浏览器"
+run_silent "firefox" "firefox-esr" "Firefox 浏览器"
 
 # Telegram
 run_silent "Telegram" "Telegram" "Telegram"
