@@ -1,0 +1,27 @@
+[Unit]
+Description=convert Service (Python Wrapper)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+
+ExecStart=/usr/bin/podman run \
+  --name convert \
+  --replace \
+  --rm \
+  --init \
+  --log-driver=journald \
+  --env PYTHONUNBUFFERED=1 \
+  -p 5000:5000 \
+  -v /root/config/mitce:/app/mitce:z \
+  -v /root/config/bajie:/app/bajie:z \
+  -v /root/config/cache:/app/cache:z \
+  localhost/convert:latest
+
+ExecStop=/usr/bin/podman stop -t 10 convert
+
+[Install]
+WantedBy=multi-user.target
