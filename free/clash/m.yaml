@@ -190,11 +190,13 @@ proxy-groups:
       - HK-TCP
       - US-TCP
   - type: select
+    hidden: true
     name: TikTok
     proxies:
       - JP-UDP
       - JP-TCP
   - type: select
+    hidden: true
     name: Facebook
     proxies:
       - JP-UDP
@@ -204,6 +206,7 @@ proxy-groups:
       - SG-TCP
       - US-TCP
   - type: select
+    hidden: true
     name: Twitter
     proxies:
       - JP-UDP
