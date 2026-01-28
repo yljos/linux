@@ -1,0 +1,21 @@
+[project]
+name = "convert"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "yljos", email = "@outlook.com"},
+]
+dependencies = ["Flask>=3.1.2", "requests>=2.32.5", "PyYAML>=6.0.3"]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.scripts]
+# 生产模式
+start = "python app.py"
+# 调试模式 (使用 flask run 强行开启 debug)
+debug = "flask --app app run --host=0.0.0.0 --port=5000 --debug"

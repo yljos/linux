@@ -178,7 +178,7 @@ echo -e "${BLUE}Configuring Git settings...${NC}"
 echo -e "${CYAN}   Setting Git editor to vim...${NC}"
 if command -v git >/dev/null 2>&1; then
 	git config --global core.editor "vim" # 设置vim为默认编辑器
-	git config --global user.signingkey yljos@outlook.com
+	git config --global user.signingkey @outlook.com
 	git config --global commit.gpgsign true
 	check_command "Failed to set Git editor"
 

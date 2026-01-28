@@ -1,6 +1,5 @@
 import re
 import os
-import sys
 import io
 import json
 import yaml
@@ -10,7 +9,7 @@ import logging
 import requests
 from pathlib import Path
 from urllib.parse import unquote
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, Union
 from flask import Flask, send_file, request, abort, Response, jsonify
 
 app = Flask(__name__)
@@ -55,7 +54,7 @@ SHARED_KEYWORDS = [
     "日本",
 ]
 
-# 3. 排除黑名单 
+# 3. 排除黑名单
 SHARED_EXCLUDE_KEYWORDS = [
     "官网",
     "流量",
@@ -299,7 +298,7 @@ def process_yaml_content_clash(
 
 
 # ==============================================================================
-# PART 2: Sing-box 处理逻辑 
+# PART 2: Sing-box 处理逻辑 (Strict from ap0p.py)
 # ==============================================================================
 
 
@@ -444,15 +443,10 @@ def fetch_and_process_singbox(source: str, config_param: str):
         for proxy in raw_proxies:
             try:
                 original_name = proxy.get("name", "")
-
-                # Step 1: 黑名单排除
                 if any(ex in original_name for ex in SHARED_EXCLUDE_KEYWORDS):
                     continue
 
-                # Step 2: 清洗节点名称
                 proxy["name"] = clean_node_name(original_name)
-
-                # Step 3: 转换
                 sb_node = clash_to_singbox(proxy)
                 if sb_node:
                     nodes.append(sb_node)
@@ -462,7 +456,6 @@ def fetch_and_process_singbox(source: str, config_param: str):
         if not nodes:
             return jsonify({"error": "没有转换成功的节点"}), 400
 
-        # 加载模板
         template_filename = SB_TEMPLATE_MAP.get(
             config_param, SB_TEMPLATE_MAP["default"]
         )
@@ -479,7 +472,6 @@ def fetch_and_process_singbox(source: str, config_param: str):
         ]
         outbounds.extend(new_nodes)
 
-        # 关键词过滤
         def node_tag_valid(tag: str) -> bool:
             tag_upper = tag.upper() if tag else ""
             if not any(region.upper() in tag_upper for region in SHARED_KEYWORDS):
@@ -495,7 +487,6 @@ def fetch_and_process_singbox(source: str, config_param: str):
             or o.get("type") in ["urltest", "selector", "direct", "block", "dns"]
         ]
 
-        # 策略组处理
         temp_outbounds = []
         all_node_tags = [
             o.get("tag")
@@ -529,19 +520,14 @@ def fetch_and_process_singbox(source: str, config_param: str):
 
         final_outbounds = []
         surviving_tags = {o.get("tag") for o in temp_outbounds if o.get("tag")}
-        BUILT_IN_TAGS = {
-            "direct",
-            "block",
-        }
 
+        # [修改] 彻底移除了 BUILT_IN_TAGS 逻辑
+        # 现在的清洗逻辑：只保留在 surviving_tags 中的节点引用
         for outbound in temp_outbounds:
             if "outbounds" in outbound and isinstance(outbound["outbounds"], list):
                 original_refs = outbound["outbounds"]
-                cleaned_refs = [
-                    tag
-                    for tag in original_refs
-                    if tag in surviving_tags or tag in BUILT_IN_TAGS
-                ]
+                # 仅检查 tag 是否存在于 surviving_tags 中
+                cleaned_refs = [tag for tag in original_refs if tag in surviving_tags]
                 outbound["outbounds"] = cleaned_refs
                 if not cleaned_refs:
                     continue
@@ -594,21 +580,19 @@ def process_source(source):
 
     # ============ 严格 UA 匹配 (不包含 windows/mac) ============
 
-    # 1. 优先检查 Sing-box 客户端 (逻辑源自 ap0p.py)
-    # ap0p.py 源代码: SFA, sing-box_openwrt, sing-box_m, sing-box_pc
-
+    # 1. 优先检查 Sing-box 客户端
     if "SFA" in ua:
         config_val = "m"
         logger.info(f"请求类型: SingBox | 模板: m | UA: {ua}")
         return fetch_and_process_singbox(source, config_val)
 
     elif "sing-box_openwrt" in ua:
-        config_val = "default"  # ap0p.py: default -> openwrt.json
+        config_val = "default"
         logger.info(f"请求类型: SingBox | 模板: default(openwrt) | UA: {ua}")
         return fetch_and_process_singbox(source, config_val)
 
     elif "sing-box_m" in ua:
-        config_val = "default"  # ap0p.py: default -> openwrt.json
+        config_val = "default"
         logger.info(f"请求类型: SingBox | 模板: default(openwrt) | UA: {ua}")
         return fetch_and_process_singbox(source, config_val)
 
@@ -617,9 +601,7 @@ def process_source(source):
         logger.info(f"请求类型: SingBox | 模板: pc | UA: {ua}")
         return fetch_and_process_singbox(source, config_val)
 
-    # 2. 检查 Clash 客户端 (逻辑源自 app.py)
-    # app.py 源代码: ClashMetaForAndroid, clash_pc, clash_openwrt, clash_m
-
+    # 2. 检查 Clash 客户端
     config_val = None
 
     if "ClashMetaForAndroid" in ua:
@@ -631,13 +613,8 @@ def process_source(source):
     elif "clash_m" in ua:
         config_val = "m"
     else:
-        # app.py 有兜底: abort(404)
-        # (原 app.py 中: if config_val not in config_map: abort(404))
-        # 但因为 app.py 是先 assign detected_config，然后 allow URL params.
-        # 此处要求移除 URL params 覆盖，所以如果不匹配以上任何 UA，则 404
         abort(404)
 
-    # Clash 配置参数映射
     config_map = {
         "m": (CLASH_TEMPLATE_M, CLASH_HY2_UP_M, CLASH_HY2_DOWN_M),
         "mtun": (CLASH_TEMPLATE_MTUN, CLASH_HY2_UP_M, CLASH_HY2_DOWN_M),
