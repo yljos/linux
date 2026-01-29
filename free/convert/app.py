@@ -7,7 +7,7 @@ import hashlib
 import hmac
 import logging
 import requests
-import time  # [新增]
+import time
 from pathlib import Path
 from urllib.parse import unquote
 from typing import Any, Dict, Union
@@ -22,8 +22,8 @@ CACHE_DIR = Path("cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # [配置] 缓存过期时间 (单位: 秒)
-# 14400秒 = 4小时。既能防止频繁请求被封，又不至于流量信息滞后太久。
-# 如果想强制刷新，请在 URL 后加 &config=u
+# 86400秒 = 24小时。
+# 如果想强制刷新，请在 URL 后加 &u
 CACHE_EXPIRE_SECONDS = 86400
 
 MITCE_URL_FILE = Path("mitce").absolute()
@@ -182,7 +182,7 @@ def fetch_yaml_text_clash(url, source_name, force_refresh=False):
                     return f.read(), load_headers_from_disk(source_name)
         except Exception as e:
             logger.warning(f"读取缓存属性失败，将尝试网络请求: {e}")
-    
+
     if force_refresh:
         logger.info(f"[{source_name}] [Clash] 收到强制刷新指令 (config=u)")
 
@@ -209,7 +209,7 @@ def fetch_yaml_text_clash(url, source_name, force_refresh=False):
         logger.info(f"[{source_name}] [Clash] 载入灾难缓存成功")
         with open(yaml_cache_file, "r", encoding="utf-8") as f:
             return f.read(), load_headers_from_disk(source_name)
-            
+
     raise RuntimeError(f"[{source_name}] 获取失败且无本地缓存")
 
 
@@ -451,7 +451,7 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
                 used_cache = True
         except Exception:
             pass
-    
+
     if force_refresh:
         logger.info(f"[{source}] [SingBox] 收到强制刷新指令")
 
@@ -465,7 +465,7 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
             temp_content = response.text.strip()
             if "proxies:" not in temp_content:
                 raise ValueError("拉取校验失败")
-            
+
             yaml_content = temp_content
             # 更新缓存
             with open(cache_file_path, "w", encoding="utf-8") as f:
@@ -628,8 +628,9 @@ def process_source(source):
 
     ua = request.headers.get("User-Agent", "")
 
-    # [新增] 检查 URL 参数是否包含 config=u，以此判断是否强制刷新
-    is_force_refresh = request.args.get("config") == "u"
+    # [修改] 极简模式：只要 URL 包含 &u 参数，就强制刷新
+    # 示例: /bajie?key=xxx&u
+    is_force_refresh = "u" in request.args
 
     # ============ 严格 UA 匹配 ============
 
@@ -637,22 +638,32 @@ def process_source(source):
     if "SFA" in ua:
         config_val = "mtun"
         logger.info(f"SingBox | 模板: mtun | 强制刷新: {is_force_refresh} | UA: {ua}")
-        return fetch_and_process_singbox(source, config_val, force_refresh=is_force_refresh)
+        return fetch_and_process_singbox(
+            source, config_val, force_refresh=is_force_refresh
+        )
 
     elif "sing-box_openwrt" in ua:
         config_val = "default"
-        logger.info(f"SingBox | 模板: default | 强制刷新: {is_force_refresh} | UA: {ua}")
-        return fetch_and_process_singbox(source, config_val, force_refresh=is_force_refresh)
+        logger.info(
+            f"SingBox | 模板: default | 强制刷新: {is_force_refresh} | UA: {ua}"
+        )
+        return fetch_and_process_singbox(
+            source, config_val, force_refresh=is_force_refresh
+        )
 
     elif "sing-box_m" in ua:
         config_val = "m"
         logger.info(f"SingBox | 模板: m | 强制刷新: {is_force_refresh} | UA: {ua}")
-        return fetch_and_process_singbox(source, config_val, force_refresh=is_force_refresh)
+        return fetch_and_process_singbox(
+            source, config_val, force_refresh=is_force_refresh
+        )
 
     elif "sing-box_pc" in ua:
         config_val = "pc"
         logger.info(f"SingBox | 模板: pc | 强制刷新: {is_force_refresh} | UA: {ua}")
-        return fetch_and_process_singbox(source, config_val, force_refresh=is_force_refresh)
+        return fetch_and_process_singbox(
+            source, config_val, force_refresh=is_force_refresh
+        )
 
     # 2. 检查 Clash 客户端
     config_val = None
@@ -681,7 +692,9 @@ def process_source(source):
     try:
         url = read_url_from_file(path)
         # 传递 force_refresh 参数
-        yaml_text, headers_data = fetch_yaml_text_clash(unquote(url), source, force_refresh=is_force_refresh)
+        yaml_text, headers_data = fetch_yaml_text_clash(
+            unquote(url), source, force_refresh=is_force_refresh
+        )
         output_bytes = process_yaml_content_clash(yaml_text, template_path, up, down)
 
         response = send_file(
