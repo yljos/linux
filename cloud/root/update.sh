@@ -71,6 +71,7 @@ for SERVICE in $SERVICES; do
 				log "[$SERVICE] 构建成功，正在重启服务..."
 
 				# 重启服务 (假设 systemd 服务名也叫 convert)
+				systemctl daemon-reload
 				systemctl restart "$SERVICE"
 
 				# === 关键：构建成功后，更新本地 Hash 记录 ===
