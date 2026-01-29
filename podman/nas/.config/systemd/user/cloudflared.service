@@ -1,0 +1,26 @@
+[Unit]
+Description=Cloudflare Tunnel Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# 核心启动逻辑
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name cloudflared \
+  --label "io.containers.autoupdate=registry" \
+  --network=host \
+  --env-file /home/huai/token.env \
+  cloudflare/cloudflared:latest \
+  tunnel --no-autoupdate run
+
+# 优雅停止
+ExecStop=/usr/bin/podman stop -t 10 cloudflared
+
+[Install]
+WantedBy=default.target
