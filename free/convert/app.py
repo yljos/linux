@@ -116,7 +116,7 @@ def read_url_from_file(path: Path) -> str:
             url = line.strip()
             if url:
                 return url
-    raise ValueError(f"URL 文件为空: {path}")
+    raise ValueError(f"URL [None]: {path}")
 
 
 def clean_node_name(name: str) -> str:
@@ -155,7 +155,7 @@ def save_headers_to_disk(source_name, headers):
             json.dump(filtered, f, ensure_ascii=False, indent=2)
         return filtered
     except Exception as e:
-        logger.error(f"保存 Headers 失败: {e}")
+        logger.error(f"save Headers Error: {e}")
         return {}
 
 
@@ -197,20 +197,20 @@ def fetch_yaml_text_clash(url, source_name, force_refresh=False):
             save_headers_to_disk(source_name, response.headers)
             with open(yaml_cache_file, "w", encoding="utf-8") as f:
                 f.write(text_content)
-            logger.info(f"[{source_name}] [Clash] 网络拉取成功并更新缓存")
+            logger.info(f"[{source_name}] [Clash] Updated Successfully")
             return text_content, response.headers
         else:
-            logger.warning(f"[{source_name}] [Clash] 拉取校验失败,启用灾难缓存")
+            logger.warning(f"[{source_name}] [Clash] [Fetch Error] [Fallback To Cache]")
     except Exception as e:
-        logger.error(f"[{source_name}] [Clash] 网络拉取失败: {e}")
+        logger.error(f"[{source_name}] [Clash] [Updated Error]: {e}")
 
     # 3. [兜底] 灾难恢复：如果网络失败，强制读取旧缓存 (不管有没有过期)
     if yaml_cache_file.exists():
-        logger.info(f"[{source_name}] [Clash] 载入灾难缓存成功")
+        logger.info(f"[{source_name}] [Clash] [Loaded cache] [Fallback]")
         with open(yaml_cache_file, "r", encoding="utf-8") as f:
             return f.read(), load_headers_from_disk(source_name)
 
-    raise RuntimeError(f"[{source_name}] 获取失败且无本地缓存")
+    raise RuntimeError(f"[{source_name}] [Error]")
 
 
 def filter_node_names_clash(proxies):
@@ -246,7 +246,7 @@ def process_yaml_content_clash(
     try:
         input_data = yaml.safe_load(yaml_text)
         if not isinstance(input_data, dict):
-            raise ValueError("无效的YAML格式")
+            raise ValueError("[Invalid YAML Format]")
 
         with open(template_path, "r", encoding="utf-8") as f:
             template_data = yaml.safe_load(f)
@@ -263,7 +263,7 @@ def process_yaml_content_clash(
                 final_proxies.append(p)
 
         if not final_proxies and proxies_orig:
-            logger.warning("过滤后节点为空，回退使用全部节点")
+            logger.warning("[Node None] [Fallback To All Nodes]")
             for p in proxies_orig:
                 if isinstance(p, dict):
                     p["name"] = clean_node_name(p.get("name", ""))
@@ -459,28 +459,28 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
     if not used_cache:
         try:
             headers = {"User-Agent": "clash-verge"}
-            logger.info(f"[{source}] [Sing-Box] 正在拉取远程...")
+            logger.info(f"[{source}] [Sing-Box] [Fetching ...]")
             response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
             temp_content = response.text.strip()
             if "proxies:" not in temp_content:
-                raise ValueError("拉取校验失败")
+                raise ValueError("[Invalid Clash YAML Content]")
 
             yaml_content = temp_content
             # 更新缓存
             with open(cache_file_path, "w", encoding="utf-8") as f:
                 f.write(yaml_content)
-            logger.info(f"[{source}] [Sing-Box] 更新缓存成功")
+            logger.info(f"[{source}] [Sing-Box] [Updated Successfully]")
 
         except Exception as e:
-            logger.error(f"[{source}] [Sing-Box] 网络/校验错误，使用缓存: {e}")
+            logger.error(f"[{source}] [Sing-Box] [Error] [Try Cache] {e}")
             # 3. [兜底] 网络失败，尝试读取旧缓存
             if cache_file_path.exists():
                 logger.warning(f"[{source}] [Sing-Box] 使用过期缓存兜底")
                 with open(cache_file_path, "r", encoding="utf-8") as f:
                     yaml_content = f.read()
             else:
-                return jsonify({"error": f"拉取失败且无缓存"}), 500
+                return jsonify({"error": f"[{source}] [Fetch Error]"}), 500
 
     try:
         try:
@@ -632,7 +632,7 @@ def process_source(source):
     is_force_refresh = "u" in request.args
 
     # ============ 1. 优先检查 Sing-box 客户端 (Map 模式) ============
-    
+
     # 映射表: {UA关键词: 模板名称}
     # Python 3.7+ 字典有序，匹配顺序即为定义顺序
     singbox_ua_map = {
@@ -644,7 +644,9 @@ def process_source(source):
 
     for keyword, config_val in singbox_ua_map.items():
         if keyword in ua:
-            logger.info(f"[Sing-Box] | [Template]: {config_val} | [Force update]: {is_force_refresh} | UA: {ua}")
+            logger.info(
+                f"[Sing-Box] | [Template: {config_val}] | [Force update: {is_force_refresh}] | [UA: {ua}]"
+            )
             return fetch_and_process_singbox(
                 source, config_val, force_refresh=is_force_refresh
             )
@@ -671,7 +673,9 @@ def process_source(source):
     }
 
     template_path, up, down = config_map[config_val]
-    logger.info(f"[Clash] | [Template]: {config_val} | [Force update]: {is_force_refresh} | UA: {ua}")
+    logger.info(
+        f"[Clash] | [Template: {config_val}] | [Force update: {is_force_refresh}] | [UA: {ua}]"
+    )
 
     try:
         url = read_url_from_file(path)
@@ -693,7 +697,7 @@ def process_source(source):
                     response.headers[h] = v
         return response
     except Exception as e:
-        logger.error(f"Clash 处理失败: {e}")
+        logger.error(f"Clash [Error]: {e}")
         return str(e), 500
 
 
