@@ -59,7 +59,7 @@ def should_update():
         return True
     
     # 这里设置为 12 小时检查一次，你可以根据需要修改
-    return hours_passed >= 12
+    return hours_passed >= 1
 
 def restart_service():
     """重启 Sing-box 服务"""

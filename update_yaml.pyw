@@ -58,7 +58,7 @@ def should_update():
     if last_time == 0:
         return True
         
-    return hours_passed >= 12
+    return hours_passed >= 1  # 每小时检查一次更新
 
 def restart_service():
     """重启 Mihomo 服务"""
