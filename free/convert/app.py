@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import logging
 import requests
+import time  # [新增] 引入 time 模块
 from pathlib import Path
 from urllib.parse import unquote
 from typing import Any, Dict, Union
@@ -19,6 +20,9 @@ app = Flask(__name__)
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 CACHE_DIR = Path("cache")
 CACHE_DIR.mkdir(exist_ok=True)
+
+# [新增] 缓存过期时间 (单位: 秒)，这里设置为 3600 秒 (1小时)
+CACHE_EXPIRE_SECONDS = 86400
 
 MITCE_URL_FILE = Path("mitce").absolute()
 BAJIE_URL_FILE = Path("bajie").absolute()
@@ -124,7 +128,7 @@ def clean_node_name(name: str) -> str:
 
 
 # ==============================================================================
-# PART 1: Clash 处理逻辑 (Strict from app.py)
+# PART 1: Clash 处理逻辑
 # ==============================================================================
 
 
@@ -162,6 +166,19 @@ def load_headers_from_disk(source_name):
 
 def fetch_yaml_text_clash(url, source_name):
     yaml_cache_file = CACHE_DIR / f"{source_name}.yaml"
+
+    # 1. [新增] 优先检查缓存是否有效 (文件存在 且 未过期)
+    if yaml_cache_file.exists():
+        try:
+            mtime = os.path.getmtime(yaml_cache_file)
+            if time.time() - mtime < CACHE_EXPIRE_SECONDS:
+                logger.info(f"[{source_name}] [Clash] 缓存有效，跳过网络请求")
+                with open(yaml_cache_file, "r", encoding="utf-8") as f:
+                    return f.read(), load_headers_from_disk(source_name)
+        except Exception as e:
+            logger.warning(f"读取缓存属性失败，将尝试网络请求: {e}")
+
+    # 2. 网络请求 (如果缓存无效或不存在)
     try:
         headers = {"User-Agent": CLASH_USER_AGENT}
         response = requests.get(url, headers=headers, timeout=15)
@@ -179,10 +196,12 @@ def fetch_yaml_text_clash(url, source_name):
     except Exception as e:
         logger.error(f"[{source_name}] [Clash] 网络拉取失败: {e}")
 
+    # 3. [兜底] 如果网络失败或校验失败，强制读取旧缓存 (灾难恢复)
     if yaml_cache_file.exists():
-        logger.info(f"[{source_name}] [Clash] 载入缓存成功")
+        logger.info(f"[{source_name}] [Clash] 载入灾难缓存成功 (已过期或网络失败)")
         with open(yaml_cache_file, "r", encoding="utf-8") as f:
             return f.read(), load_headers_from_disk(source_name)
+            
     raise RuntimeError(f"[{source_name}] 获取失败且无本地缓存")
 
 
@@ -298,7 +317,7 @@ def process_yaml_content_clash(
 
 
 # ==============================================================================
-# PART 2: Sing-box 处理逻辑 (Strict from ap0p.py)
+# PART 2: Sing-box 处理逻辑
 # ==============================================================================
 
 
@@ -410,25 +429,48 @@ def fetch_and_process_singbox(source: str, config_param: str):
     cache_file_path = CACHE_DIR / f"{source}.yaml"
 
     yaml_content = ""
-    try:
-        headers = {"User-Agent": "clash-verge"}
-        logger.info(f"[{source}] [SingBox] 正在拉取...")
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        temp_content = response.text.strip()
-        if "proxies:" not in temp_content:
-            raise ValueError("拉取校验失败")
-        yaml_content = temp_content
-        with open(cache_file_path, "w", encoding="utf-8") as f:
-            f.write(yaml_content)
-    except Exception as e:
-        logger.error(f"[{source}] [SingBox] 网络/校验错误，使用缓存: {e}")
-        if cache_file_path.exists():
-            with open(cache_file_path, "r", encoding="utf-8") as f:
-                yaml_content = f.read()
-        else:
-            return jsonify({"error": f"拉取失败且无缓存"}), 500
+    used_cache = False  # 标记是否使用了缓存
 
+    # 1. [新增] 优先检查缓存
+    if cache_file_path.exists():
+        try:
+            mtime = os.path.getmtime(cache_file_path)
+            if time.time() - mtime < CACHE_EXPIRE_SECONDS:
+                logger.info(f"[{source}] [SingBox] 缓存有效，直接使用")
+                with open(cache_file_path, "r", encoding="utf-8") as f:
+                    yaml_content = f.read()
+                used_cache = True
+        except Exception:
+            pass
+
+    # 2. 如果没有命中有效缓存，发起网络请求
+    if not used_cache:
+        try:
+            headers = {"User-Agent": "clash-verge"}
+            logger.info(f"[{source}] [SingBox] 正在拉取远程...")
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            temp_content = response.text.strip()
+            if "proxies:" not in temp_content:
+                raise ValueError("拉取校验失败")
+            
+            yaml_content = temp_content
+            # 更新缓存
+            with open(cache_file_path, "w", encoding="utf-8") as f:
+                f.write(yaml_content)
+            logger.info(f"[{source}] [SingBox] 更新缓存成功")
+
+        except Exception as e:
+            logger.error(f"[{source}] [SingBox] 网络/校验错误，使用缓存: {e}")
+            # 3. [兜底] 网络失败，尝试读取过期的旧缓存
+            if cache_file_path.exists():
+                logger.warning(f"[{source}] [SingBox] 使用过期缓存兜底")
+                with open(cache_file_path, "r", encoding="utf-8") as f:
+                    yaml_content = f.read()
+            else:
+                return jsonify({"error": f"拉取失败且无缓存"}), 500
+
+    # ... 后续解析逻辑保持不变 ...
     try:
         try:
             clash_data = yaml.safe_load(yaml_content)
@@ -521,12 +563,9 @@ def fetch_and_process_singbox(source: str, config_param: str):
         final_outbounds = []
         surviving_tags = {o.get("tag") for o in temp_outbounds if o.get("tag")}
 
-        # [修改] 彻底移除了 BUILT_IN_TAGS 逻辑
-        # 现在的清洗逻辑：只保留在 surviving_tags 中的节点引用
         for outbound in temp_outbounds:
             if "outbounds" in outbound and isinstance(outbound["outbounds"], list):
                 original_refs = outbound["outbounds"]
-                # 仅检查 tag 是否存在于 surviving_tags 中
                 cleaned_refs = [tag for tag in original_refs if tag in surviving_tags]
                 outbound["outbounds"] = cleaned_refs
                 if not cleaned_refs:
@@ -554,7 +593,7 @@ def fetch_and_process_singbox(source: str, config_param: str):
 
 
 # ==============================================================================
-# PART 3: 路由入口 (Strict Logic)
+# PART 3: 路由入口
 # ==============================================================================
 
 
