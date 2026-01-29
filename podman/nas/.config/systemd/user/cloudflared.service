@@ -8,7 +8,6 @@ Type=simple
 Restart=always
 RestartSec=5s
 
-# 核心启动逻辑
 ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
@@ -16,10 +15,9 @@ ExecStart=/usr/bin/podman run \
   --label "io.containers.autoupdate=registry" \
   --network=host \
   --env-file /home/huai/token.env \
-  cloudflare/cloudflared:latest \
+  docker.io/cloudflare/cloudflared:latest \
   tunnel --no-autoupdate run
 
-# 优雅停止
 ExecStop=/usr/bin/podman stop -t 10 cloudflared
 
 [Install]
