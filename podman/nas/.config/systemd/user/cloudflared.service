@@ -16,7 +16,7 @@ ExecStart=/usr/bin/podman run \
   --network=host \
   --env-file /home/huai/token.env \
   docker.io/cloudflare/cloudflared:latest \
-  tunnel --no-autoupdate http2 run
+  tunnel --no-autoupdate --protocol http2 run
 
 ExecStop=/usr/bin/podman stop -t 10 cloudflared
 
