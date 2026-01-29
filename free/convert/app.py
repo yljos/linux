@@ -7,7 +7,7 @@ import hashlib
 import hmac
 import logging
 import requests
-import time  # [新增] 引入 time 模块
+import time  # [新增]
 from pathlib import Path
 from urllib.parse import unquote
 from typing import Any, Dict, Union
@@ -21,7 +21,9 @@ ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc
 CACHE_DIR = Path("cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
-# [新增] 缓存过期时间 (单位: 秒)，这里设置为 3600 秒 (1小时)
+# [配置] 缓存过期时间 (单位: 秒)
+# 14400秒 = 4小时。既能防止频繁请求被封，又不至于流量信息滞后太久。
+# 如果想强制刷新，请在 URL 后加 &config=u
 CACHE_EXPIRE_SECONDS = 86400
 
 MITCE_URL_FILE = Path("mitce").absolute()
@@ -39,7 +41,7 @@ RENAME_MAP = {
     "美国": "US",
     "新加坡": "SG",
     "日本": "JP",
-    "家宽": "Home",
+    "家宽": "ISP",
 }
 
 # 2. 区域白名单
@@ -92,6 +94,7 @@ CLASH_FINGERPRINT = "firefox"
 SB_TEMPLATE_MAP = {
     "default": "openwrt.json",
     "pc": "pc.json",
+    "mtun": "mtun.json",
     "m": "m.json",
 }
 
@@ -164,21 +167,26 @@ def load_headers_from_disk(source_name):
         return json.load(f)
 
 
-def fetch_yaml_text_clash(url, source_name):
+def fetch_yaml_text_clash(url, source_name, force_refresh=False):
     yaml_cache_file = CACHE_DIR / f"{source_name}.yaml"
 
-    # 1. [新增] 优先检查缓存是否有效 (文件存在 且 未过期)
-    if yaml_cache_file.exists():
+    # 1. 优先检查缓存
+    # 条件: 没有强制刷新 AND 文件存在
+    if not force_refresh and yaml_cache_file.exists():
         try:
             mtime = os.path.getmtime(yaml_cache_file)
+            # 检查是否过期
             if time.time() - mtime < CACHE_EXPIRE_SECONDS:
                 logger.info(f"[{source_name}] [Clash] 缓存有效，跳过网络请求")
                 with open(yaml_cache_file, "r", encoding="utf-8") as f:
                     return f.read(), load_headers_from_disk(source_name)
         except Exception as e:
             logger.warning(f"读取缓存属性失败，将尝试网络请求: {e}")
+    
+    if force_refresh:
+        logger.info(f"[{source_name}] [Clash] 收到强制刷新指令 (config=u)")
 
-    # 2. 网络请求 (如果缓存无效或不存在)
+    # 2. 网络请求
     try:
         headers = {"User-Agent": CLASH_USER_AGENT}
         response = requests.get(url, headers=headers, timeout=15)
@@ -189,16 +197,16 @@ def fetch_yaml_text_clash(url, source_name):
             save_headers_to_disk(source_name, response.headers)
             with open(yaml_cache_file, "w", encoding="utf-8") as f:
                 f.write(text_content)
-            logger.info(f"[{source_name}] [Clash] 拉取成功并更新缓存")
+            logger.info(f"[{source_name}] [Clash] 网络拉取成功并更新缓存")
             return text_content, response.headers
         else:
             logger.warning(f"[{source_name}] [Clash] 拉取校验失败,启用灾难缓存")
     except Exception as e:
         logger.error(f"[{source_name}] [Clash] 网络拉取失败: {e}")
 
-    # 3. [兜底] 如果网络失败或校验失败，强制读取旧缓存 (灾难恢复)
+    # 3. [兜底] 灾难恢复：如果网络失败，强制读取旧缓存 (不管有没有过期)
     if yaml_cache_file.exists():
-        logger.info(f"[{source_name}] [Clash] 载入灾难缓存成功 (已过期或网络失败)")
+        logger.info(f"[{source_name}] [Clash] 载入灾难缓存成功")
         with open(yaml_cache_file, "r", encoding="utf-8") as f:
             return f.read(), load_headers_from_disk(source_name)
             
@@ -423,16 +431,17 @@ def clash_to_singbox(proxy: Dict[str, Any]) -> Union[Dict[str, Any], None]:
         return None
 
 
-def fetch_and_process_singbox(source: str, config_param: str):
+def fetch_and_process_singbox(source: str, config_param: str, force_refresh=False):
     path = source_map.get(source)
     url = read_url_from_file(path)
     cache_file_path = CACHE_DIR / f"{source}.yaml"
 
     yaml_content = ""
-    used_cache = False  # 标记是否使用了缓存
+    used_cache = False
 
-    # 1. [新增] 优先检查缓存
-    if cache_file_path.exists():
+    # 1. 优先检查缓存
+    # 条件: 没有强制刷新 AND 文件存在
+    if not force_refresh and cache_file_path.exists():
         try:
             mtime = os.path.getmtime(cache_file_path)
             if time.time() - mtime < CACHE_EXPIRE_SECONDS:
@@ -442,8 +451,11 @@ def fetch_and_process_singbox(source: str, config_param: str):
                 used_cache = True
         except Exception:
             pass
+    
+    if force_refresh:
+        logger.info(f"[{source}] [SingBox] 收到强制刷新指令")
 
-    # 2. 如果没有命中有效缓存，发起网络请求
+    # 2. 网络请求
     if not used_cache:
         try:
             headers = {"User-Agent": "clash-verge"}
@@ -462,7 +474,7 @@ def fetch_and_process_singbox(source: str, config_param: str):
 
         except Exception as e:
             logger.error(f"[{source}] [SingBox] 网络/校验错误，使用缓存: {e}")
-            # 3. [兜底] 网络失败，尝试读取过期的旧缓存
+            # 3. [兜底] 网络失败，尝试读取旧缓存
             if cache_file_path.exists():
                 logger.warning(f"[{source}] [SingBox] 使用过期缓存兜底")
                 with open(cache_file_path, "r", encoding="utf-8") as f:
@@ -470,7 +482,6 @@ def fetch_and_process_singbox(source: str, config_param: str):
             else:
                 return jsonify({"error": f"拉取失败且无缓存"}), 500
 
-    # ... 后续解析逻辑保持不变 ...
     try:
         try:
             clash_data = yaml.safe_load(yaml_content)
@@ -617,28 +628,31 @@ def process_source(source):
 
     ua = request.headers.get("User-Agent", "")
 
-    # ============ 严格 UA 匹配 (不包含 windows/mac) ============
+    # [新增] 检查 URL 参数是否包含 config=u，以此判断是否强制刷新
+    is_force_refresh = request.args.get("config") == "u"
+
+    # ============ 严格 UA 匹配 ============
 
     # 1. 优先检查 Sing-box 客户端
     if "SFA" in ua:
-        config_val = "m"
-        logger.info(f"请求类型: SingBox | 模板: m | UA: {ua}")
-        return fetch_and_process_singbox(source, config_val)
+        config_val = "mtun"
+        logger.info(f"SingBox | 模板: mtun | 强制刷新: {is_force_refresh} | UA: {ua}")
+        return fetch_and_process_singbox(source, config_val, force_refresh=is_force_refresh)
 
     elif "sing-box_openwrt" in ua:
         config_val = "default"
-        logger.info(f"请求类型: SingBox | 模板: default(openwrt) | UA: {ua}")
-        return fetch_and_process_singbox(source, config_val)
+        logger.info(f"SingBox | 模板: default | 强制刷新: {is_force_refresh} | UA: {ua}")
+        return fetch_and_process_singbox(source, config_val, force_refresh=is_force_refresh)
 
     elif "sing-box_m" in ua:
-        config_val = "default"
-        logger.info(f"请求类型: SingBox | 模板: default(openwrt) | UA: {ua}")
-        return fetch_and_process_singbox(source, config_val)
+        config_val = "m"
+        logger.info(f"SingBox | 模板: m | 强制刷新: {is_force_refresh} | UA: {ua}")
+        return fetch_and_process_singbox(source, config_val, force_refresh=is_force_refresh)
 
     elif "sing-box_pc" in ua:
         config_val = "pc"
-        logger.info(f"请求类型: SingBox | 模板: pc | UA: {ua}")
-        return fetch_and_process_singbox(source, config_val)
+        logger.info(f"SingBox | 模板: pc | 强制刷新: {is_force_refresh} | UA: {ua}")
+        return fetch_and_process_singbox(source, config_val, force_refresh=is_force_refresh)
 
     # 2. 检查 Clash 客户端
     config_val = None
@@ -662,11 +676,12 @@ def process_source(source):
     }
 
     template_path, up, down = config_map[config_val]
-    logger.info(f"请求类型: Clash | 模板: {config_val} | UA: {ua}")
+    logger.info(f"Clash | 模板: {config_val} | 强制刷新: {is_force_refresh} | UA: {ua}")
 
     try:
         url = read_url_from_file(path)
-        yaml_text, headers_data = fetch_yaml_text_clash(unquote(url), source)
+        # 传递 force_refresh 参数
+        yaml_text, headers_data = fetch_yaml_text_clash(unquote(url), source, force_refresh=is_force_refresh)
         output_bytes = process_yaml_content_clash(yaml_text, template_path, up, down)
 
         response = send_file(

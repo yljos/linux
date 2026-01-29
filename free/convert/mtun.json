@@ -21,7 +21,7 @@
     "strategy": "ipv4_only",
     "disable_cache": true
   },
-  "inbounds": [{"type": "tproxy", "tag": "tproxy-in", "listen": "::", "listen_port": 7893}],
+  "inbounds": [{"type": "tun", "tag": "tun-in", "interface_name": "sing-box", "address": ["172.18.0.1/30"], "auto_route": true, "strict_route": true, "stack": "system", "mtu": 9000, "endpoint_independent_nat": true, "udp_timeout": "5m", "platform": {"http_proxy": {"enabled": true, "server": "127.0.0.1", "server_port": 12138}}}],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
     {"tag": "R", "type": "block"},
@@ -50,7 +50,7 @@
 
   "route": {
     "rules": [
-      {"inbound": ["tproxy-in"], "action": "sniff", "timeout": "300ms"},
+      {"inbound": ["tun-in"], "action": "sniff", "timeout": "300ms"},
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
       {"port": 853, "action": "reject", "no_drop": true},
       {"port": 53, "action": "hijack-dns"},
@@ -58,11 +58,11 @@
       {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject", "no_drop": true},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "ad-ip", "action": "reject"},
+      {"rule_set": "mobile", "outbound": "D"},
       {"domain": ["cdn.jsdmirror.com", "ntp.aliyun.com"], "outbound": "D"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "outbound": "Microsoft"},
       {"domain_keyword": "googleapis", "outbound": "Google"},
       {"rule_set": "direct-site", "outbound": "D"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.21/32"]}, {"rule_set": ["cloudflare-site"]}], "outbound": "D"},
       {"rule_set": "cloudflare-site", "outbound": "A"},
       {"rule_set": "proxy-site", "outbound": "A"},
       {"rule_set": "openai-site", "outbound": "OpenAi"},
@@ -101,7 +101,6 @@
       {"rule_set": "local-ip", "outbound": "D"},
       {"rule_set": "github-ip", "outbound": "GitHub"},
       {"rule_set": "wechat-ip", "outbound": "D"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.21/32"]}, {"rule_set": ["cloudflare-ip"]}], "outbound": "D"},
       {"rule_set": "cloudflare-ip", "outbound": "A"},
       {"rule_set": "pikpak-ip", "outbound": "PikPak"},
       {"rule_set": "alibaba-ip", "outbound": "D"},
@@ -141,6 +140,7 @@
       {"tag": "jd-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/jd.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "local-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/local/local-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "microsoft-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/microsoft.srs", "download_detour": "D", "update_interval": "12h0m0s"},
+      {"tag": "mobile", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/mobile/mobile.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "mozilla-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/mozilla.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "netflix-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/netflix.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "netflix-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/netflix.srs", "download_detour": "D", "update_interval": "12h0m0s"},
@@ -169,7 +169,6 @@
     "default_domain_resolver": {"server": "dns_direct", "rewrite_ttl": 10}
   },
   "experimental": {
-    "cache_file": {"enabled": true, "path": "cache.db", "store_rdrc": true, "rdrc_timeout": "168h0m0s"},
-    "clash_api": {"external_controller": "127.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}
+    "cache_file": {"enabled": true, "path": "cache.db", "store_rdrc": true, "rdrc_timeout": "168h0m0s"}
   }
 }
