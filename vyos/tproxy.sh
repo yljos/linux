@@ -8,8 +8,8 @@ LAN_IF="eth0"
 
 # 检查 root 权限
 if [ "$EUID" -ne 0 ]; then
-    echo "错误：请使用 sudo 运行此脚本"
-    exit 1
+	echo "错误：请使用 sudo 运行此脚本"
+	exit 1
 fi
 
 echo "正在配置 sing-box TProxy (智能防泄露版)..."

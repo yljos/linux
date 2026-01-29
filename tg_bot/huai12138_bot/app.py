@@ -17,8 +17,7 @@ load_dotenv()
 
 # ========== 配置日志 (WARNING级别) ==========
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", 
-    level=logging.WARNING
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.WARNING
 )
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
@@ -90,7 +89,7 @@ load_whitelist_users()
 
 # ========== 常量与策略配置 ==========
 MAX_MSG_LEN = 15
-CHAT_CACHE_TTL = 60 
+CHAT_CACHE_TTL = 60
 
 
 # ========== 封禁策略函数列表 ==========
@@ -187,9 +186,13 @@ async def ban_user(
     actor_admin_id: str | None = None,
 ):
     add_to_blocklist(user_id)
-    
+
     # 静默封禁，不通知管理员自动封禁事件
-    if reason.startswith("Immediate Ban") or reason.startswith("Message too long") or reason == "Non-text message":
+    if (
+        reason.startswith("Immediate Ban")
+        or reason.startswith("Message too long")
+        or reason == "Non-text message"
+    ):
         return
 
     if actor_admin_id == primary_admin_id:
@@ -253,7 +256,7 @@ def extract_user_id_from_text(text: str):
 async def start(update: Update, context: CallbackContext):
     if not update.effective_user:
         return
-    
+
     # 仅允许私聊
     if update.effective_chat.type != "private":
         return
@@ -290,7 +293,7 @@ async def s_command(update: Update, _context: CallbackContext):
         return
     user_id = str(update.effective_user.id)
     if user_id in blocked_users:
-        return 
+        return
     if user_id not in admin_ids and user_id not in s_canid_list:
         await ban_user(
             _context,
@@ -313,7 +316,7 @@ async def s_command(update: Update, _context: CallbackContext):
 
 async def ban(update: Update, context: CallbackContext):
     if str(update.effective_user.id) not in admin_ids:
-        return 
+        return
     try:
         user_to_ban = None
         if update.message.reply_to_message:
@@ -351,7 +354,7 @@ async def ban(update: Update, context: CallbackContext):
 
 async def unban(update: Update, context: CallbackContext):
     if str(update.effective_user.id) not in admin_ids:
-        return 
+        return
     try:
         user_to_unban = None
         if update.message.reply_to_message:
@@ -373,12 +376,8 @@ async def unban(update: Update, context: CallbackContext):
                     actor_admin_id=str(update.effective_user.id),
                 )
                 try:
-                    name = (
-                        getattr(chat, "first_name", None) if chat else None
-                    )
-                    username = (
-                        getattr(chat, "username", None) if chat else None
-                    )
+                    name = getattr(chat, "first_name", None) if chat else None
+                    username = getattr(chat, "username", None) if chat else None
                     text = _render_unban_notice(
                         user_to_unban, name, username, "Manual unban"
                     )
@@ -572,7 +571,7 @@ def main():
     application.add_handler(CommandHandler("s", s_command))
     application.add_handler(CommandHandler("ping", ping))
     application.add_handler(CommandHandler("zh", set_chinese))
-    
+
     # 仅接收文本消息
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, forward_to_admin)
@@ -589,7 +588,7 @@ def main():
 
     clean_webhook_host = webhook_host.rstrip("/")
     webhook_url = f"{clean_webhook_host}{webhook_path}"
-    
+
     print(f"以 Webhook 模式启动机器人 (无MC功能)")
     print(f"监听地址: {webhook_listen}:{webhook_port}")
     print(f"Webhook URL: {webhook_url}")
@@ -603,7 +602,7 @@ def main():
         webhook_url=webhook_url,
         secret_token=webhook_secret_token,
         # 只接收 Message 更新
-        allowed_updates=["message"]
+        allowed_updates=["message"],
     )
 
 

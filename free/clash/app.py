@@ -256,7 +256,7 @@ def process_yaml_content(
                 # 如果包含 filter (Mihomo/Meta 格式或自定义)，则进行正则匹配
                 if "filter" in group:
                     pattern = group["filter"]
-                    
+
                     # =========================================================
                     # 修改：处理节点替换时，一并删除 filter 和 include-all-proxies
                     # =========================================================
