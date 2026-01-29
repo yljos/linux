@@ -30,7 +30,7 @@ run_silent() {
 		sleep 3
 		# 3秒后再次检查，如果找不到进程，说明启动失败
 		if ! pgrep -f "$match_pattern" >/dev/null 2>&1; then
-			notify-send -u critical "启动失败" "❌ 无法启动: $app_name"
+			notify-send -u critical "启动失败" "无法启动: $app_name"
 		fi
 	) &
 }
