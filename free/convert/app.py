@@ -177,14 +177,14 @@ def fetch_yaml_text_clash(url, source_name, force_refresh=False):
             mtime = os.path.getmtime(yaml_cache_file)
             # 检查是否过期
             if time.time() - mtime < CACHE_EXPIRE_SECONDS:
-                logger.info(f"[{source_name}] [Clash] 缓存有效，跳过网络请求")
+                logger.info(f"[{source_name}] [Clash] [cache] [Skip]")
                 with open(yaml_cache_file, "r", encoding="utf-8") as f:
                     return f.read(), load_headers_from_disk(source_name)
         except Exception as e:
             logger.warning(f"读取缓存属性失败，将尝试网络请求: {e}")
 
     if force_refresh:
-        logger.info(f"[{source_name}] [Clash] 收到强制刷新指令 (config=u)")
+        logger.info(f"[{source_name}] [Clash] [Received u]")
 
     # 2. 网络请求
     try:
@@ -445,7 +445,7 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
         try:
             mtime = os.path.getmtime(cache_file_path)
             if time.time() - mtime < CACHE_EXPIRE_SECONDS:
-                logger.info(f"[{source}] [sing-box] 缓存有效，直接使用")
+                logger.info(f"[{source}] [Sing-Box] [cache] [Skip]")
                 with open(cache_file_path, "r", encoding="utf-8") as f:
                     yaml_content = f.read()
                 used_cache = True
@@ -453,13 +453,13 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
             pass
 
     if force_refresh:
-        logger.info(f"[{source}] [sing-box] 收到强制刷新指令")
+        logger.info(f"[{source}] [Sing-Box] [Received u]")
 
     # 2. 网络请求
     if not used_cache:
         try:
             headers = {"User-Agent": "clash-verge"}
-            logger.info(f"[{source}] [sing-box] 正在拉取远程...")
+            logger.info(f"[{source}] [Sing-Box] 正在拉取远程...")
             response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
             temp_content = response.text.strip()
@@ -470,13 +470,13 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
             # 更新缓存
             with open(cache_file_path, "w", encoding="utf-8") as f:
                 f.write(yaml_content)
-            logger.info(f"[{source}] [sing-box] 更新缓存成功")
+            logger.info(f"[{source}] [Sing-Box] 更新缓存成功")
 
         except Exception as e:
-            logger.error(f"[{source}] [sing-box] 网络/校验错误，使用缓存: {e}")
+            logger.error(f"[{source}] [Sing-Box] 网络/校验错误，使用缓存: {e}")
             # 3. [兜底] 网络失败，尝试读取旧缓存
             if cache_file_path.exists():
-                logger.warning(f"[{source}] [sing-box] 使用过期缓存兜底")
+                logger.warning(f"[{source}] [Sing-Box] 使用过期缓存兜底")
                 with open(cache_file_path, "r", encoding="utf-8") as f:
                     yaml_content = f.read()
             else:
@@ -644,7 +644,7 @@ def process_source(source):
 
     for keyword, config_val in singbox_ua_map.items():
         if keyword in ua:
-            logger.info(f"[sing-box] | 模板: {config_val} | 强制刷新: {is_force_refresh} | UA: {ua}")
+            logger.info(f"[Sing-Box] | [Template]: {config_val} | [Force update]: {is_force_refresh} | UA: {ua}")
             return fetch_and_process_singbox(
                 source, config_val, force_refresh=is_force_refresh
             )
@@ -671,7 +671,7 @@ def process_source(source):
     }
 
     template_path, up, down = config_map[config_val]
-    logger.info(f"[clash] | 模板: {config_val} | 强制刷新: {is_force_refresh} | UA: {ua}")
+    logger.info(f"[Clash] | [Template]: {config_val} | [Force update]: {is_force_refresh} | UA: {ua}")
 
     try:
         url = read_url_from_file(path)
