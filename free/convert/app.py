@@ -92,7 +92,7 @@ CLASH_FINGERPRINT = "firefox"
 # ================= [Sing-box] 专用配置 =================
 
 SB_TEMPLATE_MAP = {
-    "default": "openwrt.json",
+    "openwrt": "openwrt.json",
     "pc": "pc.json",
     "mtun": "mtun.json",
     "m": "m.json",
@@ -445,7 +445,7 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
         try:
             mtime = os.path.getmtime(cache_file_path)
             if time.time() - mtime < CACHE_EXPIRE_SECONDS:
-                logger.info(f"[{source}] [SingBox] 缓存有效，直接使用")
+                logger.info(f"[{source}] [sing-box] 缓存有效，直接使用")
                 with open(cache_file_path, "r", encoding="utf-8") as f:
                     yaml_content = f.read()
                 used_cache = True
@@ -453,13 +453,13 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
             pass
 
     if force_refresh:
-        logger.info(f"[{source}] [SingBox] 收到强制刷新指令")
+        logger.info(f"[{source}] [sing-box] 收到强制刷新指令")
 
     # 2. 网络请求
     if not used_cache:
         try:
             headers = {"User-Agent": "clash-verge"}
-            logger.info(f"[{source}] [SingBox] 正在拉取远程...")
+            logger.info(f"[{source}] [sing-box] 正在拉取远程...")
             response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
             temp_content = response.text.strip()
@@ -470,13 +470,13 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
             # 更新缓存
             with open(cache_file_path, "w", encoding="utf-8") as f:
                 f.write(yaml_content)
-            logger.info(f"[{source}] [SingBox] 更新缓存成功")
+            logger.info(f"[{source}] [sing-box] 更新缓存成功")
 
         except Exception as e:
-            logger.error(f"[{source}] [SingBox] 网络/校验错误，使用缓存: {e}")
+            logger.error(f"[{source}] [sing-box] 网络/校验错误，使用缓存: {e}")
             # 3. [兜底] 网络失败，尝试读取旧缓存
             if cache_file_path.exists():
-                logger.warning(f"[{source}] [SingBox] 使用过期缓存兜底")
+                logger.warning(f"[{source}] [sing-box] 使用过期缓存兜底")
                 with open(cache_file_path, "r", encoding="utf-8") as f:
                     yaml_content = f.read()
             else:
@@ -510,7 +510,7 @@ def fetch_and_process_singbox(source: str, config_param: str, force_refresh=Fals
             return jsonify({"error": "没有转换成功的节点"}), 400
 
         template_filename = SB_TEMPLATE_MAP.get(
-            config_param, SB_TEMPLATE_MAP["default"]
+            config_param, SB_TEMPLATE_MAP["openwrt"]
         )
         if not os.path.exists(template_filename):
             return jsonify({"error": f"模板文件未找到: {template_filename}"}), 500
@@ -628,42 +628,26 @@ def process_source(source):
 
     ua = request.headers.get("User-Agent", "")
 
-    # [修改] 极简模式：只要 URL 包含 &u 参数，就强制刷新
-    # 示例: /bajie?key=xxx&u
+    # 极简模式：只要 URL 包含 &u 参数，就强制刷新
     is_force_refresh = "u" in request.args
 
-    # ============ 严格 UA 匹配 ============
+    # ============ 1. 优先检查 Sing-box 客户端 (Map 模式) ============
+    
+    # 映射表: {UA关键词: 模板名称}
+    # Python 3.7+ 字典有序，匹配顺序即为定义顺序
+    singbox_ua_map = {
+        "SFA": "mtun",
+        "sing-box_openwrt": "openwrt",
+        "sing-box_m": "m",
+        "sing-box_pc": "pc",
+    }
 
-    # 1. 优先检查 Sing-box 客户端
-    if "SFA" in ua:
-        config_val = "mtun"
-        logger.info(f"SingBox | 模板: mtun | 强制刷新: {is_force_refresh} | UA: {ua}")
-        return fetch_and_process_singbox(
-            source, config_val, force_refresh=is_force_refresh
-        )
-
-    elif "sing-box_openwrt" in ua:
-        config_val = "default"
-        logger.info(
-            f"SingBox | 模板: default | 强制刷新: {is_force_refresh} | UA: {ua}"
-        )
-        return fetch_and_process_singbox(
-            source, config_val, force_refresh=is_force_refresh
-        )
-
-    elif "sing-box_m" in ua:
-        config_val = "m"
-        logger.info(f"SingBox | 模板: m | 强制刷新: {is_force_refresh} | UA: {ua}")
-        return fetch_and_process_singbox(
-            source, config_val, force_refresh=is_force_refresh
-        )
-
-    elif "sing-box_pc" in ua:
-        config_val = "pc"
-        logger.info(f"SingBox | 模板: pc | 强制刷新: {is_force_refresh} | UA: {ua}")
-        return fetch_and_process_singbox(
-            source, config_val, force_refresh=is_force_refresh
-        )
+    for keyword, config_val in singbox_ua_map.items():
+        if keyword in ua:
+            logger.info(f"[sing-box] | 模板: {config_val} | 强制刷新: {is_force_refresh} | UA: {ua}")
+            return fetch_and_process_singbox(
+                source, config_val, force_refresh=is_force_refresh
+            )
 
     # 2. 检查 Clash 客户端
     config_val = None
@@ -687,7 +671,7 @@ def process_source(source):
     }
 
     template_path, up, down = config_map[config_val]
-    logger.info(f"Clash | 模板: {config_val} | 强制刷新: {is_force_refresh} | UA: {ua}")
+    logger.info(f"[clash] | 模板: {config_val} | 强制刷新: {is_force_refresh} | UA: {ua}")
 
     try:
         url = read_url_from_file(path)
