@@ -27,7 +27,6 @@
 !/debian/huai/.config/mako/
 !/debian/huai/.config/mpd/
 !/debian/huai/.config/mpv/
-!/debian/huai/.config/mutt/
 !/debian/huai/.config/shutdown.sh
 !/debian/huai/.config/autostart.sh
 !/debian/huai/.config/script_lock.sh

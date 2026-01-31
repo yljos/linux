@@ -1,6 +1,0 @@
-
-text/html; w3m -I %{charset} -T text/html; copiousoutput;
-image/*; feh %s &
-video/*; mpv --loop %s;
-audio/*; mpv --loop --audio-display=no %s;
-
