@@ -12,15 +12,15 @@
 **/.pdm-python
 **/cache/
 **/.env
-/linux/debian/huai/.config/btop/
-/linux/debian/huai/.config/fcitx5/
-/linux/debian/huai/.config/fcitx/
-/linux/debian/huai/.config/freerdp/
-/linux/debian/huai/.config/remmina/
-/linux/debian/huai/.config/ibus/
-/linux/debian/huai/.config/mimiapps.list
-/linux/debian/huai/.config/pulse/
-/linux/debian/huai/.config/systemd/
-/linux/debian/huai/.config/mpd/database
+/debian/huai/.config/btop/
+/debian/huai/.config/fcitx5/
+/debian/huai/.config/fcitx/
+/debian/huai/.config/freerdp/
+/debian/huai/.config/remmina/
+/debian/huai/.config/ibus/
+/debian/huai/.config/mimiapps.list
+/debian/huai/.config/pulse/
+/debian/huai/.config/systemd/
+/debian/huai/.config/mpd/database
 
 
