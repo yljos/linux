@@ -18,9 +18,10 @@
 /debian/huai/.config/freerdp/
 /debian/huai/.config/remmina/
 /debian/huai/.config/ibus/
-/debian/huai/.config/mimiapps.list
+/debian/huai/.config/mimeapps.list
 /debian/huai/.config/pulse/
 /debian/huai/.config/systemd/
 /debian/huai/.config/mpd/database
+/debian/huai/.config/pavucontrol.ini
 
 
