@@ -54,7 +54,7 @@ wait_online() {
 # 连接主机
 connect_to_host() {
 	notify-send "连接中" "启动 RDP..." && play ~/.config/dunst/connecting.mp3 >/dev/null 2>&1
-	xfreerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /cert:ignore /sound /w:1916 /h:1056 >/dev/null 2>&1 &
+	env SDL_VIDEODRIVER=wayland sdl-freerdp3 /v:"$TARGET_IP" /u:huai /p:"$PASSWORD" /cert:ignore /sound /w:1916 /h:1056 >/dev/null 2>&1 &
 }
 
 # 主流程
