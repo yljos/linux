@@ -48,19 +48,6 @@ run_silent() {
 killall mako >/dev/null 2>&1
 mako &
 sleep 0.5 # 稍微给点面子等待一下
-# 壁纸守护进程 (修正版)
-# 1. 强制清理可能导致 Firejail 崩溃的非法双点号文件
-rm -f /run/user/$(id -u)/wayland-0-swww-daemon..sock >/dev/null 2>&1
-
-# 2. 确保启动环境有变量支撑，防止再次生成非法文件名
-# 如果你是用的是默认的 wayland-0，可以直接 export
-export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
-
-run_silent "swww-daemon" "swww-daemon -n 0" "swww 守护进程"
-
-# 壁纸自动切换脚本 (匹配完整路径)
-SWWW_SCRIPT="$HOME/.config/swww_auto.sh"
-run_silent "$SWWW_SCRIPT" "sh $SWWW_SCRIPT" "swww_auto.sh"
 
 # 关机脚本
 SHUTDOWN_SCRIPT="$HOME/.config/shutdown.sh"
