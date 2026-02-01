@@ -32,6 +32,7 @@ alias cdmutt="cd /home/huai/.config/mutt"
 alias 0="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 50"
 alias 1="pactl set-default-sink alsa_output.pci-0000_00_1f.3.analog-stereo; vol 50"
 alias 2="pactl set-default-sink "bluez_output.E6:30:6D:65:E0:5F"; vol 80" 
+alias 3="pactl set-default-sink alsa_output.usb-Jieli_Technology_GWH810PRO_415035333633380C-00.analog-stereo; vol 70"
 vol() {
     # 1. 调整音量
     pactl set-sink-volume @DEFAULT_SINK@ "${1}%"
