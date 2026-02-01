@@ -64,7 +64,7 @@ alias gpu='git push'
 alias gcl='git clone'
 alias gst='git status'
 alias gl='git log'
-_
+
 # 检查 SSH 代理并自动添加密钥
 ssh_add_check() {
     if [ -z "$(ssh-add -l 2>/dev/null | grep -v 'The agent has no identities.')" ]; then
