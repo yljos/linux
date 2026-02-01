@@ -12,27 +12,6 @@
 **/.pdm-python
 **/cache/
 **/.env
-# =======================================================
-# 针对 /debian/huai/.config/ 的绝对路径白名单
-# =======================================================
 
-# 1. 【核心】忽略 debian/huai/.config 下的所有文件
-/debian/huai/.config/*
-
-# 2. 【放行】只保留你 Tree 列表中存在的目录
-!/debian/huai/.config/dunst/
-!/debian/huai/.config/dwl/
-!/debian/huai/.config/firejail/
-!/debian/huai/.config/foot/
-!/debian/huai/.config/mpd/
-!/debian/huai/.config/mpv/
-!/debian/huai/.config/shutdown.sh
-!/debian/huai/.config/autostart.sh
-!/debian/huai/.config/script_lock.sh
-!/debian/huai/.config/windows.sh
-
-
-# 3. 【特例】即使 mpd 被放行了，也要屏蔽里面的 database 文件
-/debian/huai/.config/mpd/database
 
 
