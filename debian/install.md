@@ -26,8 +26,17 @@ sudo kernel-install add $(uname -r) /boot/vmlinuz-$(uname -r)
 ls /boot/efi/loader/entries/
 systemctl reboot
 sudo apt purge grub*
+sudo apt purge grub-efi-amd64-signed grub-common grub-efi-amd64 grub2-common shim-signed --allow-remove-essential
 sudo rm -rf /boot/grub
 vim /boot/efi/loader/loader.conf
 sudo efibootmgr
 sudo efibootmgr -b 0001 -B
 
+sudo apt update
+sudo apt install fcitx5 fcitx5-rime fcitx5-frontend-gtk3 fcitx5-frontend-gtk4 fcitx5-frontend-qt5
+
+sudo vim /etc/environment
+
+GTK_IM_MODULE=fcitx
+QT_IM_MODULE=fcitx
+XMODIFIERS=@im=fcitx
