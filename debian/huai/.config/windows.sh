@@ -5,16 +5,14 @@ MAC_ADDRESS="00:23:24:67:DF:14"
 BROADCAST_IP="10.0.0.255"
 TARGET_IP="10.0.0.15"
 
-# 使用 --localnet 扫描全网，并匹配目标 MAC 地址
-# 2>/dev/null 屏蔽杂乱的输出
-if sudo arp-scan -localnet 2>/dev/null | grep -q "$MAC_ADDRESS"; then
+# 使用 grep -iq 忽略大小写匹配
+if sudo arp-scan --localnet 2>/dev/null | grep -iq "$MAC_ADDRESS"; then
     notify-send "Windows" "主机已在线，直接连接"
 else
     # 不在线，发送唤醒包
     wakeonlan -i "$BROADCAST_IP" "$MAC_ADDRESS" >/dev/null 2>&1
     notify-send "WOL" "唤醒魔术包已发送"
     
-    # 严格保留你设定的 15 秒
     sleep 15
 fi
 
