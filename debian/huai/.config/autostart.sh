@@ -45,8 +45,8 @@ run_silent() {
 # 	sleep 0.5 # 稍微给点面子等待一下
 # fi
 # mako
-killall mako >/dev/null 2>&1
-mako &
+killall dunst >/dev/null 2>&1
+dunst &
 sleep 0.5 # 稍微给点面子等待一下
 
 # 关机脚本
