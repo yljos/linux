@@ -13,8 +13,7 @@
    family = "Liberation Mono"
    style = "Bold Italic"
 [window]
-   opacity = 0.7  
-[colors]
+   opacity = 0.9
 # Normal colors
 [colors.normal]
 black = '#000000'
