@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-play ~/.config/dunst/xp.wav &
+mpv --no-video /home/huai/.config/dunst/xp.wav &
 
 if ! pgrep -f "firefox" &>/dev/null; then
 	sleep 3
@@ -12,8 +12,8 @@ if ! pgrep -x "Telegram" &>/dev/null; then
 fi
 
 
-if [ -f ~/.config/shutdown.sh ]; then
-	/bin/bash ~/.config/shutdown.sh &
+if [ -f /home/huai/.config/shutdown.sh ]; then
+	/bin/bash /home/huai/.config/shutdown.sh &
 fi
 
 if command -v numlockx &>/dev/null; then
@@ -34,6 +34,6 @@ fi
 
 sleep 3
 
-if [ -f ~/.config/dwm/dwm_status.sh ] && ! pgrep -f "bash.*dwm_status.sh" &>/dev/null; then
-	/bin/bash ~/.config/dwm/dwm_status.sh &
+if [ -f /home/huai/.config/dwm/dwm_status.sh ] && ! pgrep -f "bash.*dwm_status.sh" &>/dev/null; then
+	/bin/bash /home/huai/.config/dwm/dwm_status.sh &
 fi
