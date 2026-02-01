@@ -14,6 +14,8 @@ sudo apt install fonts-noto-cjk fonts-noto-color-emoji
 apt install git curl vim  
 apt install pipewire pipewire-pulse pipewire-alsa wireplumber pulseaudio-utils
 systemctl --user --now enable pipewire pipewire-pulse wireplumber
+sudo apt install arp-scan
+
 sudo apt install systemd-boot efibootmgr
 cat /etc/machine-id              #systemd-machine-id-setup
 cat /proc/cmdline | sudo tee /etc/kernel/cmdline
