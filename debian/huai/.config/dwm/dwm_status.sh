@@ -11,7 +11,7 @@ fi
 # =============================================================================
 
 # --- 1. 图标定义 (DWL 文本风格) ---
-ICON_ARCH="D:"
+# 已移除 ICON_ARCH
 ICON_MUSIC=""
 ICON_TEMP="T:"
 ICON_CPU="C:"
@@ -46,14 +46,15 @@ update_music_socket() {
     local artist="" title="" state="" name=""
     while read -r line <&3; do
         if [[ "$line" == "state: play"* ]]; then state="play"; fi
-        if [[ "$line" == "Artist: "* ]]; then artist="${line#Artist: }"; fi
+        # if [[ "$line" == "Artist: "* ]]; then artist="${line#Artist: }"; fi  <-- 已移除歌手读取
         if [[ "$line" == "Title: "* ]]; then title="${line#Title: }"; fi
         if [[ "$line" == "Name: "* ]]; then name="${line#Name: }"; fi
     done
     exec 3>&-
     if [[ "$state" == "play" ]]; then
+        # 仅显示标题，如果标题为空则显示文件名
         local display="${title:-$name}"
-        [[ -n "$artist" ]] && display="$artist - $display"
+        # [[ -n "$artist" ]] && display="$artist - $display" <-- 已移除歌手拼接
         MUSIC_STATUS="[${display:-Unknown}]"
     fi
 }
@@ -118,10 +119,14 @@ update_ime() {
 update_time() { TIME_STATUS=$(printf "%(%a %b %d %H:%M)T" -1); }
 
 print_status_bar() {
-    local output="${ICON_ARCH}${ARCH}${SEPARATOR}${ICON_MUSIC}${MUSIC_STATUS}${SEPARATOR}${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_CPU}${CPU_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${ICON_VOL}${VOL_STATUS}${SEPARATOR}${NET_STATUS_STR}"
+    # 已移除 ARCH 相关的拼接
+    local output="${ICON_MUSIC}${MUSIC_STATUS}${SEPARATOR}${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_CPU}${CPU_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${ICON_VOL}${VOL_STATUS}${SEPARATOR}${NET_STATUS_STR}"
     output="${output}${SEPARATOR}${ICON_TIME}${TIME_STATUS}${SEPARATOR}${IME_STATUS}"
 
+    # 清理可能产生的双重分隔符
     output=$(echo "$output" | sed "s/$SEPARATOR$SEPARATOR/$SEPARATOR/g")
+    # 清理可能产生的行首分隔符 (如果音乐未播放)
+    output=${output#$SEPARATOR}
 
     # 强制使用 xsetroot 设置 DWM 状态
     xsetroot -name "$output"
@@ -131,7 +136,7 @@ print_status_bar() {
 # --- 主逻辑 ---
 # =============================================================================
 
-ARCH=$(uname -r | cut -d'-' -f1)
+# 已移除 ARCH 获取逻辑
 NET_RX_FILE="/sys/class/net/$INTERFACE/statistics/rx_bytes"
 NET_TX_FILE="/sys/class/net/$INTERFACE/statistics/tx_bytes"
 
