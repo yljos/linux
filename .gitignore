@@ -24,7 +24,6 @@
 !/debian/huai/.config/dwl/
 !/debian/huai/.config/firejail/
 !/debian/huai/.config/foot/
-!/debian/huai/.config/mako/
 !/debian/huai/.config/mpd/
 !/debian/huai/.config/mpv/
 !/debian/huai/.config/shutdown.sh
