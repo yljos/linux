@@ -14,7 +14,6 @@
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "strategy": "ipv4_only", "server": "dns_microsoft"},
       {"domain_keyword": "googleapis", "strategy": "ipv4_only", "server": "dns_google"},
       {"rule_set": "googlefcm-site", "strategy": "ipv4_only", "server": "dns_google"},
-      {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"}
     ],
     "final": "dns_proxy",
@@ -26,7 +25,7 @@
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
     {"tag": "R", "type": "block"},
     {"tag": "Default", "type": "selector", "outbounds": ["A", "R", "D"], "default": "A"},
-    {"tag": "A", "type": "selector", "outbounds": ["JP-UDP", "SG-UDP", "US-UDP", "HK-UDP", "JP-TCP", "SG-TCP", "US-TCP", "HK-TCP"], "default": "JP-UDP"},
+    {"tag": "A", "type": "selector", "outbounds": ["JP-UDP", "SG-UDP", "US-UDP", "HK-UDP", "JP-TCP", "SG-TCP", "US-TCP", "HK-TCP"], "default": "SG-TCP"},
     {"tag": "Google", "type": "selector", "outbounds": ["JP-UDP", "SG-UDP", "US-UDP", "HK-UDP", "JP-TCP", "SG-TCP", "US-TCP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "OpenAi", "type": "selector", "outbounds": ["JP-UDP", "SG-UDP", "US-UDP", "HK-UDP", "JP-TCP", "SG-TCP", "US-TCP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Steam", "type": "selector", "outbounds": ["JP-UDP", "SG-UDP", "US-UDP", "HK-UDP", "JP-TCP", "SG-TCP", "US-TCP", "HK-TCP"], "default": "JP-UDP"},
@@ -56,8 +55,6 @@
       {"port": 53, "action": "hijack-dns"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject", "no_drop": true},
-      {"rule_set": "ad-site", "action": "reject"},
-      {"rule_set": "ad-ip", "action": "reject"},
       {"domain": ["cdn.jsdmirror.com", "ntp.aliyun.com"], "outbound": "D"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "outbound": "Microsoft"},
       {"domain_keyword": "googleapis", "outbound": "Google"},
@@ -111,8 +108,6 @@
       {"rule_set": "cn-ip", "outbound": "D"}
     ],
     "rule_set": [
-      {"tag": "ad-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/ad/ad-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "ad-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/ad/ad-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "adguard-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/adguard.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "alibaba-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/alibaba/alibaba-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "alibaba-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@main/sing-box/alibaba/alibaba-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
