@@ -1,9 +1,0 @@
-# 保留黑名单
-blacklist ${HOME}/下载
-blacklist ${HOME}/Documents
-blacklist ${HOME}/Desktop
-# VAAPI / 硬件加速
-env MOZ_ACCELERATED=1
-env MOZ_USE_HWDEC=1
-env MOZ_IGNORE_GPU_BLACKLIST=1
-

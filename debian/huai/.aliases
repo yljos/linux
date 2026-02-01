@@ -6,27 +6,21 @@ alias ..='cd ..'
 # 同时显示 UTC 和 北京时间
 alias now='echo "UTC: $(date -u +%H:%M:%S) | CST: $(TZ=Asia/Shanghai date +%H:%M:%S)"'
 # 系统操作
-alias update="sudo pacman -Syyu"
 alias P="sleep 60 && shutdown now"
 alias R="systemctl reboot"
 alias rsyncdir="rsync -avzh --delete" 
 
-# 配置文件编辑
-alias zshconfig="vim /workspace/linux/arch/huai/.zshrc"
-alias bashconfig="vim /workspace/linux/arch/huai/.bashrc"
-
 # 目录导航
 alias cdconfig="cd /home/huai/.config"
-alias cdfree="cd /workspace/linux/free"
-alias cdlinux="cd /workspace/linux"
-alias cdpodman="cd /workspace/linux/podman"
-alias cddwl="cd /workspace/dwl"
+alias cdfree="cd /home/huai/linux/free"
+alias cdlinux="cd /home/huai/linux"
+alias cdpodman="cd /home/huai/linux/podman"
+alias cddwl="cd /home/huai/dwl"
 alias cddata="mount-data; cd /data"
 alias cdappdata="mount-data; cd /data/appdata"
 alias cdusb="cd /home/huai/usb"
 alias cdwww="mount-data; cd /data/www"
 alias cdmedia="mount-data; cd /data/media"
-alias cdmutt="cd /home/huai/.config/mutt"
 
 # 音频控制
 alias 0="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 50"
@@ -66,54 +60,11 @@ gc() {
     fi
 }
 alias gpl='git pull'
-alias gpu='github && gitea'
+alias gpu='git push'
 alias gcl='git clone'
 alias gst='git status'
 alias gl='git log'
-_git_push_helper() {
-  # 第一个参数是远程仓库的名称 (e.g., "codeberg" or "github")
-  local remote_name="$1"
-  # 'shift' 命令会移除第一个参数, 剩下的参数 ($@) 就是用户可能附加的 git push 选项
-  shift
-
-  # 你的 ssh-agent 检查
-  ssh_add_check
-
-  # 检查用户是否提供了自定义参数 (比如指定了其他分支名或 --force)
-  if [ $# -eq 0 ]; then
-    # 如果没有参数, 自动获取当前分支名
-    local current_branch
-    current_branch=$(git branch --show-current)
-
-    # 检查是否成功获取了分支名 (比如在一个 detached HEAD 状态下, 这条命令会返回空)
-    if [ -n "$current_branch" ]; then
-      echo "检测到当前分支: ${current_branch}. 推送到 ${remote_name}..."
-      git push "$remote_name" "$current_branch"
-    else
-      echo "错误: 无法检测到当前 Git 分支."
-      return 1
-    fi
-  else
-    # 如果用户提供了参数, 则原封不动地传递给 git push
-    echo "使用自定义参数推送到 ${remote_name}..."
-    git push "$remote_name" "$@"
-  fi
-}
-
-# 用于 codeberg 的推送函数
-codeberg() {
-  # 调用辅助函数, 并将 "codeberg" 和所有接收到的参数传递给它
-  _git_push_helper codeberg "$@"
-}
-gitea() {
-  # 调用辅助函数, 并将 "codeberg" 和所有接收到的参数传递给它
-  _git_push_helper gitea "$@"
-}
-# 用于 github 的推送函数
-github() {
-  # 调用辅助函数, 并将 "github" 和所有接收到的参数传递给它
-  _git_push_helper github "$@"
-}
+_
 # 检查 SSH 代理并自动添加密钥
 ssh_add_check() {
     if [ -z "$(ssh-add -l 2>/dev/null | grep -v 'The agent has no identities.')" ]; then
@@ -129,22 +80,10 @@ mount-data() {
 
 # 脚本和程序
 alias win="/usr/bin/bash /home/huai/.config/windows.sh"
-alias repo="sh /home/huai/.config/repo.sh"
 np() {
     if [ -f "$HOME/.config/wallpaperchange.sh" ]; then
         sh "$HOME/.config/wallpaperchange.sh"
-    else
-        sh "$HOME/.config/swww.sh"
     fi
 }
 alias py="python3"
-x() {
-    if [ -f "$HOME/.xinitrc" ]; then
-        if command -v dwm >/dev/null 2>&1; then
-            startx
-            return 
-        fi         
-    fi             
-    
-    /usr/bin/bash /home/huai/.config/dwl/dwl_status.sh | dwl
-}
+alias x="startx"

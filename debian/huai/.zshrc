@@ -6,7 +6,6 @@ esac
 # Environment Variables
 #export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-export MAILCAPS="$HOME/.config/mutt/mailcap"
 export GPG_TTY=$(tty)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 export LANG=en_US.UTF-8
