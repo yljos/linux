@@ -10,3 +10,5 @@ xfreerdp /v:IP地址 /u:用户名 /p:密码 /f /sound /clipboard /dynamic-resolu
 apt update && apt install sudo
 usermod -aG sudo huai
 apt install git curl vim  
+apt install pipewire pipewire-pulse pipewire-alsa wireplumber
+systemctl --user --now enable pipewire pipewire-pulse wireplumber
