@@ -36,6 +36,7 @@ REMOTE_HASH=$(git rev-parse @{u})
 if [ "$LOCAL_HASH" == "$REMOTE_HASH" ]; then
 	# 极简主义核心：无更新直接退出，零资源消耗
 	# 注意：这里 exit 0 是安全的，因为没有更新就不需要构建
+	log "检测到更新: 无更新，退出。"
 	exit 0
 fi
 
