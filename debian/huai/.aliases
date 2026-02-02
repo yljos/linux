@@ -83,7 +83,8 @@ gc() {
 # ---------------------------------------------------------
 # [7] Script Shortcuts
 # ---------------------------------------------------------
-alias win="/usr/bin/bash /home/huai/.config/windows.sh"
+alias win="/usr/bin/bash /home/huai/.config/win.sh"
+alias wol="/usr/bin/bash /home/huai/.config/wol.sh"
 alias py="python3"
 
 np() {
