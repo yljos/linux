@@ -1,10 +1,11 @@
 [Match]
 Name=wlp2s0
-[Link]
-ActivationPolicy=down
+#[Link]
+#ActivationPolicy=down
 #[Network]
 #DHCP=yes
 
 #[Link]
 #RequiredForOnline=routable
-
+[Link]
+Unmanaged=yes
