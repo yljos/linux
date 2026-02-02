@@ -35,39 +35,39 @@ mount-data() {
 }
 
 # =================================================================
-# 纯原生 PipeWire 音频管理 (WirePlumber 驱动)
+# Pure Native PipeWire Audio Management (WirePlumber Driver)
 # =================================================================
 
-# 1. 辅助：从 wpctl 提取 Sink 的数字 ID
+# 1. Helper: Extract Sink digital ID from wpctl
 _get_wp_id() {
-    # 只在 Sinks 区域查找关键字对应的 ID
+    # Search for keyword ID only in Sinks section
     wpctl status | sed -n '/Sinks:/,/Sources:/p' | grep -i "$1" | grep -oE '[0-9]+' | head -n1
 }
 
-# 2. 音量控制 (纯 wpctl 语法)
+# 2. Volume Control (Pure wpctl syntax)
 vol() {
     local target=$1
-    # 检查输入是增量(5%+)还是绝对值(50)
+    # Check if input is increment (5%+) or absolute value (50)
     if [[ "$target" == *"+"* || "$target" == *"-"* ]]; then
         wpctl set-volume @DEFAULT_AUDIO_SINK@ "$target"
     else
-        # 现代 wpctl 支持直接输入百分比，无需通过 bc 转换小数
+        # Modern wpctl supports direct percentage input, no need to convert decimals via bc
         wpctl set-volume @DEFAULT_AUDIO_SINK@ "${target}%"
     fi
-    # 信号通知 dwm_status.sh (极简工作流必备)
+    # Signal notify dwm_status.sh (essential for minimalist workflow)
     pkill -RTMIN+2 -f dwm_status.sh
 }
 
-# 3. 设备切换 (仅修改默认路由)
+# 3. Device Switch (only modify default routing)
 set_audio() {
     local keyword="$1"
     local vol_level="$2"
     local id=$(_get_wp_id "$keyword")
 
     if [ -n "$id" ]; then
-        # A. 修改 PipeWire 默认输出设备
+        # A. Modify PipeWire default output device
         wpctl set-default "$id"
-        # B. 同步调整到初始音量
+        # B. Sync adjust to initial volume
         vol "$vol_level"
         echo "PipeWire Default -> $keyword ($id)"
     else
@@ -76,14 +76,14 @@ set_audio() {
 }
 
 # =================================================================
-# 极简 Alias 映射
+# Minimalist Alias Mapping
 # =================================================================
 alias 0="set_audio 'Honk' 50"
 alias 1="set_audio 'Built-in' 50"
 alias 2="set_audio 'E6:30:6D:65:E0:5F' 80"
 alias 3="set_audio 'GWH810PRO' 70"
 
-# 音量控制
+# Volume Control
 alias volup="vol 5%+"
 alias voldown="vol 5%-"
 alias volmute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+2 -f dwm_status.sh"
