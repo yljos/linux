@@ -24,7 +24,7 @@ sudo ufw allow proto tcp to any port 8080 # HTTP
 sudo ufw allow proto tcp to any port 8088 # HTTP
 
 # NFSv4 端口
-sudo ufw allow proto tcp from 10.0.0.25 to any port 2049 # NFSv4 主端口
+sudo ufw allow proto tcp to any port 2049 # NFSv4 主端口
 
 # Podman 容器 TCP 端口
 sudo ufw allow proto tcp to any port 8096  # jellyfin server
