@@ -1,0 +1,8 @@
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias gcl='git clone'
+alias ..='cd ..'
+gpl() {
+    cd /dotfiles/linux && git pull
+}
