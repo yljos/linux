@@ -10,27 +10,19 @@ fi
 # --- 配置区域 ---
 # =============================================================================
 
-# --- 1. 图标定义 (DWL 文本风格) ---
-# 已移除 ICON_ARCH
 ICON_MUSIC=""
 ICON_TEMP="T:"
-ICON_CPU="C:"
 ICON_MEM="M:"
 ICON_VOL="V:"
 ICON_NET_DOWN="D:"
 ICON_NET_UP="U:"
 ICON_TIME=""
 
-# --- 2. 系统设置 ---
-# 固定网络接口
 INTERFACE="enp0s31f6"
-# 温度文件
 CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
-# MPD 设置
 MPD_HOST="127.0.0.1"
 MPD_PORT="6600"
 
-# --- 3. 刷新间隔设置 ---
 UPDATE_INTERVAL_MEDIUM=5
 UPDATE_INTERVAL_LONG=60
 SEPARATOR="|"
@@ -40,36 +32,21 @@ SEPARATOR="|"
 # =============================================================================
 
 update_music_socket() {
-    MUSIC_STATUS="[N/A]"
+    # 修改：默认设为空，如果不播放则不占用状态栏空间
+    MUSIC_STATUS=""
     if ! exec 3<>/dev/tcp/$MPD_HOST/$MPD_PORT 2>/dev/null; then return; fi
     echo -e "currentsong\nstatus\nclose" >&3
     local artist="" title="" state="" name=""
     while read -r line <&3; do
         if [[ "$line" == "state: play"* ]]; then state="play"; fi
-        # if [[ "$line" == "Artist: "* ]]; then artist="${line#Artist: }"; fi  <-- 已移除歌手读取
         if [[ "$line" == "Title: "* ]]; then title="${line#Title: }"; fi
         if [[ "$line" == "Name: "* ]]; then name="${line#Name: }"; fi
     done
     exec 3>&-
     if [[ "$state" == "play" ]]; then
-        # 仅显示标题，如果标题为空则显示文件名
         local display="${title:-$name}"
-        # [[ -n "$artist" ]] && display="$artist - $display" <-- 已移除歌手拼接
         MUSIC_STATUS="[${display:-Unknown}]"
     fi
-}
-
-update_cpu() {
-    read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
-    local curr_cpu=$((cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iowait + cpu_irq + cpu_softirq))
-    local curr_idle=$cpu_idle
-    local total_diff=$((curr_cpu - PREV_CPU))
-    local idle_diff=$((curr_idle - PREV_IDLE))
-    local usage=0
-    if ((total_diff > 0)); then usage=$(((100 * (total_diff - idle_diff)) / total_diff)); fi
-    PREV_CPU=$curr_cpu
-    PREV_IDLE=$curr_idle
-    CPU_STATUS="$(printf "%02d%%" "$usage")"
 }
 
 update_mem() {
@@ -111,24 +88,25 @@ update_volume() {
 update_ime() {
     case $(fcitx5-remote 2>/dev/null) in
     2) IME_STATUS="CN" ;;
-    1) IME_STATUS="EN" ;;
-    *) IME_STATUS="Er" ;;
+    *) IME_STATUS="EN" ;;
     esac
 }
 
 update_time() { TIME_STATUS=$(printf "%(%a %b %d %H:%M)T" -1); }
 
 print_status_bar() {
-    # 已移除 ARCH 相关的拼接
-    local output="${ICON_MUSIC}${MUSIC_STATUS}${SEPARATOR}${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_CPU}${CPU_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${ICON_VOL}${VOL_STATUS}${SEPARATOR}${NET_STATUS_STR}"
-    output="${output}${SEPARATOR}${ICON_TIME}${TIME_STATUS}${SEPARATOR}${IME_STATUS}"
+    # 动态组装：如果 MUSIC_STATUS 为空，这里会产生一个前导分隔符
+    local music_part=""
+    [[ -n "$MUSIC_STATUS" ]] && music_part="${ICON_MUSIC}${MUSIC_STATUS}${SEPARATOR}"
 
-    # 清理可能产生的双重分隔符
+    local output="${music_part}${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${ICON_VOL}${VOL_STATUS}${SEPARATOR}${NET_STATUS_STR}${SEPARATOR}${ICON_TIME}${TIME_STATUS}${SEPARATOR}${IME_STATUS}"
+
+    # 1. 处理重复的分隔符 (如果有模块为空)
     output=$(echo "$output" | sed "s/$SEPARATOR$SEPARATOR/$SEPARATOR/g")
-    # 清理可能产生的行首分隔符 (如果音乐未播放)
+    # 2. 移除行首和行尾可能存在的分隔符
     output=${output#$SEPARATOR}
+    output=${output%$SEPARATOR}
 
-    # 强制使用 xsetroot 设置 DWM 状态
     xsetroot -name "$output"
 }
 
@@ -136,7 +114,6 @@ print_status_bar() {
 # --- 主逻辑 ---
 # =============================================================================
 
-# 已移除 ARCH 获取逻辑
 NET_RX_FILE="/sys/class/net/$INTERFACE/statistics/rx_bytes"
 NET_TX_FILE="/sys/class/net/$INTERFACE/statistics/tx_bytes"
 
@@ -145,16 +122,11 @@ if [[ -r "$NET_RX_FILE" ]]; then
     TX1=$(<"$NET_TX_FILE")
 else NET_STATUS_STR="N/A"; fi
 
-read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
-PREV_CPU=$((cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iowait + cpu_irq + cpu_softirq))
-PREV_IDLE=$cpu_idle
-
 trap 'update_volume; print_status_bar' SIGRTMIN+2
 trap 'update_ime; print_status_bar' SIGRTMIN+3
 trap 'exit 0' SIGTERM SIGINT
 
 # --- 首次运行 ---
-update_cpu
 update_mem
 update_temp
 update_music_socket
@@ -166,7 +138,6 @@ update_volume
 # --- 循环 ---
 SEC=0
 while true; do
-    update_cpu
     update_temp
     update_net
 
