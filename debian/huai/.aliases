@@ -36,36 +36,36 @@ mount-data() {
 
 
 # =================================================================
-# 极简 PipeWire 音频管理 (仅 wpctl)
+# PipeWire Audio Management (wpctl only)
 # =================================================================
 
-# 1. 内部辅助：根据关键字获取 Sink ID
+# 1. Helper: Get Sink ID by keyword
 _get_wp_id() {
     wpctl status | sed -n '/Sinks:/,/Sources:/p' | grep -i "$1" | grep -oE '[0-9]+' | head -n1
 }
 
-# 2. 音量控制
+# 2. Volume Control
 vol() {
     local target=$1
     if [[ "$target" == *"+"* || "$target" == *"-"* ]]; then
         wpctl set-volume @DEFAULT_AUDIO_SINK@ "$target"
     else
-        # 将 50 转换为 0.50 格式
+        # Convert 50 to 0.50 format
         local val=$(echo "scale=2; $target / 100" | bc)
         wpctl set-volume @DEFAULT_AUDIO_SINK@ "$val"
     fi
-    # 更新 dwm 状态栏
+    # Update dwm status bar
     pkill -RTMIN+2 -f dwm_status.sh
 }
 
-# 3. 核心切换 (仅设置默认设备)
+# 3. Switch default device (set default output only)
 set_audio() {
     local keyword="$1"
     local vol_level="$2"
     local id=$(_get_wp_id "$keyword")
 
     if [ -n "$id" ]; then
-        # 仅设置系统默认输出，后续新开程序会使用此设备
+        # Only set system default output, new programs will use this device
         wpctl set-default "$id"
         vol "$vol_level"
         echo "Default Sink -> [$keyword] (ID: $id)"
@@ -75,12 +75,12 @@ set_audio() {
 }
 
 # =================================================================
-# Alias 映射
+# Alias Mapping
 # =================================================================
 alias 0="set_audio 'USB' 50"
 alias 1="set_audio 'Built-in' 50"
 alias 2="set_audio 'E6:30:6D:65:E0:5F' 80"
-alias 3="set_audio 'GWH810PRO' 70"
+alias 3="set_audio 'GWH810PRO' 60"
 
 alias volup="vol 5%+"
 alias voldown="vol 5%-"
