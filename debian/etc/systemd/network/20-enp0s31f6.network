@@ -7,5 +7,5 @@ Gateway=10.0.0.1
 
 
 [Link]
-RequiredForOnline=yes
+RequiredForOnline=routable
 

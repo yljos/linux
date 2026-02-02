@@ -6,5 +6,5 @@ ActivationPolicy=down
 #DHCP=yes
 
 #[Link]
-#RequiredForOnline=yes
+#RequiredForOnline=routable
 
