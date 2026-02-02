@@ -34,70 +34,60 @@ mount-data() {
     fi
 }
 
+
 # =================================================================
-# 音频管理系统 (PipeWire/wpctl)
+# 极简 PipeWire 音频管理 (仅 wpctl)
 # =================================================================
 
-# 1. 辅助函数：通过设备名称获取 wpctl 的数字 ID
+# 1. 内部辅助：根据关键字获取 Sink ID
 _get_wp_id() {
-    # 在 wpctl status 的 Sinks 部分查找匹配名称的 ID
-    wpctl status | grep -A 10 "Sinks:" | grep -i "$1" | grep -oE '[0-9]+\.' | head -n1 | tr -d '.'
+    wpctl status | sed -n '/Sinks:/,/Sources:/p' | grep -i "$1" | grep -oE '[0-9]+' | head -n1
 }
 
-# 2. 核心音量控制函数
+# 2. 音量控制
 vol() {
     local target=$1
-    
-    # wpctl 处理音量：支持 5%+ 或 0.50(50%)
     if [[ "$target" == *"+"* || "$target" == *"-"* ]]; then
         wpctl set-volume @DEFAULT_AUDIO_SINK@ "$target"
     else
-        # 转换为小数格式 (50 -> 0.50)
+        # 将 50 转换为 0.50 格式
         local val=$(echo "scale=2; $target / 100" | bc)
         wpctl set-volume @DEFAULT_AUDIO_SINK@ "$val"
     fi
-
-    # 触发状态栏更新 (dwm/dwl)
+    # 更新 dwm 状态栏
     pkill -RTMIN+2 -f dwm_status.sh
 }
 
-# 3. 核心切换函数：设置默认 + 强制迁移流 + 设音量
+# 3. 核心切换 (仅设置默认设备)
 set_audio() {
-    local dev_name="$1"
+    local keyword="$1"
     local vol_level="$2"
-    local id=$(_get_wp_id "$dev_name")
+    local id=$(_get_wp_id "$keyword")
 
     if [ -n "$id" ]; then
-        # A. 设置系统默认输出
+        # 仅设置系统默认输出，后续新开程序会使用此设备
         wpctl set-default "$id"
-
-        # B. 强制迁移所有正在播放的流 (目前最轻量的方法仍是调用 pactl 迁移指令)
-        # 如果不执行这一步，MPD 等正在播放的程序不会在切换后立刻跳转
-        pactl list sink-inputs short | cut -f1 | xargs -I{} pactl move-sink-input {} "$id" 2>/dev/null
-
-        # C. 设置初始音量
         vol "$vol_level"
-        
-        echo "已切换至设备 [$id]: $dev_name (音量: ${vol_level}%)"
+        echo "Default Sink -> [$keyword] (ID: $id)"
     else
-        echo "错误: 未找到匹配 '$dev_name' 的设备"
+        echo "Error: Sink '$keyword' not found."
     fi
 }
 
 # =================================================================
-# 快捷键映射 (Aliases)
+# Alias 映射
 # =================================================================
-
-# 设备切换 (0-3)
-alias 0="set_audio 'USB2.0_Device' 50"
-alias 1="set_audio 'Built-in Audio' 50"
+alias 0="set_audio 'USB' 50"
+alias 1="set_audio 'Built-in' 50"
 alias 2="set_audio 'E6:30:6D:65:E0:5F' 80"
 alias 3="set_audio 'GWH810PRO' 70"
 
-# 日常控制
 alias volup="vol 5%+"
 alias voldown="vol 5%-"
 alias volmute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+2 -f dwm_status.sh"
+
+
+
 
 # ---------------------------------------------------------
 # [5] MPC (Music Player Daemon)
