@@ -1,0 +1,27 @@
+[Unit]
+Description=DWM Status Bar Service
+# 图形界面就绪后再启动
+After=graphical-session.target
+
+[Service]
+Type=simple
+# 请确认你的脚本路径正确
+ExecStart=/bin/bash /home/huai/.config/dwm/dwm_status.sh
+
+# --- 核心配置：静默模式 ---
+# 丢弃所有标准输出，彻底解决日志爆炸问题
+StandardOutput=null
+# 保留错误日志，万一脚本报错（如命令不存在）可以通过 journalctl 查到
+StandardError=journal
+# -----------------------
+
+# 必须指定 DISPLAY，否则 xsetroot 找不到屏幕
+Environment=DISPLAY=:0
+
+# 守护进程：挂掉后自动重启
+Restart=always
+# 避免出错时瞬间疯狂重启占用 CPU，冷却 3 秒
+RestartSec=3
+
+[Install]
+WantedBy=default.target
