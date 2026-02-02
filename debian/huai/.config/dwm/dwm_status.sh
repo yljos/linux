@@ -127,7 +127,7 @@ print_status_bar() {
 	output="${output#"$SEPARATOR"}"
 	output="${output%"$SEPARATOR"}"
 
-	xsetroot -name " $output " # 前后加个空格，视觉更舒适
+	xsetroot -name "$output" 
 }
 
 # =============================================================================
