@@ -109,7 +109,7 @@ update_ime() {
 	esac
 }
 
-update_time() { TIME_STATUS=$(printf "%(%a %b %d %H:%M)T" -1); }
+update_time() { TIME_STATUS=$(printf "%(%a %m-%d %H:%M)T" -1); }
 
 print_status_bar() {
 	local music_part=""
