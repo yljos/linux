@@ -45,7 +45,7 @@ update_music_socket() {
 	exec 3>&-
 	if [[ "$state" == "play" ]]; then
 		local display="${title:-$name}"
-		MUSIC_STATUS="[${display:-Unknown}]"
+		MUSIC_STATUS="${display:-Unknown}"
 	fi
 }
 
