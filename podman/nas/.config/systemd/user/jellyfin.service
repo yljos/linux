@@ -8,6 +8,9 @@ Type=simple
 Restart=always
 RestartSec=5s
 
+# === 新增：启动前等待 10 秒 ===
+ExecStartPre=/usr/bin/sleep 10
+
 ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
