@@ -1,89 +1,94 @@
-# 基础系统命令
+# ---------------------------------------------------------
+# [1] Basic System
+# ---------------------------------------------------------
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias c="clear"
 alias ..='cd ..'
-# 同时显示 UTC 和 北京时间
+
+# ---------------------------------------------------------
+# [2] System & Time
+# ---------------------------------------------------------
+# Display UTC & CST simultaneously
 alias now='echo "UTC: $(date -u +%H:%M:%S) | CST: $(TZ=Asia/Shanghai date +%H:%M:%S)"'
-# 系统操作
+# Sleep 60s then shutdown
 alias P="sleep 60 && shutdown now"
 alias R="systemctl reboot"
 alias rsyncdir="rsync -avzh --delete" 
 
-# 目录导航
-alias cdconfig="cd /home/huai/.config"
-alias cdfree="cd /home/huai/linux/free"
+# ---------------------------------------------------------
+# [3] Navigation (Strict mode: use &&)
+# ---------------------------------------------------------
+# Safety: Only cd if mount-data succeeds (exit code 0)
+alias cddata="mount-data && cd /data"
+alias cdappdata="mount-data && cd /data/appdata"
+alias cdwww="mount-data && cd /data/www"
+alias cdmedia="mount-data && cd /data/media"
 alias cdlinux="cd /home/huai/linux"
-alias cdpodman="cd /home/huai/linux/podman"
-alias cddwl="cd /home/huai/dwl"
-alias cddata="mount-data; cd /data"
-alias cdappdata="mount-data; cd /data/appdata"
 alias cdusb="cd /home/huai/usb"
-alias cdwww="mount-data; cd /data/www"
-alias cdmedia="mount-data; cd /data/media"
 
-# 音频控制
-alias 0="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 50"
-alias 1="pactl set-default-sink alsa_output.pci-0000_00_1f.3.analog-stereo; vol 50"
-alias 2="pactl set-default-sink "bluez_output.E6:30:6D:65:E0:5F"; vol 80" 
-alias 3="pactl set-default-sink alsa_output.usb-Jieli_Technology_GWH810PRO_415035333633380C-00.analog-stereo; vol 70"
-
-vol() {
-    # 1. 调整音量
-    pactl set-sink-volume @DEFAULT_SINK@ "${1}%"
-
-    # 2. 发送信号给 dwl_status.sh
-
-    pkill -RTMIN+2 -f dwl_status.sh
-}
-alias volup="vol +10%"
-alias voldown="vol -10%"
-alias volmute="pactl set-sink-mute @DEFAULT_SINK@ toggle"
-
-# MPC控制
-alias s="mpc stop"
-alias p="mpc play"
-alias nm="mpc next"
-alias mpause="mpc pause"
-alias pl="vim /home/huai/.config/mpd/playlists/all.m3u"
-
-# Git相关
-alias gaa='git add -A'
-gc() {
-    if [ $# -eq 0 ]; then
-        # 没参数：执行 git commit -v
-        git commit -v
-    else
-        # 有参数：把所有参数拼成一句话，传给 -m
-        # 例如：gc 修复 bug -> git commit -m "修复 bug"
-        git commit -m "$*"
-    fi
-}
-alias gpl='git pull'
-alias gpu='git push'
-alias gcl='git clone'
-alias gst='git status'
-alias gl='git log'
-
-# 检查 SSH 代理并自动添加密钥
-ssh_add_check() {
-    if [ -z "$(ssh-add -l 2>/dev/null | grep -v 'The agent has no identities.')" ]; then
-	ssh-add <(gpg -d /home/huai/.ssh/id_ed25519.gpg) 
-    fi
-}
-# 为 /data 目录创建的 NFS 挂载函数 (静默版)
+# NFS Mount Function
 mount-data() {
     if ! mountpoint -q /data; then
         sudo mount -t nfs4 -o sec=sys 10.0.0.21:/ /data
     fi
 }
 
-# 脚本和程序
-alias win="/usr/bin/bash /home/huai/.config/windows.sh"
-np() {
-    if [ -f "$HOME/.config/wallpaperchange.sh" ]; then
-        sh "$HOME/.config/wallpaperchange.sh"
+# ---------------------------------------------------------
+# [4] Audio Control (PulseAudio)
+# ---------------------------------------------------------
+# Fix: Use outer single quotes to handle internal double quotes (MAC address)
+alias 0='pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 50'
+alias 1='pactl set-default-sink alsa_output.pci-0000_00_1f.3.analog-stereo; vol 50'
+alias 2='pactl set-default-sink "bluez_output.E6:30:6D:65:E0:5F"; vol 80' 
+alias 3='pactl set-default-sink alsa_output.usb-Jieli_Technology_GWH810PRO_415035333633380C-00.analog-stereo; vol 70'
+
+vol() {
+    # 1. Set volume
+    pactl set-sink-volume @DEFAULT_SINK@ "${1}"
+    # 2. Signal dwl_status.sh (|| true prevents error if script isn't running)
+    pkill -RTMIN+2 -f dwl_status.sh || true
+}
+alias volup="vol +10%"
+alias voldown="vol -10%"
+alias volmute="pactl set-sink-mute @DEFAULT_SINK@ toggle"
+
+# ---------------------------------------------------------
+# [5] MPC (Music Player Daemon)
+# ---------------------------------------------------------
+alias s="mpc stop"
+alias p="mpc play"
+alias nm="mpc next"
+alias mpause="mpc pause"
+alias pl="vim /home/huai/.config/mpd/playlists/all.m3u"
+
+# ---------------------------------------------------------
+# [6] Git Shortcuts
+# ---------------------------------------------------------
+alias gaa='git add -A'
+alias gpl='git pull'
+alias gpu='git push'
+alias gcl='git clone'
+alias gst='git status'
+alias gl='git log'
+
+gc() {
+    if [ $# -eq 0 ]; then
+        git commit -v
+    else
+        git commit -m "$*"
     fi
 }
+
+# ---------------------------------------------------------
+# [7] Script Shortcuts
+# ---------------------------------------------------------
+alias win="/usr/bin/bash /home/huai/.config/windows.sh"
 alias py="python3"
-alias x="startx"
+
+np() {
+    # Use [[ ]] for safety
+    if [[ -f "/home/huai/.config/wallpaperchange.sh" ]]; then
+        sh "/home/huai/.config/wallpaperchange.sh"
+    fi
+}
