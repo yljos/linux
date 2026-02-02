@@ -29,23 +29,25 @@ sudo ufw allow proto tcp to any port 2049 # NFSv4 主端口
 # Podman 容器 TCP 端口
 sudo ufw allow proto tcp to any port 8096  # jellyfin server
 sudo ufw allow proto tcp to any port 32400 # plex server
-sudo ufw allow proto tcp to any port 6800  # aria2-pro
-sudo ufw allow proto tcp to any port 6888  # aria2-pro
-sudo ufw allow proto tcp to any port 6880  # ariang
+# sudo ufw allow proto tcp to any port 6800  # aria2-pro
+# sudo ufw allow proto tcp to any port 6888  # aria2-pro
+# sudo ufw allow proto tcp to any port 6880  # ariang
 sudo ufw allow proto tcp to any port 5008  # shutdown
 sudo ufw allow proto tcp to any port 8083  # calibre-web
-sudo ufw allow proto tcp to any port 4000  # tinymediamanager
-sudo ufw allow proto tcp to any port 5900  # tinymediamanager VNC
+# sudo ufw allow proto tcp to any port 4000  # tinymediamanager
+# sudo ufw allow proto tcp to any port 5900  # tinymediamanager VNC
 sudo ufw allow proto tcp to any port 8181  # vaultwarden
 
 sudo ufw allow proto tcp to any port 8002 # music-tag-web
-sudo ufw allow proto tcp to any port 3000 # homepage
-sudo ufw allow proto tcp to any port 3001 # gitea
-sudo ufw allow proto tcp to any port 2222 # gitea_ssh
+# sudo ufw allow proto tcp to any port 3000 # homepage
+# sudo ufw allow proto tcp to any port 3001 # gitea
+# sudo ufw allow proto tcp to any port 2222 # gitea_ssh
 sudo ufw allow proto tcp to any port 8123 # homeassistant
 sudo ufw allow proto tcp to any port 6065 # webdav-server
-sudo ufw allow proto tcp to any port 8081 # calibre
+# sudo ufw allow proto tcp to any port 8081 # calibre
 # Podman 容器 UDP 端口
 sudo ufw allow proto udp to any port 1900 # homeassistant
 sudo ufw allow proto udp to any port 5353 # homeassistant
-sudo ufw allow proto udp to any port 6888 # aria2-pro
+# sudo ufw allow proto udp to any port 6888 # aria2-pro
+
+sudo ufw enable
