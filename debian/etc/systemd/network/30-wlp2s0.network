@@ -1,0 +1,10 @@
+[Match]
+Name=wlp2s0
+[Link]
+ActivationPolicy=down
+#[Network]
+#DHCP=yes
+
+#[Link]
+#RequiredForOnline=yes
+
