@@ -4,5 +4,5 @@ alias grep='grep --color=auto'
 alias gcl='git clone'
 alias ..='cd ..'
 gpl() {
-    cd /root/linux && git pull
+    (cd /root/linux && git pull)
 }

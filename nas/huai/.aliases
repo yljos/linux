@@ -5,5 +5,5 @@ alias gcl='git clone'
 alias ..='cd ..'
 alias repo='dash /home/huai/.config/repo.sh'
 gpl() {
-    cd /dotfiles/linux && git pull
+    (cd /dotfiles/linux && git pull)
 }
