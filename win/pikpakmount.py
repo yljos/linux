@@ -15,27 +15,25 @@ CMD = [
     "--vfs-cache-max-size",
     "10G",
     "--no-console",
+    # 注意：如果要在 NSSM 日志里看到 rclone 内部的详细输出，
+    # 可以根据需要取消下面两行的注释，并调整 log-level
+    # "--log-level", "INFO",
 ]
 # =======================================
 
 if __name__ == "__main__":
     try:
-        # 启动 Rclone
-        p = subprocess.Popen(CMD, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        # 阻塞等待
+        # 去掉 stdout=DEVNULL，让 NSSM 能够捕获输出
+        p = subprocess.Popen(CMD)
         p.wait()
         sys.exit(p.returncode)
 
     except KeyboardInterrupt:
-        # 【关键修改】
-        # 当 NSSM 发送停止信号时，Python 和 Rclone 都会收到 Ctrl+C。
-        # Rclone 收到信号后，会开始清理缓存、断开连接。
-        # 我们这里千万不要 p.terminate()，而是要等它自己结束。
+        # 这里的 print 会被 NSSM 记录到 AppStdout
+        print("Python: 接收到停止信号，正在等待 Rclone 退出...", flush=True)
         try:
-            # 给他 5 秒钟时间优雅退出
+            # 这里的 timeout 参数是 subprocess 自带的功能，不需要 import time
             p.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            # 如果 5 秒了还赖着不走，再强制杀掉
             p.terminate()
             sys.exit(1)
