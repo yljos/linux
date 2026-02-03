@@ -96,7 +96,7 @@ def should_delete_file(path_obj: Path, target_mp4_set, size_threshold_bytes):
 
 
 def main():
-    current_directory = Path(r"D:\My Pack").absolute()  # 目标目录
+    current_directory = Path(r"P:\My Pack").absolute()  # 目标目录
     script_path = Path(__file__).absolute()
 
     target_mp4_set = {name.lower() for name in TARGET_MP4_NAMES}
