@@ -100,13 +100,13 @@ proxy-groups:
     name: A
     proxies:
       - SG-TCP
-      - JP-TCP
-      - HK-TCP
-      - US-TCP
-      - JP-UDP
       - SG-UDP
-      - HK-UDP
+      - JP-TCP
+      - JP-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: Default
     proxies:
@@ -117,90 +117,90 @@ proxy-groups:
     name: Google
     proxies:
       - JP-TCP
-      - SG-TCP
-      - HK-TCP
-      - US-TCP
       - JP-UDP
+      - SG-TCP
       - SG-UDP
-      - HK-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: OpenAi
     proxies:
       - JP-TCP
-      - SG-TCP
-      - HK-TCP
-      - US-TCP
       - JP-UDP
+      - SG-TCP
       - SG-UDP
-      - HK-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: Telegram
     proxies:
       - JP-TCP
-      - SG-TCP
-      - HK-TCP
-      - US-TCP
       - JP-UDP
+      - SG-TCP
       - SG-UDP
-      - HK-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: Netflix
     proxies:
       - SG-TCP
-      - JP-TCP
-      - HK-TCP
-      - US-TCP
-      - JP-UDP
       - SG-UDP
-      - HK-UDP
+      - JP-TCP
+      - JP-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: Steam
     proxies:
       - JP-TCP
-      - SG-TCP
-      - HK-TCP
-      - US-TCP
       - JP-UDP
+      - SG-TCP
       - SG-UDP
-      - HK-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: PikPak
     proxies:
       - SG-TCP
-      - JP-TCP
-      - HK-TCP
-      - US-TCP
-      - JP-UDP
       - SG-UDP
-      - HK-UDP
+      - JP-TCP
+      - JP-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: GitHub
     proxies:
       - JP-TCP
-      - SG-TCP
-      - HK-TCP
-      - US-TCP
       - JP-UDP
+      - SG-TCP
       - SG-UDP
-      - HK-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: Microsoft
     proxies:
       - JP-TCP
-      - SG-TCP
-      - HK-TCP
-      - US-TCP
       - JP-UDP
+      - SG-TCP
       - SG-UDP
-      - HK-UDP
+      - US-TCP
       - US-UDP
+      - HK-TCP
+      - HK-UDP
   - type: select
     name: TikTok
     proxies:
