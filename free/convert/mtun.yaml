@@ -204,26 +204,22 @@ proxy-groups:
   - type: select
     name: TikTok
     proxies:
-      - JP-UDP
       - JP-TCP
+      - JP-UDP
   - type: select
     name: Facebook
     proxies:
-      - JP-UDP
-      - SG-UDP
+      - US-TCP
       - US-UDP
       - JP-TCP
-      - SG-TCP
-      - US-TCP
+      - JP-UDP
   - type: select
     name: Twitter
     proxies:
-      - JP-UDP
-      - SG-UDP
+      - US-TCP
       - US-UDP
       - JP-TCP
-      - SG-TCP
-      - US-TCP
+      - JP-UDP
   - type: url-test
     url: https://cp.cloudflare.com
     interval: 30
