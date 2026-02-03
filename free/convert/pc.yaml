@@ -103,98 +103,98 @@ proxy-groups:
     hidden: true
     name: Google
     proxies:
-      - JP-UDP
-      - SG-UDP
-      - HK-UDP
-      - US-UDP
       - JP-TCP
       - SG-TCP
       - HK-TCP
       - US-TCP
+      - JP-UDP
+      - SG-UDP
+      - HK-UDP
+      - US-UDP
   - type: select
     hidden: true
     name: OpenAi
     proxies:
-      - JP-UDP
-      - SG-UDP
-      - HK-UDP
-      - US-UDP
       - JP-TCP
       - SG-TCP
       - HK-TCP
       - US-TCP
+      - JP-UDP
+      - SG-UDP
+      - HK-UDP
+      - US-UDP
   - type: select
     hidden: true 
     name: Telegram
     proxies:
-      - JP-UDP
-      - SG-UDP
-      - HK-UDP
-      - US-UDP
       - JP-TCP
       - SG-TCP
       - HK-TCP
       - US-TCP
+      - JP-UDP
+      - SG-UDP
+      - HK-UDP
+      - US-UDP
   - type: select
     hidden: true
     name: Netflix
     proxies:
+      - SG-TCP
+      - JP-TCP
+      - HK-TCP
+      - US-TCP
       - JP-UDP
       - SG-UDP
       - HK-UDP
       - US-UDP
-      - JP-TCP
-      - SG-TCP
-      - HK-TCP
-      - US-TCP
   - type: select
     hidden: true
     name: Steam
     proxies:
-      - JP-UDP
-      - SG-UDP
-      - HK-UDP
-      - US-UDP
       - JP-TCP
       - SG-TCP
       - HK-TCP
       - US-TCP
+      - JP-UDP
+      - SG-UDP
+      - HK-UDP
+      - US-UDP
   - type: select
     hidden: true
     name: PikPak
     proxies:
+      - SG-TCP
+      - JP-TCP
+      - HK-TCP
+      - US-TCP
       - JP-UDP
       - SG-UDP
       - HK-UDP
       - US-UDP
-      - JP-TCP
-      - SG-TCP
-      - HK-TCP
-      - US-TCP
   - type: select
     hidden: true
     name: GitHub
     proxies:
-      - JP-UDP
-      - SG-UDP
-      - HK-UDP
-      - US-UDP
       - JP-TCP
       - SG-TCP
       - HK-TCP
       - US-TCP
+      - JP-UDP
+      - SG-UDP
+      - HK-UDP
+      - US-UDP
   - type: select
     hidden: true
     name: Microsoft
     proxies:
-      - JP-UDP
-      - SG-UDP
-      - HK-UDP
-      - US-UDP
       - JP-TCP
       - SG-TCP
       - HK-TCP
       - US-TCP
+      - JP-UDP
+      - SG-UDP
+      - HK-UDP
+      - US-UDP
   - type: select
     hidden: true
     name: TikTok 
