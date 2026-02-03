@@ -13,7 +13,7 @@ CMD = [
     str(RCLONE_EXE),
     "mount",
     "pikpak:",
-    "D:",
+    "P:",
     "--config",           # 新增：指定配置文件参数
     str(CONFIG_PATH),     # 新增：配置文件路径
     "--vfs-cache-mode",
