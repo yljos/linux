@@ -31,7 +31,7 @@
     {"tag": "Steam", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Telegram", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Netflix", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
-    {"tag": "PikPak", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
+    {"tag": "PikPak", "type": "selector", "outbounds": ["SG-UDP", "SG-TCP", "JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "HK-UDP", "HK-TCP"], "default": "SG-UDP"},
     {"tag": "GitHub", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Microsoft", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP", "D"], "default": "JP-UDP"},
     {"tag": "TikTok", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP"], "default": "JP-UDP"},
