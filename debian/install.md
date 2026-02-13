@@ -13,6 +13,12 @@ sudo dpkg-reconfigure locales
 sudo apt install fonts-noto-cjk fonts-noto-color-emoji
 apt install git curl vim  
 apt install pipewire pipewire-pulse pipewire-alsa wireplumber pulseaudio-utils
+# 必选核心
+sudo apt install pipewire wireplumber
+
+# 运行环境（虽然你想原生，但 libpipewire 依然需要这些来桥接那些非原生应用）
+sudo apt install pipewire-pulse pipewire-alsa
+
 systemctl --user --now enable pipewire pipewire-pulse wireplumber
 sudo apt install arp-scan
 
