@@ -70,12 +70,10 @@ dns:
     rule-set:cloudflare-site: https://cloudflare-dns.com/dns-query#A
     rule-set:ad-site: rcode://refused
     rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
-    rule-set:steam-site-classical: https://cloudflare-dns.com/dns-query#Steam
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
     rule-set:twitter-site: https://cloudflare-dns.com/dns-query#Twitter
-    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#Facebook
     rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#TikTok
     rule-set:netflix-site: https://cloudflare-dns.com/dns-query#Netflix
     rule-set:youtube-site: https://dns.google/dns-query#Google
@@ -292,13 +290,6 @@ proxy-groups:
     name: US-UDP
     filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
 rule-providers:
-  archlinux-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/archlinux.mrs
   adguard-site:
     proxy: A
     interval: 86400
@@ -341,13 +332,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/apkpure.mrs
-  codeberg-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/codeberg.mrs
   cloudflare-site:
     proxy: A
     interval: 86400
@@ -376,13 +360,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/cn/cn-ip.mrs
-  docker-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/docker.mrs
   direct-site:
     proxy: A
     interval: 86400
@@ -502,13 +479,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs
-  openwrt-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openwrt.mrs
   pikpak-site:
     proxy: A
     interval: 86400
@@ -530,13 +500,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/proxy/proxy-site.mrs
-  reddit-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/reddit.mrs
   speedtest-site:
     proxy: A
     interval: 86400
@@ -551,13 +514,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/spotify.mrs
-  steam-site-classical:
-    proxy: A
-    type: http
-    interval: 86400
-    behavior: classical
-    format: yaml
-    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/steam/steam-site-classical.yaml
   telegram-site:
     proxy: A
     interval: 86400
@@ -579,13 +535,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tiktok.mrs
-  tmdb-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tmdb.mrs
   twitter-site:
     proxy: A
     interval: 86400
@@ -635,20 +584,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tencent.mrs
-  facebook-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/facebook.mrs
-  facebook-ip:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,853,REJECT
@@ -668,10 +603,6 @@ rules:
   - RULE-SET,googlefcm-site,DIRECT
   - RULE-SET,proxy-site,A
   - RULE-SET,github-site,GitHub
-  - RULE-SET,codeberg-site,GitHub
-  - RULE-SET,docker-site,A
-  - RULE-SET,archlinux-site,A
-  - RULE-SET,openwrt-site,A
   - RULE-SET,mozilla-site,A
   - RULE-SET,microsoft-site,Microsoft
   - RULE-SET,openai-site,OpenAi
@@ -679,11 +610,8 @@ rules:
   - RULE-SET,google-site,Google
   - RULE-SET,netflix-site,Netflix
   - RULE-SET,tiktok-site,TikTok
-  - RULE-SET,tmdb-site,A
   - RULE-SET,telegram-site,Telegram
   - RULE-SET,twitter-site,Twitter
-  - RULE-SET,facebook-site,Facebook
-  - RULE-SET,reddit-site,A
   - RULE-SET,adguard-site,A
   - RULE-SET,speedtest-site,A
   - RULE-SET,wikimedia-site,A
@@ -691,7 +619,6 @@ rules:
   - RULE-SET,apkpure-site,A
   - RULE-SET,f-droid-site,A
   - RULE-SET,spotify-site,A
-  - RULE-SET,steam-site-classical,Steam
   - RULE-SET,gfw-site,A
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,local-ip,DIRECT
@@ -703,7 +630,6 @@ rules:
   - RULE-SET,alibaba-ip,DIRECT
   - RULE-SET,telegram-ip,Telegram
   - RULE-SET,twitter-ip,Twitter
-  - RULE-SET,facebook-ip,Facebook
   - RULE-SET,netflix-ip,Netflix
   - RULE-SET,google-ip,Google
   - RULE-SET,cn-ip,DIRECT
