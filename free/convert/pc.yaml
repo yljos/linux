@@ -73,7 +73,6 @@ dns:
     rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
     rule-set:twitter-site: https://cloudflare-dns.com/dns-query#Twitter
-    rule-set:facebook-site: https://cloudflare-dns.com/dns-query#Facebook
     rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#TikTok
     rule-set:netflix-site: https://cloudflare-dns.com/dns-query#Netflix
     rule-set:youtube-site: https://dns.google/dns-query#Google
@@ -199,14 +198,6 @@ proxy-groups:
     hidden: true
     name: TikTok 
     proxies:
-      - JP-TCP
-      - JP-UDP
-  - type: select
-    hidden: true
-    name: Facebook
-    proxies:
-      - US-TCP
-      - US-UDP
       - JP-TCP
       - JP-UDP
   - type: select
@@ -620,20 +611,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tencent.mrs
-  facebook-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/facebook.mrs
-  facebook-ip:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,853,REJECT
@@ -664,7 +641,6 @@ rules:
   - RULE-SET,tmdb-site,A
   - RULE-SET,telegram-site,Telegram
   - RULE-SET,twitter-site,Twitter
-  - RULE-SET,facebook-site,Facebook
   - RULE-SET,reddit-site,A
   - RULE-SET,adguard-site,A
   - RULE-SET,speedtest-site,A
@@ -685,7 +661,6 @@ rules:
   - RULE-SET,alibaba-ip,DIRECT
   - RULE-SET,telegram-ip,Telegram
   - RULE-SET,twitter-ip,Twitter
-  - RULE-SET,facebook-ip,Facebook
   - RULE-SET,netflix-ip,Netflix
   - RULE-SET,google-ip,Google
   - RULE-SET,cn-ip,DIRECT
