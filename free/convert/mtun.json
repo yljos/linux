@@ -21,7 +21,7 @@
     "strategy": "ipv4_only",
     "disable_cache": true
   },
-  "inbounds": [{"type": "tun", "tag": "tun-in", "interface_name": "sing-box", "address": ["172.18.0.1/30"], "auto_route": true, "strict_route": true, "stack": "system", "mtu": 9000, "endpoint_independent_nat": true, "udp_timeout": "5m", "platform": {"http_proxy": {"enabled": true, "server": "127.0.0.1", "server_port": 12138}}}],
+  "inbounds": [{"type": "tun", "tag": "tun-in", "interface_name": "sing-box", "address": ["172.18.0.1/30"], "auto_route": true, "strict_route": true, "stack": "gvisor", "mtu": 9000, "endpoint_independent_nat": true, "udp_timeout": "5m"}],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
     {"tag": "R", "type": "block"},
