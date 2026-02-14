@@ -8,6 +8,7 @@ Restart=always
 RestartSec=5s
 
 ExecStart=/usr/bin/podman run \
+  --replace \
   --rm \
   --name=webdav \
   -e WEBDAV_CONFIG=/config.yaml \
