@@ -3,7 +3,6 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias gcl='git clone'
 alias ..='cd ..'
-alias repo='dash /home/huai/.config/repo.sh'
 gpl() {
-    (cd /dotfiles/linux && git pull)
+    (cd /home/huai/linux && git pull)
 }
