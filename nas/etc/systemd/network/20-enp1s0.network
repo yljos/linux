@@ -6,3 +6,6 @@ Name=enp1s0
 Address=10.0.0.21/24
 Gateway=10.0.0.1
 
+[Link]
+RequiredForOnline=routable
+
