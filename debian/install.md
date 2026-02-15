@@ -4,7 +4,8 @@ sudo apt install libfcft-dev libpixman-1-dev
 # dwm
 sudo apt install build-essential libx11-dev libxinerama-dev libxft-dev
 sudo apt install xserver-xorg xinit
-sudo apt install freerdp3-x11
+sudo apt install freerdp2-x11
+sudo apt install scdaemon pcscd
 xfreerdp /v:IP地址 /u:用户名 /p:密码 /f /sound /clipboard /dynamic-resolution
 # 
 apt update && apt install sudo
@@ -12,14 +13,12 @@ usermod -aG sudo huai
 sudo dpkg-reconfigure locales
 sudo apt install fonts-noto-cjk fonts-noto-color-emoji
 apt install git curl vim  
-apt install pipewire pipewire-pulse pipewire-alsa wireplumber pulseaudio-utils
-# 必选核心
+#
 sudo apt install pipewire wireplumber
 
-# 运行环境（虽然你想原生，但 libpipewire 依然需要这些来桥接那些非原生应用）
 sudo apt install pipewire-pulse pipewire-alsa
 
-systemctl --user --now enable pipewire pipewire-pulse wireplumber
+systemctl --user --now enable pipewire wireplumber
 sudo apt install arp-scan
 
 sudo apt install systemd-boot efibootmgr
