@@ -14,7 +14,7 @@ ExecStart=/usr/bin/podman run \
   --init \
   --name=home \
   --log-driver=journald \
-  --network=host \
+  -p 80:80 \
   -e PORT=80 \
   -e HOMEPAGE_ALLOWED_HOSTS=* \
   -v /data/appdata/homepage:/app/config:Z \
