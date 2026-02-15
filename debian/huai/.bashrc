@@ -18,7 +18,7 @@ umask 022
 [[ -f /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
 [[ -f ~/.aliases ]] && . ~/.aliases
 
-[ -z "$TMUX" ] && [[ "$TERM" == "xterm" ]] && export TERM=xterm-256color
+export TERM=xterm-256color
 
 PS1='\[\e[1;33m\]Debian\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]\[\e[1;35m\]:\w\$\[\e[0m\] '
 
