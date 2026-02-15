@@ -145,7 +145,7 @@ commit
 save
 exit
 # note 拉取失败 
-podman pull metacubex/mihomo:latest
+podman pull docker.io/metacubex/mihomo:latest
 podman save -o mihomo.tar metacubex/mihomo:latest
 scp mihomo.tar vyos:/tmp/
 
