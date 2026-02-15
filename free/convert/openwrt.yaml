@@ -103,12 +103,12 @@ proxy-groups:
   - type: select
     name: Google
     proxies:
+      - US-TCP
+      - US-UDP
       - JP-TCP
       - JP-UDP
       - SG-TCP
       - SG-UDP
-      - US-TCP
-      - US-UDP
       - HK-TCP
       - HK-UDP
   - type: select
