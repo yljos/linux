@@ -12,7 +12,6 @@ profile:
   store-fake-ip: true
 external-controller: 127.0.0.1:9090
 external-ui: ui
-global-client-fingerprint: firefox
 ntp:
   enable: true
   write-to-system: false
