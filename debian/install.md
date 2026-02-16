@@ -11,7 +11,8 @@ apt update && apt install sudo
 usermod -aG sudo huai
 sudo dpkg-reconfigure locales
 sudo apt install fonts-noto-cjk fonts-noto-color-emoji
-apt install git curl vim  
+apt install git curl vim 
+sudo apt install libnotify-bin 
 #
 sudo apt install pipewire wireplumber
 
