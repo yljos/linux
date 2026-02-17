@@ -5,7 +5,7 @@ source "$HOME/.config/script_lock.sh"
 # --- 检查脚本锁 ---
 acquire_script_lock || exit 0
 
-SHUTDOWN_FILE="http://10.0.0.21:8088/shutdown"
+SHUTDOWN_FILE="http://10.0.0.21/shutdown"
 INTERVAL=300 # 循环间隔秒
 
 while true; do

@@ -8,7 +8,7 @@ import sys
 
 # 配置参数
 HOST = "10.0.0.21"
-PORT = 8088
+PORT = 80
 PATH = "/shutdown"
 CHECK_INTERVAL_MINUTES = 5
 
