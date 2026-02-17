@@ -39,7 +39,7 @@ sniffer:
 tun:
   enable: true
   device: clash
-  stack: system
+  stack: gvisor
   dns-hijack:
     - 0.0.0.0:53
   auto-route: true
