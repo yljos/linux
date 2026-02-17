@@ -16,7 +16,7 @@ font:
     style: "Bold Italic"
 
 window:
-  opacity: 0.9
+  opacity: 1.0
 
 colors:
   # Normal colors
