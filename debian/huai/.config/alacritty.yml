@@ -1,42 +1,47 @@
-[font]
-   size = 9.5
-[font.normal]
-   family = "Liberation Mono"
-   style = "Regular"
-[font.italic]
-   family = "Liberation Mono"
-   style = "Italic"
-[font.bold]
-   family = "Liberation Mono"
-   style = "Bold"
-[font.bold_italic]
-   family = "Liberation Mono"
-   style = "Bold Italic"
-[window]
-   opacity = 0.9
-# Normal colors
-[colors.normal]
-black = '#000000'
-red = '#ff0000'
-green = '#00ff00'
-yellow = '#ffff00'
-blue = '#a277ff'
-magenta = '#ff00ff'
-cyan = '#00ffff'
-white = '#ffffff'
+# Alacritty 0.11 配置文件 (YAML 格式)
 
-# Bright colors
-[colors.bright]
-black = '#616161'
-red = '#ff669d'
-green = '#beed5f'
-yellow = '#ffdca0'
-blue = '#076678'
-magenta = '#9e6ffe'
-cyan = '#427b58'
-white = '#ffffff'
+font:
+  size: 9.5
+  normal:
+    family: "Liberation Mono"
+    style: "Regular"
+  italic:
+    family: "Liberation Mono"
+    style: "Italic"
+  bold:
+    family: "Liberation Mono"
+    style: "Bold"
+  bold_italic:
+    family: "Liberation Mono"
+    style: "Bold Italic"
 
-# Misc colors
-[colors.selection]
-text = '#eeeeee'
-background = '#005577'
+window:
+  opacity: 0.9
+
+colors:
+  # Normal colors
+  normal:
+    black:   '#000000'
+    red:     '#ff0000'
+    green:   '#00ff00'
+    yellow:  '#ffff00'
+    blue:    '#a277ff'
+    magenta: '#ff00ff'
+    cyan:    '#00ffff'
+    white:   '#ffffff'
+
+  # Bright colors
+  bright:
+    black:   '#616161'
+    red:     '#ff669d'
+    green:   '#beed5f'
+    yellow:  '#ffdca0'
+    blue:    '#076678'
+    magenta: '#9e6ffe'
+    cyan:    '#427b58'
+    white:   '#ffffff'
+
+  # Selection colors
+  selection:
+    text: '#eeeeee'
+    background: '#005577'
