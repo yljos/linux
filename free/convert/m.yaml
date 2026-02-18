@@ -100,6 +100,8 @@ proxy-groups:
       - DIRECT
   - type: select
     name: Google
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(gemini))"
     proxies:
       - US-TCP
       - US-UDP
