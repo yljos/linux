@@ -292,9 +292,9 @@ def process_yaml_content_clash(
 
                         # 3. 核心修改：保留原有列表，并将匹配到的节点追加到末尾（去重）
                         # 这样你的 US-TCP 等会排在前面，Gemini 节点排在后面
-                        combined =  [
+                        combined = existing_proxies + [
                             n for n in matched_names if n not in existing_proxies
-                        ] + existing_proxies
+                        ]
                         group["proxies"] = combined
 
                     except Exception as e:
