@@ -280,19 +280,29 @@ def process_yaml_content_clash(
 
             for group in raw_groups:
                 if "filter" in group:
-                    pattern = group["filter"]
-                    del group["filter"]
+                    # 1. 获取当前组内已有的手动节点列表
+                    existing_proxies = group.get("proxies", [])
+                    pattern = group.pop("filter")  # 取出并移除 filter
                     group.pop("include-all-proxies", None)
+
                     try:
+                        # 2. 执行正则匹配（支持你的断言语法）
                         matcher = re.compile(pattern, re.IGNORECASE)
-                        matched_proxies = [
-                            n for n in all_node_names if matcher.search(n)
+                        matched_names = [n for n in all_node_names if matcher.search(n)]
+
+                        # 3. 核心修改：保留原有列表，并将匹配到的节点追加到末尾（去重）
+                        # 这样你的 US-TCP 等会排在前面，Gemini 节点排在后面
+                        combined = existing_proxies + [
+                            n for n in matched_names if n not in existing_proxies
                         ]
-                        if matched_proxies:
-                            group["proxies"] = matched_proxies
-                            temp_groups.append(group)
+                        group["proxies"] = combined
+
                     except Exception as e:
                         logger.error(f"分组 {group.get('name')} 正则错误: {e}")
+
+                    # 只要组内有节点（无论是手写的还是匹配到的），就保留该组
+                    if group.get("proxies"):
+                        temp_groups.append(group)
                 else:
                     temp_groups.append(group)
 
