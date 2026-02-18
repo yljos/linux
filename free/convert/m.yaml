@@ -101,7 +101,7 @@ proxy-groups:
   - type: select
     name: Google
     include-all-proxies: true
-    filter: "(?i)^(?=.*(gemini))"
+    filter: "(?i)^(?=.*gemini)(?=.*us)"
     proxies:
       - US-TCP
       - US-UDP
