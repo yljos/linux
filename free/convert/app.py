@@ -48,12 +48,12 @@ RENAME_MAP = {
 SHARED_KEYWORDS = [
     "US",
     "HK",
+    "SG",
+    "JP",
     "Hong Kong",
     "Singapore",
     "Japan",
     "United States",
-    "SG",
-    "JP",
     "美国",
     "香港",
     "新加坡",
@@ -83,8 +83,8 @@ CLASH_TEMPLATE_M = Path("m.yaml")
 
 CLASH_USER_AGENT = "clash-verge"
 CLASH_INCLUDED_HEADERS = ["Subscription-Userinfo"]
-CLASH_HY2_UP = "40 Mbps"
-CLASH_HY2_DOWN = "100 Mbps"
+CLASH_HY2_UP = "50 Mbps"
+CLASH_HY2_DOWN = "200 Mbps"
 CLASH_HY2_UP_M = "30 Mbps"
 CLASH_HY2_DOWN_M = "60 Mbps"
 CLASH_FINGERPRINT = "firefox"
