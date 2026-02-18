@@ -275,33 +275,37 @@ def process_yaml_content_clash(
 
         if "proxy-groups" in template_data:
             raw_groups = template_data["proxy-groups"]
-            # 这里的 all_node_names 是已经过 clean_node_name 处理后的节点名
             all_node_names = [p["name"] for p in final_proxies]
             temp_groups = []
 
             for group in raw_groups:
                 if "filter" in group:
-                    # 1. 弹出 filter 并获取现有的手动 proxies 列表
-                    pattern = group.pop("filter")
+                    # 1. 获取当前组内已有的手动节点列表
+                    existing_proxies = group.get("proxies", [])
+                    pattern = group.pop("filter")  # 取出并移除 filter
                     group.pop("include-all-proxies", None)
-                    manual_proxies = group.get("proxies", [])
 
                     try:
+                        # 2. 执行正则匹配（支持你的断言语法）
                         matcher = re.compile(pattern, re.IGNORECASE)
-                        # 2. 正则筛选节点
-                        matched_proxies = [n for n in all_node_names if matcher.search(n)]
-                        
-                        # 3. 【核心修改】：匹配到的放前面，手写的放后面，并保持去重
-                        # 这样 Gemini 节点会排在 US-TCP, HK-UDP 等手动节点之前
-                        combined = matched_proxies + [p for p in manual_proxies if p not in matched_proxies]
-                        
+                        matched_names = [n for n in all_node_names if matcher.search(n)]
+
+                        # 3. 核心修改：保留原有列表，并将匹配到的节点追加到末尾（去重）
+                        # 这样你的 US-TCP 等会排在前面，Gemini 节点排在后面
+                        combined =  [
+                            n for n in matched_names if n not in existing_proxies
+                        ] + existing_proxies
                         group["proxies"] = combined
-                        temp_groups.append(group)
+
                     except Exception as e:
                         logger.error(f"分组 {group.get('name')} 正则错误: {e}")
+
+                    # 只要组内有节点（无论是手写的还是匹配到的），就保留该组
+                    if group.get("proxies"):
+                        temp_groups.append(group)
                 else:
-                    # 没有 filter 的组直接保留原始配置
                     temp_groups.append(group)
+
             final_groups = []
             surviving_group_names = {g["name"] for g in temp_groups if "name" in g}
             BUILT_IN = {"DIRECT", "REJECT", "no-resolve", "PASS"}
