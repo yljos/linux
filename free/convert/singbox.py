@@ -246,7 +246,19 @@ def fetch_and_process_singbox(
                 compiled = re.compile(pattern, re.IGNORECASE)
                 matched_tags = [tag for tag in all_node_tags if compiled.search(tag)]
                 if matched_tags:
-                    outbound["outbounds"] = matched_tags
+                    # 获取原有的 outbounds 列表
+                    original_outbounds = outbound.get("outbounds", [])
+
+                    # 如果有 {all} 占位符，将其移除
+                    if "{all}" in original_outbounds:
+                        original_outbounds.remove("{all}")
+
+                    # 将原有策略组和新匹配的节点合并，并用 dict.fromkeys 去重
+                    merged_outbounds = list(
+                        dict.fromkeys(original_outbounds + matched_tags)
+                    )
+                    outbound["outbounds"] = merged_outbounds
+
                     temp_outbounds.append(outbound)
             except re.error as e:
                 logger.error(f"无效的正则表达式: {e}")
