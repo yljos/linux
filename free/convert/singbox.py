@@ -215,7 +215,8 @@ def fetch_and_process_singbox(
         tag_upper = tag.upper() if tag else ""
         if not any(region.upper() in tag_upper for region in shared_kw):
             return False
-        if any(exclude in tag for exclude in shared_ex_kw):
+        # 修复：排除词匹配统一转为大写比较，避免漏网之鱼
+        if any(exclude.upper() in tag_upper for exclude in shared_ex_kw):
             return False
         return True
 
@@ -233,35 +234,47 @@ def fetch_and_process_singbox(
         if o.get("type") not in ["urltest", "selector", "direct", "block", "dns"]
     ]
 
+    # 核心修复区域：重构策略组与正则匹配的合并逻辑
     for outbound in filtered_outbounds:
         if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
+            # 安全弹出 filter 并提取正则
+            filters = outbound.pop("filter", [])
             regex_list = [
-                reg for f in outbound.get("filter", []) for reg in f.get("regex", [])
+                reg
+                for f in filters
+                if isinstance(f, dict)
+                for reg in f.get("regex", [])
             ]
-            del outbound["filter"]
+
+            original_outbounds = outbound.get("outbounds", [])
+            if "{all}" in original_outbounds:
+                original_outbounds.remove("{all}")
+
             if not regex_list:
+                # 即使没有正则，也要保留原本配置好的策略组（如 ["JP-TCP"]）
+                if original_outbounds:
+                    outbound["outbounds"] = list(dict.fromkeys(original_outbounds))
+                    temp_outbounds.append(outbound)
                 continue
+
             pattern = "|".join(regex_list)
             try:
                 compiled = re.compile(pattern, re.IGNORECASE)
                 matched_tags = [tag for tag in all_node_tags if compiled.search(tag)]
-                if matched_tags:
-                    # 获取原有的 outbounds 列表
-                    original_outbounds = outbound.get("outbounds", [])
 
-                    # 如果有 {all} 占位符，将其移除
-                    if "{all}" in original_outbounds:
-                        original_outbounds.remove("{all}")
-
-                    # 将原有策略组和新匹配的节点合并，并用 dict.fromkeys 去重
-                    merged_outbounds = list(
-                        dict.fromkeys(original_outbounds + matched_tags)
-                    )
+                # 无论是否匹配到新节点，都与原有的策略组合并
+                merged_outbounds = list(
+                    dict.fromkeys(original_outbounds + matched_tags)
+                )
+                if merged_outbounds:
                     outbound["outbounds"] = merged_outbounds
-
                     temp_outbounds.append(outbound)
             except re.error as e:
                 logger.error(f"无效的正则表达式: {e}")
+                # 正则报错时回退：只保留静态写的节点
+                if original_outbounds:
+                    outbound["outbounds"] = list(dict.fromkeys(original_outbounds))
+                    temp_outbounds.append(outbound)
         else:
             temp_outbounds.append(outbound)
 
@@ -273,6 +286,7 @@ def fetch_and_process_singbox(
             original_refs = outbound["outbounds"]
             cleaned_refs = [tag for tag in original_refs if tag in surviving_tags]
             outbound["outbounds"] = cleaned_refs
+            # 如果清理后 outbounds 为空，直接遗弃该节点，保持配置干净
             if not cleaned_refs:
                 continue
         final_outbounds.append(outbound)
