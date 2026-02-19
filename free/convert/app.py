@@ -7,8 +7,15 @@ from pathlib import Path
 from urllib.parse import unquote
 from flask import Flask, send_file, request, abort, Response, jsonify
 
-import clash
-import singbox
+# ================= 模块开关 (手动控制) =================
+ENABLE_CLASH = True  # 设为 False 则完全不导入且拒绝所有 Clash 请求
+ENABLE_SINGBOX = False  # 设为 False 则完全不导入且拒绝所有 Sing-box 请求
+
+if ENABLE_CLASH:
+    import clash
+
+if ENABLE_SINGBOX:
+    import singbox
 
 app = Flask(__name__)
 
@@ -110,109 +117,127 @@ def process_source(source):
     ua = request.headers.get("User-Agent", "")
     is_force_refresh = "u" in request.args
 
-    # 1. 优先检查 Sing-box 客户端
-    singbox_ua_map = {
-        "SFA": "mtun",
-        "sing-box_openwrt": "openwrt",
-        "sing-box_m": "m",
-        "sing-box_pc": "pc",
-    }
+    # --- 1. Sing-box 分发逻辑 ---
+    if ENABLE_SINGBOX:
+        singbox_ua_map = {
+            "SFA": "mtun",
+            "sing-box_openwrt": "openwrt",
+            "sing-box_m": "m",
+            "sing-box_pc": "pc",
+        }
 
-    for keyword, config_val in singbox_ua_map.items():
-        if keyword in ua:
+        for keyword, config_val in singbox_ua_map.items():
+            if keyword in ua:
+                logger.info(
+                    f"[Sing-Box] | [Template: {config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
+                )
+                try:
+                    url = read_url_from_file(path)
+                    json_str = singbox.fetch_and_process_singbox(
+                        source,
+                        config_val,
+                        is_force_refresh,
+                        url,
+                        CACHE_DIR,
+                        CACHE_EXPIRE_SECONDS,
+                        SHARED_KEYWORDS,
+                        SHARED_EXCLUDE_KEYWORDS,
+                        clean_node_name,
+                    )
+                    return Response(
+                        json_str,
+                        mimetype="application/json",
+                        headers={
+                            "Content-Disposition": "attachment; filename=config.json"
+                        },
+                    )
+                except FileNotFoundError as e:
+                    return jsonify({"error": str(e)}), 500
+                except ValueError as e:
+                    return jsonify({"error": str(e)}), 400
+                except Exception as e:
+                    logger.error(f"Singbox 处理内部错误: {e}")
+                    return jsonify({"error": f"服务器内部错误: {str(e)}"}), 500
+
+    # --- 2. Clash 分发逻辑 ---
+    if ENABLE_CLASH:
+        clash_config_val = None
+        if "ClashMetaForAndroid" in ua:
+            clash_config_val = "mtun"
+        elif "clash_pc" in ua:
+            clash_config_val = "pc"
+        elif "clash_openwrt" in ua:
+            clash_config_val = "openwrt"
+        elif "clash_m" in ua:
+            clash_config_val = "m"
+
+        if clash_config_val:
+            config_map = {
+                "m": (
+                    clash.CLASH_TEMPLATE_M,
+                    clash.CLASH_HY2_UP_M,
+                    clash.CLASH_HY2_DOWN_M,
+                ),
+                "mtun": (
+                    clash.CLASH_TEMPLATE_MTUN,
+                    clash.CLASH_HY2_UP_M,
+                    clash.CLASH_HY2_DOWN_M,
+                ),
+                "pc": (
+                    clash.CLASH_TEMPLATE_PC,
+                    clash.CLASH_HY2_UP,
+                    clash.CLASH_HY2_DOWN,
+                ),
+                "openwrt": (
+                    clash.CLASH_TEMPLATE_OPENWRT,
+                    clash.CLASH_HY2_UP,
+                    clash.CLASH_HY2_DOWN,
+                ),
+            }
+
+            template_path, up, down = config_map[clash_config_val]
             logger.info(
-                f"[Sing-Box] | [Template: {config_val}] | [Force update: {is_force_refresh}] | [UA: {ua}]"
+                f"[Clash] | [Template: {clash_config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
             )
+
             try:
                 url = read_url_from_file(path)
-                json_str = singbox.fetch_and_process_singbox(
+                yaml_text, headers_data = clash.fetch_yaml_text_clash(
+                    unquote(url),
                     source,
-                    config_val,
                     is_force_refresh,
-                    url,
                     CACHE_DIR,
                     CACHE_EXPIRE_SECONDS,
+                )
+                output_bytes = clash.process_yaml_content_clash(
+                    yaml_text,
+                    template_path,
+                    up,
+                    down,
                     SHARED_KEYWORDS,
                     SHARED_EXCLUDE_KEYWORDS,
                     clean_node_name,
                 )
-                return Response(
-                    json_str,
-                    mimetype="application/json",
-                    headers={"Content-Disposition": "attachment; filename=config.json"},
+
+                response = send_file(
+                    io.BytesIO(output_bytes),
+                    mimetype="text/yaml",
+                    as_attachment=True,
+                    download_name="config.yaml",
                 )
-            except FileNotFoundError as e:
-                return jsonify({"error": str(e)}), 500
-            except ValueError as e:
-                return jsonify({"error": str(e)}), 400
-            except RuntimeError as e:
-                return jsonify({"error": str(e)}), 500
+                if headers_data:
+                    for h, v in headers_data.items():
+                        if h.lower() in {
+                            ih.lower() for ih in clash.CLASH_INCLUDED_HEADERS
+                        }:
+                            response.headers[h] = v
+                return response
             except Exception as e:
-                logger.error(f"Singbox 处理内部错误: {e}")
-                return jsonify({"error": f"服务器内部错误: {str(e)}"}), 500
+                logger.error(f"Clash [Error]: {e}")
+                return str(e), 500
 
-    # 2. 检查 Clash 客户端
-    config_val = None
-    if "ClashMetaForAndroid" in ua:
-        config_val = "mtun"
-    elif "clash_pc" in ua:
-        config_val = "pc"
-    elif "clash_openwrt" in ua:
-        config_val = "openwrt"
-    elif "clash_m" in ua:
-        config_val = "m"
-    else:
-        abort(404)
-
-    config_map = {
-        "m": (clash.CLASH_TEMPLATE_M, clash.CLASH_HY2_UP_M, clash.CLASH_HY2_DOWN_M),
-        "mtun": (
-            clash.CLASH_TEMPLATE_MTUN,
-            clash.CLASH_HY2_UP_M,
-            clash.CLASH_HY2_DOWN_M,
-        ),
-        "pc": (clash.CLASH_TEMPLATE_PC, clash.CLASH_HY2_UP, clash.CLASH_HY2_DOWN),
-        "openwrt": (
-            clash.CLASH_TEMPLATE_OPENWRT,
-            clash.CLASH_HY2_UP,
-            clash.CLASH_HY2_DOWN,
-        ),
-    }
-
-    template_path, up, down = config_map[config_val]
-    logger.info(
-        f"[Clash] | [Template: {config_val}] | [Force update: {is_force_refresh}] | [UA: {ua}]"
-    )
-
-    try:
-        url = read_url_from_file(path)
-        yaml_text, headers_data = clash.fetch_yaml_text_clash(
-            unquote(url), source, is_force_refresh, CACHE_DIR, CACHE_EXPIRE_SECONDS
-        )
-        output_bytes = clash.process_yaml_content_clash(
-            yaml_text,
-            template_path,
-            up,
-            down,
-            SHARED_KEYWORDS,
-            SHARED_EXCLUDE_KEYWORDS,
-            clean_node_name,
-        )
-
-        response = send_file(
-            io.BytesIO(output_bytes),
-            mimetype="text/yaml",
-            as_attachment=True,
-            download_name="config.yaml",
-        )
-        if headers_data:
-            for h, v in headers_data.items():
-                if h.lower() in {ih.lower() for ih in clash.CLASH_INCLUDED_HEADERS}:
-                    response.headers[h] = v
-        return response
-    except Exception as e:
-        logger.error(f"Clash [Error]: {e}")
-        return str(e), 500
+    # --- 3. 未命中或对应模块未启用 ---
+    abort(404)
 
 
 if __name__ == "__main__":

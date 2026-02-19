@@ -63,7 +63,7 @@ def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expi
         try:
             mtime = os.path.getmtime(yaml_cache_file)
             if time.time() - mtime < cache_expire:
-                logger.info(f"[{source_name}] [Clash] [cache] [Skip]")
+                logger.info(f"[{source_name}] [Clash] [Loaded cache]")
                 with open(yaml_cache_file, "r", encoding="utf-8") as f:
                     return f.read(), load_headers_from_disk(source_name, cache_dir)
         except Exception as e:
@@ -82,7 +82,7 @@ def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expi
             save_headers_to_disk(source_name, response.headers, cache_dir)
             with open(yaml_cache_file, "w", encoding="utf-8") as f:
                 f.write(text_content)
-            logger.info(f"[{source_name}] [Clash] Updated Successfully")
+            logger.info(f"[{source_name}] [Clash Updated Successfully]")
             return text_content, response.headers
         else:
             logger.warning(f"[{source_name}] [Clash] [Fetch Error] [Fallback To Cache]")

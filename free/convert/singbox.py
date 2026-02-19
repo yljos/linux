@@ -139,7 +139,7 @@ def fetch_and_process_singbox(
         try:
             mtime = os.path.getmtime(cache_file_path)
             if time.time() - mtime < cache_expire:
-                logger.info(f"[{source}] [Sing-Box] [cache] [Skip]")
+                logger.info(f"[{source}] [Sing-Box] [Loaded cache]")
                 with open(cache_file_path, "r", encoding="utf-8") as f:
                     yaml_content = f.read()
                 used_cache = True
@@ -165,7 +165,7 @@ def fetch_and_process_singbox(
             logger.info(f"[{source}] [Sing-Box] [Updated Successfully]")
 
         except Exception as e:
-            logger.error(f"[{source}] [Sing-Box] [Error] [Try Cache] {e}")
+            logger.error(f"[{source}] [Sing-Box] [Error] [Loaded cache] {e}")
             if cache_file_path.exists():
                 logger.warning(f"[{source}] [Sing-Box] 使用过期缓存兜底")
                 with open(cache_file_path, "r", encoding="utf-8") as f:
