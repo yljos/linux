@@ -9,7 +9,7 @@ from flask import Flask, send_file, request, abort, Response, jsonify
 
 # ================= 模块开关 (手动控制) =================
 ENABLE_CLASH = True  # 设为 False 则完全不导入且拒绝所有 Clash 请求
-ENABLE_SINGBOX = False  # 设为 False 则完全不导入且拒绝所有 Sing-box 请求
+ENABLE_SINGBOX = True  # 设为 False 则完全不导入且拒绝所有 Sing-box 请求
 
 if ENABLE_CLASH:
     import clash
