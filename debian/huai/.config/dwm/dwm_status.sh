@@ -68,11 +68,15 @@ update_net() {
 
 update_volume() {
     local raw
+    VOL_STATUS="50%" 
     raw=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)
-    if [[ "$raw" == *"[MUTED]"* ]]; then
-        VOL_STATUS="MUTE"
-    else
-        VOL_STATUS=$(echo "$raw" | awk '{print int($2 * 100) "%"}')
+    
+    if [[ -n "$raw" ]]; then
+        if [[ "$raw" == *"[MUTED]"* ]]; then
+            VOL_STATUS="MUTE"
+        else
+            VOL_STATUS=$(echo "$raw" | awk '{print int($2 * 100) "%"}')
+        fi
     fi
 }
 
