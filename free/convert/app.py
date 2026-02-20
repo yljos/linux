@@ -41,6 +41,9 @@ source_map = {
 CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
 CUSTOM_SINGBOX_NODE = BASE_DIR / "node.json"
 
+# 需要将自定义节点加入的组名 (根据你的模板修改)
+TARGET_GROUPS = ["Google"]
+
 # ================= 关键词与黑名单 =================
 RENAME_MAP = {
     "香港": "HK",
@@ -104,46 +107,67 @@ def clean_node_name(name: str) -> str:
     return name
 
 
-def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
-    """极简合并自定义 Clash 节点（仅追加到节点列表）"""
+def inject_custom_clash_node(
+    yaml_bytes: bytes, node_path: Path, target_groups: list
+) -> bytes:
+    """合并自定义 Clash 节点并加入指定策略组"""
     if not node_path.exists():
         return yaml_bytes
-        
+
     try:
         with open(node_path, "r", encoding="utf-8") as f:
             custom_node = yaml.safe_load(f)
-            
+
         if not custom_node or "name" not in custom_node:
             return yaml_bytes
 
         config = yaml.safe_load(yaml_bytes)
-        
-        # 仅加入节点列表，绝不干涉 proxy-groups
+        node_name = custom_node["name"]
+
+        # 1. 节点列表追加
         config.setdefault("proxies", []).append(custom_node)
-                
-        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode("utf-8")
+
+        # 2. 策略组追加
+        for group in config.get("proxy-groups", []):
+            if group.get("name") in target_groups:
+                group.setdefault("proxies", []).append(node_name)
+
+        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode(
+            "utf-8"
+        )
     except Exception as e:
         logger.error(f"[Clash] 自定义节点合并失败: {e}")
         return yaml_bytes
 
 
-def inject_custom_singbox_node(json_str: str, node_path: Path) -> str:
-    """极简合并自定义 Sing-box 节点（仅追加到出站列表）"""
+def inject_custom_singbox_node(
+    json_str: str, node_path: Path, target_groups: list
+) -> str:
+    """合并自定义 Sing-box 节点并加入指定出站组"""
     if not node_path.exists():
         return json_str
-        
+
     try:
         with open(node_path, "r", encoding="utf-8") as f:
             custom_outbound = json.load(f)
-            
+
         if not custom_outbound or "tag" not in custom_outbound:
             return json_str
 
         config = json.loads(json_str)
-        
-        # 仅加入出站列表，绝不干涉 selector/urltest 等分组
+        node_tag = custom_outbound["tag"]
+
+        # 1. 出站列表追加
         config.setdefault("outbounds", []).append(custom_outbound)
-                
+
+        # 2. 注入到 selector/urltest 组
+        for outbound in config.get("outbounds", []):
+            if outbound.get("tag") in target_groups and outbound.get("type") in [
+                "selector",
+                "urltest",
+            ]:
+                outbound.setdefault("outbounds", []).append(node_tag)
+
         return json.dumps(config, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.error(f"[Sing-box] 自定义节点合并失败: {e}")
@@ -200,8 +224,9 @@ def process_source(source):
                         clean_node_name,
                     )
 
-                    # 合并自定义节点
-                    json_str = inject_custom_singbox_node(json_str, CUSTOM_SINGBOX_NODE)
+                    json_str = inject_custom_singbox_node(
+                        json_str, CUSTOM_SINGBOX_NODE, TARGET_GROUPS
+                    )
 
                     return Response(
                         json_str,
@@ -278,8 +303,9 @@ def process_source(source):
                     clean_node_name,
                 )
 
-                # 合并自定义节点
-                output_bytes = inject_custom_clash_node(output_bytes, CUSTOM_CLASH_NODE)
+                output_bytes = inject_custom_clash_node(
+                    output_bytes, CUSTOM_CLASH_NODE, TARGET_GROUPS
+                )
 
                 response = send_file(
                     io.BytesIO(output_bytes),
@@ -298,7 +324,6 @@ def process_source(source):
                 logger.error(f"Clash [Error]: {e}")
                 return str(e), 500
 
-    # --- 3. 未命中或对应模块未启用 ---
     abort(404)
 
 
