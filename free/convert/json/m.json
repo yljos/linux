@@ -27,8 +27,8 @@
     {"tag": "R", "type": "block"},
     {"tag": "Default", "type": "selector", "outbounds": ["A", "R", "D"], "default": "A"},
     {"tag": "A", "type": "selector", "outbounds": ["SG-UDP", "SG-TCP", "JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "HK-UDP", "HK-TCP"], "default": "SG-UDP"},
-    {"tag": "Google", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP","{all}"], "default": "US-TCP","filter": [{"action": "match", "regex": ["(?i)^(?=.*gemini)(?=.*us)"]}]},
-    {"tag": "OpenAi", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},    {"tag": "Relay", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
+    {"tag": "Google", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "GCP-outbound", "{all}"], "default": "GCP-outbound", "filter": [{"action": "match", "regex": ["(?i)^(?=.*gemini)(?=.*us)"]}]},
+    {"tag": "OpenAi", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Relay", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Steam", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Telegram", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
@@ -38,14 +38,14 @@
     {"tag": "Microsoft", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP", "D"], "default": "JP-UDP"},
     {"tag": "TikTok", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP"], "default": "JP-UDP"},
     {"tag": "Twitter", "type": "selector", "outbounds": ["US-TCP", "US-UDP"], "default": "US-UDP"},
-    {"tag": "HK-TCP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"]}]},
-    {"tag": "SG-TCP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(SG))(?!.*(UDP|HY2)).*$"]}]},
-    {"tag": "JP-TCP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(JP))(?!.*(UDP|HY2)).*$"]}]},
-    {"tag": "US-TCP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(US))(?!.*(UDP|HY2)).*$"]}]},
-    {"tag": "HK-UDP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(HK))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"]}]},
-    {"tag": "SG-UDP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(SG))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"]}]},
-    {"tag": "JP-UDP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(JP))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"]}]},
-    {"tag": "US-UDP", "type": "urltest", "outbounds": ["{all}"], "url": "https://cp.cloudflare.com", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"]}]}
+    {"tag": "HK-TCP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"]}]},
+    {"tag": "SG-TCP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(SG))(?!.*(UDP|HY2)).*$"]}]},
+    {"tag": "JP-TCP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(JP))(?!.*(UDP|HY2)).*$"]}]},
+    {"tag": "US-TCP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(US))(?!.*(UDP|HY2)).*$"]}]},
+    {"tag": "HK-UDP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(HK))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"]}]},
+    {"tag": "SG-UDP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(SG))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"]}]},
+    {"tag": "JP-UDP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(JP))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"]}]},
+    {"tag": "US-UDP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"]}]}
   ],
 
   "route": {
