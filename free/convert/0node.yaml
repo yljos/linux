@@ -1,0 +1,8 @@
+name: "GCP-outbound"
+type: vmess
+server: x.x.x.x
+port: 443
+uuid: "你的uuid"
+alterId: 0
+cipher: auto
+tls: true

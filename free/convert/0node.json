@@ -1,0 +1,8 @@
+{
+  "tag": "GCP-outbound",
+  "type": "shadowsocks",
+  "server": "你的落地机IP或域名",
+  "server_port": 8388,
+  "method": "aes-128-gcm",
+  "password": "填入你刚才生成的密码"
+}
