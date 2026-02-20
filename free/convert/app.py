@@ -1,15 +1,18 @@
 import hashlib
 import hmac
 import io
+import json
 import logging
 import re
 from pathlib import Path
 from urllib.parse import unquote
+
+import yaml
 from flask import Flask, send_file, request, abort, Response, jsonify
 
-# ================= 模块开关 (手动控制) =================
-ENABLE_CLASH = True  # 设为 False 则完全不导入且拒绝所有 Clash 请求
-ENABLE_SINGBOX = True  # 设为 False 则完全不导入且拒绝所有 Sing-box 请求
+# ================= 模块开关 =================
+ENABLE_CLASH = True
+ENABLE_SINGBOX = True
 
 if ENABLE_CLASH:
     import clash
@@ -21,18 +24,24 @@ app = Flask(__name__)
 
 # ================= 鉴权与通用配置 =================
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
-CACHE_DIR = Path("cache")
+
+# 获取当前脚本所在目录的绝对路径，确保稳定运行
+BASE_DIR = Path(__file__).resolve().parent
+
+CACHE_DIR = BASE_DIR / "cache"
 CACHE_DIR.mkdir(exist_ok=True)
 CACHE_EXPIRE_SECONDS = 86400
 
-MITCE_URL_FILE = Path("mitce").absolute()
-BAJIE_URL_FILE = Path("bajie").absolute()
 source_map = {
-    "mitce": MITCE_URL_FILE,
-    "bajie": BAJIE_URL_FILE,
+    "mitce": BASE_DIR / "mitce",
+    "bajie": BASE_DIR / "bajie",
 }
 
-# ================= [合并] 关键词与黑名单 =================
+# 自定义节点文件路径
+CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
+CUSTOM_SINGBOX_NODE = BASE_DIR / "node.json"
+
+# ================= 关键词与黑名单 =================
 RENAME_MAP = {
     "香港": "HK",
     "美国": "US",
@@ -95,6 +104,52 @@ def clean_node_name(name: str) -> str:
     return name
 
 
+def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
+    """极简合并自定义 Clash 节点（仅追加到节点列表）"""
+    if not node_path.exists():
+        return yaml_bytes
+        
+    try:
+        with open(node_path, "r", encoding="utf-8") as f:
+            custom_node = yaml.safe_load(f)
+            
+        if not custom_node or "name" not in custom_node:
+            return yaml_bytes
+
+        config = yaml.safe_load(yaml_bytes)
+        
+        # 仅加入节点列表，绝不干涉 proxy-groups
+        config.setdefault("proxies", []).append(custom_node)
+                
+        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode("utf-8")
+    except Exception as e:
+        logger.error(f"[Clash] 自定义节点合并失败: {e}")
+        return yaml_bytes
+
+
+def inject_custom_singbox_node(json_str: str, node_path: Path) -> str:
+    """极简合并自定义 Sing-box 节点（仅追加到出站列表）"""
+    if not node_path.exists():
+        return json_str
+        
+    try:
+        with open(node_path, "r", encoding="utf-8") as f:
+            custom_outbound = json.load(f)
+            
+        if not custom_outbound or "tag" not in custom_outbound:
+            return json_str
+
+        config = json.loads(json_str)
+        
+        # 仅加入出站列表，绝不干涉 selector/urltest 等分组
+        config.setdefault("outbounds", []).append(custom_outbound)
+                
+        return json.dumps(config, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"[Sing-box] 自定义节点合并失败: {e}")
+        return json_str
+
+
 # ================= 路由保护与分发 =================
 @app.before_request
 def restrict_paths():
@@ -144,6 +199,10 @@ def process_source(source):
                         SHARED_EXCLUDE_KEYWORDS,
                         clean_node_name,
                     )
+
+                    # 合并自定义节点
+                    json_str = inject_custom_singbox_node(json_str, CUSTOM_SINGBOX_NODE)
+
                     return Response(
                         json_str,
                         mimetype="application/json",
@@ -218,6 +277,9 @@ def process_source(source):
                     SHARED_EXCLUDE_KEYWORDS,
                     clean_node_name,
                 )
+
+                # 合并自定义节点
+                output_bytes = inject_custom_clash_node(output_bytes, CUSTOM_CLASH_NODE)
 
                 response = send_file(
                     io.BytesIO(output_bytes),

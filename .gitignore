@@ -12,6 +12,8 @@
 **/.pdm-python
 **/cache/
 **/.env
+**/node.json
+**/node.yaml
 
 
 
