@@ -1,8 +1,7 @@
-name: "GCP-outbound"
-type: vmess
-server: x.x.x.x
-port: 443
-uuid: "你的uuid"
-alterId: 0
-cipher: auto
-tls: true
+- name: "GCP-outbound"
+  type: ss
+  server: "你的落地机IP或域名"
+  port: 8388
+  cipher: aes-128-gcm
+  password: "填入你刚才生成的密码"
+  udp: true # 建议开启以获得更高效的连接体验
