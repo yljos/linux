@@ -190,6 +190,17 @@ proxy-groups:
       - HK-TCP
       - HK-UDP
   - type: select
+    name: Relay
+    proxies:
+      - JP-TCP
+      - JP-UDP
+      - SG-TCP
+      - SG-UDP
+      - US-TCP
+      - US-UDP
+      - HK-TCP
+      - HK-UDP    
+  - type: select
     hidden: true
     name: TikTok 
     proxies:
