@@ -5,7 +5,7 @@ Name=wlp2s0
 Address=10.0.0.26/24
 Gateway=10.0.0.1
 
+#[Link]
+#RequiredForOnline=routable
 [Link]
-RequiredForOnline=routable
-# [Link]
-# Unmanaged=yes
+Unmanaged=yes
