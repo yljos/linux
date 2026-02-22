@@ -78,7 +78,6 @@ dns:
     - https://dns.alidns.com/dns-query#DIRECT
   nameserver-policy:
     rule-set:microsoft-site: https://cloudflare-dns.com/dns-query#Microsoft
-    rule-set:ad-site: rcode://refused
     rule-set:huawei-site: rcode://refused
     rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
@@ -286,20 +285,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs
-  ad-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-site.mrs
-  ad-ip:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/ad/ad-ip.mrs
   alibaba-site:
     proxy: A
     interval: 86400
@@ -440,13 +425,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://github.com/yljos/rule-set/raw/refs/heads/main/clash/huawei/huawei-ip.mrs
-  javdb-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/javdb.mrs
   jd-site:
     proxy: A
     interval: 86400
@@ -517,13 +495,6 @@ rule-providers:
     format: yaml
     behavior: classical
     url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/speedtest/speedtest-site-classical.yaml
-  spotify-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/spotify.mrs
   telegram-site:
     proxy: A
     interval: 86400
@@ -559,13 +530,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs
-  wikimedia-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/wikimedia.mrs
   wechat-ip:
     proxy: A
     interval: 86400
@@ -598,8 +562,6 @@ rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,853,REJECT
   - DST-PORT,53,dns-out
-  - RULE-SET,ad-site,REJECT-DROP
-  - RULE-SET,ad-ip,REJECT-DROP
   - RULE-SET,huawei-site,REJECT-DROP
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT
@@ -627,11 +589,8 @@ rules:
   - RULE-SET,twitter-site,Twitter
   - RULE-SET,adguard-site,A
   - RULE-SET,speedtest-site,A
-  - RULE-SET,wikimedia-site,A
-  - RULE-SET,javdb-site,A
   - RULE-SET,apkpure-site,A
   - RULE-SET,f-droid-site,A
-  - RULE-SET,spotify-site,A
   - RULE-SET,gfw-site,A
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,local-ip,DIRECT

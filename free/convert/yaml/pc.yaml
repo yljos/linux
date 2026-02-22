@@ -288,13 +288,6 @@ proxy-groups:
     name: US-UDP
     filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
 rule-providers:
-  archlinux-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/archlinux.mrs
   adguard-site:
     proxy: A
     interval: 86400
@@ -477,13 +470,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs
-  openwrt-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openwrt.mrs
   pikpak-site:
     proxy: A
     interval: 86400
@@ -519,13 +505,6 @@ rule-providers:
     format: yaml
     behavior: classical
     url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/clash/speedtest/speedtest-site-classical.yaml
-  spotify-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/spotify.mrs
   steam-site-classical:
     proxy: A
     type: http
@@ -575,13 +554,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs
-  wikimedia-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/wikimedia.mrs
   wechat-ip:
     proxy: A
     interval: 86400
@@ -628,8 +600,6 @@ rules:
   - RULE-SET,github-site,GitHub
   - RULE-SET,codeberg-site,GitHub
   - RULE-SET,docker-site,A
-  - RULE-SET,archlinux-site,A
-  - RULE-SET,openwrt-site,A
   - RULE-SET,mozilla-site,A
   - RULE-SET,microsoft-site,Microsoft
   - RULE-SET,openai-site,OpenAi
@@ -643,11 +613,9 @@ rules:
   - RULE-SET,reddit-site,A
   - RULE-SET,adguard-site,A
   - RULE-SET,speedtest-site,A
-  - RULE-SET,wikimedia-site,A
   - RULE-SET,javdb-site,A
   - RULE-SET,apkpure-site,A
   - RULE-SET,f-droid-site,A
-  - RULE-SET,spotify-site,A
   - RULE-SET,steam-site-classical,Steam
   - RULE-SET,gfw-site,A
   - RULE-SET,cn-site,DIRECT
