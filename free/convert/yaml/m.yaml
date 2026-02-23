@@ -212,7 +212,7 @@ proxy-groups:
       - US-TCP
       - US-UDP
   - type: url-test
-    url: https://cp.cloudflare.com
+    url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
     timeout: 500
@@ -222,7 +222,7 @@ proxy-groups:
     name: HK-TCP
     filter: "(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"
   - type: url-test
-    url: https://cp.cloudflare.com
+    url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
     timeout: 500
@@ -232,7 +232,7 @@ proxy-groups:
     name: JP-TCP
     filter: "(?i)^(?=.*(JP))(?!.*(UDP|HY2)).*$"
   - type: url-test
-    url: https://cp.cloudflare.com
+    url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
     timeout: 500
@@ -242,7 +242,7 @@ proxy-groups:
     name: SG-TCP
     filter: "(?i)^(?=.*(SG))(?!.*(UDP|HY2)).*$"
   - type: url-test
-    url: https://cp.cloudflare.com
+    url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
     timeout: 500
@@ -252,7 +252,7 @@ proxy-groups:
     name: US-TCP
     filter: "(?i)^(?=.*(US))(?!.*(UDP|HY2)).*$"
   - type: url-test
-    url: https://cp.cloudflare.com
+    url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
     timeout: 500
@@ -262,7 +262,7 @@ proxy-groups:
     name: HK-UDP
     filter: "(?i)^(?=.*(HK))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
   - type: url-test
-    url: https://cp.cloudflare.com
+    url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
     timeout: 500
@@ -272,7 +272,7 @@ proxy-groups:
     name: JP-UDP
     filter: "(?i)^(?=.*(JP))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
   - type: url-test
-    url: https://cp.cloudflare.com
+    url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
     timeout: 500
@@ -282,7 +282,7 @@ proxy-groups:
     name: SG-UDP
     filter: "(?i)^(?=.*(SG))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
   - type: url-test
-    url: https://cp.cloudflare.com
+    url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
     timeout: 500
