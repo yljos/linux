@@ -100,7 +100,7 @@ def process_hysteria2_sb(
             node["server_port"] = int(proxy["port"])
     # ==========================================================
 
-    node["up_mbps"] = 40
+    node["up_mbps"] = 50
     node["down_mbps"] = 100
     if "obfs" in proxy:
         node["obfs"] = {
