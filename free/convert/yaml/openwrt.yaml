@@ -85,6 +85,14 @@ proxy-groups:
   - type: select
     name: A
     proxies:
+      - SG-tcp-load-balance
+      - SG-udp-load-balance
+      - JP-udp-load-balance
+      - JP-tcp-load-balance
+      - US-tcp-load-balance
+      - US-udp-load-balance
+      - HK-tcp-load-balance
+      - HK-udp-load-balance
       - SG-TCP-url-test
       - SG-UDP-url-test
       - JP-TCP-url-test 
@@ -293,6 +301,86 @@ proxy-groups:
     hidden: true
     name: US-UDP-url-test
     filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
+  - type: load-balance
+    name: SG-TCP-load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 30
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(SG))(?!.*(UDP|HY2)).*$"
+    strategy: sticky-sessions
+    hidden: true
+  - type: load-balance
+    name: JP-TCP-load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 30
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(JP))(?!.*(UDP|HY2)).*$"
+    strategy: sticky-sessions
+    hidden: true
+  - type: load-balance
+    name: US-TCP-load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 30
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(US))(?!.*(UDP|HY2)).*$"
+    strategy: sticky-sessions
+    hidden: true
+  - type: load-balance
+    name: HK-TCP-load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 30
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"
+    strategy: sticky-sessions
+    hidden: true
+  - type: load-balance
+    name: SG-UDP-load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 30
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(SG))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
+    strategy: sticky-sessions
+    hidden: true
+  - type: load-balance
+    name: JP-UDP-load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 30
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(JP))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
+    strategy: sticky-sessions
+    hidden: true
+  - type: load-balance
+    name: US-UDP-load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 30
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
+    strategy: sticky-sessions
+    hidden: true
+  - type: load-balance
+    name: HK-UDP-load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 30
+    timeout: 500
+    max-failed-times: 3
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(HK))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
+    strategy: sticky-sessions
+    hidden: true        
 rule-providers:
   archlinux-site:
     proxy: A
