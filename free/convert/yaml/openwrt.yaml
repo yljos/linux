@@ -85,14 +85,14 @@ proxy-groups:
   - type: select
     name: A
     proxies:
-      - SG-tcp-load-balance
-      - SG-udp-load-balance
-      - JP-udp-load-balance
-      - JP-tcp-load-balance
-      - US-tcp-load-balance
-      - US-udp-load-balance
-      - HK-tcp-load-balance
-      - HK-udp-load-balance
+      - SG-TCP-load-balance
+      - SG-UDP-load-balance
+      - JP-TCP-load-balance
+      - JP-UDP-load-balance
+      - US-TCP-load-balance
+      - US-UDP-load-balance
+      - HK-TCP-load-balance
+      - HK-UDP-load-balance
       - SG-TCP-url-test
       - SG-UDP-url-test
       - JP-TCP-url-test 
