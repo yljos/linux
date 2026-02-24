@@ -3,7 +3,6 @@ import os
 import time
 import subprocess
 import ctypes
-import sys
 from dotenv import load_dotenv
 
 # 配置信息
