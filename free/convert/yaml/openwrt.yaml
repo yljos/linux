@@ -93,14 +93,6 @@ proxy-groups:
       - US-UDP-load-balance
       - HK-TCP-load-balance
       - HK-UDP-load-balance
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - JP-TCP-url-test 
-      - JP-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
   - type: select
     name: Default
     proxies:
@@ -309,7 +301,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     filter: "(?i)^(?=.*(SG))(?!.*(UDP|HY2)).*$"
-    strategy: sticky-sessions
+    strategy: consistent-hashing
     hidden: true
   - type: load-balance
     name: JP-TCP-load-balance
@@ -319,7 +311,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     filter: "(?i)^(?=.*(JP))(?!.*(UDP|HY2)).*$"
-    strategy: sticky-sessions
+    strategy: consistent-hashing
     hidden: true
   - type: load-balance
     name: US-TCP-load-balance
@@ -329,7 +321,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     filter: "(?i)^(?=.*(US))(?!.*(UDP|HY2)).*$"
-    strategy: sticky-sessions
+    strategy: consistent-hashing
     hidden: true
   - type: load-balance
     name: HK-TCP-load-balance
@@ -339,7 +331,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     filter: "(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"
-    strategy: sticky-sessions
+    strategy: consistent-hashing
     hidden: true
   - type: load-balance
     name: SG-UDP-load-balance
@@ -349,7 +341,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     filter: "(?i)^(?=.*(SG))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
-    strategy: sticky-sessions
+    strategy: consistent-hashing
     hidden: true
   - type: load-balance
     name: JP-UDP-load-balance
@@ -359,7 +351,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     filter: "(?i)^(?=.*(JP))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
-    strategy: sticky-sessions
+    strategy: consistent-hashing
     hidden: true
   - type: load-balance
     name: US-UDP-load-balance
@@ -369,7 +361,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
-    strategy: sticky-sessions
+    strategy: consistent-hashing
     hidden: true
   - type: load-balance
     name: HK-UDP-load-balance
@@ -379,7 +371,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     filter: "(?i)^(?=.*(HK))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
-    strategy: sticky-sessions
+    strategy: consistent-hashing
     hidden: true        
 rule-providers:
   archlinux-site:
