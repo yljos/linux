@@ -12,7 +12,7 @@ from flask import Flask, send_file, request, abort, Response, jsonify
 
 # ================= 模块开关 =================
 ENABLE_CLASH = True
-ENABLE_SINGBOX = False
+ENABLE_SINGBOX = True
 
 if ENABLE_CLASH:
     import clash
