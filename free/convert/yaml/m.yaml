@@ -190,6 +190,7 @@ proxy-groups:
       - HK-UDP
   - type: select
     name: Relay
+    hidden: true
     proxies:
       - JP-TCP
       - JP-UDP
