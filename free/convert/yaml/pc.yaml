@@ -83,14 +83,14 @@ proxy-groups:
   - type: select
     name: A
     proxies:
-      - SG-TCP
-      - SG-UDP
-      - JP-TCP
-      - JP-UDP
-      - US-TCP
-      - US-UDP
-      - HK-TCP
-      - HK-UDP
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     name: Default
     proxies:
@@ -103,110 +103,110 @@ proxy-groups:
     include-all-proxies: true
     filter: "(?i)^(?=.*gemini)(?=.*us)"
     proxies:
-      - US-TCP
-      - US-UDP
-      - JP-TCP
-      - JP-UDP
-      - SG-TCP
-      - SG-UDP
-      - HK-TCP
-      - HK-UDP
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     hidden: true
     name: OpenAi
     proxies:
-      - JP-TCP
-      - JP-UDP
-      - SG-TCP
-      - SG-UDP
-      - US-TCP
-      - US-UDP
-      - HK-TCP
-      - HK-UDP
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     hidden: true 
     name: Telegram
     proxies:
-      - JP-TCP
-      - JP-UDP
-      - SG-TCP
-      - SG-UDP
-      - US-TCP
-      - US-UDP
-      - HK-TCP
-      - HK-UDP
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     hidden: true
     name: Netflix
     proxies:
-      - SG-TCP
-      - SG-UDP
-      - JP-TCP
-      - JP-UDP
-      - US-TCP
-      - US-UDP
-      - HK-TCP
-      - HK-UDP
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     hidden: true
     name: Steam
     proxies:
-      - JP-TCP
-      - JP-UDP
-      - SG-TCP
-      - SG-UDP
-      - US-TCP
-      - US-UDP
-      - HK-TCP
-      - HK-UDP
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     hidden: true
     name: PikPak
     proxies:
-      - SG-TCP
-      - SG-UDP
-      - JP-TCP
-      - JP-UDP
-      - US-TCP
-      - US-UDP
-      - HK-TCP
-      - HK-UDP
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     hidden: true
     name: GitHub
     proxies:
-      - JP-TCP
-      - JP-UDP
-      - SG-TCP
-      - SG-UDP
-      - US-TCP
-      - US-UDP
-      - HK-TCP
-      - HK-UDP
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     hidden: true
     name: Microsoft
     proxies:
-      - JP-TCP
-      - JP-UDP
-      - SG-TCP
-      - SG-UDP
-      - US-TCP
-      - US-UDP
-      - HK-TCP
-      - HK-UDP
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
   - type: select
     hidden: true
     name: TikTok 
     proxies:
-      - JP-TCP
-      - JP-UDP
+      - JP-TCP-url-test
+      - JP-UDP-url-test
   - type: select
     hidden: true
     name: Twitter
     proxies:
-      - US-TCP
-      - US-UDP     
+      - US-TCP-url-test
+      - US-UDP-url-test     
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -215,7 +215,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: HK-TCP
+    name: HK-TCP-url-test
     filter: "(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -225,7 +225,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: JP-TCP
+    name: JP-TCP-url-test
     filter: "(?i)^(?=.*(JP))(?!.*(UDP|HY2)).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -235,7 +235,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: SG-TCP
+    name: SG-TCP-url-test
     filter: "(?i)^(?=.*(SG))(?!.*(UDP|HY2)).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -245,7 +245,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: US-TCP
+    name: US-TCP-url-test
     filter: "(?i)^(?=.*(US))(?!.*(UDP|HY2)).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -255,7 +255,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: HK-UDP
+    name: HK-UDP-url-test
     filter: "(?i)^(?=.*(HK))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -265,7 +265,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: JP-UDP
+    name: JP-UDP-url-test
     filter: "(?i)^(?=.*(JP))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -275,7 +275,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: SG-UDP
+    name: SG-UDP-url-test
     filter: "(?i)^(?=.*(SG))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -285,7 +285,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: US-UDP
+    name: US-UDP-url-test
     filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
 rule-providers:
   adguard-site:
