@@ -101,7 +101,7 @@ def process_hysteria2_sb(
     # ==========================================================
 
     node["up_mbps"] = 50
-    node["down_mbps"] = 100
+    node["down_mbps"] = 200
     if "obfs" in proxy:
         node["obfs"] = {
             "type": "salamander",
