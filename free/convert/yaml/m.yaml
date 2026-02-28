@@ -147,6 +147,7 @@ proxy-groups:
   - type: select
     name: Steam
     proxies:
+      - DIRECT
       - JP-TCP-url-test
       - JP-UDP-url-test
       - SG-TCP-url-test
