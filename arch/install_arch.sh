@@ -134,7 +134,7 @@ install_packages() {
     pacman-key --populate archlinux
 
     pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less \
-        fuzzel swww dunst foot polkit \
+        fuzzel swww mako foot polkit \
         nfs-utils fastfetch btop pipewire pipewire-alsa wireplumber pipewire-pulse \
         fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip reflector libnotify openssh \
         freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
