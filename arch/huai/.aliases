@@ -38,12 +38,6 @@ alias volup="vol +10%"
 alias voldown="vol -10%"
 alias volmute="pactl set-sink-mute @DEFAULT_SINK@ toggle"
 
-# MPC控制
-alias s="mpc stop"
-alias p="mpc play"
-alias nm="mpc next"
-alias mpause="mpc pause"
-alias pl="vim /home/huai/.config/mpd/playlists/all.m3u"
 
 # Git相关
 alias gaa='git add -A'
@@ -121,7 +115,6 @@ mount-data() {
 
 # 脚本和程序
 alias win="/usr/bin/bash /home/huai/.config/windows.sh"
-alias repo="sh /home/huai/.config/repo.sh"
 np() {
     if [ -f "$HOME/.config/wallpaperchange.sh" ]; then
         sh "$HOME/.config/wallpaperchange.sh"
