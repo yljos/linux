@@ -62,8 +62,7 @@ echo "Disk: $DISK"
 echo "Hostname: $HOSTNAME"
 echo "Username: $USERNAME"
 echo "Swap size: $SWAP_SIZE"
-echo "Press Enter to continue or Ctrl+C to cancel..."
-read
+sleep 6
 
 # Add error handling function
 set -e # Exit immediately if any command fails
