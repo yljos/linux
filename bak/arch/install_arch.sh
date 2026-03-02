@@ -141,14 +141,13 @@ install_packages() {
 	pacman-key --init
 	pacman-key --populate archlinux
 
-	pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim dhcpcd git less \
+	pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim iwd git less \
 		fuzzel swww dunst foot polkit \
-		nfs-utils fastfetch btop pipewire pipewire-jack pipewire-alsa pipewire-pulse pavucontrol \
-		fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip ranger reflector libnotify openssh \
-		mpd mpc freerdp xf86-video-intel libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
+		nfs-utils fastfetch btop pipewire pipewire-alsa wireplumber pipewire-pulse \
+		fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip reflector libnotify openssh \
+		freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
 		ttf-liberation terminus-font fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
-		sox libva-utils telegram-desktop ufw bc firejail nodejs stow firefox w3m mutt black shfmt dash zsh
-
+		libva-utils telegram-desktop bc firejail nodejs stow firefox black shfmt 
 	echo ">> Generating fstab"
 	genfstab -U /mnt >>/mnt/etc/fstab
 }
@@ -157,8 +156,8 @@ install_packages_nas() {
 	pacman-key --init
 	pacman-key --populate archlinux
 
-	pacstrap /mnt base base-devel iptables-nft nfs-utils linux-lts linux-lts-headers linux-firmware vim dhcpcd git \
-		rsync openssh polkit p7zip ranger curl samba mdadm unzip ufw podman dash zsh
+	pacstrap /mnt base base-devel iptables-nft nfs-utils linux-lts linux-lts-headers linux-firmware vim git \
+		rsync openssh polkit p7zip ranger curl samba mdadm unzip ufw podman 
 
 	echo ">> Generating fstab"
 	genfstab -U /mnt >>/mnt/etc/fstab
@@ -186,6 +185,8 @@ configure_system() {
     echo "#192.168.31.21:/ /home/$USERNAME/data nfs4 _netdev,noauto,x-systemd.automount,x-systemd.mount-timeout=10,x-systemd.idle-timeout=10,timeo=14,rsize=1048576,wsize=1048576 0 0" >> /etc/fstab
 
     echo "root:1" | chpasswd
+    useradd -m -G wheel -s /usr/bin/bash "$USERNAME"
+
 
     pacman -S --noconfirm efibootmgr $UCODE
     bootctl install --path=/boot
@@ -200,17 +201,13 @@ configure_system() {
     echo "initrd  /${UCODE}.img" >> /boot/loader/entries/arch.conf
     echo "initrd  /initramfs-linux-lts.img" >> /boot/loader/entries/arch.conf
     echo "options root=UUID=$ROOT_UUID rw quiet" >> /boot/loader/entries/arch.conf
-   
-    echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+  
+	echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
     echo "$USERNAME:1" | chpasswd
-    systemctl enable systemd-homed --now
-    homectl create $USERNAME --storage=luks --disk-size=60G --uid=1000 --member-of=wheel --shell=/usr/bin/bash --password "1"
     echo -e "#GTK_IM_MODULE=fcitx\nQT_IM_MODULE=fcitx\nXMODIFIERS=@im=fcitx\nSDL_IM_MODULE=fcitx\nGLFW_IM_MODULE=fcitx" >> /etc/environment
 
     echo ">> Enabling system services"
-    systemctl enable dhcpcd
-    ufw enable
-    systemctl enable ufw 
+    systemctl enable systemd-networkd
     '
 }
 
@@ -254,7 +251,7 @@ configure_system_nas() {
     echo "$USERNAME:1" | chpasswd
 
     echo ">> Enabling system services"
-    systemctl enable dhcpcd
+    systemctl enable systemd-networkd
     systemctl enable sshd
     loginctl enable-linger $USERNAME
     '
