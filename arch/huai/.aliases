@@ -102,8 +102,12 @@ github() {
 }
 # 检查 SSH 代理并自动添加密钥
 ssh_add_check() {
-    if [ -z "$(ssh-add -l 2>/dev/null | grep -v 'The agent has no identities.')" ]; then
-	ssh-add <(gpg -d /home/huai/.ssh/id_ed25519.gpg) 
+    if ! ssh-add -l >/dev/null 2>&1; then
+        # 彻底结束 gpg-agent 进程
+        gpgconf --kill gpg-agent
+        
+        # 自动重新唤醒 agent，并读取硬件设备（如 YubiKey）状态以加载 SSH 密钥
+        gpg --card-status >/dev/null 2>&1
     fi
 }
 # 为 /data 目录创建的 NFS 挂载函数 (静默版)
