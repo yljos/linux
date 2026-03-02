@@ -63,7 +63,7 @@ SWWW_SCRIPT="$HOME/.config/swww_auto.sh"
 run_silent "$SWWW_SCRIPT" "sh $SWWW_SCRIPT" "swww_auto.sh"
 
 # Firefox
-run_silent "firefox" "firefox-esr" "Firefox 浏览器"
+run_silent "firefox" "firefox" "Firefox 浏览器"
 
 # Telegram
 run_silent "Telegram" "Telegram" "Telegram"
