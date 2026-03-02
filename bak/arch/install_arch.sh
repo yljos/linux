@@ -114,22 +114,14 @@ setup_partitions() {
 	) | fdisk $DISK
 
 	echo ">> Formatting partitions"
+	sleep 2 # Add a short delay to ensure the system recognizes the new partitions
 	mkfs.fat -F32 "${DISK}${PART_PREFIX}1" # EFI partition
 	mkfs.ext4 "${DISK}${PART_PREFIX}3" -F  # Root partition (changed from 2 to 3)
 	mkswap "${DISK}${PART_PREFIX}2"        # Swap partition (changed from 3 to 2)
 	swapon "${DISK}${PART_PREFIX}2"        # Enable Swap (changed from 3 to 2)
 
-	echo ">> checking and installing reflector"
-	if ! command -v reflector &>/dev/null; then
-		echo "Installing reflector..."
-		pacman -Sy --noconfirm reflector
-	fi
-	echo ">> Updating mirror list"
-	sudo reflector -c China -a 12 -p https --score 5 --sort rate -n 3 --ipv4 --save /etc/pacman.d/mirrorlist
-
-	# Show the updated mirror list
-	echo ">> Updated mirrors:"
-	cat /etc/pacman.d/mirrorlist
+    echo ">> Configuring Tsinghua University mirror"
+    echo 'Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist
 
 	echo ">> Mounting partitions"
 	mount "${DISK}${PART_PREFIX}3" /mnt
@@ -141,7 +133,7 @@ install_packages() {
 	pacman-key --init
 	pacman-key --populate archlinux
 
-	pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim iwd git less \
+	pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less \
 		fuzzel swww dunst foot polkit \
 		nfs-utils fastfetch btop pipewire pipewire-alsa wireplumber pipewire-pulse \
 		fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip reflector libnotify openssh \
@@ -173,7 +165,7 @@ configure_system() {
     echo "CPU Microcode: $UCODE"
     sleep 5
 
-    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+    ln -sf /usr/share/zoneinfo/UTC /etc/localtime
     hwclock --systohc
 
     echo -e "en_US.UTF-8 UTF-8" > /etc/locale.gen
@@ -182,7 +174,6 @@ configure_system() {
 
     echo "$HOSTNAME" > /etc/hostname
     echo -e "127.0.0.1       localhost\n::1             localhost\n127.0.0.1       $HOSTNAME.localdomain  $HOSTNAME" > /etc/hosts
-    echo "#192.168.31.21:/ /home/$USERNAME/data nfs4 _netdev,noauto,x-systemd.automount,x-systemd.mount-timeout=10,x-systemd.idle-timeout=10,timeo=14,rsize=1048576,wsize=1048576 0 0" >> /etc/fstab
 
     echo "root:1" | chpasswd
     useradd -m -G wheel -s /usr/bin/bash "$USERNAME"
@@ -221,7 +212,7 @@ configure_system_nas() {
     echo "CPU Microcode: $UCODE"
     sleep 5
 
-    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+    ln -sf /usr/share/zoneinfo/UTC /etc/localtime
     hwclock --systohc
 
     echo -e "en_US.UTF-8 UTF-8" > /etc/locale.gen
