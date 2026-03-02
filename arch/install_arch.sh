@@ -151,6 +151,10 @@ configure_system() {
     echo "nameserver 1.1.1.1" > /etc/resolv.conf
     chattr +i /etc/resolv.conf
     echo -e "[Time]\nNTP=ntp.aliyun.com" > /etc/systemd/timesyncd.conf
+    curl -sL -o /etc/systemd/network/10-lo.network https://raw.githubusercontent.com/yljos/linux/refs/heads/main/arch/etc/systemd/network/10-lo.network
+    curl -sL -o /etc/systemd/network/20-enp0s31f6.network https://raw.githubusercontent.com/yljos/linux/refs/heads/main/arch/etc/systemd/network/20-enp0s31f6.network
+    curl -sL -o /etc/systemd/network/30-wlp2s0.network https://raw.githubusercontent.com/yljos/linux/refs/heads/main/arch/etc/systemd/network/30-wlp2s0.network
+
 
     echo "root:1" | chpasswd
     useradd -m -G wheel "$USERNAME"
