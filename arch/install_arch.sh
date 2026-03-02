@@ -139,7 +139,8 @@ install_packages() {
         fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip reflector libnotify openssh \
         freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
         ttf-liberation terminus-font fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
-        libva-utils telegram-desktop bc firejail nodejs stow firefox black shfmt 
+        libva-utils telegram-desktop bc firejail nodejs stow firefox black shfmt \
+        wlroots0.18 tllist fcft wayland-protocols wayland
     echo ">> Generating fstab"
     genfstab -U /mnt >>/mnt/etc/fstab
 }
