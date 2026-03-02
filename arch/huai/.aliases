@@ -52,7 +52,7 @@ gc() {
     fi
 }
 alias gpl='git pull'
-alias gpu='github && gitea'
+alias gpu='github'
 alias gcl='git clone'
 alias gst='git status'
 alias gl='git log'
@@ -91,10 +91,6 @@ codeberg() {
   # 调用辅助函数, 并将 "codeberg" 和所有接收到的参数传递给它
   _git_push_helper codeberg "$@"
 }
-gitea() {
-  # 调用辅助函数, 并将 "codeberg" 和所有接收到的参数传递给它
-  _git_push_helper gitea "$@"
-}
 # 用于 github 的推送函数
 github() {
   # 调用辅助函数, 并将 "github" 和所有接收到的参数传递给它
@@ -119,12 +115,7 @@ mount-data() {
 
 # 脚本和程序
 alias win="/usr/bin/bash /home/huai/.config/windows.sh"
-np() {
-    if [ -f "$HOME/.config/wallpaperchange.sh" ]; then
-        sh "$HOME/.config/wallpaperchange.sh"
-    else
-        sh "$HOME/.config/swww.sh"
-    fi
+np() { bash "$HOME/.config/swww.sh" 
 }
 alias py="python3"
 x() {
