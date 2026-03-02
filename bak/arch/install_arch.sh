@@ -176,7 +176,7 @@ configure_system() {
     echo -e "127.0.0.1       localhost\n::1             localhost\n127.0.0.1       $HOSTNAME.localdomain  $HOSTNAME" > /etc/hosts
 
     echo "root:1" | chpasswd
-    useradd -m -G wheel -s /usr/bin/bash "$USERNAME"
+    useradd -m -G wheel "$USERNAME"
 
 
     pacman -S --noconfirm efibootmgr $UCODE
@@ -184,8 +184,6 @@ configure_system() {
 
     echo ">> Setting up loader configuration"
     echo "default arch.conf" > /boot/loader/loader.conf
-    echo "# timeout 5" >> /boot/loader/loader.conf
-    echo "# editor no" >> /boot/loader/loader.conf
 
     echo "title   Arch Linux" > /boot/loader/entries/arch.conf
     echo "linux   /vmlinuz-linux-lts" >> /boot/loader/entries/arch.conf
@@ -195,7 +193,7 @@ configure_system() {
   
 	echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
     echo "$USERNAME:1" | chpasswd
-    echo -e "#GTK_IM_MODULE=fcitx\nQT_IM_MODULE=fcitx\nXMODIFIERS=@im=fcitx\nSDL_IM_MODULE=fcitx\nGLFW_IM_MODULE=fcitx" >> /etc/environment
+    echo -e "GTK_IM_MODULE=fcitx\nQT_IM_MODULE=fcitx\nXMODIFIERS=@im=fcitx\nSDL_IM_MODULE=fcitx\nGLFW_IM_MODULE=fcitx" >> /etc/environment
 
     echo ">> Enabling system services"
     systemctl enable systemd-networkd
@@ -228,8 +226,6 @@ configure_system_nas() {
 
     echo ">> Setting up loader configuration"
     echo "default nas.conf" > /boot/loader/loader.conf
-    echo "# timeout 5" >> /boot/loader/loader.conf
-    echo "# editor no" >> /boot/loader/loader.conf
 
     echo "title   Nas" > /boot/loader/entries/nas.conf
     echo "linux   /vmlinuz-linux-lts" >> /boot/loader/entries/nas.conf
