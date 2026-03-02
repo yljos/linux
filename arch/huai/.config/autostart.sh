@@ -62,10 +62,6 @@ run_silent "swww-daemon" "swww-daemon -n 0" "swww 守护进程"
 SWWW_SCRIPT="$HOME/.config/swww_auto.sh"
 run_silent "$SWWW_SCRIPT" "sh $SWWW_SCRIPT" "swww_auto.sh"
 
-# 关机脚本
-SHUTDOWN_SCRIPT="$HOME/.config/shutdown.sh"
-run_silent "$SHUTDOWN_SCRIPT" "sh $SHUTDOWN_SCRIPT" "shutdown.sh"
-
 # Firefox
 run_silent "firefox" "firefox-esr" "Firefox 浏览器"
 
