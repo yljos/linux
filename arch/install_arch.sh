@@ -90,28 +90,13 @@ timedatectl set-ntp true
 # Split functionality into functions
 setup_partitions() {
     echo ">> Partitioning disk $DISK"
-    (
-        echo g           # Create new GPT partition table
-        echo n           # Create new partition 1 (EFI partition)
-        echo 1           # Partition number
-        echo             # Default starting sector
-        echo +512m       # Size 512m
-        echo n           # Create new partition 2 (Swap partition)
-        echo 2           # Partition number (changed from 3 to 2)
-        echo             # Default starting sector
-        echo +$SWAP_SIZE # Use command line parameter for size
-        echo n           # Create new partition 3 (Root partition)
-        echo 3           # Partition number (changed from 2 to 3)
-        echo             # Default starting sector
-        echo             # Use all remaining space
-        echo t           # Change partition type
-        echo 1           # EFI partition
-        echo 1           # Select EFI system partition type
-        echo t           # Change partition type
-        echo 2           # Swap partition (changed from 3 to 2)
-        echo 19          # Select Linux swap type
-        echo w           # Write partition table and exit
-    ) | fdisk $DISK
+    wipefs -a "$DISK"
+sfdisk "$DISK" <<EOF
+label: gpt
+size=512M, type=U
+size=$SWAP_SIZE, type=S
+type=L
+EOF
 
     echo ">> Formatting partitions"
     sleep 2 # Add a short delay to ensure the system recognizes the new partitions
@@ -164,9 +149,17 @@ configure_system() {
 
     echo "$HOSTNAME" > /etc/hostname
     echo -e "127.0.0.1       localhost\n::1             localhost\n127.0.0.1       $HOSTNAME.localdomain  $HOSTNAME" > /etc/hosts
+    echo "nameserver 1.1.1.1" > /etc/resolv.conf
+    chattr +i /etc/resolv.conf
 
     echo "root:1" | chpasswd
     useradd -m -G wheel "$USERNAME"
+    mkdir -p /home/$USERNAME/.config
+    mkdir -p /home/$USERNAME/.gnupg
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/.config
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/.gnupg
+
+   
 
 
     pacman -S --noconfirm efibootmgr $UCODE
