@@ -3,30 +3,24 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias c="clear"
 alias ..='cd ..'
-# 同时显示 UTC 和 北京时间
-alias now='echo "UTC: $(date -u +%H:%M:%S) | CST: $(TZ=Asia/Shanghai date +%H:%M:%S)"'
 # 系统操作
 alias update="sudo pacman -Syyu"
 alias P="sleep 60 && shutdown now"
 alias R="systemctl reboot"
 alias rsyncdir="rsync -avzh --delete" 
 
-# 配置文件编辑
-alias zshconfig="vim /workspace/linux/arch/huai/.zshrc"
-alias bashconfig="vim /workspace/linux/arch/huai/.bashrc"
 
 # 目录导航
 alias cdconfig="cd /home/huai/.config"
-alias cdfree="cd /workspace/linux/free"
-alias cdlinux="cd /workspace/linux"
-alias cdpodman="cd /workspace/linux/podman"
-alias cddwl="cd /workspace/dwl"
+alias cdfree="cd /home/huai/linux/free"
+alias cdlinux="cd /home/huai/linux"
+alias cdpodman="cd /home/huai/linux/podman"
+alias cddwl="cd /home/huai/dwl"
 alias cddata="mount-data; cd /data"
 alias cdappdata="mount-data; cd /data/appdata"
 alias cdusb="cd /home/huai/usb"
 alias cdwww="mount-data; cd /data/www"
 alias cdmedia="mount-data; cd /data/media"
-alias cdmutt="cd /home/huai/.config/mutt"
 
 # 音频控制
 alias 0="pactl set-default-sink alsa_output.usb-Generic_USB2.0_Device_20130100ph0-00.analog-stereo; vol 50"
