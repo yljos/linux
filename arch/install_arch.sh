@@ -119,7 +119,7 @@ install_packages() {
 
     pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less \
         fuzzel swww mako foot polkit \
-        nfs-utils fastfetch btop pipewire pipewire-alsa wireplumber pipewire-pulse \
+        nfs-utils fastfetch btop pipewire pipewire-alsa wireplumber pipewire-pulse rtkit \
         fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip reflector libnotify openssh \
         freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
         ttf-liberation terminus-font fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
@@ -150,6 +150,7 @@ configure_system() {
     echo -e "127.0.0.1       localhost\n::1             localhost\n127.0.0.1       $HOSTNAME.localdomain  $HOSTNAME" > /etc/hosts
     echo "nameserver 1.1.1.1" > /etc/resolv.conf
     chattr +i /etc/resolv.conf
+    echo -e "[Time]\nNTP=ntp.aliyun.com" > /etc/systemd/timesyncd.conf
 
     echo "root:1" | chpasswd
     useradd -m -G wheel "$USERNAME"
