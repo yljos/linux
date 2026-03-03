@@ -79,6 +79,7 @@ SHARED_EXCLUDE_KEYWORDS = [
     "Australia",
     "到期",
     "重置",
+    "HK2-HY2",
     "HK3-HY2",
     "HK4-HY2",
     "HK5-HY2",
