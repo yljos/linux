@@ -70,7 +70,6 @@ dns:
     rule-set:ad-site: rcode://refused
     rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
-    rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
     rule-set:twitter-site: https://cloudflare-dns.com/dns-query#Twitter
     rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#TikTok
