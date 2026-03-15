@@ -6,6 +6,6 @@ if [ -f ~/.gnupg/gpg-agent.conf ]; then
     # 确保 GPG 代理已启动
     gpgconf --launch gpg-agent
     
-    # 将 SSH 认证指向 GPG 代理
-    export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+    # # 将 SSH 认证指向 GPG 代理
+    # export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 fi
