@@ -7,7 +7,6 @@ if [ -f ~/.gnupg/gpg-agent.conf ]; then
     gpgconf --launch gpg-agent  
 fi
 
-# 强制终端使用 Windows 原生 OpenSSH，与 Git 行为保持一致
-alias ssh='/c/Windows/System32/OpenSSH/ssh.exe'
-alias ssh-add='/c/Windows/System32/OpenSSH/ssh-add.exe'
+export PATH="/c/Windows/System32/OpenSSH:$PATH"
+
 
