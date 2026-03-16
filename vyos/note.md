@@ -42,6 +42,13 @@ set service dns forwarding allow-from 10.0.0.0/24
 set service dns forwarding listen-address 10.0.0.1
 set service dns forwarding system
 
+# 删除现有的 LAN 监听地址
+delete service dns forwarding listen-address 10.0.0.1
+
+# 让它只在环回地址监听（不影响 sing-box 绑定 10.0.0.1）
+set service dns forwarding listen-address 127.0.0.1
+
+
 # ssh 服务
 set service ssh listen-address 10.0.0.1
 set system login user vyos authentication public-keys admin type ssh-ed25519
