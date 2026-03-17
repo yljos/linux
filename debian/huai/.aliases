@@ -9,8 +9,6 @@ alias ..='cd ..'
 # ---------------------------------------------------------
 # [2] System & Time
 # ---------------------------------------------------------
-# Display UTC & CST simultaneously
-alias now='echo "UTC: $(date -u +%H:%M:%S) | CST: $(TZ=Asia/Shanghai date +%H:%M:%S)"'
 # Sleep 60s then shutdown
 alias P="sleep 60 && shutdown now"
 alias R="systemctl reboot"
@@ -21,9 +19,7 @@ alias rsyncdir="rsync -avzh --delete"
 # ---------------------------------------------------------
 # Safety: Only cd if mount-data succeeds (exit code 0)
 alias cddata="mount-data && cd /data"
-alias cdappdata="mount-data && cd /data/appdata"
 alias cdwww="mount-data && cd /data/www"
-alias cdmedia="mount-data && cd /data/media"
 alias cdlinux="cd /home/huai/linux"
 alias cdusb="cd /home/huai/usb"
 
@@ -38,68 +34,15 @@ mount-data() {
 # Pure Native PipeWire Audio Management (WirePlumber Driver)
 # =================================================================
 
-# 1. Helper: Extract Sink digital ID from wpctl
-_get_wp_id() {
-    # Search for keyword ID only in Sinks section
-    wpctl status | sed -n '/Sinks:/,/Sources:/p' | grep -i "$1" | grep -oE '[0-9]+' | head -n1
-}
-
-# 2. Volume Control (Pure wpctl syntax)
-vol() {
-    local target=$1
-    # Check if input is increment (5%+) or absolute value (50)
-    if [[ "$target" == *"+"* || "$target" == *"-"* ]]; then
-        wpctl set-volume @DEFAULT_AUDIO_SINK@ "$target"
-    else
-        # Modern wpctl supports direct percentage input, no need to convert decimals via bc
-        wpctl set-volume @DEFAULT_AUDIO_SINK@ "${target}%"
-    fi
-    # Signal notify dwm_status.sh (essential for minimalist workflow)
-    pkill -RTMIN+2 -f dwm_status.sh
-}
-
-# 3. Device Switch (only modify default routing)
-set_audio() {
-    local keyword="$1"
-    local vol_level="$2"
-    local id=$(_get_wp_id "$keyword")
-
-    if [ -n "$id" ]; then
-        # A. Modify PipeWire default output device
-        wpctl set-default "$id"
-        # B. Sync adjust to initial volume
-        vol "$vol_level"
-        echo "PipeWire Default -> $keyword ($id)"
-    else
-        echo "Error: Device '$keyword' not found."
-    fi
-}
-
-# =================================================================
-# Minimalist Alias Mapping
-# =================================================================
-alias 0="set_audio 'Honk' 50"
-alias 1="set_audio 'Built-in' 50"
-alias 2="set_audio 'E6:30:6D:65:E0:5F' 80"
-alias 3="set_audio 'GWH810PRO' 70"
-
 # Volume Control
-alias volup="vol 5%+"
-alias voldown="vol 5%-"
-alias volmute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+2 -f dwm_status.sh"
-
-# [5] MPC (Music Player Daemon)
-# ---------------------------------------------------------
-alias s="mpc stop"
-alias p="mpc play"
-alias nm="mpc next"
-alias mpause="mpc pause"
-alias pl="vim /home/huai/.config/mpd/playlists/all.m3u"
+alias v+="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+alias v-="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+alias mute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
 
 # ---------------------------------------------------------
 # [6] Git Shortcuts
 # ---------------------------------------------------------
-alias gaa='git add -A'
+alias gaa='git add -u'
 alias gpl='git pull'
 alias gpu='git push'
 alias gcl='git clone'
@@ -126,4 +69,15 @@ np() {
     if [[ -f "/home/huai/.config/wallpaperchange.sh" ]]; then
         sh "/home/huai/.config/wallpaperchange.sh"
     fi
+}
+
+ssh_add_check() {
+    if ! ssh-add -l >/dev/null 2>&1; then
+        ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519.gpg) >/dev/null 2>&1
+    fi
+}
+
+ssh() {
+    ssh_add_check
+    command ssh "$@"
 }
