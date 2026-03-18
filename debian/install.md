@@ -44,6 +44,7 @@ sudo efibootmgr -b 0001 -B
 
 sudo apt update
 sudo apt install fcitx5 fcitx5-rime fcitx5-frontend-gtk3 fcitx5-frontend-gtk4 fcitx5-frontend-qt5
+mkdir -p /home/huai/.ssh && mkdir -p /home/huai/.gnupg
 
 sudo vim /etc/environment
 
