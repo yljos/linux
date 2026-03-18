@@ -5,6 +5,7 @@ sudo apt install libfcft-dev libpixman-1-dev
 sudo apt install build-essential libx11-dev libxinerama-dev libxft-dev
 sudo apt install xserver-xorg xinit
 sudo apt install freerdp2-x11
+sudo apt install freerdp3-x11
 sudo apt install scdaemon pcscd
 # 
 apt update && apt install sudo
