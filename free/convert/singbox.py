@@ -87,7 +87,7 @@ def process_hysteria2_sb(
     node = base_node.copy()
     node["type"] = "hysteria2"
     node["password"] = proxy.get("password")
-    
+
     # === 核心修复：抹平 Clash 与 Sing-box 的端口范围符号差异 ===
     if "ports" in proxy:
         node["server_ports"] = str(proxy["ports"]).replace("-", ":")

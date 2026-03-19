@@ -139,7 +139,6 @@ def process_directory_recursively(current_dir):
 
 
 if __name__ == "__main__":
-
     # 检查工作指示文件
     if WORKING_FILE_PATH.exists():
         print("=" * 50)

@@ -32,12 +32,8 @@ HYSTERIA2_UP_M = "20 Mbps"
 HYSTERIA2_DOWN_M = "40 Mbps"
 INCLUDED_HEADERS = set("Subscription-Userinfo".split(","))
 
-NODE_KEYWORDS = [
-    k.strip() for k in "US,HK,SG,JP,美国,香港,新加坡,日本".split(",") if k.strip()
-]
-NODE_EXCLUDE_KEYWORDS = [
-    k.strip() for k in "官网,流量,倍率,剩余,10,到期".split(",") if k.strip()
-]
+NODE_KEYWORDS = [k.strip() for k in "US,HK,SG,JP,美国,香港,新加坡,日本".split(",") if k.strip()]
+NODE_EXCLUDE_KEYWORDS = [k.strip() for k in "官网,流量,倍率,剩余,10,到期".split(",") if k.strip()]
 
 ENABLE_NODE_REPLACEMENT = False
 CLIENT_FINGERPRINT = "firefox"

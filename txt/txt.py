@@ -126,9 +126,7 @@ def replace_line(line):
     stripped = line.strip()
 
     # 卷
-    m_volume = re.match(
-        r"^第\s*([0-9零一二三四五六七八九十百两]+)\s*卷\s*[、,，]?\s*(.*)$", stripped
-    )
+    m_volume = re.match(r"^第\s*([0-9零一二三四五六七八九十百两]+)\s*卷\s*[、,，]?\s*(.*)$", stripped)
     if m_volume:
         num = chinese_to_int(m_volume.group(1))
         title = m_volume.group(2).strip() if m_volume.group(2) else "未命名"

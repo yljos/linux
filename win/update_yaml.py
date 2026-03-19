@@ -81,9 +81,7 @@ if __name__ == "__main__":
     if not is_admin():
         print("【警告】脚本未以管理员身份运行！")
         print("自动下载可以完成，但**无法自动重启服务**。")
-        print(
-            "请确保在 nssm 中服务登录身份为 Local System (本地系统)，或以管理员运行脚本。"
-        )
+        print("请确保在 nssm 中服务登录身份为 Local System (本地系统)，或以管理员运行脚本。")
         print("-" * 50)
 
     print(f"自动更新脚本已启动 (目标服务: {SERVICE_NAME})...")
@@ -116,9 +114,7 @@ if __name__ == "__main__":
                             f.write(response.content)
 
                         save_update_time()
-                        print(
-                            f"配置文件更新成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-                        )
+                        print(f"配置文件更新成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
                         if is_admin():
                             restart_service()

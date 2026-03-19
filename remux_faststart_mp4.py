@@ -28,7 +28,6 @@ def process_videos_recursively():
 
     # 使用 rglob 进行递归遍历 ('**/*' 代表递归所有子目录和文件)
     for file_path in root_directory.rglob("*"):
-
         # 1. 跳过文件夹，只处理文件
         if not file_path.is_file():
             continue
@@ -40,7 +39,6 @@ def process_videos_recursively():
 
         # 3. 检查扩展名 (pathlib 的 .suffix 带有点号，例如 .mp4)
         if file_path.suffix.lower() in VIDEO_EXTENSIONS:
-
             # --- 计算路径 ---
             # 获取相对路径 (例如: sub/video.mp4)
             relative_path = file_path.relative_to(root_directory)

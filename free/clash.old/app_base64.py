@@ -173,9 +173,7 @@ def process_nodes_from_path(url_path):
 
         if not nodes:
             return (
-                jsonify(
-                    {"error": "所有节点解析都失败了", "errors": errors, "url": full_url}
-                ),
+                jsonify({"error": "所有节点解析都失败了", "errors": errors, "url": full_url}),
                 400,
             )
 

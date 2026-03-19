@@ -66,7 +66,6 @@ def convert_videos(source_dir):
     # ... (循环和转换逻辑保持不变) ...
 
     for file_path in source_path.rglob("*"):
-
         # 1. 必须是文件
         if not file_path.is_file():
             continue

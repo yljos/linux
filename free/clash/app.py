@@ -30,9 +30,7 @@ CACHE_DIR = Path("cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # 1. 包含关键词 (保留这些区域)
-raw_keywords = (
-    "US,HK,Hong Kong,Singapore,Japan,United States,SG,JP,美国,香港,新加坡,日本"
-)
+raw_keywords = "US,HK,Hong Kong,Singapore,Japan,United States,SG,JP,美国,香港,新加坡,日本"
 NODE_KEYWORDS = [k.strip() for k in raw_keywords.split(",") if k.strip()]
 
 # 2. 排除关键词 (在这里维护你的黑名单)

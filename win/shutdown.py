@@ -77,18 +77,13 @@ def main():
 
                 # 检查工作文件是否存在
                 if WORKING_FILE_PATH.exists():
-
                     # ** 只要文件存在，就无限等待 **
-                    print(
-                        f"   [等待中]: 发现工作文件 '{WORKING_FILE_PATH.name}' 存在。等待转换完成..."
-                    )
+                    print(f"   [等待中]: 发现工作文件 '{WORKING_FILE_PATH.name}' 存在。等待转换完成...")
                     time.sleep(wait_time_seconds)
                     continue
                 else:
                     # 3. 工作文件不存在，执行关机
-                    print(
-                        "\n[✔] 条件满足：关机信号已接收，且工作指示文件已删除。执行关机。"
-                    )
+                    print("\n[✔] 条件满足：关机信号已接收，且工作指示文件已删除。执行关机。")
                     if shutdown_system():
                         break  # 关机成功，退出循环
                     else:
@@ -108,5 +103,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()

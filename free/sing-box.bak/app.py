@@ -134,9 +134,7 @@ def process_nodes_from_source(source: str) -> Union[Response, Tuple[Response, in
 
     except Exception as e:
         # --- 降级处理：读取缓存 ---
-        print(
-            f"[{source}] 网络/验证失败 ({str(e)})，尝试使用本地缓存...", file=sys.stderr
-        )
+        print(f"[{source}] 网络/验证失败 ({str(e)})，尝试使用本地缓存...", file=sys.stderr)
 
         if os.path.exists(cache_file_path):
             try:

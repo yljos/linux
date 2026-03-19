@@ -125,17 +125,13 @@ if __name__ == "__main__":
                                 f.write(response.content)
 
                             save_update_time()
-                            print(
-                                f"配置文件下载成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-                            )
+                            print(f"配置文件下载成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
                             # [恢复原样] 这里的逻辑保持你原来的
                             if is_admin():
                                 restart_service()
                             else:
-                                print(
-                                    "跳过服务重启（权限不足），请手动重启 Sing-box 服务。"
-                                )
+                                print("跳过服务重启（权限不足），请手动重启 Sing-box 服务。")
                         else:
                             print(
                                 f"校验失败：JSON 缺少 'outbounds' 字段 - {time.strftime('%Y-%m-%d %H:%M:%S')}"

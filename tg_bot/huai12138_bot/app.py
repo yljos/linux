@@ -29,9 +29,7 @@ webhook_host = os.getenv("WEBHOOK_HOST")
 s_canid = os.getenv("S_CANID")
 
 if not token or not admin_ids_str or not webhook_host or not s_canid:
-    raise ValueError(
-        "请在.env文件中设置 BOT_TOKEN, ADMIN_IDS (用逗号分隔) 和 WEBHOOK_HOST"
-    )
+    raise ValueError("请在.env文件中设置 BOT_TOKEN, ADMIN_IDS (用逗号分隔) 和 WEBHOOK_HOST")
 
 admin_ids = set(admin_ids_str.split(","))
 primary_admin_id = admin_ids_str.split(",")[0]
@@ -545,9 +543,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
 # ========== /zh 命令 - 设置中文语言 ==========
 async def set_chinese(update: Update, context: CallbackContext):
     link = "tg://setlanguage?lang=zhcncc"
-    await update.message.reply_text(
-        text=f"[设置聪聪中文]({link})", parse_mode="Markdown"
-    )
+    await update.message.reply_text(text=f"[设置聪聪中文]({link})", parse_mode="Markdown")
 
 
 # ========== 启动后通知 ==========

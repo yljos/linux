@@ -132,7 +132,7 @@ def inject_custom_clash_node(
         for node in nodes:
             if not isinstance(node, dict) or "name" not in node:
                 continue
-                
+
             node_name = node["name"]
 
             # 1. 节点列表追加
@@ -172,7 +172,7 @@ def inject_custom_singbox_node(
         for outbound in outbounds:
             if not isinstance(outbound, dict) or "tag" not in outbound:
                 continue
-                
+
             node_tag = outbound["tag"]
 
             # 1. 出站列表追加
@@ -180,7 +180,9 @@ def inject_custom_singbox_node(
 
             # 2. 注入到 selector/urltest 组
             for cfg_outbound in config.get("outbounds", []):
-                if cfg_outbound.get("tag") in target_groups and cfg_outbound.get("type") in [
+                if cfg_outbound.get("tag") in target_groups and cfg_outbound.get(
+                    "type"
+                ) in [
                     "selector",
                     "urltest",
                 ]:

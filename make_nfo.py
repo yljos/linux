@@ -66,10 +66,8 @@ def generate_nfo():
 
     # rglob('*') 会递归遍历所有子目录下的所有文件
     for file_path in root_folder.rglob("*"):
-
         # 1. 基础检查：是文件 且 后缀匹配
         if file_path.is_file() and file_path.suffix.lower() in VIDEO_EXTS:
-
             # 2. 获取当前视频所在的文件夹名字
             parent_folder_name = file_path.parent.name
 

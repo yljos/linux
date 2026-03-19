@@ -104,9 +104,7 @@ def online():
             app.logger.error(f"Error writing log: {e}")
 
     # 4. 发送通知 (放在锁外面，避免网络请求阻塞文件锁)
-    message = (
-        f"<b>大瑶 上线</b>\n" f"<b>时间</b>: {timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
-    )
+    message = f"<b>大瑶 上线</b>\n" f"<b>时间</b>: {timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
 
     return notify_and_respond(
         "online",

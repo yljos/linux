@@ -7,15 +7,15 @@ RCLONE_EXE = Path(r"C:\rclone-v1.71.0-windows-amd64\rclone.exe")
 
 # ⚠️ 必须指定绝对路径，因为服务启动时无法正确获取当前用户的 home 目录
 # 请将 '你的用户名' 替换为你实际的 Windows 用户名
-CONFIG_PATH = Path(r"C:\Users\huai\AppData\Roaming\rclone\rclone.conf") 
+CONFIG_PATH = Path(r"C:\Users\huai\AppData\Roaming\rclone\rclone.conf")
 
 CMD = [
     str(RCLONE_EXE),
     "mount",
     "pikpak:",
     "P:",
-    "--config",           # 新增：指定配置文件参数
-    str(CONFIG_PATH),     # 新增：配置文件路径
+    "--config",  # 新增：指定配置文件参数
+    str(CONFIG_PATH),  # 新增：配置文件路径
     "--vfs-cache-mode",
     "full",
     "--vfs-links",
