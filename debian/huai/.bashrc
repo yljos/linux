@@ -5,7 +5,9 @@ export VISUAL=vim
 export EDITOR=vim
 export GPG_TTY=$(tty)
 # export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-eval $(ssh-agent -s)
+if [ ! -S "$SSH_AUTH_SOCK" ]; then
+    systemctl --user start ssh-agent
+fi
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 
 export HISTSIZE=10000
