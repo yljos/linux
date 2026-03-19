@@ -14,6 +14,6 @@
 **/.env
 **/node.json
 **/node.yaml
-
+**/default.target.wants/
 
 
