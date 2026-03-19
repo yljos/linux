@@ -8,6 +8,7 @@ export GPG_TTY=$(tty)
 if [ ! -S "$SSH_AUTH_SOCK" ]; then
     systemctl --user start ssh-agent
 fi
+export SSH_AUTH_SOCK="/run/user/1000/openssh_agent"
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 
 export HISTSIZE=10000
