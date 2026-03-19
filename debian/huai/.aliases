@@ -73,7 +73,7 @@ np() {
 
 ssh_add_check() {
     if ! ssh-add -l >/dev/null 2>&1; then
-        gpg -d /home/huai/.ssh/id_ed25519.gpg >/dev/null 2>&1
+        # gpg -qd --batch /home/huai/.ssh/id_ed25519.gpg >/dev/null 2>&1
         ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519.gpg) >/dev/null 2>&1
     fi
 }
