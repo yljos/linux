@@ -18,8 +18,6 @@ ICON_TIME=""
 
 INTERFACE="enp0s31f6"
 CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
-MPD_HOST="127.0.0.1"
-MPD_PORT="6600"
 
 UPDATE_INTERVAL_MEDIUM=5
 UPDATE_INTERVAL_LONG=60
@@ -67,7 +65,7 @@ update_net() {
 update_time() { TIME_STATUS=$(printf "%(%a %m.%d %H:%M)T" -1); }
 
 print_status_bar() {
-    # Concatenate without VOL_STATUS
+    # Concatenate only necessary info
     local output="${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${NET_STATUS_STR}${SEPARATOR}${ICON_TIME}${TIME_STATUS}"
 
     # Use Bash native replacement: replace duplicate | with |
@@ -96,7 +94,6 @@ else
     NET_STATUS_STR="N/A"
 fi
 
-# Updated trap: removed update_volume call
 trap 'print_status_bar' SIGRTMIN+2
 trap 'exit 0' SIGTERM SIGINT
 
@@ -105,7 +102,6 @@ update_mem
 update_temp
 update_time
 update_net
-# Removed update_volume from initial run
 
 # --- Loop ---
 SEC=0
