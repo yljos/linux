@@ -6,7 +6,7 @@ source "$HOME/.config/script_lock.sh"
 acquire_script_lock || exit 0
 
 SHUTDOWN_FILE="http://10.0.0.21/shutdown"
-INTERVAL=300 # 循环间隔秒
+INTERVAL=60 # 循环间隔秒
 
 while true; do
 	# 获取远程文件内容，局域网优化超时
