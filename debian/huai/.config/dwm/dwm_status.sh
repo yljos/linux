@@ -12,13 +12,11 @@ fi
 
 ICON_TEMP="T:"
 ICON_MEM="M:"
-ICON_VOL="V:"
 ICON_NET_DOWN="D:"
 ICON_NET_UP="U:"
 ICON_TIME=""
 
 INTERFACE="enp0s31f6"
-# INTERFACE="wlp2s0"
 CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
 MPD_HOST="127.0.0.1"
 MPD_PORT="6600"
@@ -66,25 +64,11 @@ update_net() {
     NET_STATUS_STR="${ICON_NET_DOWN}${rx_kb}K ${ICON_NET_UP}${tx_kb}K"
 }
 
-update_volume() {
-    local raw
-    VOL_STATUS="50%" 
-    raw=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null)
-    
-    if [[ -n "$raw" ]]; then
-        if [[ "$raw" == *"[MUTED]"* ]]; then
-            VOL_STATUS="MUTE"
-        else
-            VOL_STATUS=$(echo "$raw" | awk '{print int($2 * 100) "%"}')
-        fi
-    fi
-}
-
 update_time() { TIME_STATUS=$(printf "%(%a %m.%d %H:%M)T" -1); }
 
 print_status_bar() {
-    # Concatenate without IME_STATUS
-    local output="${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${ICON_VOL}${VOL_STATUS}${SEPARATOR}${NET_STATUS_STR}${SEPARATOR}${ICON_TIME}${TIME_STATUS}"
+    # Concatenate without VOL_STATUS
+    local output="${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${NET_STATUS_STR}${SEPARATOR}${ICON_TIME}${TIME_STATUS}"
 
     # Use Bash native replacement: replace duplicate | with |
     while [[ "$output" == *"${SEPARATOR}${SEPARATOR}"* ]]; do
@@ -112,8 +96,8 @@ else
     NET_STATUS_STR="N/A"
 fi
 
-# Removed SIGRTMIN+3 (IME toggle) trap
-trap 'update_volume; print_status_bar' SIGRTMIN+2
+# Updated trap: removed update_volume call
+trap 'print_status_bar' SIGRTMIN+2
 trap 'exit 0' SIGTERM SIGINT
 
 # --- First Run ---
@@ -121,7 +105,7 @@ update_mem
 update_temp
 update_time
 update_net
-update_volume
+# Removed update_volume from initial run
 
 # --- Loop ---
 SEC=0
