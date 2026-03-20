@@ -21,16 +21,16 @@ sudo chmod 755 /data
 # ---------------------------------------------------------
 sudo apt update
 sudo apt install -y locales git curl vim nfs-common build-essential \
-    libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
-    freerdp2-x11 freerdp3-x11 scdaemon pcscd \
-    fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
-    pipewire wireplumber
+	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
+	freerdp2-x11 scdaemon pcscd \
+	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
+	pipewire wireplumber
 
 # ---------------------------------------------------------
 # [4] System Configuration
 # ---------------------------------------------------------
 # Overwrite locale.gen directly for en_US.UTF-8
-echo "en_US.UTF-8 UTF-8" | sudo tee /etc/locale.gen > /dev/null
+echo "en_US.UTF-8 UTF-8" | sudo tee /etc/locale.gen >/dev/null
 sudo locale-gen
 sudo update-locale LANG=en_US.UTF-8
 
