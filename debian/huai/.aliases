@@ -17,7 +17,7 @@ alias rsyncdir="rsync -avzh --delete"
 # ---------------------------------------------------------
 # [3] Navigation (Strict mode: use &&)
 # ---------------------------------------------------------
-# Safety: Only cd if mount-data succeeds (exit code 0)
+# Safety: Only cd if mount-data succeeds
 alias cddata="mount-data && cd /data"
 alias cdwww="mount-data && cd /data/www"
 alias cdlinux="cd /home/huai/linux"
@@ -30,25 +30,22 @@ mount-data() {
     fi
 }
 
-# =================================================================
-# Pure Native PipeWire Audio Management (WirePlumber Driver)
-# =================================================================
-
-# Volume Control
+# ---------------------------------------------------------
+# [4] Pure Native PipeWire Audio (WirePlumber)
+# ---------------------------------------------------------
 alias v+="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
 alias v-="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
 alias mute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
 
 # ---------------------------------------------------------
-# [6] Git Shortcuts
+# [5] Git Shortcuts
 # ---------------------------------------------------------
 alias gaa='git add -u'
+alias gpl='git pull'
+alias gpu='git push'
+alias gcl='git clone'
 alias gst='git status'
 alias gl='git log'
-
-alias gpl='ssh_add_check && git pull'
-alias gpu='ssh_add_check && git push'
-alias gcl='ssh_add_check && git clone'
 
 gc() {
     if [ $# -eq 0 ]; then
@@ -57,28 +54,25 @@ gc() {
         git commit -m "$*"
     fi
 }
+
 # ---------------------------------------------------------
-# [7] Script Shortcuts
+# [6] Script Shortcuts & SSH Key Management
 # ---------------------------------------------------------
 alias win="/usr/bin/bash /home/huai/.config/win.sh"
 alias wol="/usr/bin/bash /home/huai/.config/wol.sh"
 alias py="python3"
 
+# Manually decrypt and add SSH key
+key() {
+    if ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519.gpg) >/dev/null 2>&1; then
+        echo "SSH key loaded."
+    else
+        echo "Failed to load key."
+    fi
+}
+
 np() {
-    # Use [[ ]] for safety
     if [[ -f "/home/huai/.config/wallpaperchange.sh" ]]; then
         bash "/home/huai/.config/wallpaperchange.sh"
     fi
-}
-
-ssh_add_check() {
-    if ! ssh-add -l >/dev/null 2>&1; then
-        # gpg -qd --batch /home/huai/.ssh/id_ed25519.gpg >/dev/null 2>&1
-        ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519.gpg) >/dev/null 2>&1
-    fi
-}
-
-ssh() {
-    ssh_add_check
-    command ssh "$@"
 }
