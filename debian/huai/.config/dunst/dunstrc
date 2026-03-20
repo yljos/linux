@@ -351,9 +351,9 @@
     # Keep uniform background
     background = "#4b5320"
     # Vivid Orange for high visibility
-    foreground = "#ffcc00"
+    foreground = "#ff8000"
     # Match frame with text for strong emphasis
-    frame_color = "#ffcc00"
+    frame_color = "#ff8000"
     timeout = 0
     override_pause_level = 60
 
