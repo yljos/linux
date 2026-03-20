@@ -342,6 +342,7 @@
 [urgency_normal]
     background = "#4b5320"
     foreground = "#00ff00"
+    frame_color = "#00ff00"
     timeout = 10
     override_pause_level = 30
     # Icon for notifications with normal urgency, uncomment to enable
