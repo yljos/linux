@@ -77,9 +77,12 @@ np() {
     fi
 }
 # Check if SSH keys are loaded in the agent
+# In ~/.aliases
 _ssh_status() {
-    # If ssh-add -l returns 0, keys are loaded
+    # Check if SSH keys are loaded via ssh-agent
     if ssh-add -l >/dev/null 2>&1; then
-        echo -ne " \[\e[1;36m\]SSH\[\e[0m\]"
+        # \001 is \[ (start non-printing)
+        # \002 is \] (end non-printing)
+        echo -ne "\001\e[1;36m\002 SSH\001\e[0m\002"
     fi
 }
