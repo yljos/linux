@@ -1,7 +1,7 @@
 # Alacritty 0.11 Configuration (YAML)
 
 font:
-  size: 11.0
+  size: 12.0
   normal:
     family: "Liberation Mono"
     style: "Regular"
