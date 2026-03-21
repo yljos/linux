@@ -23,7 +23,7 @@ umask 022
 export TERM=xterm-256color
 
 # PS1='\[\e[1;33m\]Debian\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]\[\e[1;35m\]:\w\$\[\e[0m\] '
-PS1='\[\e[1;33m\]D\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]$(_ssh_status)\[\e[1;35m\]:\w\$\[\e[0m\] '
+PS1='\[\e[1;33m\]Debian\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]$(_ssh_status)\[\e[1;35m\]:\w\$\[\e[0m\] '
 if [[ -z $DISPLAY ]] && [[ $(tty) == /dev/tty1 ]]; then
     [[ -f ~/.xinitrc ]] && command -v startx >/dev/null 2>&1 && exec startx
 fi
