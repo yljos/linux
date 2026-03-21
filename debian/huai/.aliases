@@ -83,6 +83,6 @@ _ssh_status() {
     if ssh-add -l >/dev/null 2>&1; then
         # \001 is \[ (start non-printing)
         # \002 is \] (end non-printing)
-        echo -ne "\001\e[38;5;214m\002 k\001\e[0m\002"
+        echo -ne "\001\e[38;5;214m\002 *\001\e[0m\002"
     fi
 }
