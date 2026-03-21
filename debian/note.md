@@ -51,3 +51,6 @@ sudo vim /etc/environment
 GTK_IM_MODULE=fcitx
 QT_IM_MODULE=fcitx
 XMODIFIERS=@im=fcitx
+
+
+touch ~/.hushlogin
