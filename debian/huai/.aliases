@@ -76,3 +76,10 @@ np() {
         bash "/home/huai/.config/wallpaperchange.sh"
     fi
 }
+# Check if SSH keys are loaded in the agent
+_ssh_status() {
+    # If ssh-add -l returns 0, keys are loaded
+    if ssh-add -l >/dev/null 2>&1; then
+        echo -ne " \[\e[1;36m\]SSH\[\e[0m\]"
+    fi
+}
