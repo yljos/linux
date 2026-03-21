@@ -3,7 +3,7 @@ name = "convert"
 version = "0.1.0"
 description = "Default template for PDM package"
 authors = [
-    {name = "yljos", email = "@outlook.com"},
+    {name = "bite-os", email = "@outlook.com"},
 ]
 dependencies = ["Flask>=3.1.2", "requests>=2.32.5", "PyYAML>=6.0.3"]
 requires-python = "==3.12.*"
