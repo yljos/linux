@@ -22,7 +22,8 @@ window:
 colors:
   # [Primary colors] - Eye protection settings
   primary:
-    background: '#1e1e1e' 
+    # background: '#1e1e1e' 
+    background: '#282828' 
     foreground: '#d1d1d1'
 
   # # [Normal colors]
