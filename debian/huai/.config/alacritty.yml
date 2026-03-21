@@ -1,4 +1,4 @@
-# Alacritty 0.11 配置文件 (YAML 格式)
+# Alacritty 0.11 Configuration (YAML)
 
 font:
   size: 9.5
@@ -16,10 +16,16 @@ font:
     style: "Bold Italic"
 
 window:
+  # Maintain minimalist feel with 0.7 opacity [cite: 2026-01-27]
   opacity: 0.7
 
 colors:
-  # Normal colors
+  # [Primary colors] - Eye protection settings
+  primary:
+    background: '#1e1e1e' 
+    foreground: '#d1d1d1'
+
+  # [Normal colors]
   normal:
     black:   '#000000'
     red:     '#ff0000'
@@ -30,7 +36,7 @@ colors:
     cyan:    '#00ffff'
     white:   '#ffffff'
 
-  # Bright colors
+  # [Bright colors]
   bright:
     black:   '#616161'
     red:     '#ff669d'
@@ -41,7 +47,7 @@ colors:
     cyan:    '#427b58'
     white:   '#ffffff'
 
-  # Selection colors
+  # [Selection colors]
   selection:
     text: '#eeeeee'
     background: '#005577'
