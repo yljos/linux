@@ -1,7 +1,7 @@
 # Alacritty 0.11 Configuration (YAML)
 
 font:
-  size: 9.5
+  size: 11.0
   normal:
     family: "Liberation Mono"
     style: "Regular"
@@ -25,27 +25,27 @@ colors:
     background: '#1e1e1e' 
     foreground: '#d1d1d1'
 
-  # [Normal colors]
-  normal:
-    black:   '#000000'
-    red:     '#ff0000'
-    green:   '#00ff00'
-    yellow:  '#ffff00'
-    blue:    '#a277ff'
-    magenta: '#ff00ff'
-    cyan:    '#00ffff'
-    white:   '#ffffff'
+  # # [Normal colors]
+  # normal:
+  #   black:   '#000000'
+  #   red:     '#ff0000'
+  #   green:   '#00ff00'
+  #   yellow:  '#ffff00'
+  #   blue:    '#a277ff'
+  #   magenta: '#ff00ff'
+  #   cyan:    '#00ffff'
+  #   white:   '#ffffff'
 
-  # [Bright colors]
-  bright:
-    black:   '#616161'
-    red:     '#ff669d'
-    green:   '#beed5f'
-    yellow:  '#ffdca0'
-    blue:    '#076678'
-    magenta: '#9e6ffe'
-    cyan:    '#427b58'
-    white:   '#ffffff'
+  # # [Bright colors]
+  # bright:
+  #   black:   '#616161'
+  #   red:     '#ff669d'
+  #   green:   '#beed5f'
+  #   yellow:  '#ffdca0'
+  #   blue:    '#076678'
+  #   magenta: '#9e6ffe'
+  #   cyan:    '#427b58'
+  #   white:   '#ffffff'
 
   # # [Selection colors]
   # selection:
