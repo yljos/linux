@@ -12,21 +12,31 @@ CMD = [
     "mount",
     "nas:/data",
     "Z:",
-    "--config", str(CONFIG_PATH),
-    "--vfs-cache-mode", "full",
-    "--vfs-cache-max-size", "10G",
+    "--config",
+    str(CONFIG_PATH),
+    "--vfs-cache-mode",
+    "full",
+    "--vfs-cache-max-size",
+    "10G",
     "--network-mode",
     "--no-modtime",
     "--no-checksum",
-    "--attr-timeout", "10s",
-    "--dir-cache-time", "24h",
+    "--attr-timeout",
+    "10s",
+    "--dir-cache-time",
+    "24h",
     "--vfs-fast-fingerprint",
-    "--vfs-read-chunk-size", "128M",
-    "--vfs-read-chunk-size-limit", "off",
-    "--buffer-size", "32M",
-    "--vfs-cache-max-age", "24h",
-    "--sftp-ciphers", "aes128-gcm@openssh.com",
-    "--vfs-links", # Added to handle symlinks errors
+    "--vfs-read-chunk-size",
+    "128M",
+    "--vfs-read-chunk-size-limit",
+    "off",
+    "--buffer-size",
+    "32M",
+    "--vfs-cache-max-age",
+    "24h",
+    "--sftp-ciphers",
+    "aes128-gcm@openssh.com",
+    "--vfs-links",  # Added to handle symlinks errors
     "--no-console",
 ]
 # =================================================
@@ -44,7 +54,10 @@ if __name__ == "__main__":
         sys.exit(p.returncode)
 
     except KeyboardInterrupt:
-        print("Python: Termination signal received, waiting for Rclone to exit...", flush=True)
+        print(
+            "Python: Termination signal received, waiting for Rclone to exit...",
+            flush=True,
+        )
         try:
             p.wait(timeout=5)
         except subprocess.TimeoutExpired:

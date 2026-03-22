@@ -11,15 +11,19 @@ CMD = [
     "mount",
     "pikpak:",
     "P:",
-    "--config", str(CONFIG_PATH),
-    "--vfs-cache-mode", "full",
-    "--vfs-cache-max-size", "10G",
-    "--network-mode",      # 核心新增：开启网络模式
-    "--vfs-links",         # 处理软链接
+    "--config",
+    str(CONFIG_PATH),
+    "--vfs-cache-mode",
+    "full",
+    "--vfs-cache-max-size",
+    "10G",
+    "--network-mode",  # 核心新增：开启网络模式
+    "--vfs-links",  # 处理软链接
     "--no-console",
-    "--no-modtime",        # 极简优化：减少元数据读写，提升响应速度
-    "--no-checksum",       # 提升挂载启动速度
-    "--attr-timeout", "10s",
+    "--no-modtime",  # 极简优化：减少元数据读写，提升响应速度
+    "--no-checksum",  # 提升挂载启动速度
+    "--attr-timeout",
+    "10s",
 ]
 # =================================================
 
