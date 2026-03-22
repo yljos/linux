@@ -64,11 +64,8 @@ alias py="python3"
 
 # Manually decrypt and add SSH key
 key() {
-    if ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519.gpg) >/dev/null 2>&1; then
-        echo "SSH key loaded."
-    else
-        echo "Failed to load key."
-    fi
+    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_lan.gpg) >/dev/null 2>&1
+    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_cloud.gpg) >/dev/null 2>&1
 }
 
 np() {
