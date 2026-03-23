@@ -84,7 +84,6 @@ dns:
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
     rule-set:twitter-site: https://cloudflare-dns.com/dns-query#Twitter
     rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#TikTok
-    rule-set:netflix-site: https://cloudflare-dns.com/dns-query#Netflix
     rule-set:youtube-site: https://dns.google/dns-query#Google
     rule-set:googlefcm-site: https://dns.google/dns-query#Google
     rule-set:google-site: https://dns.google/dns-query#Google
@@ -139,17 +138,6 @@ proxy-groups:
       - JP-UDP-url-test
       - SG-TCP-url-test
       - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
-  - type: select
-    name: Netflix
-    proxies:
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - JP-TCP-url-test
-      - JP-UDP-url-test
       - US-TCP-url-test
       - US-UDP-url-test
       - HK-TCP-url-test
@@ -526,20 +514,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/microsoft.mrs
-  netflix-site:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/netflix.mrs
-  netflix-ip:
-    proxy: A
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/netflix.mrs
   openai-site:
     proxy: A
     interval: 86400
@@ -663,7 +637,6 @@ rules:
   - RULE-SET,openai-site,OpenAi
   - RULE-SET,youtube-site,Google
   - RULE-SET,google-site,Google
-  - RULE-SET,netflix-site,Netflix
   - RULE-SET,tiktok-site,TikTok
   - RULE-SET,telegram-site,Telegram
   - RULE-SET,twitter-site,Twitter
@@ -682,7 +655,6 @@ rules:
   - RULE-SET,alibaba-ip,DIRECT
   - RULE-SET,telegram-ip,Telegram
   - RULE-SET,twitter-ip,Twitter
-  - RULE-SET,netflix-ip,Netflix
   - RULE-SET,google-ip,Google
   - RULE-SET,cn-ip,DIRECT
   - MATCH,Default
