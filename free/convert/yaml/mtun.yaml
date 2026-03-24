@@ -104,9 +104,9 @@ proxy-groups:
   - type: select
     name: Default
     proxies:
-      - A
       - REJECT
       - DIRECT
+      - A
   - type: select
     name: Google
     include-all-proxies: true
