@@ -2,8 +2,9 @@
 setlocal
 :: ================= Configuration =================
 set RCLONE_EXE="C:\rclone-v1.71.0-windows-amd64\rclone.exe"
-set CONF="%AppData%\Roaming\rclone\rclone.conf"
+set CONF="%AppData%\rclone\rclone.conf"
 
+:: Control ports for individual remotes
 set NAS_RC=127.0.0.1:5572
 set PIK_RC=127.0.0.1:5573
 :: =================================================
