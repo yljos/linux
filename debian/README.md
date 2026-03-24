@@ -11,7 +11,7 @@ usermod -aG sudo huai
 sudo dpkg-reconfigure locales
 sudo apt install fonts-noto-cjk fonts-noto-color-emoji
 ### Essential Packages
-sudo apt install git curl vim nfs-common libnotify-bin arp-scan
+sudo apt install git curl vim libnotify-bin arp-scan psmisc
 ### vim plug
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 ### mute login message
@@ -57,3 +57,7 @@ text
 GTK_IM_MODULE=fcitx
 QT_IM_MODULE=fcitx
 XMODIFIERS=@im=fcitx
+
+### auto umount /data
+crontab -e
+mountpoint -q /data && ! fuser -s /data && fusermount3 -u /data
