@@ -100,8 +100,6 @@ proxy-groups:
       - A
   - type: select
     name: Google
-    include-all-proxies: true
-    filter: "(?i)^(?=.*gemini)(?=.*us)"
     proxies:
       - US-TCP-url-test
       - US-UDP-url-test
@@ -109,6 +107,17 @@ proxy-groups:
       - JP-UDP-url-test
       - SG-TCP-url-test
       - SG-UDP-url-test
+      - HK-TCP-url-test
+      - HK-UDP-url-test
+  - type: select
+    name: Relay
+    proxies:
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+      - US-TCP-url-test
+      - US-UDP-url-test
       - HK-TCP-url-test
       - HK-UDP-url-test
   - type: select
@@ -169,18 +178,6 @@ proxy-groups:
       - HK-UDP-url-test
   - type: select
     name: Microsoft
-    proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
-  - type: select
-    name: Relay
-    hidden: true
     proxies:
       - JP-TCP-url-test
       - JP-UDP-url-test
