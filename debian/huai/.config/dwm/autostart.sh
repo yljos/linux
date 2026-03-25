@@ -11,5 +11,5 @@ command -v numlockx &>/dev/null && numlockx &
 [[ -f /home/huai/.config/wallpaperchange.sh ]] && /bin/bash /home/huai/.config/wallpaperchange.sh
 
 sleep 1
-! pgrep -f "librewolf" &>/dev/null && librewof &
+! pgrep -f "librewolf" &>/dev/null && librewolf &
 # ! pgrep -x "Telegram" &>/dev/null && Telegram &
