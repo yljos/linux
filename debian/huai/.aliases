@@ -1,62 +1,36 @@
 # ---------------------------------------------------------
-# [1] Basic System
+# [1] Core Utilities
 # ---------------------------------------------------------
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
-alias c="clear"
-alias ..='cd ..'
 
 # ---------------------------------------------------------
-# [2] System & Time
+# [2] System & Maintenance
 # ---------------------------------------------------------
 # Sleep 60s then shutdown
 alias P="sleep 60 && shutdown now"
 alias R="systemctl reboot"
-alias rsyncdir="rsync -avzh --delete" 
+alias rsyncdir="rsync -avzh --delete"
 
 # ---------------------------------------------------------
-# [3] Navigation (Strict mode: use &&)
-# ---------------------------------------------------------
-
-
-
-# ---------------------------------------------------------
-# [4] Pure Native PipeWire Audio (WirePlumber)
+# [3] PipeWire Audio Control
 # ---------------------------------------------------------
 alias v+="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
 alias v-="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
 alias mute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
 
 # ---------------------------------------------------------
-# [5] Git Shortcuts
-# ---------------------------------------------------------
-alias gaa='git add -u'
-alias gpl='git pull'
-alias gpu='git push'
-alias gcl='git clone'
-alias gst='git status'
-alias gl='git log'
-
-gc() {
-    if [ $# -eq 0 ]; then
-        git commit -v
-    else
-        git commit -m "$*"
-    fi
-}
-
-# ---------------------------------------------------------
-# [6] Script Shortcuts & SSH Key Management
+# [4] Scripts & SSH Management
 # ---------------------------------------------------------
 alias win="/usr/bin/bash /home/huai/.config/win.sh"
 alias wol="/usr/bin/bash /home/huai/.config/wol.sh"
-alias py="python3"
 
-# Manually decrypt and add SSH key
+# Manually decrypt and add SSH keys
 key() {
     ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_lan.gpg) >/dev/null 2>&1
     ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_cloud.gpg) >/dev/null 2>&1
 }
+
 # SFTP (SSHFS) Mount Function
 mount-data() {
     if ! mountpoint -q /data; then
@@ -65,18 +39,16 @@ mount-data() {
     fi
 }
 
+# Wallpaper Change Script
 np() {
     if [[ -f "/home/huai/.config/wallpaperchange.sh" ]]; then
         bash "/home/huai/.config/wallpaperchange.sh"
     fi
 }
-# Check if SSH keys are loaded in the agent
-# In ~/.aliases
+
+# Check SSH agent status for prompt decoration
 _ssh_status() {
-    # Check if SSH keys are loaded via ssh-agent
     if ssh-add -l >/dev/null 2>&1; then
-        # \001 is \[ (start non-printing)
-        # \002 is \] (end non-printing)
         echo -ne "\001\e[38;5;214m\002*\001\e[0m\002"
     fi
 }
