@@ -28,7 +28,7 @@
     {"tag": "R", "type": "block"},
     {"tag": "Default", "type": "selector", "outbounds": ["M", "R", "D"], "default": "R"},
     {"tag": "M", "type": "selector", "outbounds": ["SG-UDP", "SG-TCP", "JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "HK-UDP", "HK-TCP"], "default": "SG-UDP"},
-    {"tag": "Google", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "GCP-outbound", "{all}"], "default": "GCP-outbound", "filter": [{"action": "match", "regex": ["(?i)^(?=.*gemini)(?=.*us)"]}]},
+    {"tag": "Google", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "GCP-outbound"], "default": "GCP-outbound"},
     {"tag": "OpenAi", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Relay", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Steam", "type": "selector", "outbounds": ["D", "JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "HK-TCP"},
