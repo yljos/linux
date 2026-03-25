@@ -19,8 +19,7 @@
       {"query_type": ["A", "AAAA"], "action": "route", "server": "dns_fakeip", "disable_cache": true}
     ],
     "final": "dns_proxy",
-    "strategy": "ipv4_only",
-    "disable_cache": true
+    "strategy": "ipv4_only"
   },
   "inbounds": [{"type": "mixed", "tag": "mixed-in", "listen": "::", "listen_port": 12138}],
   "outbounds": [
@@ -31,7 +30,7 @@
     {"tag": "Google", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "GCP-outbound", "{all}"], "default": "GCP-outbound", "filter": [{"action": "match", "regex": ["(?i)^(?=.*gemini)(?=.*us)"]}]},
     {"tag": "OpenAi", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "Relay", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
-    {"tag": "Steam", "type": "selector", "outbounds": ["D", "JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "Hk-TCP"},
+    {"tag": "Steam", "type": "selector", "outbounds": ["D", "JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "HK-TCP"},
     {"tag": "Telegram", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
     {"tag": "PikPak", "type": "selector", "outbounds": ["SG-UDP", "SG-TCP", "JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "HK-UDP", "HK-TCP"], "default": "SG-UDP"},
     {"tag": "GitHub", "type": "selector", "outbounds": ["JP-TCP", "JP-UDP", "US-TCP", "US-UDP", "SG-UDP", "SG-TCP", "HK-UDP", "HK-TCP"], "default": "JP-UDP"},
