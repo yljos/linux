@@ -1,11 +1,11 @@
 @echo off
 setlocal
 :: ================= Configuration =================
-:: Using corrected paths [cite: 2026-02-02]
-set RCLONE_EXE="C:\rclone-v1.71.0-windows-amd64\rclone.exe"
+:: Using corrected paths 
+set RCLONE_EXE="C:\rclone-v1.73.3-windows-amd64\rclone.exe"
 set CONF="%AppData%\rclone\rclone.conf"
 
-:: Remote control ports [cite: 2026-01-27]
+:: Remote control ports 
 set NAS_RC=127.0.0.1:5572
 set PIK_RC=127.0.0.1:5573
 :: =================================================
