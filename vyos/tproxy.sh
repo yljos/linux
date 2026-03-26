@@ -1,56 +1,53 @@
 #!/bin/bash
 
-# --- 1. 配置参数 ---
+# --- 1. Settings ---
 PROXY_PORT=7893
 PROXY_FWMARK=0x1
 TABLE_ID=100
 LAN_IF="eth0"
 
-# 检查 root 权限
+# Source IP whitelist (No spaces inside braces for shell safety)
+SOURCE_WHITELIST="{10.0.0.8,10.0.0.15,10.0.0.21,10.0.0.25}"
+
+# Check root privileges
 if [ "$EUID" -ne 0 ]; then
-	echo "错误：请使用 sudo 运行此脚本"
-	exit 1
+    echo "Error: please run with sudo"
+    exit 1
 fi
 
-echo "正在配置 sing-box TProxy (智能防泄露版)..."
+echo "Configuring sing-box TProxy (Global DNS + Source Whitelist)..."
 
-# --- 2. 策略路由 ---
+# --- 2. Policy Routing ---
 ip rule del fwmark $PROXY_FWMARK lookup $TABLE_ID 2>/dev/null
 ip route flush table $TABLE_ID 2>/dev/null
 ip route add local default dev lo table $TABLE_ID
 ip rule add fwmark $PROXY_FWMARK lookup $TABLE_ID priority 100
 
-# --- 3. NFTABLES 规则配置 ---
-nft delete table ip sing-box 2>/dev/null
-nft add table ip sing-box
-nft 'add chain ip sing-box prerouting { type filter hook prerouting priority mangle; policy accept; }'
+# ================= Core Logic (Optimized Order) =================
 
-# ================= 核心逻辑优化 =================
-
-# 1. 绝对排除：DHCP 必须直连
+# 1. Essential Bypass: DHCP traffic must be direct
 nft add rule ip sing-box prerouting udp dport { 67, 68 } return
 
-# [新增] 1.5. 强制降级：阻断 DoT (853)
-# 核心逻辑：直接向客户端发送 TCP Reset 信号。
-# 效果：Android/iOS 会认为 DoT 不可用，立即回落到 UDP 53，随后被下方的规则 2 捕获。
+# 2. [REJECT FIRST] Block DoT (853) for ALL devices
+# Stop encrypted DNS early to force fallback to standard DNS
 nft add rule ip sing-box prerouting iifname "$LAN_IF" tcp dport 853 reject with tcp reset
 
-# 2. 绝对劫持：DNS (UDP/TCP 53)
-# 只要是 53 端口，不管目标 IP 是公网还是内网，先打标记送走
-# 配合 sing-box 的 sniff 功能，这会完美处理所有 DNS
+# 3. [MARK SECOND] DNS Hijack: Port 53 (UDP/TCP) for ALL devices
+# Capture plain DNS for sniffing and redirection
 nft add rule ip sing-box prerouting iifname "$LAN_IF" meta l4proto { tcp, udp } th dport 53 meta mark set $PROXY_FWMARK
-nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto { tcp, udp } counter tproxy to :$PROXY_PORT accept
 
-# 3. 条件排除：私有网段 (Bypass)
-# 只有非 DNS 的内网流量才会走到这一步，被放行
-nft add rule ip sing-box prerouting ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4, 255.255.255.255 } return
+# 4. Source Filter: Skip any device NOT in the whitelist (EXCEPT for DNS which is already marked)
+# Now the logic only deals with whitelisted traffic and already-marked DNS
+nft add rule ip sing-box prerouting iifname "$LAN_IF" meta mark != $PROXY_FWMARK ip saddr != "$SOURCE_WHITELIST" return
 
-# 4. 通用劫持：剩余流量
-# 仅对从 LAN 口进入的流量打标记
+# 5. Destination Bypass: For whitelisted devices, skip private networks
+nft add rule ip sing-box prerouting ip daddr { 127.0.0.0/8, 10.0.0.0/24, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4, 255.255.255.255 } return
+
+# 6. General Hijack: Mark remaining traffic from whitelisted devices
 nft add rule ip sing-box prerouting iifname "$LAN_IF" meta l4proto { tcp, udp } meta mark set $PROXY_FWMARK
 
-# 转发流量
-nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto tcp counter tproxy to :$PROXY_PORT accept
-nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto udp counter tproxy to :$PROXY_PORT accept
+# 7. Apply TProxy action to ALL marked packets
+nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto tcp tproxy to :$PROXY_PORT accept
+nft add rule ip sing-box prerouting meta mark $PROXY_FWMARK meta l4proto udp tproxy to :$PROXY_PORT accept
 
-echo "配置完成！已阻断 DoT (853)，DNS 和流量已强制接管。"
+echo "Done! Whitelist: $SOURCE_WHITELIST"
