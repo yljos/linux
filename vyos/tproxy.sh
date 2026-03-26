@@ -7,7 +7,7 @@ TABLE_ID=100
 LAN_IF="eth0"
 
 # Source IP whitelist (Only these devices get full proxy)
-SOURCE_WHITELIST="{10.0.0.8,10.0.0.15,10.0.0.21,10.0.0.25}"
+SOURCE_WHITELIST="{10.0.0.8,10.0.0.15,10.0.0.21,10.0.0.25,10.0.0.121}"
 
 # Check root privileges
 if [ "$EUID" -ne 0 ]; then
