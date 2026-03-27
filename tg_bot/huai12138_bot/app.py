@@ -12,11 +12,11 @@ from telegram.ext import (
 )
 from dotenv import load_dotenv
 
-# ========== Import HA Module ==========
-import ha
-
 # ========== Load Environment Variables ==========
 load_dotenv()
+
+# ========== Import HA Module ==========
+import ha
 
 # ========== Logging Configuration (WARNING level) ==========
 logging.basicConfig(
