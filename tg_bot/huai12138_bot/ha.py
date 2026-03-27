@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ha_url = os.getenv("HA_URL", "https://your-ha-domain.com")
-ha_token = os.getenv("HA_TOKEN", "your_long_lived_token_here")
+ha_url = os.getenv("HA_URL")
+ha_token = os.getenv("HA_TOKEN")
 
 # Lowercase keys for O(1) case-insensitive lookup
 DEVICE_MAP = {
