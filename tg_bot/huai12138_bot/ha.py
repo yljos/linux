@@ -42,10 +42,10 @@ def control_device(room_name, action="toggle"):
 
     try:
         # Standard HTTPS request, automatically verifies valid SSL certificates
-        httpx.post(url, headers=headers, json=data, timeout=5.0)
+        httpx.post(url, headers=headers, json=data, timeout=10.0)
     except Exception as e:
         print(f"Connection failed for {entity_id}: {e}")
         return False
 
 if __name__ == "__main__":
-    control_device("LivingRoom", "off")
+    control_device("LivingRoom", "on")
