@@ -20,6 +20,7 @@ DEVICE_MAP = {
 
 ACTION_MAP = {"on": "turn_on", "off": "turn_off", "toggle": "toggle"}
 
+
 async def control_device(room_name, action="toggle"):
     """
     Control HA switches asynchronously using httpx.
@@ -54,6 +55,7 @@ async def control_device(room_name, action="toggle"):
     except Exception as e:
         print(f"Connection Error: {e}")
         return False
+
 
 if __name__ == "__main__":
     # Correct way to run an async function from a synchronous script
