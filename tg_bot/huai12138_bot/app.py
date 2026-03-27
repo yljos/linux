@@ -12,6 +12,9 @@ from telegram.ext import (
 )
 from dotenv import load_dotenv
 
+# ========== Import HA Module ==========
+import ha
+
 # ========== Load Environment Variables ==========
 load_dotenv()
 
@@ -485,9 +488,17 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 logging.error(f"Error replying to message: {e}")
                 await update.message.reply_text("Reply failed.")
         else:
-            # Admin sends plain text without replying
+            # Admin sends plain text without replying -> Delegate to ha module
             if message.text and not message.text.startswith("/"):
-                await update.message.reply_text("test ok")
+                parts = message.text.strip().split()
+                room = parts[0]
+                action = parts[1] if len(parts) > 1 else "turn_off"
+                
+                if room in ha.DEVICE_MAP:
+                    ha.control_device(room, action)
+                    await update.message.reply_text("OK")
+                else:
+                    await update.message.reply_text("Er")
 
 # ========== /zh Command - Set Chinese Language ==========
 async def set_chinese(update: Update, context: CallbackContext):
