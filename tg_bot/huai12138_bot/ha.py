@@ -1,11 +1,10 @@
-import requests
-import json
+import httpx
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-ha_url = os.getenv("HA_URL", "http://192.168.1.100:8123")
+ha_url = os.getenv("HA_URL", "https://your-ha-domain.com")
 ha_token = os.getenv("HA_TOKEN", "your_long_lived_token_here")
 
 # Lowercase keys for O(1) case-insensitive lookup
@@ -21,19 +20,16 @@ ACTION_MAP = {
     "toggle": "toggle"
 }
 
-def control_device(room_name, action="turn_off"):
+def control_device(room_name, action="toggle"):
     """
-    Control HA switches via REST API.
+    Control HA switches via REST API using httpx.
     Accepts case-insensitive room names and short actions (on/off/toggle).
     """
-    # 1. 映射设备 (防御性编程，找不到返回 False)
     entity_id = DEVICE_MAP.get(room_name.lower())
     if not entity_id:
         return False
         
-    # 2. 映射动作 (默认 fallback 到 toggle)
     real_action = ACTION_MAP.get(action.lower(), "toggle")
-    
     url = f"{ha_url}/api/services/switch/{real_action}"
     
     headers = {
@@ -45,12 +41,11 @@ def control_device(room_name, action="turn_off"):
     data = {"entity_id": entity_id}
 
     try:
-        response = requests.post(url, headers=headers, data=json.dumps(data), timeout=5)
-        return response.status_code == 200
+        # Standard HTTPS request, automatically verifies valid SSL certificates
+        httpx.post(url, headers=headers, json=data, timeout=5.0)
     except Exception as e:
         print(f"Connection failed for {entity_id}: {e}")
         return False
 
 if __name__ == "__main__":
-    # Test cases
-    control_device("bedroom", "ON")
+    control_device("LivingRoom", "ON")
