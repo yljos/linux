@@ -47,3 +47,6 @@ async def control_device(room_name, action="toggle"):
     except Exception as e:
         print(f"HA Sync Error: {e}")
         return False
+if __name__ == "__main__":
+    control_device("LivingRoom", "on")
+    
