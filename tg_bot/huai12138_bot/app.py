@@ -31,7 +31,6 @@ target_url = os.getenv("URL")
 webhook_host = os.getenv("WEBHOOK_HOST")
 ha_url = os.getenv("HA_URL")
 ha_token = os.getenv("HA_TOKEN")
-print(f"Loaded config: BOT_TOKEN={'set' if token else 'not set'}, ADMIN_ID={admin_id}, URL={target_url}, WEBHOOK_HOST={webhook_host}, HA_URL={ha_url}, HA_TOKEN={'set' if ha_token else 'not set'}")    
 if not token or not admin_id or not webhook_host or not ha_url or not ha_token:
     raise ValueError("Please check .env file")
 
