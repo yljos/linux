@@ -487,7 +487,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
         else:
             # Admin sends plain text without replying
             if message.text and not message.text.startswith("/"):
-                await update.message.reply_text("Please reply to a user message to send a reply.")
+                await update.message.reply_text("test ok")
 
 # ========== /zh Command - Set Chinese Language ==========
 async def set_chinese(update: Update, context: CallbackContext):
