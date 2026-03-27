@@ -1,7 +1,7 @@
 import httpx
 import os
 import asyncio  # Required for running async code in __main__
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 load_dotenv()
 
