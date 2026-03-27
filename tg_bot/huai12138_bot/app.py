@@ -29,9 +29,11 @@ token = os.getenv("BOT_TOKEN")
 admin_id = os.getenv("ADMIN_ID")
 target_url = os.getenv("URL")
 webhook_host = os.getenv("WEBHOOK_HOST")
+ha_url = os.getenv("HA_URL")
+ha_token = os.getenv("HA_TOKEN")
 
-if not token or not admin_id or not webhook_host:
-    raise ValueError("Please set BOT_TOKEN, ADMIN_ID and WEBHOOK_HOST in .env file")
+if not token or not admin_id or not webhook_host or not ha_url or not ha_token:
+    raise ValueError("Please check .env file")
 
 # ========== Block/White Lists ==========
 block_file_path = "blocked_users.json"
