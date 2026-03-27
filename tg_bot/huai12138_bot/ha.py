@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-URL = os.getenv("HA_URL", "http://192.168.1.100:8123")
-TOKEN = os.getenv("HA_TOKEN", "your_long_lived_token_here")
+ha_url = os.getenv("HA_URL", "http://192.168.1.100:8123")
+ha_token = os.getenv("HA_TOKEN", "your_long_lived_token_here")
 
 # Reversed map for direct O(1) lookup
 DEVICE_MAP = {
@@ -24,10 +24,10 @@ def control_device(room_name, action="turn_off"):
     entity_id = DEVICE_MAP[room_name]
     
     # Hardcoded to 'switch' domain
-    url = f"{URL}/api/services/switch/{action}"
+    url = f"{ha_url}/api/services/switch/{action}"
     
     headers = {
-        "Authorization": f"Bearer {TOKEN}",
+        "Authorization": f"Bearer {ha_token}",
         "Content-Type": "application/json",
         "User-Agent": "Firefox/142.0"
     }
@@ -35,17 +35,12 @@ def control_device(room_name, action="turn_off"):
     data = {"entity_id": entity_id}
 
     try:
-        response = requests.post(url, headers=headers, data=json.dumps(data), timeout=10)
+        requests.post(url, headers=headers, data=json.dumps(data), timeout=5)
         
-        if response.status_code == 200:
-            print(f"Successfully sent {action} command to {entity_id}")
-            return response.json()
-        else:
-            print(f"Error: {response.status_code} - {response.text}")
     except Exception as e:
         print(f"Connection failed for {entity_id}: {e}")
 
     return None
 
 if __name__ == "__main__":
-    control_device("LivingRoom", "turn_off")
+    control_device("LivingRoom", "toggle")
