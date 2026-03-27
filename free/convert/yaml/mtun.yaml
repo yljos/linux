@@ -73,7 +73,7 @@ dns:
   proxy-server-nameserver:
     - https://dns.alidns.com/dns-query#DIRECT
   nameserver:
-    - https://cloudflare-dns.com/dns-query#A
+    - https://cloudflare-dns.com/dns-query#M
   direct-nameserver:
     - https://dns.alidns.com/dns-query#DIRECT
   nameserver-policy:
@@ -87,11 +87,11 @@ dns:
     rule-set:youtube-site: https://dns.google/dns-query#Google
     rule-set:googlefcm-site: https://dns.google/dns-query#Google
     rule-set:google-site: https://dns.google/dns-query#Google
-    rule-set:speedtest-site: https://cloudflare-dns.com/dns-query#A
+    rule-set:speedtest-site: https://cloudflare-dns.com/dns-query#M
 proxies: []
 proxy-groups:
   - type: select
-    name: A
+    name: M
     proxies:
       - SG-TCP-url-test
       - SG-UDP-url-test
@@ -106,7 +106,7 @@ proxy-groups:
     proxies:
       - REJECT
       - DIRECT
-      - A
+      - M
   - type: select
     name: Google
     include-all-proxies: true
@@ -189,7 +189,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
-    timeout: 500
+    timeout: 3000
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
@@ -199,7 +199,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
-    timeout: 500
+    timeout: 3000
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
@@ -209,7 +209,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
-    timeout: 500
+    timeout: 3000
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
@@ -219,7 +219,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
-    timeout: 500
+    timeout: 3000
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
@@ -229,7 +229,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
-    timeout: 500
+    timeout: 3000
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
@@ -239,7 +239,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
-    timeout: 500
+    timeout: 3000
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
@@ -249,7 +249,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
-    timeout: 500
+    timeout: 3000
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
@@ -259,7 +259,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 30
     tolerance: 300
-    timeout: 500
+    timeout: 3000
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
@@ -267,266 +267,266 @@ proxy-groups:
     filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
 rule-providers:
   adguard-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs
   alibaba-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-site.mrs
   alibaba-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-ip.mrs
   apkpure-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/apkpure.mrs
   cloudflare-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cloudflare.mrs
   cloudflare-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cloudflare.mrs
   cn-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/cn/cn-site.mrs
   cn-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/cn/cn-ip.mrs
   direct-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/direct/direct-site.mrs
   direct-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/direct/direct-ip.mrs
   mobile:
-    proxy: A
+    proxy: M
     type: http
     interval: 86400
     behavior: classical
     format: yaml
     url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/mobile/mobile-classical.yaml
   mozilla-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/mozilla.mrs
   gfw-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/gfw/gfw-site.mrs
   github-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/github.mrs
   github-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/github/github-ip.mrs
   google-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/google.mrs
   google-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/google.mrs
   googlefcm-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/googlefcm.mrs
   huawei-direct-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/huawei/huawei-direct-site.mrs
   huawei-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/huawei/huawei-site.mrs
   huawei-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/huawei/huawei-ip.mrs
   jd-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/jd.mrs
   local-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/local/local-ip.mrs
   microsoft-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/microsoft.mrs
   openai-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs
   pikpak-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash//pikpak/pikpak-site.mrs
   pikpak-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/pikpak/pikpak-ip.mrs
   proxy-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/proxy/proxy-site.mrs
   speedtest-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: yaml
     behavior: classical
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/speedtest/speedtest-site-classical.yaml
   telegram-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/telegram/telegram-site.mrs
   telegram-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/telegram/telegram-ip.mrs
   tiktok-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tiktok.mrs
   twitter-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/twitter.mrs
   twitter-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs
   wechat-ip:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/wechat/wechat-ip.mrs
   youtube-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/youtube.mrs
   f-droid-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/f-droid.mrs
   tencent-site:
-    proxy: A
+    proxy: M
     interval: 86400
     type: http
     format: mrs
@@ -540,7 +540,7 @@ rules:
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT
   - RULE-SET,mobile,DIRECT
-  - RULE-SET,cloudflare-site,A
+  - RULE-SET,cloudflare-site,M
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
   - DOMAIN-KEYWORD,msftncsi.com,Microsoft
   - DOMAIN-KEYWORD,googleapis,Google
@@ -550,9 +550,9 @@ rules:
   - RULE-SET,jd-site,DIRECT
   - RULE-SET,tencent-site,DIRECT
   - RULE-SET,googlefcm-site,DIRECT
-  - RULE-SET,proxy-site,A
+  - RULE-SET,proxy-site,M
   - RULE-SET,github-site,GitHub
-  - RULE-SET,mozilla-site,A
+  - RULE-SET,mozilla-site,M
   - RULE-SET,microsoft-site,Microsoft
   - RULE-SET,openai-site,OpenAi
   - RULE-SET,youtube-site,Google
@@ -560,17 +560,17 @@ rules:
   - RULE-SET,tiktok-site,TikTok
   - RULE-SET,telegram-site,Telegram
   - RULE-SET,twitter-site,Twitter
-  - RULE-SET,adguard-site,A
-  - RULE-SET,speedtest-site,A
-  - RULE-SET,apkpure-site,A
-  - RULE-SET,f-droid-site,A
-  - RULE-SET,gfw-site,A
+  - RULE-SET,adguard-site,M
+  - RULE-SET,speedtest-site,M
+  - RULE-SET,apkpure-site,M
+  - RULE-SET,f-droid-site,M
+  - RULE-SET,gfw-site,M
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,local-ip,DIRECT
   - RULE-SET,direct-ip,DIRECT
   - RULE-SET,wechat-ip,DIRECT
   - RULE-SET,github-ip,GitHub
-  - RULE-SET,cloudflare-ip,A
+  - RULE-SET,cloudflare-ip,M
   - RULE-SET,pikpak-ip,PikPak
   - RULE-SET,alibaba-ip,DIRECT
   - RULE-SET,telegram-ip,Telegram
