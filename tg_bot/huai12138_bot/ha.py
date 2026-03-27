@@ -1,16 +1,16 @@
 import httpx
 import os
 import asyncio  # Required for running async code in __main__
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
-# No default values to ensure it crashes early if env is missing
-ha_url = os.getenv("HA_URL")
-ha_token = os.getenv("HA_TOKEN")
+# # No default values to ensure it crashes early if env is missing
+# ha_url = os.getenv("HA_URL")
+# ha_token = os.getenv("HA_TOKEN")
 
-if not ha_url or not ha_token:
-    raise ValueError("Missing HA_URL or HA_TOKEN")
+# if not ha_url or not ha_token:
+#     raise ValueError("Missing HA_URL or HA_TOKEN")
 
 DEVICE_MAP = {
     "livingroom": "switch.zimi_cn_1057102723_dhkg01_on_p_2_1",
