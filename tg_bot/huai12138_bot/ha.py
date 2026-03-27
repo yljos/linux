@@ -48,4 +48,4 @@ def control_device(room_name, action="toggle"):
         return False
 
 if __name__ == "__main__":
-    control_device("LivingRoom", "ON")
+    control_device("LivingRoom", "off")

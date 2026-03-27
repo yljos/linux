@@ -491,7 +491,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
             # Admin sends plain text without replying -> Delegate to ha module
             if message.text and not message.text.startswith("/"):
                 parts = message.text.strip().split()
-                room = parts[0]
+                room = parts[0].lower()
                 action = parts[1] if len(parts) > 1 else "turn_off"
                 
                 if room in ha.DEVICE_MAP:
