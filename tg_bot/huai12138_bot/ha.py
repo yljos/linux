@@ -2,7 +2,7 @@ import httpx
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 # No default values to ensure it crashes early if env is missing
 ha_url = os.getenv("HA_URL")
