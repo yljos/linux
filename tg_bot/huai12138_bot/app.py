@@ -501,7 +501,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                     else:
                         await update.message.reply_text("Er")
                 else:
-                    await update.message.reply_text("Er")
+                    await update.message.reply_text("Unknown")
 
 # ========== /zh Command - Set Chinese Language ==========
 async def set_chinese(update: Update, context: CallbackContext):
