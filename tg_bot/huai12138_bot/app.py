@@ -34,6 +34,28 @@ ha_token = os.getenv("HA_TOKEN")
 if not token or not admin_id or not webhook_host or not ha_url or not ha_token:
     raise ValueError("Please check .env file")
 
+# ========== Auto-delete Helper ==========
+async def delete_message_job(context: CallbackContext):
+    """Callback function to delete a message after a delay."""
+    job = context.job
+    try:
+        await context.bot.delete_message(chat_id=job.chat_id, message_id=job.data)
+    except Exception:
+        # Ignore if message is already deleted or not found
+        pass
+
+async def send_temp_message(update: Update, context: CallbackContext, text: str, delay: int = 30):
+    """Send a message and schedule its deletion."""
+    msg = await update.message.reply_text(text)
+    # Schedule the deletion job
+    context.job_queue.run_once(
+        delete_message_job, 
+        when=delay, 
+        chat_id=update.effective_chat.id, 
+        data=msg.message_id
+    )
+    return msg
+
 # ========== Block/White Lists ==========
 block_file_path = "blocked_users.json"
 blocked_users = set()
@@ -239,14 +261,14 @@ async def start(update: Update, context: CallbackContext):
     user_id = str(update.effective_user.id)
 
     if user_id == admin_id:
-        await update.message.reply_text("I'm online Master!")
+        await send_temp_message("I'm online Master!")
         return
 
     if user_id in blocked_users:
         return
 
     if user_id in whitelist_users:
-        await update.message.reply_text("You are already verified.")
+        await send_temp_message("You are already verified.")
         return
 
     await update.message.reply_text('Send "Hi" to complete verification (case-sensitive)')
@@ -254,7 +276,7 @@ async def start(update: Update, context: CallbackContext):
 async def ping(update: Update, context: CallbackContext):
     if not update.effective_user or str(update.effective_user.id) != admin_id:
         return
-    await update.message.reply_text("Pong!")
+    await send_temp_message("Pong!")
 
 async def s_command(update: Update, _context: CallbackContext):
     if not update.effective_user:
@@ -273,11 +295,11 @@ async def s_command(update: Update, _context: CallbackContext):
         async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(target_url, timeout=10.0)
         if response.status_code == 200:
-            await update.message.reply_text("OK")
+            await send_temp_message("OK")
         else:
-            await update.message.reply_text("Er")
+            await send_temp_message("Er")
     except httpx.RequestError:
-        await update.message.reply_text("Er")
+        await send_temp_message("Er")
 
 async def ban(update: Update, context: CallbackContext):
     if str(update.effective_user.id) != admin_id:
@@ -310,13 +332,13 @@ async def ban(update: Update, context: CallbackContext):
                 name = getattr(chat, "first_name", None) if chat else None
                 username = getattr(chat, "username", None) if chat else None
                 text = _render_ban_notice(user_to_ban, name, username, "Manual ban")
-                await update.message.reply_text(text)
+                await send_temp_message(text)
             except Exception:
                 pass
         else:
-            await update.message.reply_text("Usage: /ban <user_id> or reply to a message")
+            await send_temp_message("Usage: /ban <user_id> or reply to a message")
     except Exception as e:
-        await update.message.reply_text(f"Error banning user: {str(e)}")
+        await send_temp_message(f"Error banning user: {str(e)}")
 
 async def unban(update: Update, context: CallbackContext):
     if str(update.effective_user.id) != admin_id:
@@ -349,15 +371,15 @@ async def unban(update: Update, context: CallbackContext):
                     name = getattr(chat, "first_name", None) if chat else None
                     username = getattr(chat, "username", None) if chat else None
                     text = _render_unban_notice(user_to_unban, name, username, "Manual unban")
-                    await update.message.reply_text(text)
+                    await send_temp_message(text)
                 except Exception:
                     pass
             else:
-                await update.message.reply_text(f"User {user_to_unban} was not banned")
+                await send_temp_message(f"User {user_to_unban} was not banned")
         else:
-            await update.message.reply_text("Usage: /unban <user_id> or reply to a message")
+            await send_temp_message("Usage: /unban <user_id> or reply to a message")
     except Exception as e:
-        await update.message.reply_text(f"Error unbanning user: {str(e)}")
+        await send_temp_message(f"Error unbanning user: {str(e)}")
 
 async def forward_to_admin(update: Update, context: CallbackContext):
     message = update.message
@@ -380,7 +402,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
         if message.text == "Hi":
             if user_id not in whitelist_users:
                 add_to_whitelist(user_id)
-                await update.message.reply_text("Success! You are verified.")
+                await send_temp_message("Success! You are verified.")
 
                 admin_msg = f"New user verified:\nName: {user.first_name} (@{user.username if user.username else 'No username'})\nUser ID: {user_id}"
                 await context.bot.send_message(admin_id, admin_msg)
@@ -448,7 +470,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                             name = getattr(chat, "first_name", None) if chat else None
                             username = getattr(chat, "username", None) if chat else None
                             text = _render_ban_notice(user_id_to_reply, name, username, "Manual ban")
-                            await update.message.reply_text(text)
+                            await send_temp_message(text)
                         except Exception:
                             pass
                         return
@@ -473,21 +495,21 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                                 name = getattr(chat, "first_name", None) if chat else None
                                 username = getattr(chat, "username", None) if chat else None
                                 text = _render_unban_notice(user_id_to_reply, name, username, "Manual unban")
-                                await update.message.reply_text(text)
+                                await send_temp_message(text)
                             except Exception:
                                 pass
                         else:
-                            await update.message.reply_text(f"User {user_id_to_reply} was not banned")
+                            await send_temp_message(f"User {user_id_to_reply} was not banned")
                         return
                         
                     # Normal reply
                     await context.bot.send_message(user_id_to_reply, message.text)
-                    await update.message.reply_text("Replied.")
+                    await send_temp_message("Replied.")
                 else:
-                    await update.message.reply_text("Please reply to a message with a User ID.")
+                    await send_temp_message("Please reply to a message with a User ID.")
             except Exception as e:
                 logging.error(f"Error replying to message: {e}")
-                await update.message.reply_text("Reply failed.")
+                await send_temp_message("Reply failed.")
         else:
             if message.text and not message.text.startswith("/"):
                 parts = message.text.strip().split()
@@ -497,16 +519,16 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 if room in ha.DEVICE_MAP:
                     # Added 'await' here
                     if await ha.control_device(room, action):
-                        await update.message.reply_text("OK")
+                        await send_temp_message("OK")
                     else:
-                        await update.message.reply_text("Er")
+                        await send_temp_message("Er")
                 else:
-                    await update.message.reply_text("Unknown")
+                    await send_temp_message("Unknown")
 
 # ========== /zh Command - Set Chinese Language ==========
 async def set_chinese(update: Update, context: CallbackContext):
     link = "tg://setlanguage?lang=zhcncc"
-    await update.message.reply_text(text=f"[Set Chinese]({link})", parse_mode="Markdown")
+    await send_temp_message(text=f"[Set Chinese]({link})", parse_mode="Markdown")
 
 # ========== Post Initialization Notification ==========
 async def post_initialization(application: Application):
