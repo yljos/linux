@@ -495,8 +495,9 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 action = parts[1] if len(parts) > 1 else "turn_off"
                 
                 if room in ha.DEVICE_MAP:
-                    ha.control_device(room, action)
-                    await update.message.reply_text("OK")
+                    result = ha.control_device(room, action)
+                    if result:
+                        await update.message.reply_text("OK")
                 else:
                     await update.message.reply_text("Er")
 
