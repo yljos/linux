@@ -7,6 +7,7 @@ dependencies = [
     "python-dotenv==1.1.1",
     "python-telegram-bot==22.3",
     "python-telegram-bot[webhooks]",
+    "requests==2.33.0",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
