@@ -497,7 +497,7 @@ async def set_chinese(update: Update, context: CallbackContext):
 # ========== Post Initialization Notification ==========
 async def post_initialization(application: Application):
     try:
-        await application.bot.send_message(chat_id=admin_id, text="Hi Master,I'm online")
+        await application.bot.send_message(chat_id=admin_id, text="Hi Master I'm online")
     except Exception as e:
         logging.error(f"Error sending initialization message: {e}")
 
