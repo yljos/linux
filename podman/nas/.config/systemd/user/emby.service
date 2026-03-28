@@ -1,15 +1,14 @@
 [Unit]
 Description=Emby Container
-Wants=network-online.target
-After=network-online.target
+# Use Wants instead of BindsTo to keep Emby running even if rclone fails
+Wants=network-online.target rclone-onedrive.service
+# Start Emby only after rclone-onedrive.service attempts to start
+After=network-online.target rclone-onedrive.service
 
 [Service]
 Type=simple
 Restart=always
 RestartSec=5s
-
-# === 新增：启动前等待 10 秒 ===
-ExecStartPre=/usr/bin/sleep 10
 
 ExecStart=/usr/bin/podman run \
   --replace \
