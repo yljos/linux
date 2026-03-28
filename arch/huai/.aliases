@@ -4,60 +4,37 @@ alias grep='grep --color=auto'
 alias c="clear"
 alias ..='cd ..'
 # 系统操作
-alias update="sudo pacman -Syyu"
 alias P="sleep 60 && shutdown now"
 alias R="systemctl reboot"
 alias rsyncdir="rsync -avzh --delete" 
-
-
-# 目录导航
-alias cdlinux="cd /home/huai/linux"
-alias cddata="mount-data; cd /data"
-alias cdusb="cd /home/huai/usb"
-alias cdwww="mount-data; cd /data/www"
 
 # Volume Control
 alias volup="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
 alias voldown="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
 
+# Manually decrypt and add SSH keys
+key() {
+    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_lan.gpg) >/dev/null 2>&1
+    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_cloud.gpg) >/dev/null 2>&1
+}
 
-# Git相关
-alias gaa='git add -A'
-gc() {
-    if [ $# -eq 0 ]; then
-        # 没参数：执行 git commit -v
-        git commit -v
-    else
-        # 有参数：把所有参数拼成一句话，传给 -m
-        # 例如：gc 修复 bug -> git commit -m "修复 bug"
-        git commit -m "$*"
-    fi
-}
-alias gpl='git pull'
-alias gpu='git push'
-alias gcl='git clone'
-alias gst='git status'
-alias gl='git log'
-# 检查 SSH 代理并自动添加密钥
-ssh_add_check() {
-    if ! ssh-add -l >/dev/null 2>&1; then
-        # 彻底结束 gpg-agent 进程
-        gpgconf --kill gpg-agent
-        
-        # 自动重新唤醒 agent，并读取硬件设备（如 YubiKey）状态以加载 SSH 密钥
-        gpg --card-status >/dev/null 2>&1
-    fi
-}
-# 为 /data 目录创建的 NFS 挂载函数 (静默版)
+# SFTP (SSHFS) Mount Function
 mount-data() {
     if ! mountpoint -q /data; then
-        sudo mount -t nfs4 -o sec=sys 10.0.0.21:/ /data
+        ssh-add -l >/dev/null 2>&1 || key
+        sshfs nas:/data /data
+    fi
+}
+
+# Check SSH agent status for prompt decoration
+_ssh_status() {
+    if ssh-add -l >/dev/null 2>&1; then
+        echo -ne "\001\e[38;5;214m\002*\001\e[0m\002"
     fi
 }
 
 # 脚本和程序
 alias win="/usr/bin/bash /home/huai/.config/windows.sh"
 alias np="/usr/bin/bash /home/huai/.config/swww.sh"
-alias py="python3"
 alias x="/usr/bin/bash /home/huai/.config/dwl/dwl_status.sh | dwl"
 

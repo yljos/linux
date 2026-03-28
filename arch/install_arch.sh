@@ -119,10 +119,10 @@ install_packages() {
 
     pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less \
         fuzzel swww mako foot polkit \
-        nfs-utils fastfetch btop pipewire pipewire-alsa wireplumber pipewire-pulse rtkit \
-        fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip reflector libnotify openssh \
+        fastfetch btop pipewire wireplumber tkit \
+        fcitx5 fcitx5-rime fcitx5-configtool rsync ntfs-3g curl p7zip libnotify openssh sshfs \
         freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
-        ttf-liberation terminus-font fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
+        ttf-liberation fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
         libva-utils telegram-desktop bc firejail nodejs stow firefox python-black shfmt \
         wlroots0.18 tllist fcft wayland-protocols wayland
     echo ">> Generating fstab"
@@ -151,17 +151,21 @@ configure_system() {
     echo "nameserver 1.1.1.1" > /etc/resolv.conf
     chattr +i /etc/resolv.conf
     echo -e "[Time]\nNTP=ntp.aliyun.com" > /etc/systemd/timesyncd.conf
-    curl -sL -o /etc/systemd/network/10-lo.network https://raw.githubusercontent.com/yljos/linux/refs/heads/main/arch/etc/systemd/network/10-lo.network
-    curl -sL -o /etc/systemd/network/20-enp0s31f6.network https://raw.githubusercontent.com/yljos/linux/refs/heads/main/arch/etc/systemd/network/20-enp0s31f6.network
-    curl -sL -o /etc/systemd/network/30-wlp2s0.network https://raw.githubusercontent.com/yljos/linux/refs/heads/main/arch/etc/systemd/network/30-wlp2s0.network
+    curl -sL -o /etc/systemd/network/10-lo.network https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/arch/etc/systemd/network/10-lo.network
+    curl -sL -o /etc/systemd/network/20-enp0s31f6.network https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/arch/etc/systemd/network/20-enp0s31f6.network
+    curl -sL -o /etc/systemd/network/30-wlp2s0.network https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/arch/etc/systemd/network/30-wlp2s0.network
 
 
     echo "root:1" | chpasswd
     useradd -m -G wheel "$USERNAME"
+    mkdir -p /data
     mkdir -p /home/$USERNAME/.config
     mkdir -p /home/$USERNAME/.gnupg
     chown -R $USERNAME:$USERNAME /home/$USERNAME/.config
     chown -R $USERNAME:$USERNAME /home/$USERNAME/.gnupg
+    chown -R $USERNAME:$USERNAME /data
+    chmod 755 -R /data
+    chmod 700 -R /home/$USERNAME/.gnupg
 
    
 

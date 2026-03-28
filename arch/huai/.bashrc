@@ -23,7 +23,9 @@ umask 022
 [[ -f ~/.aliases ]] && . ~/.aliases
 
 # Bash specific prompt and environment
-PS1='\[\e[1;33m\]\h\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]\[\e[1;35m\]:\w\$\[\e[0m\] '
+# PS1='\[\e[1;33m\]\h\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]\[\e[1;35m\]:\w\$\[\e[0m\] '
+PS1='\[\e[1;33m\]Arch\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]$(_ssh_status)\[\e[1;35m\]:\w\$\[\e[0m\] '
+
 
 # Get current TTY device name
 current_tty=$(tty)
