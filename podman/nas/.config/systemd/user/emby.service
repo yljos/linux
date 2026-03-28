@@ -5,6 +5,13 @@ Wants=network-online.target rclone-aliyun.service
 # Start Emby only after rclone-onedrive.service attempts to start
 After=network-online.target rclone-aliyun.service
 
+# getent group video | cut -d: -f3   # 假设结果是 44
+# getent group render | cut -d: -f3  # 假设结果是 105
+# sudo vim /etc/subgid
+
+# huai:44:1
+# huai:105:1
+
 [Service]
 Type=simple
 Restart=always
