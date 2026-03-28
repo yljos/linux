@@ -23,7 +23,7 @@ ExecStart=/usr/bin/podman run \
   --device=/dev/dri:/dev/dri \
   --group-add 44 \
   --group-add 105 \
-  docker.io/linuxserver/emby:latest
+  docker.io/emby/embyserver:latest
 
 ExecStop=/usr/bin/podman stop -t 10 emby
 
