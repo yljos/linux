@@ -14,7 +14,7 @@ ExecStart=/usr/bin/rclone mount onedrive: /data/media/onedrive \
     --poll-interval 0 \
     --buffer-size 64M \
     --vfs-read-chunk-size 32M \
-    --log-level OFF
+    --log-level ERROR
 ExecStop=/usr/bin/fusermount -u /data/media/onedrive
 Restart=on-failure
 RestartSec=5
