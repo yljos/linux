@@ -1,0 +1,54 @@
+# ---------------------------------------------------------
+# [1] Core Utilities
+# ---------------------------------------------------------
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
+# ---------------------------------------------------------
+# [2] System & Maintenance
+# ---------------------------------------------------------
+# Sleep 60s then shutdown
+alias P="sleep 60 && shutdown now"
+alias R="systemctl reboot"
+alias rsyncdir="rsync -avzh --delete"
+
+# ---------------------------------------------------------
+# [3] PipeWire Audio Control
+# ---------------------------------------------------------
+alias v+="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+alias v-="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+alias mute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+
+# ---------------------------------------------------------
+# [4] Scripts & SSH Management
+# ---------------------------------------------------------
+alias win="/usr/bin/bash /home/huai/.config/win.sh"
+alias wol="/usr/bin/bash /home/huai/.config/wol.sh"
+
+# Manually decrypt and add SSH keys
+key() {
+    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_lan.gpg) >/dev/null 2>&1
+    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_cloud.gpg) >/dev/null 2>&1
+}
+
+# SFTP (SSHFS) Mount Function
+mount-data() {
+    if ! mountpoint -q /data; then
+        ssh-add -l >/dev/null 2>&1 || key
+        sshfs nas:/data /data
+    fi
+}
+
+# Wallpaper Change Script
+np() {
+    if [[ -f "/home/huai/.config/wallpaperchange.sh" ]]; then
+        bash "/home/huai/.config/wallpaperchange.sh"
+    fi
+}
+
+# Check SSH agent status for prompt decoration
+_ssh_status() {
+    if ssh-add -l >/dev/null 2>&1; then
+        echo -ne "\001\e[38;5;214m\002*\001\e[0m\002"
+    fi
+}

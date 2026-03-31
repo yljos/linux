@@ -1,0 +1,191 @@
+#!/bin/sh /etc/rc.common
+# singbox-tproxy - Whitelist Mode (Final & Stable)
+# 逻辑说明：
+# 1. 局域网: 白名单IP流量代理 + 全员DNS代理
+# 2. 路由器: 全流量代理 (复刻黑名单模式成功的逻辑)
+
+START=99
+STOP=10
+USE_PROCD=1
+
+# --- Configuration ---
+PROXY_PORT=7893
+# ⚠️ 必须与 sing-box config.json 中的 "routing_mark" 一致
+ROUTING_MARK=666
+PROXY_FWMARK=0x1
+TABLE_ID=100
+LAN_IF=""           # Auto-detect if empty
+DEBUG=0
+
+# 【白名单配置】
+# 只有这些 IP 的【数据流量】走代理，其他设备数据直连
+# 格式：空格分隔 IP
+PROXY_SOURCES="192.168.31.25 192.168.31.15 192.168.31.21 192.168.31.2 192.168.31.19 192.168.31.23 192.168.31.8"
+
+# 额外直连
+EXTRA_BYPASS=""
+# --- End Configuration ---
+
+log() {
+    logger -t singbox-tproxy "$@"
+    [ "$DEBUG" -eq 1 ] && printf '%s\n' "$@" >&2
+}
+
+service_triggers() {
+    procd_add_reload_trigger "firewall"
+    procd_add_interface_trigger "interface.*" "lan" "$initscript" reload
+}
+
+load_modules() {
+    modprobe nf_tproxy_ipv4 >/dev/null 2>&1
+    modprobe nf_tproxy_ipv6 >/dev/null 2>&1
+}
+
+load_nft_rules() {
+    NFT_TABLE="inet fw4"
+    CHAIN_PRE="singbox_prerouting"
+    CHAIN_OUT="singbox_output"
+
+    log "Initializing rules (Whitelist Mode)..."
+
+    # 0. Detect LAN_IF
+    if [ -z "$LAN_IF" ] || ! ip link show "$LAN_IF" >/dev/null 2>&1 ; then
+        if ip link show br-lan >/dev/null 2>&1 ; then
+            LAN_IF="br-lan"
+        else
+            LAN_IF=$(ip -o -4 addr show | awk '/inet (10\.|172\.16\.|192\.168\.)/ {print $2; exit}')
+            [ -z "$LAN_IF" ] && LAN_IF=$(ip -o link show | awk -F': ' '$2!="lo"{print $2; exit}')
+        fi
+        log "Auto-detected LAN_IF='$LAN_IF'"
+    else
+        log "Using configured LAN_IF='$LAN_IF'"
+    fi
+
+    # 1. Setup Chains
+    nft add table $NFT_TABLE 2>/dev/null || true
+    nft list chain $NFT_TABLE $CHAIN_PRE >/dev/null 2>&1 || nft add chain $NFT_TABLE $CHAIN_PRE
+    nft flush chain $NFT_TABLE $CHAIN_PRE
+    nft list chain $NFT_TABLE $CHAIN_OUT >/dev/null 2>&1 || nft add chain $NFT_TABLE $CHAIN_OUT
+    nft flush chain $NFT_TABLE $CHAIN_OUT
+
+    # 2. Setup Hooks
+    if nft list chain $NFT_TABLE mangle_prerouting >/dev/null 2>&1; then
+        nft list chain $NFT_TABLE mangle_prerouting | grep -q "jump $CHAIN_PRE" || \
+            nft insert rule $NFT_TABLE mangle_prerouting jump $CHAIN_PRE comment "Singbox_Pre_Hook"
+    else
+        nft add chain $NFT_TABLE mangle_prerouting { type filter hook prerouting priority -150 \; } 2>/dev/null
+        nft insert rule $NFT_TABLE mangle_prerouting jump $CHAIN_PRE comment "Singbox_Pre_Hook"
+    fi
+
+    if nft list chain $NFT_TABLE mangle_output >/dev/null 2>&1; then
+        nft list chain $NFT_TABLE mangle_output | grep -q "jump $CHAIN_OUT" || \
+            nft insert rule $NFT_TABLE mangle_output jump $CHAIN_OUT comment "Singbox_Out_Hook"
+    else
+        nft add chain $NFT_TABLE mangle_output { type filter hook output priority -150 \; } 2>/dev/null
+        nft insert rule $NFT_TABLE mangle_output jump $CHAIN_OUT comment "Singbox_Out_Hook"
+    fi
+
+    # 3. Direct Rules (DHCP/ICMP)
+    nft add rule $NFT_TABLE $CHAIN_PRE udp dport { 67, 68 } return comment "Bypass_DHCP"
+    nft add rule $NFT_TABLE $CHAIN_PRE ip6 nexthdr icmpv6 return comment "Bypass_IPv6_ICMP"
+    [ -n "$LAN_IF" ] && nft add rule $NFT_TABLE $CHAIN_PRE fib daddr oifname "$LAN_IF" return comment "Bypass_PD_LAN_Traffic"
+    nft add rule $NFT_TABLE $CHAIN_PRE ct status dnat return comment "Bypass_DNAT"
+
+    # 4. Local Bypass
+    # 必须先放行内网流量，否则 DNS 请求会被误杀
+    nft add rule $NFT_TABLE $CHAIN_PRE fib daddr type local return comment "Bypass_Local"
+    nft add rule $NFT_TABLE $CHAIN_PRE ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4 } return
+    nft add rule $NFT_TABLE $CHAIN_PRE ip6 daddr { ::1/128, fc00::/7, fe80::/10, ff00::/8, ::ffff:0:0/96 } return
+
+    if [ -n "$EXTRA_BYPASS" ]; then
+        for p in $EXTRA_BYPASS; do
+            nft add rule $NFT_TABLE $CHAIN_PRE ip daddr $p return
+        done
+    fi
+
+    # 5. Global DNS Hijack (LAN 全局 DNS 劫持)
+    nft add rule $NFT_TABLE $CHAIN_PRE meta l4proto { tcp, udp } th dport 53 \
+        tproxy ip to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Global_DNS_IPv4" 2>/dev/null || true
+    nft add rule $NFT_TABLE $CHAIN_PRE meta l4proto { tcp, udp } th dport 53 \
+        tproxy ip6 to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Global_DNS_IPv6" 2>/dev/null || true
+
+    # 6. Whitelist Data Logic (白名单数据代理)
+    if [ -n "$PROXY_SOURCES" ]; then
+        CLEAN_IP=$(echo "$PROXY_SOURCES" | tr -d '\r' | tr -s '[:space:]' ' ')
+        for ip in $CLEAN_IP; do
+            nft add rule $NFT_TABLE $CHAIN_PRE ip saddr $ip meta l4proto { tcp, udp } \
+                tproxy ip to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Data_IPv4" 2>/dev/null || true
+            nft add rule $NFT_TABLE $CHAIN_PRE ip6 saddr $ip meta l4proto { tcp, udp } \
+                tproxy ip6 to :$PROXY_PORT meta mark set $PROXY_FWMARK accept comment "Proxy_Data_IPv6" 2>/dev/null || true
+        done
+    fi
+
+    # 7. Output Rules (OpenWrt 本机流量 - 复刻黑名单逻辑)
+    # 7.1 本地回环放行
+    nft add rule $NFT_TABLE $CHAIN_OUT meta oifname "lo" return
+    
+    # 7.2 【核心防死循环】Sing-box 自身流量放行
+    # 只要这行生效，路由器的 DNS 请求（由 Sing-box 发出时）就不会被拦截
+    nft add rule $NFT_TABLE $CHAIN_OUT meta mark $ROUTING_MARK return comment "Bypass_Singbox_Self"
+    
+    # 7.3 内网放行
+    nft add rule $NFT_TABLE $CHAIN_OUT ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } return
+    
+    # 7.4 【全代理】剩余流量（含路由器 DNS）全部打标走代理
+    # 这里没有 udp 53 return，所以路由器 DNS 会进代理，和黑名单模式一致
+    nft add rule $NFT_TABLE $CHAIN_OUT meta l4proto { tcp, udp } meta mark set $PROXY_FWMARK accept
+
+    # 8. Policy Routing
+    ip route show table $TABLE_ID | grep -q "local default" || \
+        ip route add local default dev lo table $TABLE_ID
+    ip rule show table $TABLE_ID | grep -q "fwmark $PROXY_FWMARK" || \
+        ip rule add fwmark $PROXY_FWMARK lookup $TABLE_ID pref 9000
+        
+    if [ -f /proc/net/if_inet6 ]; then
+        ip -6 route show table $TABLE_ID | grep -q "local default" || \
+            ip -6 route add local default dev lo table $TABLE_ID 2>/dev/null
+        ip -6 rule show table $TABLE_ID | grep -q "fwmark $PROXY_FWMARK" || \
+            ip -6 rule add fwmark $PROXY_FWMARK lookup $TABLE_ID pref 9000 2>/dev/null
+    fi
+
+    log "Rules loaded successfully."
+}
+
+clear_nft_rules() {
+    NFT_TABLE="inet fw4"
+    for h in $(nft --handle list chain $NFT_TABLE mangle_prerouting 2>/dev/null | awk '/Singbox_Pre_Hook/ {for(i=1;i<=NF;i++) if($i=="handle") print $(i+1)}'); do
+        nft delete rule $NFT_TABLE mangle_prerouting handle $h 2>/dev/null
+    done
+    for h in $(nft --handle list chain $NFT_TABLE mangle_output 2>/dev/null | awk '/Singbox_Out_Hook/ {for(i=1;i<=NF;i++) if($i=="handle") print $(i+1)}'); do
+        nft delete rule $NFT_TABLE mangle_output handle $h 2>/dev/null
+    done
+    nft flush chain $NFT_TABLE $CHAIN_PRE 2>/dev/null
+    nft delete chain $NFT_TABLE $CHAIN_PRE 2>/dev/null
+    nft flush chain $NFT_TABLE $CHAIN_OUT 2>/dev/null
+    nft delete chain $NFT_TABLE $CHAIN_OUT 2>/dev/null
+    
+    case "$PROXY_FWMARK" in
+        0x*) FWMARK_DEC=$((PROXY_FWMARK)) ;;
+        *) FWMARK_DEC=$PROXY_FWMARK ;;
+    esac
+    while ip rule show | grep -q "fwmark $PROXY_FWMARK"; do
+        ip rule del fwmark $FWMARK_DEC table $TABLE_ID 2>/dev/null
+    done
+    ip route flush table $TABLE_ID 2>/dev/null
+    if [ -f /proc/net/if_inet6 ]; then
+        while ip -6 rule show | grep -q "fwmark $PROXY_FWMARK"; do
+            ip -6 rule del fwmark $FWMARK_DEC table $TABLE_ID 2>/dev/null
+        done
+        ip -6 route flush table $TABLE_ID 2>/dev/null
+    fi
+    log "Rules cleared."
+}
+
+start_service() {
+    load_modules
+    load_nft_rules
+}
+
+stop_service() {
+    clear_nft_rules
+}

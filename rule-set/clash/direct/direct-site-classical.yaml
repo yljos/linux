@@ -1,0 +1,13 @@
+payload:
+  - DOMAIN,ssh.202309.xyz
+  - DOMAIN,www.schemastore.org
+  - DOMAIN-SUFFIX,bukkit.org
+  - DOMAIN-SUFFIX,speedtest.cn
+  - DOMAIN-SUFFIX,wttr.in
+  - DOMAIN-SUFFIX,whsmk5566000.com
+  - DOMAIN-SUFFIX,emby.media
+  - DOMAIN-SUFFIX,mb3admin.com
+  - DOMAIN-SUFFIX,sakuraos.com
+  - DOMAIN-SUFFIX,klei.com
+  - DOMAIN-SUFFIX,kleientertainment.com
+  - DOMAIN-SUFFIX,plex.tv

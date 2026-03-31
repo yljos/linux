@@ -1,0 +1,41 @@
+# 基础系统命令
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias c="clear"
+alias ..='cd ..'
+# 系统操作
+alias P="sleep 60 && shutdown now"
+alias R="systemctl reboot"
+alias rsyncdir="rsync -avzh --delete" 
+
+# Volume Control
+alias volup="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+alias voldown="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+
+# Manually decrypt and add SSH keys
+key() {
+    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_lan.gpg) >/dev/null 2>&1
+    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_cloud.gpg) >/dev/null 2>&1
+}
+
+# SFTP (SSHFS) Mount Function
+mount-data() {
+    if ! mountpoint -q /data; then
+        ssh-add -l >/dev/null 2>&1 || key
+        sshfs nas:/data /data
+    fi
+}
+
+# Check SSH agent status for prompt decoration
+_ssh_status() {
+    if ssh-add -l >/dev/null 2>&1; then
+        echo -ne "\001\e[38;5;214m\002*\001\e[0m\002"
+    fi
+}
+
+# 脚本和程序
+alias win="/usr/bin/bash /home/huai/.config/windows.sh"
+alias np="/usr/bin/bash /home/huai/.config/swww.sh"
+x() {
+    dbus-run-session bash -c "/home/huai/.config/dwl/dwl_status.sh | dwl"
+}

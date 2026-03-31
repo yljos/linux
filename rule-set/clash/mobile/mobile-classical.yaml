@@ -1,0 +1,12 @@
+payload:
+  - PROCESS-NAME,com.eg.android.AlipayGphone
+  - PROCESS-NAME,com.whmstr.whsmk
+  - PROCESS-NAME,com.unionpay
+  - PROCESS-NAME,com.taobao.taobao
+  - PROCESS-NAME,com.xiaomi.smarthome
+  - PROCESS-NAME,com.bilibili.app.in
+  - PROCESS-NAME,com.cmbchina.ccd.pluto.cmbActivity
+  - PROCESS-NAME,com.autonavi.minimap
+  - PROCESS-NAME,com.ximalaya.ting.android
+  - PROCESS-NAME,com.tecent.mm
+

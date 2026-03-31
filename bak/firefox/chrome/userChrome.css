@@ -1,0 +1,115 @@
+/* 强制修改 Firefox 标签栏高度 */
+#titlebar {
+  max-height: 30px !important;
+  min-height: 30px !important;
+}
+
+#TabsToolbar {
+  max-height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 !important;
+}
+
+/* 确保标签栏和标签页的高度一致 */
+#tabbrowser-tabs {
+  max-height: 30px !important;
+  min-height: 30px !important;
+}
+
+/* 确保单个标签页的高度一致且靠下 */
+.tabbrowser-tab {
+  max-height: 26px !important; /* 减小高度 */
+  min-height: 26px !important;
+  margin-top: 4px !important; /* 上边距 */
+}
+
+/* 改进标签内容的布局 */
+.tab-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important; /* 左对齐 */
+  height: 100% !important;
+  padding-top: 0 !important;
+  padding-bottom: 11px !important;
+  padding-left: 3px !important; /* 添加左侧内边距 */
+}
+
+/* 调整新标签按钮位置使其靠下 */
+#tabs-newtab-button {
+  padding-top: 13px !important;
+  height: 26px !important; /* 与标签页保持一致的高度 */
+}
+
+/* 设置地址栏高度为30px */
+#nav-bar {
+  max-height: 26px !important;
+  min-height: 26px !important;
+  padding: 0 !important;
+}
+
+/* 设置书签栏高度为26px */
+#PersonalToolbar {
+  max-height: 26px !important;
+  min-height: 26px !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+}
+
+/* 调整工具栏按钮大小 */
+#nav-bar toolbarbutton,
+#PersonalToolbar toolbarbutton {
+  padding: 0 4px !important;
+}
+
+/* 地址栏输入修正 */
+#urlbar-container {
+  padding: 0 !important;
+  height: 26px !important;
+  /* 缩短地址栏宽度 */
+  max-width: 40% !important; /* 从60%减小到40% */
+  min-width: 250px !important; /* 从300px减小到250px */
+}
+
+/* 让地址栏容器在导航栏中更灵活地缩放 */
+#nav-bar-customization-target {
+  width: 100% !important;
+}
+
+/* 平衡地址栏和按钮的布局 */
+#nav-bar toolbarspring {
+  max-width: none !important; /* 允许弹性空间 */
+}
+
+#urlbar {
+  min-height: 24px !important;
+  max-height: 24px !important;
+  margin: 1px 0 !important;
+  padding: 0 2px !important;
+}
+
+#urlbar-input-container {
+  height: 24px !important;
+  align-items: center !important;
+}
+
+#urlbar-input {
+  padding: 0 !important;
+  margin-left: 4px !important;
+  font-size: 12px !important; /* 调整字体大小 */
+  line-height: 24px !important;
+}
+
+/* 调整地址栏中的图标大小 */
+#urlbar-container .urlbar-icon {
+  width: 16px !important;
+  height: 16px !important;
+  padding: 4px !important;
+}
+
+/* 调整书签项目高度 */
+.bookmark-item {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}

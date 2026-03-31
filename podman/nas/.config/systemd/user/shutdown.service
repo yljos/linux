@@ -1,0 +1,25 @@
+[Unit]
+Description=Shutdown Signal Flask Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+
+ExecStart=/usr/bin/podman run \
+  --name shutdown \
+  --replace \
+  --rm \
+  --init \
+  --log-driver=journald \
+  --env PYTHONUNBUFFERED=1 \
+  -p 5008:5008 \
+  -v /data/www:/data/www:z \
+  localhost/shutdown:latest
+
+ExecStop=/usr/bin/podman stop -t 5 shutdown
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,58 @@
+{
+  "version": 3,
+  "rules": [
+    {
+      "domain": [
+        "open-vsx.org",
+        "openvsx.eclipsecontent.org",
+        "mitce.net",
+        "b10.nextacdn.net",
+        "prod.b5.thatcdn.com"
+      ],
+      "domain_suffix": [
+        "ipify.org",
+        "mojie.app",
+        "bajie.la",
+        "patreon.com",
+        "time.is",
+        "suckless.org",
+        "v2ex.com",
+        "bulianglin.com",
+        "t66y.com",
+        "xiaomi.eu",
+        "188channel.com",
+        "notepad-plus-plus.org",
+        "bygcloud.com",
+        "iwara.tv",
+        "laowang.vip",
+        "duyaoss.com",
+        "a4k.net",
+        "fikfap.com",
+        "je51.com",
+        "wiki.metacubex.one",
+        "wnacg.com",
+        "sing-box.sagernet.org",
+        "qichiyu.com",
+        "rmdown.com",
+        "cloudflare.com",
+        "skrbtso.top",
+        "soskr.net",
+        "ip.sb",
+        "iyf.tv",
+        "dnvodcdn.me",
+        "wyav.tv",
+        "open-meteo.com",
+        "met.no",
+        "who.is",
+        "prismlauncher.org",
+        "202309.xyz",
+        "082500.xyz",
+        "radio-browser.info",
+        "fabricmc.net",
+        "gradle.org",
+        "lscr.io",
+        "mitce.net"
+      ]
+    }
+  ]
+}

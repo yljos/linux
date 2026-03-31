@@ -1,0 +1,7 @@
+[Match]
+Name=wlp2s0
+
+[Link]
+Unmanaged=yes
+ActivationPolicy=down
+# RequiredForOnline=routable

@@ -1,0 +1,38 @@
+[Unit]
+Description=Emby Container
+# Use Wants instead of BindsTo to keep Emby running even if rclone fails
+Wants=network-online.target rclone-aliyun.service
+# Start Emby only after rclone-onedrive.service attempts to start
+After=network-online.target rclone-aliyun.service
+
+# getent group video | cut -d: -f3   # 假设结果是 44
+# getent group render | cut -d: -f3  # 假设结果是 105
+# sudo vim /etc/subgid
+
+# huai:44:1
+# huai:105:1
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=emby \
+  --log-driver=journald \
+  -p 8096:8096 \
+  -e PUID=0 \
+  -e PGID=0 \
+  -v /data/appdata/emby:/config:Z \
+  -v /data/media:/media:ro,z \
+  --device=/dev/dri:/dev/dri \
+  --group-add 44 \
+  --group-add 105 \
+  docker.io/emby/embyserver:latest
+
+ExecStop=/usr/bin/podman stop -t 10 emby
+
+[Install]
+WantedBy=default.target

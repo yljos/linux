@@ -1,0 +1,17 @@
+[project]
+name = "huai12138_bot"
+version = "1.0.0"
+description = "Default template for PDM package"
+dependencies = [
+    "httpx>=0.28.1",
+    "python-dotenv>=1.2.2",
+    "python-telegram-bot[job-queue]>=22.7",
+    "python-telegram-bot[webhooks]",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false

@@ -1,0 +1,27 @@
+[Unit]
+Description=Telegram Bot Service (Podman)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+
+ExecStart=/usr/bin/podman run \
+  --name bot \
+  --replace \
+  --rm \
+  --init \
+  --log-driver=journald \
+  --env PYTHONUNBUFFERED=1 \
+  -p 5005:5005 \
+  --env-file /home/huai/bot/.env \
+  -v /home/huai/bot/blocked_users.json:/app/blocked_users.json:Z \
+  -v /home/huai/bot/whitelist.json:/app/whitelist.json:Z \
+  localhost/bot:latest
+
+ExecStop=/usr/bin/podman stop -t 10 bot
+
+[Install]
+WantedBy=default.target
