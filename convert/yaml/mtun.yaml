@@ -279,14 +279,14 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/alibaba/alibaba-site.mrs
   alibaba-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/alibaba/alibaba-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/alibaba/alibaba-ip.mrs
   apkpure-site:
     proxy: M
     interval: 86400
@@ -314,35 +314,35 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/cn/cn-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/cn/cn-site.mrs
   cn-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/cn/cn-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/cn/cn-ip.mrs
   direct-site:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/direct/direct-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/direct/direct-site.mrs
   direct-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/direct/direct-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/direct/direct-ip.mrs
   mobile:
     proxy: M
     type: http
     interval: 86400
     behavior: classical
     format: yaml
-    url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/mobile/mobile-classical.yaml
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/mobile/mobile-classical.yaml
   mozilla-site:
     proxy: M
     interval: 86400
@@ -356,7 +356,7 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/gfw/gfw-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/gfw/gfw-site.mrs
   github-site:
     proxy: M
     interval: 86400
@@ -370,7 +370,7 @@ rule-providers:
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/github/github-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/github/github-ip.mrs
   google-site:
     proxy: M
     interval: 86400
@@ -398,21 +398,21 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/huawei/huawei-direct-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/huawei/huawei-direct-site.mrs
   huawei-site:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
-    url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/huawei/huawei-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/huawei/huawei-site.mrs
   huawei-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://github.com/bite-os/rule-set/raw/refs/heads/main/clash/huawei/huawei-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/huawei/huawei-ip.mrs
   jd-site:
     proxy: M
     interval: 86400
@@ -426,7 +426,7 @@ rule-providers:
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/local/local-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/local/local-ip.mrs
   microsoft-site:
     proxy: M
     interval: 86400
@@ -447,42 +447,42 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash//pikpak/pikpak-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash//pikpak/pikpak-site.mrs
   pikpak-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/pikpak/pikpak-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/pikpak/pikpak-ip.mrs
   proxy-site:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/proxy/proxy-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/proxy/proxy-site.mrs
   speedtest-site:
     proxy: M
     interval: 86400
     type: http
     format: yaml
     behavior: classical
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/speedtest/speedtest-site-classical.yaml
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/speedtest/speedtest-site-classical.yaml
   telegram-site:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/telegram/telegram-site.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/telegram/telegram-site.mrs
   telegram-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/telegram/telegram-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/telegram/telegram-ip.mrs
   tiktok-site:
     proxy: M
     interval: 86400
@@ -510,7 +510,7 @@ rule-providers:
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/bite-os/rule-set/refs/heads/main/clash/wechat/wechat-ip.mrs
+    url: https://raw.githubusercontent.com/bite-os/linux/refs/heads/main/rule-set/clash/wechat/wechat-ip.mrs
   youtube-site:
     proxy: M
     interval: 86400
