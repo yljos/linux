@@ -19,94 +19,34 @@ keep_punct = "。？，！ : .……"
 
 
 def chinese_to_int(s: str):
+    """Recursively convert Chinese numerals to integers."""
     s = s.replace("两", "二").strip()
+    if not s:
+        return None
     if s.isdigit():
         return int(s)
 
-    if "万" in s:
-        parts = s.split("万")
-        left = parts[0]
-        right = parts[1] if len(parts) > 1 else ""
+    # Handle pure numeric translations (e.g., "一二三" -> 123, "零三" -> 3)
+    if all(c in _digits for c in s):
+        total = 0
+        for ch in s:
+            total = total * 10 + _digits[ch]
+        return total
 
-        ten_thousands = chinese_to_int(left) if left else 1
-        remainder = chinese_to_int(right) if right else 0
+    # Recursively parse units from largest to smallest
+    for unit, multiplier in [("万", 10000), ("千", 1000), ("百", 100), ("十", 10)]:
+        if unit in s:
+            parts = s.split(unit, 1)
+            left_str, right_str = parts[0], parts[1]
 
-        if ten_thousands is None or remainder is None:
-            return None
-        return ten_thousands * 10000 + remainder
+            left = chinese_to_int(left_str) if left_str else 1
+            right = chinese_to_int(right_str) if right_str else 0
 
-    if len(s) == 1 and s in _digits:
-        return _digits[s]
+            if left is None or right is None:
+                return None
+            return left * multiplier + right
 
-    if "千" in s:
-        parts = s.split("千")
-        left, right = parts[0], parts[1] if len(parts) > 1 else ""
-        thousands = _digits.get(left, 1) if left else 1
-
-        if "百" in right:
-            hundred_parts = right.split("百")
-            hundreds = _digits.get(hundred_parts[0], 1) if hundred_parts[0] else 1
-            right2 = hundred_parts[1] if len(hundred_parts) > 1 else ""
-            if "十" in right2:
-                ten_parts = right2.split("十")
-                tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
-                ones = (
-                    _digits.get(ten_parts[1], 0)
-                    if len(ten_parts) > 1 and ten_parts[1]
-                    else 0
-                )
-                return thousands * 1000 + hundreds * 100 + tens * 10 + ones
-            elif right2:
-                ones = _digits.get(right2, 0)
-                return thousands * 1000 + hundreds * 100 + ones
-            return thousands * 1000 + hundreds * 100
-
-        elif "十" in right:
-            ten_parts = right.split("十")
-            tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
-            ones = (
-                _digits.get(ten_parts[1], 0)
-                if len(ten_parts) > 1 and ten_parts[1]
-                else 0
-            )
-            return thousands * 1000 + tens * 10 + ones
-        elif right:
-            ones = _digits.get(right, 0)
-            return thousands * 1000 + ones
-        return thousands * 1000
-
-    if "百" in s:
-        parts = s.split("百")
-        left, right = parts[0], parts[1] if len(parts) > 1 else ""
-        hundreds = _digits.get(left, 1) if left else 1
-
-        if "十" in right:
-            ten_parts = right.split("十")
-            tens = _digits.get(ten_parts[0], 1) if ten_parts[0] else 1
-            ones = (
-                _digits.get(ten_parts[1], 0)
-                if len(ten_parts) > 1 and ten_parts[1]
-                else 0
-            )
-            return hundreds * 100 + tens * 10 + ones
-        elif right:
-            ones = _digits.get(right, 0)
-            return hundreds * 100 + ones
-        return hundreds * 100
-
-    if "十" in s:
-        parts = s.split("十")
-        left, right = parts[0], parts[1] if len(parts) > 1 else ""
-        tens = 1 if left == "" else _digits.get(left, 0)
-        ones = _digits.get(right, 0) if right else 0
-        return tens * 10 + ones
-
-    total = 0
-    for ch in s:
-        if ch not in _digits:
-            return None
-        total = total * 10 + _digits[ch]
-    return total
+    return None
 
 
 def clean_punct(text):
@@ -125,7 +65,6 @@ def replace_line(line):
     if not stripped:
         return ""
 
-    # 正则中加入了“千”字
     m_volume = re.match(
         r"^第\s*([0-9零一二三四五六七八九十百千万两]+)\s*卷\s*[、,，]?\s*(.*)$",
         stripped,
