@@ -15,7 +15,7 @@ ExecStart=/usr/bin/podman run \
   -e PGID=0 \
   -p 25600:25600 \
   -v /data/appdata/komga:/config:Z \
-  -v /data/books:/data:z \
+  -v /data/books:/data:ro,z \
   docker.io/gotson/komga:latest
 
 ExecStop=/usr/bin/podman stop -t 10 komga
