@@ -15,15 +15,25 @@ _digits = {
     "两": 2,
 }
 
-# Restored to original punctuation set
 keep_punct = "。？，！ : .……"
 
 
 def chinese_to_int(s: str):
-    """Convert Chinese numerals to integers."""
     s = s.replace("两", "二").strip()
     if s.isdigit():
         return int(s)
+
+    if "万" in s:
+        parts = s.split("万")
+        left = parts[0]
+        right = parts[1] if len(parts) > 1 else ""
+
+        ten_thousands = chinese_to_int(left) if left else 1
+        remainder = chinese_to_int(right) if right else 0
+
+        if ten_thousands is None or remainder is None:
+            return None
+        return ten_thousands * 10000 + remainder
 
     if len(s) == 1 and s in _digits:
         return _digits[s]
@@ -100,7 +110,6 @@ def chinese_to_int(s: str):
 
 
 def clean_punct(text):
-    """Remove unwanted punctuation."""
     return "".join(
         ch
         for ch in text
@@ -112,13 +121,14 @@ def clean_punct(text):
 
 
 def replace_line(line):
-    """Format headers and clean normal lines."""
     stripped = line.strip()
     if not stripped:
         return ""
 
+    # 正则中加入了“千”字
     m_volume = re.match(
-        r"^第\s*([0-9零一二三四五六七八九十百两]+)\s*卷\s*[、,，]?\s*(.*)$", stripped
+        r"^第\s*([0-9零一二三四五六七八九十百千万两]+)\s*卷\s*[、,，]?\s*(.*)$",
+        stripped,
     )
     if m_volume:
         num = chinese_to_int(m_volume.group(1))
@@ -126,7 +136,7 @@ def replace_line(line):
         return f"\n# 第{num:03d}卷 {title}\n\n"
 
     m_chapter = re.match(
-        r"^第\s*([0-9零一二三四五六七八九十百两]+)\s*[节章]\s*[、,，]?\s*(.*)$",
+        r"^第\s*([0-9零一二三四五六七八九十百千万两]+)\s*[节章]\s*[、,，]?\s*(.*)$",
         stripped,
     )
     if m_chapter:
@@ -134,7 +144,7 @@ def replace_line(line):
         title = m_chapter.group(2).strip() if m_chapter.group(2) else "未命名"
         return f"\n## 第{num:06d}章 {title}\n\n"
 
-    m_numdot = re.match(r"^([0-9零一二三四五六七八九十百两]+)\.\s*(.*)$", stripped)
+    m_numdot = re.match(r"^([0-9零一二三四五六七八九十百千万两]+)\.\s*(.*)$", stripped)
     if m_numdot:
         num = chinese_to_int(m_numdot.group(1))
         title = m_numdot.group(2).strip() if m_numdot.group(2) else "未命名"
@@ -144,17 +154,14 @@ def replace_line(line):
 
 
 def get_utf8_content(file_path: Path) -> str:
-    """Read file bytes and decode as UTF-8, fallback to GB2312/GB18030."""
     raw_bytes = file_path.read_bytes()
     try:
         return raw_bytes.decode("utf-8")
     except UnicodeDecodeError:
-        # gb18030 is fully compatible with gb2312 and prevents decoding crashes
         return raw_bytes.decode("gb18030")
 
 
 def process_file(file_path: Path):
-    """Process file and write back cleaned content."""
     try:
         content = get_utf8_content(file_path)
     except UnicodeDecodeError:
