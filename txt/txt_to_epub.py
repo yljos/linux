@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 def generate_cover_jpg(title, author, filepath):
     """Generate a simple JPG cover."""
-    img = Image.new('RGB', (600, 800), color='#eeeeee')
+    img = Image.new('RGB', (600, 800), color='#332F2F')
     draw = ImageDraw.Draw(img)
     
     # Common Chinese fonts for Windows/Linux
@@ -32,8 +32,8 @@ def generate_cover_jpg(title, author, filepath):
         font_title = ImageFont.load_default()
         font_author = ImageFont.load_default()
 
-    draw.text((300, 320), title, font=font_title, fill='#333333', anchor="mm")
-    draw.text((300, 400), author, font=font_author, fill='#666666', anchor="mm")
+    draw.text((300, 320), title, font=font_title, fill='#F58B0A', anchor="mm")
+    draw.text((300, 400), author, font=font_author, fill='#E3DC10', anchor="mm")
     
     img.save(filepath, "JPEG")
 
