@@ -22,6 +22,7 @@ def create_epub(txt_file):
     # Initialize the EPUB book
     book = epub.EpubBook()
     book.set_title(book_title)
+    book.add_author("18")
     book.set_language('zh')
 
     # Read the content
