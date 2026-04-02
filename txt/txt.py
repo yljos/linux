@@ -143,12 +143,22 @@ def replace_line(line):
     return clean_punct(stripped) + "\n"
 
 
+def get_utf8_content(file_path: Path) -> str:
+    """Read file bytes and decode as UTF-8, fallback to GB2312/GB18030."""
+    raw_bytes = file_path.read_bytes()
+    try:
+        return raw_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        # gb18030 is fully compatible with gb2312 and prevents decoding crashes
+        return raw_bytes.decode("gb18030")
+
+
 def process_file(file_path: Path):
     """Process file and write back cleaned content."""
     try:
-        content = file_path.read_text(encoding="utf-8")
+        content = get_utf8_content(file_path)
     except UnicodeDecodeError:
-        print(f"Skipped due to encoding error: {file_path.name}")
+        print(f"Skipped (Unsupported encoding): {file_path.name}")
         return
 
     content = content.replace("#", "")
