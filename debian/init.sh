@@ -12,7 +12,6 @@ chmod 700 /home/huai/.gnupg
 
 # Manage dotfiles via stow
 rm -f /home/huai/.bashrc
-stow -R /home/huai/linux/debian/huai -t ~
 
 # ---------------------------------------------------------
 # [2] Data Directory
@@ -26,11 +25,14 @@ sudo chmod 755 /data
 # ---------------------------------------------------------
 sudo apt update
 sudo apt install -y \
-    locales git curl vim stow nfs-common build-essential \
+    locales git curl vim stow shfmt build-essential \
     libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
     freerdp3-x11 scdaemon pcscd \
     fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
     pipewire wireplumber
+
+stow -R /home/huai/linux/debian/huai -t ~
+systemctl --user daemon-reload 
 
 # ---------------------------------------------------------
 # [4] System Configuration
@@ -41,7 +43,7 @@ sudo locale-gen
 sudo update-locale LANG=en_US.UTF-8
 
 # Enable audio services
-systemctl --user --now enable pipewire wireplumber
+systemctl --user --now enable pipewire wireplumber dwm-status shutdown
 
 # ---------------------------------------------------------
 # [5] Network Service Swap
