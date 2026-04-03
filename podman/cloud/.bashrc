@@ -5,5 +5,7 @@ export VISUAL=vim
 export EDITOR=vim
 PS1='\[\e[1;33m\]Cloud\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]\[\e[1;35m\]:\w\$\[\e[0m\] '
 export TERM=xterm-256color
+export HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend
 [[ -f ~/.aliases ]] && . ~/.aliases
 export PATH="$PATH:/home/huai/.local/bin"
