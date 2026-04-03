@@ -31,7 +31,6 @@ sudo apt install -y \
     fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
     pipewire wireplumber dunst rofi numlockx 
 
-stow -R /home/huai/linux/debian/huai -t ~
 systemctl --user daemon-reload 
 
 # ---------------------------------------------------------
