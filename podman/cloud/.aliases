@@ -3,7 +3,7 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias gcl='git clone'
 alias ..='cd ..'
-alias apt='apt-get
+alias apt='apt-get'
 gpl() {
     (cd /home/huai/linux && git pull)
 }
