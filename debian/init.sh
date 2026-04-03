@@ -29,7 +29,7 @@ sudo apt install -y \
     libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
     freerdp3-x11 scdaemon pcscd sudo x11-xserver-utils \
     fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
-    pipewire wireplumber dunst
+    pipewire wireplumber dunst rofi
 
 stow -R /home/huai/linux/debian/huai -t ~
 systemctl --user daemon-reload 
