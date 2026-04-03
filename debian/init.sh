@@ -1,13 +1,18 @@
 #!/bin/bash
 
-# [1] Directories
 # ---------------------------------------------------------
-mkdir -p /home/huai/.ssh
-mkdir -p /home/huai/.gnupg
-mkdir -p /home/huai/.config/systemd/user
+# [1] Directories & Dotfiles
+# ---------------------------------------------------------
+mkdir -p /home/huai/.ssh \
+         /home/huai/.gnupg \
+         /home/huai/.config/systemd/user
 
 # Ensure GPG directory is secure
 chmod 700 /home/huai/.gnupg
+
+# Manage dotfiles via stow
+rm -f /home/huai/.bashrc
+stow -R /home/huai/linux/debian/huai -t ~
 
 # ---------------------------------------------------------
 # [2] Data Directory
@@ -20,11 +25,12 @@ sudo chmod 755 /data
 # [3] Package Installation
 # ---------------------------------------------------------
 sudo apt update
-sudo apt install -y locales git curl vim nfs-common build-essential \
-	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
-	freerdp2-x11 scdaemon pcscd \
-	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
-	pipewire wireplumber
+sudo apt install -y \
+    locales git curl vim stow nfs-common build-essential \
+    libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
+    freerdp3-x11 scdaemon pcscd \
+    fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
+    pipewire wireplumber
 
 # ---------------------------------------------------------
 # [4] System Configuration
@@ -42,3 +48,26 @@ systemctl --user --now enable pipewire wireplumber
 # ---------------------------------------------------------
 sudo systemctl disable --now networking
 sudo systemctl enable --now systemd-networkd
+
+# ---------------------------------------------------------
+# [6] Git Configuration
+# ---------------------------------------------------------
+git config --global core.editor "vim"
+git config --global user.signingkey B5E5D5D7F179195B
+git config --global commit.gpgsign true
+git config --global user.name "bite-os"
+git config --global user.email "bite-os@biteos.org"
+
+# ---------------------------------------------------------
+# [7] SSH & GPG Keys
+# ---------------------------------------------------------
+URL="http://10.0.0.21/key"
+SSH="/home/huai/.ssh"
+
+curl -sL "${URL}/id_ed25519_lan.gpg"   -o "${SSH}/id_ed25519_lan.gpg"   >/dev/null 2>&1
+curl -sL "${URL}/id_ed25519_cloud.gpg" -o "${SSH}/id_ed25519_cloud.gpg" >/dev/null 2>&1
+curl -sL "${URL}/id_ed25519_lan.pub"   -o "${SSH}/id_ed25519_lan.pub"   >/dev/null 2>&1
+curl -sL "${URL}/id_ed25519_cloud.pub" -o "${SSH}/id_ed25519_cloud.pub" >/dev/null 2>&1
+curl -sL "${URL}/authorized_keys"      -o "${SSH}/authorized_keys"      >/dev/null 2>&1
+
+curl -sL "${URL}/bite_os_public_20260331.asc" | gpg --import            >/dev/null 2>&1
