@@ -1,3 +1,5 @@
 payload:
+  - DOMAIN,tracking.miui.com
+  - DOMAIN,tracker.ai.xiaomi.com
   - DOMAIN-SUFFIX,appsflyersdk.com
   - DOMAIN-SUFFIX,adjust.com

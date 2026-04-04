@@ -2,6 +2,10 @@
   "version": 3,
   "rules": [
     {
+      "domain": [
+        "tracking.miui.com",
+        "tracker.ai.xiaomi.com"
+      ],
       "domain_suffix": [
         "appsflyersdk.com",
         "adjust.com"

@@ -1,3 +1,5 @@
 payload:
+  - tracking.miui.com
+  - tracker.ai.xiaomi.com
   - +.appsflyersdk.com
   - +.adjust.com
