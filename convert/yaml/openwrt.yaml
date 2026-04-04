@@ -673,7 +673,7 @@ rules:
   - RULE-SET,direct-ip,DIRECT
   - RULE-SET,wechat-ip,DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-ip)),Youtube
-  - AND,((SRC-IP-CIDR,10.0.0.6/32),(RULE-SET,google-ip)),Youtube
+  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-ip)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-ip)),DIRECT
   - RULE-SET,github-ip,GitHub
   - RULE-SET,cloudflare-ip,M
