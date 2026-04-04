@@ -135,6 +135,22 @@
       "default": "SG-UDP"
     },
     {
+      "tag": "Youtube",
+      "type": "selector",
+      "outbounds": [
+        "{all}"
+      ],
+      "filter": [
+        {
+          "action": "match",
+          "regex": [
+            "(?i)^(?=.*(US))(?!.*(ss|gemini)).*$"
+          ]
+        }
+      ],
+      "default": "US4-HY2"
+    },
+    {
       "tag": "Google",
       "type": "selector",
       "outbounds": [
@@ -573,6 +589,24 @@
         "outbound": "Steam"
       },
       {
+        "type": "logical",
+        "mode": "and",
+        "rules": [
+          {
+            "source_ip_cidr": [
+              "10.0.0.121/32",
+              "10.0.0.8/32"
+            ]
+          },
+          {
+            "rule_set": [
+              "youtube-site"
+            ]
+          }
+        ],
+        "outbound": "Youtube"
+      },
+      {
         "rule_set": "youtube-site",
         "outbound": "Google"
       },
@@ -603,6 +637,24 @@
       {
         "rule_set": "twitter-site",
         "outbound": "Twitter"
+      },
+      {
+        "type": "logical",
+        "mode": "and",
+        "rules": [
+          {
+            "source_ip_cidr": [
+              "10.0.0.121/32",
+              "10.0.0.8/32"
+            ]
+          },
+          {
+            "rule_set": [
+              "google-site"
+            ]
+          }
+        ],
+        "outbound": "Youtube"
       },
       {
         "rule_set": "google-site",
@@ -680,6 +732,24 @@
       {
         "rule_set": "telegram-ip",
         "outbound": "Telegram"
+      },
+      {
+        "type": "logical",
+        "mode": "and",
+        "rules": [
+          {
+            "source_ip_cidr": [
+              "10.0.0.121/32",
+              "10.0.0.8/32"
+            ]
+          },
+          {
+            "rule_set": [
+              "google-ip"
+            ]
+          }
+        ],
+        "outbound": "Youtube"
       },
       {
         "rule_set": "google-ip",
