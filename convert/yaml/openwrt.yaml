@@ -199,6 +199,11 @@ proxy-groups:
     proxies:
       - US-TCP-url-test
       - US-UDP-url-test
+  - type: select
+    include-all-proxies: true
+    hidden: true
+    name: Youtube
+    filter: "(?i)^(?=.*(US))(?!.*(ss|gemini).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -624,6 +629,8 @@ rules:
   - RULE-SET,huawei-site,REJECT-DROP
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT
+  - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-site)),Youtube
+  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-site)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
   - RULE-SET,cloudflare-site,M
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
@@ -663,6 +670,8 @@ rules:
   - RULE-SET,local-ip,DIRECT
   - RULE-SET,direct-ip,DIRECT
   - RULE-SET,wechat-ip,DIRECT
+  - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-ip)),Youtube
+  - AND,((SRC-IP-CIDR,10.0.0.6/32),(RULE-SET,google-ip)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-ip)),DIRECT
   - RULE-SET,github-ip,GitHub
   - RULE-SET,cloudflare-ip,M
