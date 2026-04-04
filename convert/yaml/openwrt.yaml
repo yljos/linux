@@ -203,7 +203,7 @@ proxy-groups:
     include-all-proxies: true
     hidden: true
     name: Youtube
-    filter: "(?i)^(?=.*(US))(?!.*(ss|gemini).*$"
+    filter: "(?i)^(?=.*(US))(?!.*(ss|gemini)).*$"
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -651,6 +651,8 @@ rules:
   - RULE-SET,mozilla-site,M
   - RULE-SET,microsoft-site,Microsoft
   - RULE-SET,openai-site,OpenAi
+  - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,youtube-site)),Youtube
+  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,youtube-site)),Youtube
   - RULE-SET,youtube-site,Google
   - RULE-SET,google-site,Google
   - RULE-SET,tiktok-site,TikTok
