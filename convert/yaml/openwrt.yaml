@@ -626,8 +626,8 @@ rules:
   - DST-PORT,53,dns-out
   - RULE-SET,ad-site,REJECT
   - RULE-SET,ad-ip,REJECT
-  - RULE-SET,huawei-site,REJECT
-  - RULE-SET,huawei-ip,REJECT
+  - RULE-SET,huawei-site,REJECT-DROP
+  - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-site)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-site)),Youtube
