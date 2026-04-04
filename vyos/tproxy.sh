@@ -38,7 +38,7 @@ nft add rule ip mihomo prerouting udp dport { 67, 68 } return
 nft add rule ip mihomo prerouting iifname $LAN_IF ip saddr $SOURCE_BLACKLIST return
 
 # 3. Block DoT (853)
-# nft add rule ip mihomo prerouting iifname $LAN_IF tcp dport 853 reject with tcp reset
+nft add rule ip mihomo prerouting iifname $LAN_IF tcp dport 853 reject with tcp reset
 
 # 4. Mark DNS (Port 53)
 nft add rule ip mihomo prerouting iifname $LAN_IF meta l4proto { tcp, udp } th dport 53 meta mark set $PROXY_FWMARK
