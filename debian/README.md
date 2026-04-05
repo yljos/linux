@@ -61,3 +61,12 @@ XMODIFIERS=@im=fcitx
 ### auto umount /data
 crontab -e
 mountpoint -q /data && ! fuser -s /data && fusermount3 -u /data
+
+
+# Overwrite configuration to ensure 'apt' binary defaults are strictly overridden
+sudo tee /etc/apt/apt.conf.d/99-disable-progress-bar > /dev/null << 'EOF'
+Dpkg::Progress-Fancy "0";
+Dpkg::Use-Pty "0";
+Binary::apt::Dpkg::Progress-Fancy "0";
+Binary::apt::Dpkg::Use-Pty "0";
+EOF
