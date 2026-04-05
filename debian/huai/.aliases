@@ -7,7 +7,7 @@ alias grep='grep --color=auto'
 # [2] System & Maintenance
 # ---------------------------------------------------------
 # Sleep 60s then shutdown
-alias P="sleep 60 && shutdown now"
+alias P="sleep 60 && systemctl poweroff"
 alias R="systemctl reboot"
 alias rsyncdir="rsync -avzh --delete"
 
