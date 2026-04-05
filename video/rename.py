@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 
+
 # --- Helper Functions ---
 def format_file_name(name):
     """
@@ -14,6 +15,7 @@ def format_file_name(name):
         return "_".join(capitalized_parts)
     else:
         return name.capitalize()
+
 
 # --- Core Logic ---
 def clean_foldername_prefix(foldername):
@@ -35,6 +37,7 @@ def clean_foldername_prefix(foldername):
         pass
     return foldername
 
+
 def clean_filename_prefix(filename):
     """
     Remove existing '01_' or 'E01_' prefixes from the filename
@@ -53,6 +56,7 @@ def clean_filename_prefix(filename):
     except ValueError:
         pass
     return filename
+
 
 def process_directory_recursively(current_dir):
     """
@@ -76,10 +80,10 @@ def process_directory_recursively(current_dir):
     folder_counter = 1
     for folder_path in subdirs:
         old_name = folder_path.name
-        
+
         # 1. Clean existing prefix to prevent S01_S01_
         name_without_prefix = clean_foldername_prefix(old_name)
-            
+
         # 2. Combine new folder name with Sxx_ prefix (keeping original name intact)
         new_name = f"S{folder_counter:02d}_{name_without_prefix}"
 
@@ -134,6 +138,7 @@ def process_directory_recursively(current_dir):
             print(f"  [File] No change needed: '{original_name}'")
 
         counter += 1
+
 
 if __name__ == "__main__":
     # Get current working directory
