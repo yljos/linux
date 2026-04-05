@@ -554,6 +554,7 @@ rule-providers:
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,53,dns-out
+  - DST-PORT,853,REJECT
   - RULE-SET,ad-site,REJECT-DROP
   - RULE-SET,ad-ip,REJECT-DROP
   - RULE-SET,mobile,DIRECT
