@@ -2,20 +2,6 @@ import re
 from pathlib import Path
 
 # --- Helper Functions ---
-def format_folder_name(name):
-    """
-    Folder naming rules:
-    - Has "_" -> My_Folder
-    - No "_" -> MYFOLDER
-    """
-    if "_" in name:
-        parts = name.split("_")
-        capitalized_parts = [p.capitalize() for p in parts if p]
-        return "_".join(capitalized_parts)
-    else:
-        cleaned_name = re.sub(r"[^a-zA-Z0-9]+", "", name)
-        return cleaned_name.upper()
-
 def format_file_name(name):
     """
     File naming rules:
@@ -30,6 +16,25 @@ def format_file_name(name):
         return name.capitalize()
 
 # --- Core Logic ---
+def clean_foldername_prefix(foldername):
+    """
+    Remove existing '01_' or 'S01_' prefixes from the foldername
+    Returns the foldername string without the prefix to prevent S01_S01_
+    """
+    try:
+        if "_" in foldername:
+            prefix, rest = foldername.split("_", 1)
+            # Check if it is purely numeric (e.g. 01)
+            is_digit_prefix = prefix.isdigit()
+            # Check if it is S + number (e.g. S01)
+            is_season_prefix = prefix.startswith("S") and prefix[1:].isdigit()
+
+            if is_digit_prefix or is_season_prefix:
+                return rest
+    except ValueError:
+        pass
+    return foldername
+
 def clean_filename_prefix(filename):
     """
     Remove existing '01_' or 'E01_' prefixes from the filename
@@ -63,16 +68,22 @@ def process_directory_recursively(current_dir):
         print(f" [!] Permission denied, skipping: {current_dir}")
         return
 
-    # Categorize
-    subdirs = [x for x in all_items if x.is_dir()]
-    files = [x for x in all_items if x.is_file()]
+    # Categorize and sort
+    subdirs = sorted([x for x in all_items if x.is_dir()])
+    files = sorted([x for x in all_items if x.is_file()])
 
     # --- Step 1: Process subfolders (rename + recurse) ---
+    folder_counter = 1
     for folder_path in subdirs:
         old_name = folder_path.name
-        new_name = format_folder_name(old_name)
+        
+        # 1. Clean existing prefix to prevent S01_S01_
+        name_without_prefix = clean_foldername_prefix(old_name)
+            
+        # 2. Combine new folder name with Sxx_ prefix (keeping original name intact)
+        new_name = f"S{folder_counter:02d}_{name_without_prefix}"
 
-        if new_name and old_name != new_name:
+        if old_name != new_name:
             new_folder_path = folder_path.with_name(new_name)
             try:
                 folder_path.rename(new_folder_path)
@@ -81,10 +92,11 @@ def process_directory_recursively(current_dir):
             except OSError as e:
                 print(f"  [!] Folder rename failed '{old_name}': {e}")
 
+        folder_counter += 1
         process_directory_recursively(folder_path)
 
     # --- Step 2: Process .mp4 files ---
-    mp4_files = sorted([f for f in files if f.suffix.lower() == ".mp4"])
+    mp4_files = [f for f in files if f.suffix.lower() == ".mp4"]
 
     if not mp4_files:
         return
