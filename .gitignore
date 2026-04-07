@@ -18,5 +18,6 @@
 **/default.target.wants/
 arch/huai/.config/systemd/user/*
 !arch/huai/.config/systemd/user/shutdown.service
+!arch/huai/.config/systemd/user/dwm-status.service
 
 
