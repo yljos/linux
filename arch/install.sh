@@ -118,17 +118,20 @@ install_packages() {
     pacman-key --populate archlinux
 
     pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less \
-        fuzzel mako foot polkit \
-        fastfetch btop pipewire wireplumber rtkit \
+        rofi dunst alacritty polkit \
+        fastfetch btop pipewire wireplumber pipewire-pulse pipewire-alsa rtkit \
         rsync ntfs-3g curl p7zip libnotify openssh sshfs \
         freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
         ttf-liberation fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
         libva-utils telegram-desktop bc firejail nodejs stow firefox python-black shfmt \
-        wlroots0.18 tllist fcft wayland-protocols wayland cloudflared
+        cloudflared xorg-server xorg-xinit
     echo ">> Generating fstab"
     genfstab -U /mnt >>/mnt/etc/fstab
 }
-
+# dwl
+# wlroots0.18 tllist fcft wayland-protocols wayland fuzzel mako foot
+# dwm
+# xorg-server xorg-xinit
 configure_system() {
     echo ">> Configuring system"
     ROOT_UUID=$(blkid -s UUID -o value "${DISK}${PART_PREFIX}3")

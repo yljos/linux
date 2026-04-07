@@ -36,6 +36,7 @@ _ssh_status() {
 # 脚本和程序
 alias win="/usr/bin/bash /home/huai/.config/windows.sh"
 alias np="/usr/bin/bash /home/huai/.config/swww.sh"
-x() {
-    dbus-run-session bash -c "/home/huai/.config/dwl/dwl_status.sh | dwl"
-}
+# x() {
+#     dbus-run-session bash -c "/home/huai/.config/dwl/dwl_status.sh | dwl"
+# }
+alias x=startx
