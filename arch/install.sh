@@ -124,7 +124,7 @@ install_packages() {
         freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
         ttf-liberation fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
         libva-utils telegram-desktop bc firejail nodejs stow firefox python-black shfmt \
-        cloudflared xorg-server xorg-xinit
+        cloudflared xorg-server xorg-xinit xorg-xsetroot
     echo ">> Generating fstab"
     genfstab -U /mnt >>/mnt/etc/fstab
 }

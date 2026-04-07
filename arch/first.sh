@@ -14,4 +14,4 @@ curl -s "http://10.0.0.21/key/bite_os_public_20260331.asc" | gpg --import >/dev/
 
 systemctl --user daemon-reload && systemctl --user enable --now pipewire wireplumber ssh-agent shutdown >/dev/null 2>&1
 # [ -f /etc/krb5.conf ] && sudo sed -i 's/^/#/' /etc/krb5.conf
-# sudo tee /etc/krb5.conf </dev/null
+sudo tee /etc/krb5.conf </dev/null
