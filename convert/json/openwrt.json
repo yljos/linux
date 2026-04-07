@@ -62,6 +62,7 @@
       {"rule_set": "huawei-ip", "action": "reject"},
       {"domain": ["cdn.jsdmirror.com", "ntp.aliyun.com"], "outbound": "D"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "outbound": "Microsoft"},
+      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.121/32", "10.0.0.8/32"]}, {"domain_keyword": "googleapis"}], "outbound": "Youtube"},
       {"domain_keyword": "googleapis", "outbound": "Google"},
       {"rule_set": "direct-site", "outbound": "D"},
       {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.21/32"]}, {"rule_set": ["cloudflare-site"]}], "outbound": "D"},

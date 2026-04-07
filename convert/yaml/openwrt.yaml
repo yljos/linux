@@ -635,6 +635,7 @@ rules:
   - RULE-SET,cloudflare-site,M
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
   - DOMAIN-KEYWORD,msftncsi.com,Microsoft
+  - AND,((SRC-IP-CIDR,10.0.0.121/32),(DOMAIN-KEYWORD,googleapis)),Youtube
   - DOMAIN-KEYWORD,googleapis,Google
   - RULE-SET,direct-site,DIRECT
   - RULE-SET,pikpak-site,PikPak
