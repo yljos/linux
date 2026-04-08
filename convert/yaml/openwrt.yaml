@@ -630,8 +630,6 @@ rules:
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT
   - RULE-SET,googlefcm-site,DIRECT
-  - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-site)),Youtube
-  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-site)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
   - RULE-SET,cloudflare-site,M
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
@@ -655,6 +653,8 @@ rules:
   - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,youtube-site)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,youtube-site)),Youtube
   - RULE-SET,youtube-site,Google
+  - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-site)),Youtube
+  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-site)),Youtube
   - RULE-SET,google-site,Google
   - RULE-SET,tiktok-site,TikTok
   - RULE-SET,tmdb-site,M
@@ -673,8 +673,6 @@ rules:
   - RULE-SET,local-ip,DIRECT
   - RULE-SET,direct-ip,DIRECT
   - RULE-SET,wechat-ip,DIRECT
-  - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-ip)),Youtube
-  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-ip)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-ip)),DIRECT
   - RULE-SET,github-ip,GitHub
   - RULE-SET,cloudflare-ip,M
@@ -682,6 +680,8 @@ rules:
   - RULE-SET,alibaba-ip,DIRECT
   - RULE-SET,telegram-ip,Telegram
   - RULE-SET,twitter-ip,Twitter
+  - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-ip)),Youtube
+  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-ip)),Youtube  
   - RULE-SET,google-ip,Google
   - RULE-SET,cn-ip,DIRECT
   - MATCH,Default
