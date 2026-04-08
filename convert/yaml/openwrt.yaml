@@ -629,6 +629,7 @@ rules:
   - RULE-SET,huawei-site,REJECT-DROP
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT
+  - RULE-SET,googlefcm-site,DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-site)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-site)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
@@ -642,7 +643,6 @@ rules:
   - RULE-SET,alibaba-site,DIRECT
   - RULE-SET,jd-site,DIRECT
   - RULE-SET,tencent-site,DIRECT
-  - RULE-SET,googlefcm-site,DIRECT
   - RULE-SET,proxy-site,M
   - RULE-SET,github-site,GitHub
   - RULE-SET,codeberg-site,GitHub
