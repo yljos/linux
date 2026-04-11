@@ -12,7 +12,6 @@ RestartSec=5s
 ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
-  --init \
   --name=jellyfin \
   --log-driver=journald \
   -p 8096:8096 \
