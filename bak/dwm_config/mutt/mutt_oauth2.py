@@ -77,15 +77,13 @@ registrations = {
     },
 }
 
-ap = argparse.ArgumentParser(
-    epilog="""
+ap = argparse.ArgumentParser(epilog="""
 This script obtains and prints a valid OAuth2 access token.  State is maintained in an
 encrypted TOKENFILE.  Run with "--verbose --authorize --encryption-pipe 'foo@bar.org'"
 to get started or whenever all tokens have expired, optionally with "--authflow" to override
 the default authorization flow.  To truly start over from scratch, first delete TOKENFILE.
 Use "--verbose --test" to test the IMAP/POP/SMTP endpoints.
-"""
-)
+""")
 ap.add_argument("-v", "--verbose", action="store_true", help="increase verbosity")
 ap.add_argument("-d", "--debug", action="store_true", help="enable debug output")
 ap.add_argument("tokenfile", help="persistent token storage")
