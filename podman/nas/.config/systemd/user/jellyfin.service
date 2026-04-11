@@ -8,13 +8,14 @@ Type=simple
 Restart=always
 RestartSec=5s
 
-
 ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
   --name=jellyfin \
   --log-driver=journald \
   -p 8096:8096 \
+  -e PUID=0 \
+  -e PGID=0 \
   -v /data/appdata/jellyfin:/config:Z \
   -v /data/media:/media:ro,z \
   -v /data/MiSans:/usr/local/share/fonts/truetype/MiSans:Z \
@@ -24,6 +25,3 @@ ExecStart=/usr/bin/podman run \
   docker.io/linuxserver/jellyfin:latest
 
 ExecStop=/usr/bin/podman stop -t 10 jellyfin
-
-[Install]
-WantedBy=default.target
