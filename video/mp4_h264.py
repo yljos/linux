@@ -40,7 +40,7 @@ def get_codec(file_path):
         return "unknown"
 
 def convert_videos(source_dir):
-    original_title = "HEVC to H264 Auto Converter"
+    original_title = "Non-H264 to H264 Auto Converter"
     set_terminal_title(original_title)
     source_path = Path(source_dir).resolve()
 
@@ -55,7 +55,7 @@ def convert_videos(source_dir):
             continue
 
         codec = get_codec(file_path)
-        if codec != "hevc":
+        if codec == "h264":
             continue
 
         output_path = file_path.with_name(f"{file_path.stem}_h264.mp4")
@@ -65,7 +65,7 @@ def convert_videos(source_dir):
             print("-" * 50)
             continue
 
-        print(f"[+] Processing: {file_path.name} (Found HEVC codec)")
+        print(f"[+] Processing: {file_path.name} (Found {codec} codec)")
         
         try:
             display_path = output_path.relative_to(source_path)
@@ -113,7 +113,7 @@ def main():
     source_directory_to_process = "."
 
     print("=" * 50)
-    print("      HEVC to H264 Auto Converter")
+    print("      Non-H264 to H264 Auto Converter")
     print("=" * 50)
 
     try:
