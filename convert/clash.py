@@ -103,7 +103,7 @@ def filter_node_names_clash(proxies, shared_kw, shared_ex_kw):
         n
         for n in all_names
         if any(kw.lower() in n.lower() for kw in shared_kw)
-        and not any(ex.lower() in n.lower() for ex in shared_ex_kw)
+           and not any(ex.lower() in n.lower() for ex in shared_ex_kw)
     ]
     return filtered, all_names
 
@@ -125,13 +125,13 @@ def process_proxy_config_clash(proxy, up_pref, down_pref):
 
 
 def process_yaml_content_clash(
-    yaml_text: str,
-    template_path: Path,
-    up_pref: str,
-    down_pref: str,
-    shared_kw,
-    shared_ex_kw,
-    clean_node_fn,
+        yaml_text: str,
+        template_path: Path,
+        up_pref: str,
+        down_pref: str,
+        shared_kw,
+        shared_ex_kw,
+        clean_node_fn,
 ):
     try:
         input_data = yaml.safe_load(yaml_text)
@@ -194,8 +194,8 @@ def process_yaml_content_clash(
 
             final_groups = []
             surviving_group_names = {g["name"] for g in temp_groups if "name" in g}
-            BUILT_IN = {"DIRECT", "REJECT", "no-resolve", "PASS"}
-            valid_targets = set(all_node_names) | surviving_group_names | BUILT_IN
+            built_in = {"DIRECT", "REJECT", "PASS"}
+            valid_targets = set(all_node_names) | surviving_group_names | built_in
 
             for group in temp_groups:
                 original_refs = group.get("proxies", [])
