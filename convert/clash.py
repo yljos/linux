@@ -98,13 +98,22 @@ def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expi
 
 
 def filter_node_names_clash(proxies, shared_kw, shared_ex_kw):
-    all_names = [p.get("name") for p in proxies if isinstance(p, dict) and "name" in p]
+    all_names = [
+        str(p.get("name"))  # 显式声明为 str，消除编辑器的类型警告
+        for p in proxies
+        if isinstance(p, dict) and isinstance(p.get("name"), str)
+    ]
+
+    valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
+    valid_ex_kw = [str(ex).lower() for ex in shared_ex_kw if isinstance(ex, str)]
+
     filtered = [
         n
         for n in all_names
-        if any(kw.lower() in n.lower() for kw in shared_kw)
-           and not any(ex.lower() in n.lower() for ex in shared_ex_kw)
+        if any(kw in n.lower() for kw in valid_kw)
+           and not any(ex in n.lower() for ex in valid_ex_kw)
     ]
+
     return filtered, all_names
 
 
