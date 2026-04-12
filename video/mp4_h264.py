@@ -2,6 +2,7 @@ import subprocess
 import sys
 import platform
 import json
+import time
 from pathlib import Path
 
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov"}
@@ -47,25 +48,23 @@ def convert_videos(source_dir):
     print(f"[*] Scanning directory: {source_path}")
     print("-" * 50)
 
+    # Pre-scan to count targets and avoid sleeping after the last file
+    targets = []
     for file_path in source_path.rglob("*"):
-        if not file_path.is_file():
-            continue
+        if file_path.is_file() and file_path.suffix.lower() in VIDEO_EXTENSIONS:
+            output_path = file_path.with_name(f"{file_path.stem}_h264.mp4")
+            if not (output_path.exists() or file_path.name.endswith("_h264.mp4")):
+                codec = get_codec(file_path)
+                if codec != "h264":
+                    targets.append((file_path, codec, output_path))
 
-        if file_path.suffix.lower() not in VIDEO_EXTENSIONS:
-            continue
+    total = len(targets)
+    if total == 0:
+        print("[i] No files need conversion.")
+        return
 
-        codec = get_codec(file_path)
-        if codec == "h264":
-            continue
-
-        output_path = file_path.with_name(f"{file_path.stem}_h264.mp4")
-
-        if output_path.exists() or file_path.name.endswith("_h264.mp4"):
-            print(f"[i] Skip: Output exists {output_path.name}")
-            print("-" * 50)
-            continue
-
-        print(f"[+] Processing: {file_path.name} (Found {codec} codec)")
+    for index, (file_path, codec, output_path) in enumerate(targets):
+        print(f"[+] Processing {index + 1}/{total}: {file_path.name} (Found {codec} codec)")
         
         try:
             display_path = output_path.relative_to(source_path)
@@ -107,19 +106,16 @@ def convert_videos(source_dir):
 
         print("-" * 50)
 
+        # Sleep 5 minutes between tasks, skip if it is the last file
+        if index < total - 1:
+            print(f"[i] Cooldown: Waiting 5 minutes before next task...")
+            time.sleep(300)
+
     print("[*] All tasks completed.")
 
 def main():
     source_directory_to_process = "."
-
-    print("=" * 50)
-    print("      Non-H264 to H264 Auto Converter")
-    print("=" * 50)
-
-    try:
-        convert_videos(source_directory_to_process)
-    except Exception as e:
-        print(f"[!] Script error: {e}", file=sys.stderr)
+    convert_videos(source_directory_to_process)
 
 if __name__ == "__main__":
     main()
