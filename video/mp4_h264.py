@@ -8,11 +8,16 @@ from pathlib import Path
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov"}
 
 FFMPEG_PARAMS = [
-    "-c:v", "libx264",
-    "-preset", "superfast",
-    "-crf", "18",
-    "-c:a", "copy"
+    "-c:v",
+    "libx264",
+    "-preset",
+    "superfast",
+    "-crf",
+    "18",
+    "-c:a",
+    "copy",
 ]
+
 
 def set_terminal_title(title):
     try:
@@ -24,14 +29,19 @@ def set_terminal_title(title):
     except Exception:
         pass
 
+
 def get_codec(file_path):
     cmd = [
-        "ffprobe", 
-        "-v", "error", 
-        "-select_streams", "v:0", 
-        "-show_entries", "stream=codec_name", 
-        "-of", "json", 
-        str(file_path)
+        "ffprobe",
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=codec_name",
+        "-of",
+        "json",
+        str(file_path),
     ]
     try:
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
@@ -39,6 +49,7 @@ def get_codec(file_path):
         return data["streams"][0]["codec_name"]
     except Exception:
         return "unknown"
+
 
 def convert_videos(source_dir):
     original_title = "Non-H264 to H264 Auto Converter"
@@ -64,13 +75,15 @@ def convert_videos(source_dir):
         return
 
     for index, (file_path, codec, output_path) in enumerate(targets):
-        print(f"[+] Processing {index + 1}/{total}: {file_path.name} (Found {codec} codec)")
-        
+        print(
+            f"[+] Processing {index + 1}/{total}: {file_path.name} (Found {codec} codec)"
+        )
+
         try:
             display_path = output_path.relative_to(source_path)
         except ValueError:
             display_path = output_path
-            
+
         print(f"    -> Output to: {display_path}")
         set_terminal_title(f"Converting: {file_path.name}")
 
@@ -94,7 +107,10 @@ def convert_videos(source_dir):
             if process.returncode == 0:
                 print(f"[✔] Success: {file_path.name}")
             else:
-                print(f"[!] Failed: {file_path.name} (Code: {process.returncode})", file=sys.stderr)
+                print(
+                    f"[!] Failed: {file_path.name} (Code: {process.returncode})",
+                    file=sys.stderr,
+                )
 
         except FileNotFoundError:
             print("[!] Error: ffmpeg not found.", file=sys.stderr)
@@ -113,9 +129,11 @@ def convert_videos(source_dir):
 
     print("[*] All tasks completed.")
 
+
 def main():
     source_directory_to_process = "."
     convert_videos(source_directory_to_process)
+
 
 if __name__ == "__main__":
     main()
