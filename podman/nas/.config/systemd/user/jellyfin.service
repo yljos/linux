@@ -20,3 +20,6 @@ ExecStart=/usr/bin/podman run \
   docker.io/jellyfin/jellyfin:latest
 
 ExecStop=/usr/bin/podman stop -t 10 jellyfin
+
+[Install]
+WantedBy=default.target
