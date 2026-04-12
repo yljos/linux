@@ -111,7 +111,7 @@ def filter_node_names_clash(proxies, shared_kw, shared_ex_kw):
         n
         for n in all_names
         if any(kw in n.lower() for kw in valid_kw)
-           and not any(ex in n.lower() for ex in valid_ex_kw)
+        and not any(ex in n.lower() for ex in valid_ex_kw)
     ]
 
     return filtered, all_names
@@ -134,13 +134,13 @@ def process_proxy_config_clash(proxy, up_pref, down_pref):
 
 
 def process_yaml_content_clash(
-        yaml_text: str,
-        template_path: Path,
-        up_pref: str,
-        down_pref: str,
-        shared_kw,
-        shared_ex_kw,
-        clean_node_fn,
+    yaml_text: str,
+    template_path: Path,
+    up_pref: str,
+    down_pref: str,
+    shared_kw,
+    shared_ex_kw,
+    clean_node_fn,
 ):
     try:
         input_data = yaml.safe_load(yaml_text)
