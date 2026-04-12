@@ -1,0 +1,26 @@
+[Unit]
+Description=Emby Container
+Wants=network-online.target rclone-aliyun.service
+After=network-online.target rclone-aliyun.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=emby \
+  --log-driver=journald \
+  -p 8096:8096 \
+  -e PUID=0 \
+  -e PGID=0 \
+  -v /data/appdata/emby:/config:Z \
+  -v /data/media:/media:ro,z \
+  docker.io/emby/embyserver:latest
+
+ExecStop=/usr/bin/podman stop -t 10 emby
+
+[Install]
+WantedBy=default.target
