@@ -19,6 +19,8 @@
 arch/huai/.config/systemd/user/*
 !arch/huai/.config/systemd/user/shutdown.service
 !arch/huai/.config/systemd/user/dwm-status.service
-test
+debian/huai/.config/systemd/user/*
+!debian/huai/.config/systemd/user/shutdown.service
+!debian/huai/.config/systemd/user/dwm-status.service
 
 
