@@ -30,6 +30,7 @@ bilibili.com##.bili-danmaku-x-show[data-type="link"]
 bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-vote)
 bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-guide)
 bilibili.com##.bili-danmaku-x-show:has(.bili-danmaku-x-score)
+bilibili.com##.bpx-player-qoeFeedback
 
 ! 屏蔽广告拦截提示
 bilibili.com##.adblock-tips
