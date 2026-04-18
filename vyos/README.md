@@ -5,38 +5,43 @@
 # Enter image installation mode
 install image
 ```
+
 ## 2. Base Connectivity
-### Enter Config Mode
+
+### 2.1 PPPoE Credentials
 ```bash
 configure
 ```
-### Set PPPoE Username
 ```bash
 set interfaces pppoe pppoe0 authentication username 'YOUR_USERNAME'
 ```
 
-### Set PPPoE Password
 ```bash
 set interfaces pppoe pppoe0 authentication password 'YOUR_PASSWORD'
 ```
 
-### LAN Interface
+### 2.2 Enter Configuration Mode
+```bash
+configure
+```
+
+### 2.3 LAN Interface
 ```bash
 # Define LAN interface
 set interfaces ethernet eth0 address 10.0.0.1/24
 set interfaces ethernet eth0 description LAN
 ```
 
-### PPPoE Interface Binding
+### 2.4 PPPoE Interface Binding
 ```bash
 # Bind PPPoE to physical interface eth1
 set interfaces ethernet eth1 description WAN
 set interfaces pppoe pppoe0 source-interface eth1
 ```
 
-### PPPoE MTU & MSS
+### 2.5 PPPoE MTU & MSS Optimization
 ```bash
-# Optimize for PPPoE
+# Optimize for PPPoE stability
 set interfaces pppoe pppoe0 mtu 1492
 set interfaces pppoe pppoe0 ip adjust-mss clamp-mss-to-pmtu
 ```
@@ -55,6 +60,8 @@ set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 range 0 stop 
 ```
 
 ## 4. DNS Forwarding
+
+### 4.1 Global Settings
 ```bash
 # DNS forwarding settings
 set system name-server pppoe0
@@ -63,9 +70,9 @@ set service dns forwarding allow-from 10.0.0.0/24
 set service dns forwarding system
 ```
 
-### DNS Listen Address
+### 4.2 Listen Address
 ```bash
-# Listen on loopback only (for sing-box compatibility)
+# Listen on loopback only (ensures port 53 is free for sing-box on 10.0.0.1)
 delete service dns forwarding listen-address 10.0.0.1
 set service dns forwarding listen-address 127.0.0.1
 ```
@@ -80,7 +87,7 @@ set system login user vyos authentication public-keys admin key AAAAC3NzaC1lZDI1
 
 ## 6. NTP & Timezone
 ```bash
-# Time synchronization
+# Time synchronization and UTC zone
 set system time-zone UTC
 set service ntp server ntp.aliyun.com
 delete service ntp server time1.vyos.net
@@ -96,29 +103,29 @@ set nat source rule 100 source address 10.0.0.0/24
 set nat source rule 100 translation address masquerade
 ```
 
-## 8. Firewall Policy (Rulesets)
+## 8. Firewall Rulesets
 
-### WAN to LAN
+### 8.1 WAN to LAN
 ```bash
-# State-based rules for WAN to LAN
+# Drop unsolicited traffic from WAN
 set firewall ipv4 name WAN-LAN default-action drop
 set firewall ipv4 name WAN-LAN rule 1 action accept
 set firewall ipv4 name WAN-LAN rule 1 state established
 set firewall ipv4 name WAN-LAN rule 1 state related
 ```
 
-### WAN to Local
+### 8.2 WAN to Local
 ```bash
-# Protect router from WAN access
+# Protect router itself from WAN
 set firewall ipv4 name WAN-LOCAL default-action drop
 set firewall ipv4 name WAN-LOCAL rule 1 action accept
 set firewall ipv4 name WAN-LOCAL rule 1 state established
 set firewall ipv4 name WAN-LOCAL rule 1 state related
 ```
 
-### Internal Traffic
+### 8.3 Internal Traffic
 ```bash
-# Default accept for internal flows
+# Trust internal network flows
 set firewall ipv4 name LAN-WAN default-action accept
 set firewall ipv4 name LAN-LOCAL default-action accept
 set firewall ipv4 name LOCAL-LAN default-action accept
@@ -127,27 +134,27 @@ set firewall ipv4 name LOCAL-WAN default-action accept
 
 ## 9. Firewall Zones
 
-### LOCAL Zone
+### 9.1 LOCAL Zone
 ```bash
-# Define LOCAL zone policy
+# Policy for the router itself
 set firewall zone LOCAL local-zone
 set firewall zone LOCAL default-action drop
 set firewall zone LOCAL from LAN firewall name LAN-LOCAL
 set firewall zone LOCAL from WAN firewall name WAN-LOCAL
 ```
 
-### LAN Zone
+### 9.2 LAN Zone
 ```bash
-# Define LAN zone policy
+# Policy for LAN interface
 set firewall zone LAN member interface eth0
 set firewall zone LAN default-action drop
 set firewall zone LAN from LOCAL firewall name LOCAL-LAN
 set firewall zone LAN from WAN firewall name WAN-LAN
 ```
 
-### WAN Zone
+### 9.3 WAN Zone
 ```bash
-# Define WAN zone policy
+# Policy for PPPoE interface
 set firewall zone WAN member interface pppoe0
 set firewall zone WAN default-action drop
 set firewall zone WAN from LAN firewall name LAN-WAN
@@ -156,9 +163,9 @@ set firewall zone WAN from LOCAL firewall name LOCAL-WAN
 
 ## 10. Containers (TProxy)
 
-### Mihomo
+### 10.1 Mihomo
 ```bash
-# Mihomo container setup
+# Setup Mihomo container
 set container name mihomo image 'docker.io/metacubex/mihomo:latest'
 set container name mihomo capability 'net-admin'
 set container name mihomo capability 'net-raw'
@@ -168,9 +175,9 @@ set container name mihomo volume config source '/config/mihomo/'
 set container name mihomo restart 'on-failure'
 ```
 
-### Sing-box
+### 10.2 Sing-box
 ```bash
-# Sing-box container setup
+# Setup Sing-box container
 set container name sing-box image 'ghcr.io/sagernet/sing-box:latest'
 set container name sing-box capability 'net-admin'
 set container name sing-box capability 'net-raw'
@@ -183,7 +190,7 @@ set container name sing-box restart 'on-failure'
 
 ## 11. Finalize
 ```bash
-# Pull image and save configuration
+# Pull images and save changes
 add container image ghcr.io/sagernet/sing-box:latest
 commit
 save
@@ -192,7 +199,7 @@ exit
 
 ### Note: Manual Image Load
 ```bash
-# If automatic pull fails
+# In case of automatic pull failure
 podman pull docker.io/metacubex/mihomo:latest
 podman save -o mihomo.tar metacubex/mihomo:latest
 scp mihomo.tar vyos:/tmp/
