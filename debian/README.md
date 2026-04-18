@@ -97,7 +97,7 @@ XMODIFIERS=@im=fcitx
 ### auto umount /data
 ```bash
 crontab -e
- mountpoint -q /data && ! fuser -s /data && fusermount3 -u /data
+# mountpoint -q /data && ! fuser -s /data && fusermount3 -u /data
 ```
 
 ### APT Configuration
