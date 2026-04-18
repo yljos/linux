@@ -4,7 +4,7 @@
 
 ### dependencies run as root
 ```bash
-apt install build-essential libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit freerdp2-x11 scdaemon pcscd sudo fonts-noto-cjk fonts-noto-color-emoji git curl vim libnotify-bin arp-scan psmisc install pipewire wireplumber pipewire-pulse pipewire-alsa systemd-boot efibootmgr
+apt install build-essential libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit freerdp2-x11 scdaemon pcscd sudo fonts-noto-cjk fonts-noto-color-emoji git curl vim libnotify-bin arp-scan psmisc pipewire wireplumber pipewire-pulse pipewire-alsa systemd-boot efibootmgr
 ```
 
 ## 2. System Base & Core Tools
