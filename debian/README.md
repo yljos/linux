@@ -4,14 +4,13 @@
 
 ### dependencies run as root
 ```bash
-apt install build-essential libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit freerdp2-x11 scdaemon pcscd
+apt install build-essential libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit freerdp2-x11 scdaemon pcscd sudo
 ```
 
 ## 2. System Base & Core Tools
 
 ### User & Localization run as root
 ```bash
-apt update && apt install sudo
 usermod -aG sudo huai
 ```
 
@@ -28,7 +27,7 @@ sudo apt install git curl vim libnotify-bin arp-scan psmisc
 
 ### vim plug
 ```bash
-curl -fLo ~/.vim/autoload/plug.vim --create-dirs [https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim](https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim)
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs (https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim)
 ```
 
 ### mute login message
@@ -110,8 +109,8 @@ XMODIFIERS=@im=fcitx
 ### auto umount /data
 ```bash
 crontab -e
-# Add the following line:
-mountpoint -q /data && ! fuser -s /data && fusermount3 -u /data
+# Add the following line to the crontab file:
+# mountpoint -q /data && ! fuser -s /data && fusermount3 -u /data
 ```
 
 ### APT Configuration
