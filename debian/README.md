@@ -2,14 +2,14 @@
 
 ## 1. Window Managers
 
-### dwm dependencies
+### dependencies run as root
 ```bash
-sudo apt install build-essential libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit freerdp2-x11 scdaemon pcscd
+apt install build-essential libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit freerdp2-x11 scdaemon pcscd
 ```
 
 ## 2. System Base & Core Tools
 
-### User & Localization
+### User & Localization run as root
 ```bash
 apt update && apt install sudo
 usermod -aG sudo huai
@@ -111,7 +111,7 @@ XMODIFIERS=@im=fcitx
 ```bash
 crontab -e
 # Add the following line:
-# mountpoint -q /data && ! fuser -s /data && fusermount3 -u /data
+mountpoint -q /data && ! fuser -s /data && fusermount3 -u /data
 ```
 
 ### APT Configuration
