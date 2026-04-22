@@ -202,6 +202,11 @@ exit
 # In case of automatic pull failure
 podman pull docker.io/metacubex/mihomo:latest
 podman save -o mihomo.tar metacubex/mihomo:latest
+mv mihomo.tar /data/www
+```
+```bash
 scp mihomo.tar vyos:/tmp/
+```
+```bash
 sudo podman load -i /tmp/mihomo.tar
 ```
