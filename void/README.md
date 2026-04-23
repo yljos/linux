@@ -1,5 +1,36 @@
+# Linux EFISTUB (NVRAM) Migration Guide
+
+## 1. Initial File Deployment
+Manually sync the current kernel and initrd to a static directory within the EFI System Partition (ESP).
+
 ```bash
-sudo efibootmgr --create --disk /dev/mmcblk0 --part 1 --label "Nas" \
-    --loader /EFI/nas/vmlinuz \
-    --unicode "root=UUID=18a054b2-1e9c-4b1d-8a48-fd20fa59c833 ro quiet loglevel=3 vt.global_cursor_default=0 initrd=/EFI/nas/initrd.img"
-```    
+# Set target directory (e.g., /boot/efi/EFI/[NAME])
+TARGET_DIR="/boot/efi/EFI/[NAME]"
+
+# Create the directory
+sudo mkdir -p "$TARGET_DIR"
+
+# Copy kernel and initrd to static filenames
+sudo cp -f /boot/vmlinuz-$(uname -r) "$TARGET_DIR/vmlinuz"
+sudo cp -f /boot/initrd.img-$(uname -r) "$TARGET_DIR/initrd.img"
+```
+
+## 2. NVRAM Boot Entry Creation
+Use `efibootmgr` to register the kernel as a standalone EFI application in the motherboard NVRAM.
+
+```bash
+# Replace placeholders with actual values
+sudo efibootmgr --create --disk /dev/ --part 1 --label "[NAME]" \
+    --loader /EFI/[NAME]/vmlinuz \
+    --unicode "root=UUID=[ROOT_UUID] ro quiet initrd=/EFI/[NAME]/initrd.img"
+```
+
+## 3. Cleanup
+After confirming `efibootmgr -v` shows `BootCurrent` matches your new entry, remove the legacy bootloader.
+
+```bash
+# 1. Remove bootloader packages (e.g., grub or systemd-boot)
+# 2. Delete legacy NVRAM entries
+sudo efibootmgr -b 0007 -B
+
+```
