@@ -39,4 +39,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 
 # Start the application
-CMD ["python", "app.py"]
+CMD ["python", "main.py"]
