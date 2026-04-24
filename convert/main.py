@@ -3,28 +3,22 @@ import hmac
 import io
 import json
 import logging
+import os
 import re
+import time
 from pathlib import Path
 from urllib.parse import unquote
 
+import requests
 import yaml
-from flask import Flask, send_file, request, abort, Response, jsonify
-
-# ================= 模块开关 =================
-ENABLE_CLASH = True
-ENABLE_SINGBOX = False
-if ENABLE_CLASH:
-    import clash
-
-if ENABLE_SINGBOX:
-    import singbox
+from flask import Flask, send_file, request, abort
 
 app = Flask(__name__)
 
-# ================= 鉴权与通用配置 =================
+# ================= Auth and General Config =================
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
 
-# 获取当前脚本所在目录的绝对路径，确保稳定运行
+# Get the absolute path of the current script directory
 BASE_DIR = Path(__file__).resolve().parent
 
 CACHE_DIR = BASE_DIR / "cache"
@@ -36,17 +30,30 @@ source_map = {
     "bajie": BASE_DIR / "bajie",
 }
 
-# 自定义节点文件路径
+# Custom node file path
 CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
-CUSTOM_SINGBOX_NODE = BASE_DIR / "node.json"
 
-# 需要将自定义节点加入的组名 (根据你的模板修改)
+# Target groups to inject custom nodes
 TARGET_GROUPS = ["Google"]
 
-# 指定需要插入自定义节点的客户端模板
+# Client templates to inject custom nodes
 INJECT_TEMPLATES = ["m", "openwrt"]
 
-# ================= 关键词与黑名单 =================
+# ================= Clash Specific Config =================
+CLASH_TEMPLATE_PC = BASE_DIR / "yaml" / "pc.yaml"
+CLASH_TEMPLATE_MTUN = BASE_DIR / "yaml" / "mtun.yaml"
+CLASH_TEMPLATE_OPENWRT = BASE_DIR / "yaml" / "openwrt.yaml"
+CLASH_TEMPLATE_M = BASE_DIR / "yaml" / "m.yaml"
+
+CLASH_USER_AGENT = "clash-verge"
+CLASH_INCLUDED_HEADERS = ["Subscription-Userinfo"]
+CLASH_HY2_UP = "50 Mbps"
+CLASH_HY2_DOWN = "200 Mbps"
+CLASH_HY2_UP_M = "30 Mbps"
+CLASH_HY2_DOWN_M = "60 Mbps"
+CLASH_FINGERPRINT = "firefox"
+
+# ================= Keywords and Blacklist =================
 RENAME_MAP = {
     "香港": "HK",
     "美国": "US",
@@ -56,35 +63,16 @@ RENAME_MAP = {
 }
 
 SHARED_KEYWORDS = [
-    "US",
-    "HK",
-    "SG",
-    "JP",
-    "Hong Kong",
-    "Singapore",
-    "Japan",
-    "United States",
-    "美国",
-    "香港",
-    "新加坡",
-    "日本",
+    "US", "HK", "SG", "JP", "Hong Kong", "Singapore", "Japan", "United States", 
+    "美国", "香港", "新加坡", "日本",
 ]
 
 SHARED_EXCLUDE_KEYWORDS = [
-    "官网",
-    "流量",
-    "倍率",
-    "剩余",
-    "Australia",
-    "到期",
-    "重置",
-    "HK2-HY2",
-    "HK3-HY2",
-    "HK4-HY2",
-    "HK5-HY2",
+    "官网", "流量", "倍率", "剩余", "Australia", "到期", "重置", 
+    "HK2-HY2", "HK3-HY2", "HK4-HY2", "HK5-HY2",
 ]
 
-# ================= 日志与通用辅助函数 =================
+# ================= Logging and Utilities =================
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%H:%M:%S"
 )
@@ -110,10 +98,216 @@ def clean_node_name(name: str) -> str:
     return name
 
 
+# ================= Clash Processing Functions =================
+def is_valid_clash_yaml(text: str) -> bool:
+    if not text:
+        return False
+    return "proxies:" in text
+
+
+def save_headers_to_disk(source_name, headers, cache_dir):
+    try:
+        filtered = {
+            k: v
+            for k, v in headers.items()
+            if k.lower() in {h.lower() for h in CLASH_INCLUDED_HEADERS}
+        }
+        if not filtered:
+            return {}
+        file_path = cache_dir / f"{source_name}.headers.json"
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(filtered, f, ensure_ascii=False, indent=2)
+        return filtered
+    except Exception as e:
+        logger.error(f"save Headers Error: {e}")
+        return {}
+
+
+def load_headers_from_disk(source_name, cache_dir):
+    file_path = cache_dir / f"{source_name}.headers.json"
+    if not file_path.exists():
+        return {}
+    with open(file_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expire):
+    yaml_cache_file = cache_dir / f"{source_name}.yaml"
+
+    if not force_refresh and yaml_cache_file.exists():
+        try:
+            mtime = os.path.getmtime(yaml_cache_file)
+            if time.time() - mtime < cache_expire:
+                logger.info(f"[{source_name}] [Clash] [Loaded cache]")
+                with open(yaml_cache_file, "r", encoding="utf-8") as f:
+                    return f.read(), load_headers_from_disk(source_name, cache_dir)
+        except Exception as e:
+            logger.warning(f"Failed to read cache attributes, will try network request: {e}")
+
+    if force_refresh:
+        logger.info(f"[{source_name}] [Clash] [Received u]")
+
+    try:
+        headers = {"User-Agent": CLASH_USER_AGENT}
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()
+        text_content = response.text.lstrip("\ufeff").replace("\r\n", "\n")
+
+        if is_valid_clash_yaml(text_content):
+            save_headers_to_disk(source_name, response.headers, cache_dir)
+            with open(yaml_cache_file, "w", encoding="utf-8") as f:
+                f.write(text_content)
+            logger.info(f"[{source_name}] [Clash Updated Successfully]")
+            return text_content, response.headers
+        else:
+            logger.warning(f"[{source_name}] [Clash] [Fetch Error] [Fallback To Cache]")
+    except Exception as e:
+        logger.error(f"[{source_name}] [Clash] [Updated Error]: {e}")
+
+    if yaml_cache_file.exists():
+        logger.info(f"[{source_name}] [Clash] [Loaded cache] [Fallback]")
+        with open(yaml_cache_file, "r", encoding="utf-8") as f:
+            return f.read(), load_headers_from_disk(source_name, cache_dir)
+
+    raise RuntimeError(f"[{source_name}] [Error]")
+
+
+def filter_node_names_clash(proxies, shared_kw, shared_ex_kw):
+    all_names = [
+        str(p.get("name"))  # Explicitly declare as str to eliminate editor type warnings
+        for p in proxies
+        if isinstance(p, dict) and isinstance(p.get("name"), str)
+    ]
+
+    valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
+    valid_ex_kw = [str(ex).lower() for ex in shared_ex_kw if isinstance(ex, str)]
+
+    filtered = [
+        n
+        for n in all_names
+        if any(kw in n.lower() for kw in valid_kw)
+        and not any(ex in n.lower() for ex in valid_ex_kw)
+    ]
+
+    return filtered, all_names
+
+
+def process_proxy_config_clash(proxy, up_pref, down_pref):
+    if not isinstance(proxy, dict):
+        return
+    p_type = proxy.get("type")
+    up_pref, down_pref = str(up_pref or "100"), str(down_pref or "100")
+
+    if p_type == "hysteria2":
+        up_v = up_pref if "bps" in up_pref.lower() else f"{up_pref} Mbps"
+        down_v = down_pref if "bps" in down_pref.lower() else f"{down_pref} Mbps"
+        proxy.update({"up": up_v, "down": down_v, "skip-cert-verify": False})
+    elif p_type == "vless":
+        proxy.update({"skip-cert-verify": False, "packet-encoding": "xudp"})
+        if "client-fingerprint" in proxy:
+            proxy["client-fingerprint"] = CLASH_FINGERPRINT
+
+
+def process_yaml_content_clash(
+    yaml_text: str,
+    template_path: Path,
+    up_pref: str,
+    down_pref: str,
+    shared_kw,
+    shared_ex_kw,
+    clean_node_fn,
+):
+    try:
+        input_data = yaml.safe_load(yaml_text)
+        if not isinstance(input_data, dict):
+            raise ValueError("[Invalid YAML Format]")
+
+        with open(template_path, "r", encoding="utf-8") as f:
+            template_data = yaml.safe_load(f)
+
+        proxies_orig = input_data.get("proxies", [])
+        filtered_names, _ = filter_node_names_clash(
+            proxies_orig, shared_kw, shared_ex_kw
+        )
+
+        final_proxies = []
+        for p in proxies_orig:
+            if isinstance(p, dict) and p.get("name") in filtered_names:
+                p["name"] = clean_node_fn(p["name"])
+                process_proxy_config_clash(p, up_pref, down_pref)
+                final_proxies.append(p)
+
+        if not final_proxies and proxies_orig:
+            logger.warning("[Node None] [Fallback To All Nodes]")
+            for p in proxies_orig:
+                if isinstance(p, dict):
+                    p["name"] = clean_node_fn(p.get("name", ""))
+                    process_proxy_config_clash(p, up_pref, down_pref)
+            final_proxies = proxies_orig
+
+        final_proxies.append({"name": "dns-out", "type": "dns"})
+        template_data["proxies"] = final_proxies
+
+        if "proxy-groups" in template_data:
+            raw_groups = template_data["proxy-groups"]
+            all_node_names = [p["name"] for p in final_proxies]
+            temp_groups = []
+
+            for group in raw_groups:
+                if "filter" in group:
+                    existing_proxies = group.get("proxies", [])
+                    pattern = group.pop("filter")
+                    group.pop("include-all-proxies", None)
+
+                    try:
+                        matcher = re.compile(pattern, re.IGNORECASE)
+                        matched_names = [n for n in all_node_names if matcher.search(n)]
+
+                        combined = existing_proxies + [
+                            n for n in matched_names if n not in existing_proxies
+                        ]
+                        group["proxies"] = combined
+
+                    except Exception as e:
+                        logger.error(f"Regex error for group {group.get('name')}: {e}")
+
+                    if group.get("proxies"):
+                        temp_groups.append(group)
+                else:
+                    temp_groups.append(group)
+
+            final_groups = []
+            surviving_group_names = {g["name"] for g in temp_groups if "name" in g}
+            built_in = {"DIRECT", "REJECT", "PASS"}
+            valid_targets = set(all_node_names) | surviving_group_names | built_in
+
+            for group in temp_groups:
+                original_refs = group.get("proxies", [])
+                if not original_refs:
+                    continue
+                cleaned_refs = [ref for ref in original_refs if ref in valid_targets]
+                if cleaned_refs:
+                    group["proxies"] = cleaned_refs
+                    final_groups.append(group)
+            template_data["proxy-groups"] = final_groups
+
+        output = yaml.dump(
+            template_data,
+            allow_unicode=True,
+            sort_keys=False,
+            default_flow_style=False,
+            width=4096,
+        )
+        return output.encode("utf-8")
+    except Exception as e:
+        logger.error(f"Failed to parse YAML content: {e}")
+        raise
+
+
 def inject_custom_clash_node(
     yaml_bytes: bytes, node_path: Path, target_groups: list
 ) -> bytes:
-    """合并自定义 Clash 节点（支持单节点字典或多节点列表）并加入指定策略组"""
+    """Inject custom Clash nodes and add to specified proxy groups"""
     if not node_path.exists():
         return yaml_bytes
 
@@ -124,7 +318,7 @@ def inject_custom_clash_node(
         if not custom_data:
             return yaml_bytes
 
-        # 统一转换为列表处理
+        # Convert to list uniformly
         nodes = custom_data if isinstance(custom_data, list) else [custom_data]
         config = yaml.safe_load(yaml_bytes)
 
@@ -134,10 +328,10 @@ def inject_custom_clash_node(
 
             node_name = node["name"]
 
-            # 1. 节点列表追加
+            # 1. Append to proxies list
             config.setdefault("proxies", []).append(node)
 
-            # 2. 策略组追加
+            # 2. Append to proxy-groups
             for group in config.get("proxy-groups", []):
                 if group.get("name") in target_groups:
                     group.setdefault("proxies", []).append(node_name)
@@ -146,54 +340,11 @@ def inject_custom_clash_node(
             "utf-8"
         )
     except Exception as e:
-        logger.error(f"[Clash] 自定义节点合并失败: {e}")
+        logger.error(f"[Clash] Failed to merge custom node: {e}")
         return yaml_bytes
 
 
-def inject_custom_singbox_node(
-    json_str: str, node_path: Path, target_groups: list
-) -> str:
-    """合并自定义 Sing-box 节点（支持单节点字典或多节点列表）并加入指定出站组"""
-    if not node_path.exists():
-        return json_str
-
-    try:
-        with open(node_path, "r", encoding="utf-8") as f:
-            custom_data = json.load(f)
-
-        if not custom_data:
-            return json_str
-
-        # 统一转换为列表处理
-        outbounds = custom_data if isinstance(custom_data, list) else [custom_data]
-        config = json.loads(json_str)
-
-        for outbound in outbounds:
-            if not isinstance(outbound, dict) or "tag" not in outbound:
-                continue
-
-            node_tag = outbound["tag"]
-
-            # 1. 出站列表追加
-            config.setdefault("outbounds", []).append(outbound)
-
-            # 2. 注入到 selector/urltest 组
-            for cfg_outbound in config.get("outbounds", []):
-                if cfg_outbound.get("tag") in target_groups and cfg_outbound.get(
-                    "type"
-                ) in [
-                    "selector",
-                    "urltest",
-                ]:
-                    cfg_outbound.setdefault("outbounds", []).append(node_tag)
-
-        return json.dumps(config, ensure_ascii=False, indent=2)
-    except Exception as e:
-        logger.error(f"[Sing-box] 自定义节点合并失败: {e}")
-        return json_str
-
-
-# ================= 路由保护与分发 =================
+# ================= Routing and Distribution =================
 @app.before_request
 def restrict_paths():
     if request.path not in {"/mitce", "/bajie"}:
@@ -215,137 +366,87 @@ def process_source(source):
     ua = request.headers.get("User-Agent", "")
     is_force_refresh = "u" in request.args
 
-    # --- 1. Sing-box 分发逻辑 ---
-    if ENABLE_SINGBOX:
-        singbox_ua_map = {
-            "SFA": "mtun",
-            "sing-box_openwrt": "openwrt",
-            "sing-box_m": "m",
-            "sing-box_pc": "pc",
+    # --- Clash Distribution Logic ---
+    clash_config_val = None
+    if "ClashMetaForAndroid" in ua:
+        clash_config_val = "mtun"
+    elif "clash_pc" in ua:
+        clash_config_val = "pc"
+    elif "clash_openwrt" in ua:
+        clash_config_val = "openwrt"
+    elif "clash_m" in ua:
+        clash_config_val = "m"
+
+    if clash_config_val:
+        config_map = {
+            "m": (
+                CLASH_TEMPLATE_M,
+                CLASH_HY2_UP_M,
+                CLASH_HY2_DOWN_M,
+            ),
+            "mtun": (
+                CLASH_TEMPLATE_MTUN,
+                CLASH_HY2_UP_M,
+                CLASH_HY2_DOWN_M,
+            ),
+            "pc": (
+                CLASH_TEMPLATE_PC,
+                CLASH_HY2_UP,
+                CLASH_HY2_DOWN,
+            ),
+            "openwrt": (
+                CLASH_TEMPLATE_OPENWRT,
+                CLASH_HY2_UP,
+                CLASH_HY2_DOWN,
+            ),
         }
 
-        for keyword, config_val in singbox_ua_map.items():
-            if keyword in ua:
-                logger.info(
-                    f"[Sing-Box] | [Template: {config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
-                )
-                try:
-                    url = read_url_from_file(path)
-                    json_str = singbox.fetch_and_process_singbox(
-                        source,
-                        config_val,
-                        is_force_refresh,
-                        url,
-                        CACHE_DIR,
-                        CACHE_EXPIRE_SECONDS,
-                        SHARED_KEYWORDS,
-                        SHARED_EXCLUDE_KEYWORDS,
-                        clean_node_name,
-                    )
+        template_path, up, down = config_map[clash_config_val]
+        logger.info(
+            f"[Clash] | [Template: {clash_config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
+        )
 
-                    # 仅在指定的模板中插入节点
-                    if config_val in INJECT_TEMPLATES:
-                        json_str = inject_custom_singbox_node(
-                            json_str, CUSTOM_SINGBOX_NODE, TARGET_GROUPS
-                        )
-
-                    return Response(
-                        json_str,
-                        mimetype="application/json",
-                        headers={
-                            "Content-Disposition": "attachment; filename=config.json"
-                        },
-                    )
-                except FileNotFoundError as e:
-                    return jsonify({"error": str(e)}), 500
-                except ValueError as e:
-                    return jsonify({"error": str(e)}), 400
-                except Exception as e:
-                    logger.error(f"Singbox 处理内部错误: {e}")
-                    return jsonify({"error": f"服务器内部错误: {str(e)}"}), 500
-
-    # --- 2. Clash 分发逻辑 ---
-    if ENABLE_CLASH:
-        clash_config_val = None
-        if "ClashMetaForAndroid" in ua:
-            clash_config_val = "mtun"
-        elif "clash_pc" in ua:
-            clash_config_val = "pc"
-        elif "clash_openwrt" in ua:
-            clash_config_val = "openwrt"
-        elif "clash_m" in ua:
-            clash_config_val = "m"
-
-        if clash_config_val:
-            config_map = {
-                "m": (
-                    clash.CLASH_TEMPLATE_M,
-                    clash.CLASH_HY2_UP_M,
-                    clash.CLASH_HY2_DOWN_M,
-                ),
-                "mtun": (
-                    clash.CLASH_TEMPLATE_MTUN,
-                    clash.CLASH_HY2_UP_M,
-                    clash.CLASH_HY2_DOWN_M,
-                ),
-                "pc": (
-                    clash.CLASH_TEMPLATE_PC,
-                    clash.CLASH_HY2_UP,
-                    clash.CLASH_HY2_DOWN,
-                ),
-                "openwrt": (
-                    clash.CLASH_TEMPLATE_OPENWRT,
-                    clash.CLASH_HY2_UP,
-                    clash.CLASH_HY2_DOWN,
-                ),
-            }
-
-            template_path, up, down = config_map[clash_config_val]
-            logger.info(
-                f"[Clash] | [Template: {clash_config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
+        try:
+            url = read_url_from_file(path)
+            yaml_text, headers_data = fetch_yaml_text_clash(
+                unquote(url),
+                source,
+                is_force_refresh,
+                CACHE_DIR,
+                CACHE_EXPIRE_SECONDS,
+            )
+            output_bytes = process_yaml_content_clash(
+                yaml_text,
+                template_path,
+                up,
+                down,
+                SHARED_KEYWORDS,
+                SHARED_EXCLUDE_KEYWORDS,
+                clean_node_name,
             )
 
-            try:
-                url = read_url_from_file(path)
-                yaml_text, headers_data = clash.fetch_yaml_text_clash(
-                    unquote(url),
-                    source,
-                    is_force_refresh,
-                    CACHE_DIR,
-                    CACHE_EXPIRE_SECONDS,
-                )
-                output_bytes = clash.process_yaml_content_clash(
-                    yaml_text,
-                    template_path,
-                    up,
-                    down,
-                    SHARED_KEYWORDS,
-                    SHARED_EXCLUDE_KEYWORDS,
-                    clean_node_name,
+            # Inject nodes only in specified templates
+            if clash_config_val in INJECT_TEMPLATES:
+                output_bytes = inject_custom_clash_node(
+                    output_bytes, CUSTOM_CLASH_NODE, TARGET_GROUPS
                 )
 
-                # 仅在指定的模板中插入节点
-                if clash_config_val in INJECT_TEMPLATES:
-                    output_bytes = inject_custom_clash_node(
-                        output_bytes, CUSTOM_CLASH_NODE, TARGET_GROUPS
-                    )
-
-                response = send_file(
-                    io.BytesIO(output_bytes),
-                    mimetype="text/yaml",
-                    as_attachment=True,
-                    download_name="config.yaml",
-                )
-                if headers_data:
-                    for h, v in headers_data.items():
-                        if h.lower() in {
-                            ih.lower() for ih in clash.CLASH_INCLUDED_HEADERS
-                        }:
-                            response.headers[h] = v
-                return response
-            except Exception as e:
-                logger.error(f"Clash [Error]: {e}")
-                return str(e), 500
+            response = send_file(
+                io.BytesIO(output_bytes),
+                mimetype="text/yaml",
+                as_attachment=True,
+                download_name="config.yaml",
+            )
+            if headers_data:
+                for h, v in headers_data.items():
+                    if h.lower() in {
+                        ih.lower() for ih in CLASH_INCLUDED_HEADERS
+                    }:
+                        response.headers[h] = v
+            return response
+        except Exception as e:
+            logger.error(f"Clash [Error]: {e}")
+            return str(e), 500
 
     abort(404)
 
