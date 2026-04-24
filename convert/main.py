@@ -318,9 +318,15 @@ def inject_custom_clash_node(
         if not custom_data:
             return yaml_bytes
 
-        # Convert to list uniformly
+        # 统一转换为列表处理
         nodes = custom_data if isinstance(custom_data, list) else [custom_data]
         config = yaml.safe_load(yaml_bytes)
+        
+        # 确保基础结构存在，防止极端情况报错
+        if "proxies" not in config:
+            config["proxies"] = []
+        if "proxy-groups" not in config:
+            config["proxy-groups"] = []
 
         for node in nodes:
             if not isinstance(node, dict) or "name" not in node:
@@ -328,17 +334,37 @@ def inject_custom_clash_node(
 
             node_name = node["name"]
 
-            # 1. Append to proxies list
-            config.setdefault("proxies", []).append(node)
+            # 1. 将自定义节点追加到所有代理的列表里
+            config["proxies"].append(node)
 
-            # 2. Append to proxy-groups
-            for group in config.get("proxy-groups", []):
-                if group.get("name") in target_groups:
-                    group.setdefault("proxies", []).append(node_name)
+            # 2. 尝试追加到指定的策略组
+            for target in target_groups:
+                group_found = False
+                for group in config["proxy-groups"]:
+                    if group.get("name") == target:
+                        group_found = True
+                        # 避免节点重复插入
+                        if node_name not in group.setdefault("proxies", []):
+                            group["proxies"].append(node_name)
+                        break
+                
+                # 核心修复 1：如果目标策略组在前面的清洗中因为“空节点”被删除了，我们需要把它重新建出来
+                if not group_found:
+                    config["proxy-groups"].append({
+                        "name": target,
+                        "type": "select",  # 默认重建为 select 类型
+                        "proxies": [node_name]
+                    })
 
-        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode(
-            "utf-8"
-        )
+        # 核心修复 2：加上 default_flow_style=False 和 width=4096，保证输出严格、标准的多行 YAML 格式
+        return yaml.dump(
+            config, 
+            allow_unicode=True, 
+            sort_keys=False, 
+            default_flow_style=False, 
+            width=4096
+        ).encode("utf-8")
+        
     except Exception as e:
         logger.error(f"[Clash] Failed to merge custom node: {e}")
         return yaml_bytes
