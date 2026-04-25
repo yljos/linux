@@ -8,6 +8,7 @@ _digits = {
 
 keep_punct = "。？，！ : .……"
 
+
 def chinese_to_int(s: str):
     # Recursively convert Chinese numerals to integers
     s = s.replace("两", "二").strip()
@@ -28,12 +29,14 @@ def chinese_to_int(s: str):
             return left * multiplier + right
     return None
 
+
 def clean_punct(text):
     # Keep alphanumeric, space, specific punctuation, and CJK characters
     return "".join(
         ch for ch in text
         if ch.isalnum() or ch.isspace() or ch in keep_punct or "\u4e00" <= ch <= "\u9fff"
     )
+
 
 def replace_line(line):
     # Process a single line safely
@@ -64,6 +67,7 @@ def replace_line(line):
 
     return cleaned + "\n"
 
+
 def process_file(file_path: Path):
     # Detect encoding using a small chunk
     try:
@@ -74,18 +78,18 @@ def process_file(file_path: Path):
         encoding = "gb18030"
 
     temp_file = file_path.with_suffix(".tmp")
-    
+
     try:
         # Stream processing to keep memory usage minimal (O(1) memory)
         with open(file_path, "rt", encoding=encoding) as f_in, \
-             open(temp_file, "wt", encoding="utf-8") as f_out:
-            
+                open(temp_file, "wt", encoding="utf-8") as f_out:
+
             empty_count = 0
             for line in f_in:
                 processed = replace_line(line)
                 if processed == "\n" or processed == "":
                     empty_count += 1
-                    if empty_count <= 2: # Limit consecutive empty lines
+                    if empty_count <= 2:  # Limit consecutive empty lines
                         f_out.write("\n")
                 else:
                     empty_count = 0
@@ -96,6 +100,7 @@ def process_file(file_path: Path):
     except Exception as e:
         print(f"Error: {e}")
         if temp_file.exists(): temp_file.unlink()
+
 
 if __name__ == "__main__":
     for txt_file in Path.cwd().glob("*.txt"):

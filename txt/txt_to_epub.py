@@ -4,6 +4,7 @@ from ebooklib import epub
 from markdown import markdown
 from PIL import Image, ImageDraw, ImageFont
 
+
 def generate_cover_jpg(title, author, filepath):
     """Generate a simple JPG cover."""
     img = Image.new("RGB", (600, 800), color="#332F2F")
@@ -35,6 +36,7 @@ def generate_cover_jpg(title, author, filepath):
 
     img.save(filepath, "JPEG")
 
+
 def create_epub(txt_file):
     book_title = os.path.splitext(txt_file)[0]
     epub_file = f"{book_title}.epub"
@@ -55,10 +57,10 @@ def create_epub(txt_file):
     current_title = "序"
     current_file_name = "prologue.xhtml"
     current_lines = []
-    
+
     # 内部文件自增计数器，解决 txt 中章节号标错/重复导致的 Duplicate name 报错
-    chapter_counter = 0 
-    
+    chapter_counter = 0
+
     # 恢复你文件中的正则：匹配 "## 第xxx章"
     chapter_pattern = re.compile(r"^##\s*第(\d+)章\s*(.*)")
 
@@ -69,13 +71,13 @@ def create_epub(txt_file):
         content = "".join(lines).strip()
         if not content:
             return
-        
+
         c = epub.EpubHtml(title=title, file_name=file_name, lang="zh")
         if file_name == "prologue.xhtml":
             c.content = markdown(content)
         else:
             c.content = f"<h1>{title}</h1>\n" + markdown(content)
-            
+
         book.add_item(c)
         chapters.append(c)
 
@@ -86,16 +88,16 @@ def create_epub(txt_file):
             if match:
                 # 遇到新章节，先结算并保存上一章的内容
                 add_chapter(current_title, current_file_name, current_lines)
-                
+
                 # 章节计数器加 1，生成唯一的文件名
                 chapter_counter += 1
-                
+
                 num = match.group(1)
                 title_text = match.group(2).strip()
-                
+
                 # 外部显示的 title 使用提取的文本，内部 file_name 使用自增数字
                 current_title = f"第{num}章 {title_text}"
-                current_file_name = f"chap_{chapter_counter:06d}.xhtml" 
+                current_file_name = f"chap_{chapter_counter:06d}.xhtml"
                 current_lines = []
             else:
                 # 普通文本行，加入当前章节缓存
@@ -112,6 +114,7 @@ def create_epub(txt_file):
     epub.write_epub(epub_file, book)
     print(f"Successfully converted: {epub_file}")
 
+
 def main():
     txt_files = [f for f in os.listdir(".") if f.endswith(".txt")]
     if not txt_files:
@@ -121,6 +124,7 @@ def main():
             create_epub(f)
         except Exception as e:
             print(f"Error converting {f}: {e}")
+
 
 if __name__ == "__main__":
     main()
