@@ -33,7 +33,7 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 
 # 2. Copy the application code
-COPY app.py .
+COPY main.py .
 
 # 3. Set environment variables
 ENV PATH="/app/.venv/bin:$PATH"
@@ -43,4 +43,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 5008
 
 # 5. Start the application
-CMD ["python", "app.py"]
+CMD ["python", "main.py"]
