@@ -2,11 +2,13 @@
 PS1='\[\e[1;33m\]Win\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]\[\e[1;35m\]:\w\$\[\e[0m\] '
 
 # 2. 启动并配置 GPG 代理作为 SSH Agent
+export GPG_TTY=$(tty)
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
 if [ -f ~/.gnupg/gpg-agent.conf ]; then
     # 确保 GPG 代理已启动
     gpgconf --launch gpg-agent  
 fi
 
-export PATH="/c/Windows/System32/OpenSSH:$PATH"
 
 
