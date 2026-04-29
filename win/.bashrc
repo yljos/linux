@@ -10,5 +10,5 @@ if [ -f ~/.gnupg/gpg-agent.conf ]; then
     gpgconf --launch gpg-agent  
 fi
 
-
-
+# 强制指向 VSCodium 核心程序
+alias codium="/c/Users/huai/program/VSCodium-win32-x64-1.107.18627/VSCodium.exe"
