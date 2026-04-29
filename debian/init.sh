@@ -54,7 +54,7 @@ sudo systemctl enable --now systemd-networkd
 # [6] Git Configuration
 # ---------------------------------------------------------
 git config --global core.editor "vim"
-git config --global user.signingkey B5E5D5D7F179195B
+git config --global user.signingkey CABB8B2144528A69
 git config --global commit.gpgsign true
 git config --global user.name "bite-os"
 git config --global user.email "bite-os@biteos.org"
