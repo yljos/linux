@@ -2,7 +2,7 @@
 export GPG_TTY=$(tty)
 
 # 指定 SSH 代理的 Socket 路径
-# export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 
 # 确保 gpg-agent 已经启动
 gpgconf --launch gpg-agent
