@@ -2,7 +2,7 @@
 
 # killall mako >/dev/null 2>&1
 dunst &
-sleep 0.5 
+sleep 0.5
 firefox &
 sleep 0.5
 Telegram &

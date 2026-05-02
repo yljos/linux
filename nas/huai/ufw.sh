@@ -32,11 +32,11 @@ sudo ufw allow proto tcp to any port 32400 # plex server
 # sudo ufw allow proto tcp to any port 6800  # aria2-pro
 # sudo ufw allow proto tcp to any port 6888  # aria2-pro
 # sudo ufw allow proto tcp to any port 6880  # ariang
-sudo ufw allow proto tcp to any port 5008  # shutdown
-sudo ufw allow proto tcp to any port 8083  # calibre-web
+sudo ufw allow proto tcp to any port 5008 # shutdown
+sudo ufw allow proto tcp to any port 8083 # calibre-web
 # sudo ufw allow proto tcp to any port 4000  # tinymediamanager
 # sudo ufw allow proto tcp to any port 5900  # tinymediamanager VNC
-sudo ufw allow proto tcp to any port 8181  # vaultwarden
+sudo ufw allow proto tcp to any port 8181 # vaultwarden
 
 sudo ufw allow proto tcp to any port 8002 # music-tag-web
 # sudo ufw allow proto tcp to any port 3000 # homepage

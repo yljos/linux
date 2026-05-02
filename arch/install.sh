@@ -10,50 +10,50 @@ UCODE=""       # Will be set based on CPU detection
 
 # Add help option
 usage() {
-    echo "Usage: $0 [options]"
-    echo "Options:"
-    echo "  -d DEVICE   Set installation disk (default: /dev/nvme0n1)"
-    echo "  -h NAME     Set hostname (default: Arch)"
-    echo "  -u USER     Set username (default: huai)"
-    echo "  -s SIZE     Set swap size (default: 16384M)"
-    echo "  -?          Show this help message"
-    exit 0
+	echo "Usage: $0 [options]"
+	echo "Options:"
+	echo "  -d DEVICE   Set installation disk (default: /dev/nvme0n1)"
+	echo "  -h NAME     Set hostname (default: Arch)"
+	echo "  -u USER     Set username (default: huai)"
+	echo "  -s SIZE     Set swap size (default: 16384M)"
+	echo "  -?          Show this help message"
+	exit 0
 }
 
 # Parse command line arguments
 while getopts "d:h:u:s:?" opt; do
-    case $opt in
-    d) DISK="$OPTARG" ;;
-    h) HOSTNAME="$OPTARG" ;;
-    u) USERNAME="$OPTARG" ;;
-    s) SWAP_SIZE="$OPTARG" ;;
-    \?) usage ;;
-    esac
+	case $opt in
+	d) DISK="$OPTARG" ;;
+	h) HOSTNAME="$OPTARG" ;;
+	u) USERNAME="$OPTARG" ;;
+	s) SWAP_SIZE="$OPTARG" ;;
+	\?) usage ;;
+	esac
 done
 
 # Detect device type and set partition prefix
 detect_device_type() {
-    if [[ $DISK == *"nvme"* ]] || [[ $DISK == *"mmcblk"* ]]; then
-        PART_PREFIX="p"
-        echo ">> NVMe/MMC device detected, using partition format: ${DISK}p1"
-    else
-        PART_PREFIX=""
-        echo ">> Standard device detected, using partition format: ${DISK}1"
-    fi
+	if [[ $DISK == *"nvme"* ]] || [[ $DISK == *"mmcblk"* ]]; then
+		PART_PREFIX="p"
+		echo ">> NVMe/MMC device detected, using partition format: ${DISK}p1"
+	else
+		PART_PREFIX=""
+		echo ">> Standard device detected, using partition format: ${DISK}1"
+	fi
 }
 
 # Detect CPU type and set microcode package
 detect_cpu_type() {
-    if grep -q "GenuineIntel" /proc/cpuinfo; then
-        UCODE="intel-ucode"
-        echo ">> Intel CPU detected, will install intel-ucode"
-    elif grep -q "AuthenticAMD" /proc/cpuinfo; then
-        UCODE="amd-ucode"
-        echo ">> AMD CPU detected, will install amd-ucode"
-    else
-        UCODE="intel-ucode"
-        echo ">> CPU type not detected, defaulting to intel-ucode"
-    fi
+	if grep -q "GenuineIntel" /proc/cpuinfo; then
+		UCODE="intel-ucode"
+		echo ">> Intel CPU detected, will install intel-ucode"
+	elif grep -q "AuthenticAMD" /proc/cpuinfo; then
+		UCODE="amd-ucode"
+		echo ">> AMD CPU detected, will install amd-ucode"
+	else
+		UCODE="intel-ucode"
+		echo ">> CPU type not detected, defaulting to intel-ucode"
+	fi
 }
 
 # Display the configuration to be used
@@ -67,15 +67,15 @@ sleep 6
 # Add error handling function
 set -e # Exit immediately if any command fails
 error_handler() {
-    echo "Error occurred on line $1"
-    exit 1
+	echo "Error occurred on line $1"
+	exit 1
 }
 trap 'error_handler ${LINENO}' ERR
 
 # Add disk device check at the beginning of the script
 if [ ! -b "$DISK" ]; then
-    echo "Error: Device $DISK does not exist"
-    exit 1
+	echo "Error: Device $DISK does not exist"
+	exit 1
 fi
 
 # Detect device type and CPU type
@@ -88,54 +88,54 @@ timedatectl set-ntp true
 
 # Split functionality into functions
 setup_partitions() {
-    echo ">> Partitioning disk $DISK"
-    wipefs -a "$DISK"
-    sfdisk "$DISK" <<EOF
+	echo ">> Partitioning disk $DISK"
+	wipefs -a "$DISK"
+	sfdisk "$DISK" <<EOF
 label: gpt
 size=512M, type=U
 size=$SWAP_SIZE, type=S
 type=L
 EOF
 
-    echo ">> Formatting partitions"
-    sleep 2 # Add a short delay to ensure the system recognizes the new partitions
-    mkfs.fat -F32 "${DISK}${PART_PREFIX}1" # EFI partition
-    mkfs.ext4 "${DISK}${PART_PREFIX}3" -F  # Root partition
-    mkswap "${DISK}${PART_PREFIX}2"        # Swap partition
-    swapon "${DISK}${PART_PREFIX}2"        # Enable Swap
+	echo ">> Formatting partitions"
+	sleep 2                                # Add a short delay to ensure the system recognizes the new partitions
+	mkfs.fat -F32 "${DISK}${PART_PREFIX}1" # EFI partition
+	mkfs.ext4 "${DISK}${PART_PREFIX}3" -F  # Root partition
+	mkswap "${DISK}${PART_PREFIX}2"        # Swap partition
+	swapon "${DISK}${PART_PREFIX}2"        # Enable Swap
 
-    echo ">> Configuring Tsinghua University mirror"
-    echo 'Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch' >/etc/pacman.d/mirrorlist
+	echo ">> Configuring Tsinghua University mirror"
+	echo 'Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch' >/etc/pacman.d/mirrorlist
 
-    echo ">> Mounting partitions"
-    mount "${DISK}${PART_PREFIX}3" /mnt
-    mkdir -p /mnt/boot && mount "${DISK}${PART_PREFIX}1" /mnt/boot
+	echo ">> Mounting partitions"
+	mount "${DISK}${PART_PREFIX}3" /mnt
+	mkdir -p /mnt/boot && mount "${DISK}${PART_PREFIX}1" /mnt/boot
 }
 
 install_packages() {
-    echo ">> Installing packages"
-    pacman-key --init
-    pacman-key --populate archlinux
+	echo ">> Installing packages"
+	pacman-key --init
+	pacman-key --populate archlinux
 
-    pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less \
-        rofi dunst alacritty polkit \
-        fastfetch btop pipewire wireplumber pipewire-pulse pipewire-alsa rtkit \
-        rsync ntfs-3g curl p7zip libnotify openssh sshfs nfs-utils \
-        freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
-        ttf-liberation fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
-        libva-utils telegram-desktop bc firejail nodejs stow firefox python-black shfmt \
-        cloudflared wlroots0.18 tllist fcft wayland-protocols wayland fuzzel mako foot
-    echo ">> Generating fstab"
-    genfstab -U /mnt >>/mnt/etc/fstab
+	pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less \
+		rofi dunst alacritty polkit \
+		fastfetch btop pipewire wireplumber pipewire-pulse pipewire-alsa rtkit \
+		rsync ntfs-3g curl p7zip libnotify openssh sshfs nfs-utils \
+		freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
+		ttf-liberation fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
+		libva-utils telegram-desktop bc firejail nodejs stow firefox python-black shfmt \
+		cloudflared wlroots0.18 tllist fcft wayland-protocols wayland fuzzel mako foot
+	echo ">> Generating fstab"
+	genfstab -U /mnt >>/mnt/etc/fstab
 }
 # dwl
 # wlroots0.18 tllist fcft wayland-protocols wayland fuzzel mako foot
 # dwm
 # xorg-server xorg-xinit
 configure_system() {
-    echo ">> Configuring system"
-    ROOT_UUID=$(blkid -s UUID -o value "${DISK}${PART_PREFIX}3")
-    arch-chroot /mnt env ROOT_UUID="$ROOT_UUID" HOSTNAME="$HOSTNAME" USERNAME="$USERNAME" UCODE="$UCODE" /bin/bash -c '
+	echo ">> Configuring system"
+	ROOT_UUID=$(blkid -s UUID -o value "${DISK}${PART_PREFIX}3")
+	arch-chroot /mnt env ROOT_UUID="$ROOT_UUID" HOSTNAME="$HOSTNAME" USERNAME="$USERNAME" UCODE="$UCODE" /bin/bash -c '
     echo "The root UUID is: $ROOT_UUID"
     echo "Hostname: $HOSTNAME"
     echo "Username: $USERNAME"
@@ -219,11 +219,11 @@ EOF
     systemctl enable systemd-networkd
     systemctl enable sshd
     '
-    # DNS configuration outside chroot to ensure chattr takes effect
-    echo ">> Locking DNS configuration"
-    rm -f /mnt/etc/resolv.conf
-    echo "nameserver 1.1.1.1" >/mnt/etc/resolv.conf
-    chattr +i /mnt/etc/resolv.conf
+	# DNS configuration outside chroot to ensure chattr takes effect
+	echo ">> Locking DNS configuration"
+	rm -f /mnt/etc/resolv.conf
+	echo "nameserver 1.1.1.1" >/mnt/etc/resolv.conf
+	chattr +i /mnt/etc/resolv.conf
 }
 
 # Main process flow

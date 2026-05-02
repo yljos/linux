@@ -11,8 +11,8 @@ SOURCE_BLACKLIST="{10.0.0.6}"
 
 # Check root privileges
 if [ "$EUID" -ne 0 ]; then
-    echo "Error: please run with sudo"
-    exit 1
+	echo "Error: please run with sudo"
+	exit 1
 fi
 
 echo "Configuring mihomo TProxy on VyOS..."

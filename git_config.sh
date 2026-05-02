@@ -6,4 +6,3 @@ git config --global user.name "bite-os"
 git config --global user.email "bite-os@biteos.org"
 
 curl -s "http://10.0.0.21/key/20260429_pub.asc" | gpg --import >/dev/null 2>&1
-

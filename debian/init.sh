@@ -4,8 +4,8 @@
 # [1] Directories & Dotfiles
 # ---------------------------------------------------------
 mkdir -p /home/huai/.ssh \
-         /home/huai/.gnupg \
-         /home/huai/.config/systemd/user
+	/home/huai/.gnupg \
+	/home/huai/.config/systemd/user
 
 # Ensure GPG directory is secure
 chmod 700 /home/huai/.gnupg
@@ -25,13 +25,13 @@ sudo chmod 755 /data
 # ---------------------------------------------------------
 sudo apt update
 sudo apt install -y \
-    locales git curl vim stow shfmt build-essential \
-    libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
-    freerdp3-x11 scdaemon pcscd x11-xserver-utils \
-    fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
-    pipewire wireplumber dunst rofi numlockx 
+	locales git curl vim stow shfmt build-essential \
+	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
+	freerdp3-x11 scdaemon pcscd x11-xserver-utils \
+	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
+	pipewire wireplumber dunst rofi numlockx
 
-systemctl --user daemon-reload 
+systemctl --user daemon-reload
 
 # ---------------------------------------------------------
 # [4] System Configuration
@@ -65,10 +65,10 @@ git config --global user.email "bite-os@biteos.org"
 URL="http://10.0.0.21/key"
 SSH="/home/huai/.ssh"
 
-curl -sL "${URL}/id_ed25519_lan.gpg"   -o "${SSH}/id_ed25519_lan.gpg"   >/dev/null 2>&1
+curl -sL "${URL}/id_ed25519_lan.gpg" -o "${SSH}/id_ed25519_lan.gpg" >/dev/null 2>&1
 curl -sL "${URL}/id_ed25519_cloud.gpg" -o "${SSH}/id_ed25519_cloud.gpg" >/dev/null 2>&1
-curl -sL "${URL}/id_ed25519_lan.pub"   -o "${SSH}/id_ed25519_lan.pub"   >/dev/null 2>&1
+curl -sL "${URL}/id_ed25519_lan.pub" -o "${SSH}/id_ed25519_lan.pub" >/dev/null 2>&1
 curl -sL "${URL}/id_ed25519_cloud.pub" -o "${SSH}/id_ed25519_cloud.pub" >/dev/null 2>&1
-curl -sL "${URL}/authorized_keys"      -o "${SSH}/authorized_keys"      >/dev/null 2>&1
+curl -sL "${URL}/authorized_keys" -o "${SSH}/authorized_keys" >/dev/null 2>&1
 
-curl -sL "${URL}/bite_os_public_20260331.asc" | gpg --import            >/dev/null 2>&1
+curl -sL "${URL}/bite_os_public_20260331.asc" | gpg --import >/dev/null 2>&1
