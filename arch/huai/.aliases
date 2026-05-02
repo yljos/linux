@@ -1,28 +1,25 @@
-# 基础系统命令
+# Basic system commands
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias c="clear"
 alias ..='cd ..'
-# 系统操作
+
+# System operations
 alias P="sleep 60 && shutdown now"
 alias R="systemctl reboot"
 alias rsyncdir="rsync -avzh --delete" 
 
-# Volume Control
+# Volume control
 alias volup="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
 alias voldown="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
 
-# Manually decrypt and add SSH keys
-key() {
-    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_lan.gpg) >/dev/null 2>&1
-    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_cloud.gpg) >/dev/null 2>&1
-}
+# GPG as SSH agent
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 
-# SFTP (SSHFS) Mount Function
+# NFS4 mount function
 mount-data() {
     if ! mountpoint -q /data; then
-        ssh-add -l >/dev/null 2>&1 || key
-        sshfs nas:/data /data
+        sudo mount -t nfs4 nas:/data /data
     fi
 }
 
@@ -33,10 +30,9 @@ _ssh_status() {
     fi
 }
 
-# 脚本和程序
+# Scripts and programs
+x() {
+    dbus-run-session bash -c "/home/huai/.config/dwl/dwl_status.sh | dwl"
+}
 alias win="/usr/bin/bash /home/huai/.config/windows.sh"
-# alias np="/usr/bin/bash /home/huai/.config/swww.sh"
-# x() {
-#     dbus-run-session bash -c "/home/huai/.config/dwl/dwl_status.sh | dwl"
-# }
-alias x=startx
+# alias x=startx
