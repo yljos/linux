@@ -120,11 +120,11 @@ install_packages() {
     pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less \
         rofi dunst alacritty polkit \
         fastfetch btop pipewire wireplumber pipewire-pulse pipewire-alsa rtkit \
-        rsync ntfs-3g curl p7zip libnotify openssh sshfs \
+        rsync ntfs-3g curl p7zip libnotify openssh sshfs nfs-utils \
         freerdp libva libva-intel-driver intel-media-driver mpv arp-scan unzip \
         ttf-liberation fontconfig wakeonlan noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
         libva-utils telegram-desktop bc firejail nodejs stow firefox python-black shfmt \
-        cloudflared xorg-server xorg-xinit xorg-xsetroot
+        cloudflared wlroots0.18 tllist fcft wayland-protocols wayland fuzzel mako foot
     echo ">> Generating fstab"
     genfstab -U /mnt >>/mnt/etc/fstab
 }
