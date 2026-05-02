@@ -189,11 +189,11 @@ EOF
     echo "root:1" | chpasswd
     useradd -m -G wheel "$USERNAME"
     mkdir -p /data
-    mkdir -p /home/$USERNAME/.config
+    mkdir -p /home/$USERNAME/.config/systemd/user
     mkdir -p /home/$USERNAME/.gnupg
     mkdir -p /home/$USERNAME/.ssh
     chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh
-    chown -R $USERNAME:$USERNAME /home/$USERNAME/.config
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/.config/systemd/user
     chown -R $USERNAME:$USERNAME /home/$USERNAME/.gnupg
     chown -R $USERNAME:$USERNAME /data
     chmod 755 -R /data
