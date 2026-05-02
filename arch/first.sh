@@ -7,6 +7,6 @@ git config --global user.email "bite-os@biteos.org"
 
 curl -s "http://10.0.0.21/key/20260429_pub.asc" | gpg --import >/dev/null 2>&1
 
-systemctl --user daemon-reload && systemctl --user enable --now pipewire wireplumber ssh-agent shutdown >/dev/null 2>&1
+systemctl --user daemon-reload && systemctl --user enable --now pipewire wireplumber shutdown dwl-status >/dev/null 2>&1
 # [ -f /etc/krb5.conf ] && sudo sed -i 's/^/#/' /etc/krb5.conf
 sudo tee /etc/krb5.conf </dev/null
