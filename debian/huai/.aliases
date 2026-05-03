@@ -24,24 +24,11 @@ alias mute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
 alias win="/usr/bin/bash /home/huai/.config/win.sh"
 alias wol="/usr/bin/bash /home/huai/.config/wol.sh"
 
-# Manually decrypt and add SSH keys
-key() {
-    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_lan.gpg) >/dev/null 2>&1
-    ssh-add <(gpg -qd /home/huai/.ssh/id_ed25519_cloud.gpg) >/dev/null 2>&1
-}
-
 # SFTP (SSHFS) Mount Function
 mount-data() {
     if ! mountpoint -q /data; then
         ssh-add -l >/dev/null 2>&1 || key
         sshfs nas:/data /data
-    fi
-}
-
-# Wallpaper Change Script
-np() {
-    if [[ -f "/home/huai/.config/wallpaperchange.sh" ]]; then
-        bash "/home/huai/.config/wallpaperchange.sh"
     fi
 }
 
