@@ -62,8 +62,5 @@ git config --global user.email "bite-os@biteos.org"
 # ---------------------------------------------------------
 # [7] SSH & GPG Keys
 # ---------------------------------------------------------
-URL="http://10.0.0.21/key"
-SSH="/home/huai/.ssh"
 
-curl -sL "${URL}/authorized_keys" -o "${SSH}/authorized_keys" >/dev/null 2>&1
-curl -sL "${URL}/20260429_pub.asc" | gpg --import >/dev/null 2>&1
+curl -sL "http://10.0.0.21/key/20260429_pub.asc" | gpg --import >/dev/null 2>&1
