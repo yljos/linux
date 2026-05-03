@@ -4,9 +4,10 @@ export LANG=en_US.UTF-8
 export VISUAL=vim
 export EDITOR=vim
 export GPG_TTY=$(tty)
-export SSH_AUTH_SOCK="/run/user/1000/openssh_agent"
-if [ ! -S "$SSH_AUTH_SOCK" ]; then
-    systemctl --user start ssh-agent
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
+if [ -f ~/.gnupg/gpg-agent.conf ]; then
+    gpgconf --launch gpg-agent  
 fi
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 
