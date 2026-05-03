@@ -10,8 +10,8 @@ mkdir -p /home/huai/.ssh \
 # Ensure GPG directory is secure
 chmod 700 /home/huai/.gnupg
 
-# Manage dotfiles via stow
-rm -f /home/huai/.bashrc
+# Remove the file only if it is a regular file (-f) and NOT a symlink (! -L)
+[ -f /home/huai/.bashrc ] && [ ! -L /home/huai/.bashrc ] && rm -f /home/huai/.bashrc
 
 # ---------------------------------------------------------
 # [2] Data Directory
