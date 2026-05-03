@@ -27,7 +27,7 @@ sudo apt update
 sudo apt install -y \
 	locales git curl vim stow shfmt build-essential \
 	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
-	freerdp3-x11 scdaemon pcscd x11-xserver-utils \
+	freerdp2-x11 scdaemon pcscd x11-xserver-utils \
 	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
 	pipewire wireplumber dunst rofi numlockx
 
