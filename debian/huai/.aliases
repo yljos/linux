@@ -31,10 +31,3 @@ mount-data() {
         sshfs nas:/data /data
     fi
 }
-
-# Check SSH agent status for prompt decoration
-_ssh_status() {
-    if ssh-add -l >/dev/null 2>&1; then
-        echo -ne "\001\e[38;5;214m\002*\001\e[0m\002"
-    fi
-}
