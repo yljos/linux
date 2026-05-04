@@ -1,5 +1,6 @@
 payload:
   - DOMAIN,ssh.202309.xyz
+  - DOMAIN,www.whmstr.com
   - DOMAIN,www.schemastore.org
   - DOMAIN-SUFFIX,bukkit.org
   - DOMAIN-SUFFIX,speedtest.cn

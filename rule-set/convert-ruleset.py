@@ -7,8 +7,8 @@ from collections import defaultdict
 # --- 配置 ---
 
 # 自动适配可执行文件名
-mihomo_bin = "mihomo-windows-amd64.exe" if os.name == "nt" else "./mihomo-linux-amd64"
-singbox_bin = "sing-box.exe" if os.name == "nt" else "./sing-box"
+mihomo_bin = "mihomo-windows-amd64.exe" 
+singbox_bin = "sing-box.exe"
 
 
 # --- 辅助类与函数 ---
