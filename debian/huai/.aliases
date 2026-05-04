@@ -27,7 +27,6 @@ alias wol="/usr/bin/bash /home/huai/.config/wol.sh"
 # SFTP (SSHFS) Mount Function
 mount-data() {
     if ! mountpoint -q /data; then
-        ssh-add -l >/dev/null 2>&1 || key
-        sshfs nas:/data /data
+        sudo mount -t nfs4 -o noatime 10.0.0.21:/data /data
     fi
 }
