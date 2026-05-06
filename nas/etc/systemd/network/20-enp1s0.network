@@ -3,8 +3,7 @@
 Name=enp1s0
 
 [Network]
-Address=10.0.0.21/24
-Gateway=10.0.0.1
+DHCP=yes
 
 [Link]
 RequiredForOnline=routable
