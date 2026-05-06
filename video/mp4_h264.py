@@ -1,23 +1,16 @@
 import subprocess
-import sys
-import platform
+import shutil
 import json
 import time
+import sys
+import platform
 from pathlib import Path
 
+# --- 配置 ---
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov"}
-
-FFMPEG_PARAMS = [
-    "-c:v",
-    "libx264",
-    "-preset",
-    "superfast",
-    "-crf",
-    "18",
-    "-c:a",
-    "copy",
-]
-
+TARGET_HEIGHT = 1080
+SUFFIX = "_upd"
+COOLDOWN_SECONDS = 300  # 任务间冷却5分钟
 
 def set_terminal_title(title):
     try:
@@ -29,111 +22,96 @@ def set_terminal_title(title):
     except Exception:
         pass
 
-
-def get_codec(file_path):
+def get_video_info(file_path):
+    """获取视频高度和编码格式"""
     cmd = [
-        "ffprobe",
-        "-v",
-        "error",
-        "-select_streams",
-        "v:0",
-        "-show_entries",
-        "stream=codec_name",
-        "-of",
-        "json",
-        str(file_path),
+        "ffprobe", "-v", "error", "-select_streams", "v:0",
+        "-show_entries", "stream=height,codec_name", "-of", "json", str(file_path)
     ]
     try:
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        data = json.loads(output)
-        return data["streams"][0]["codec_name"]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(result.stdout)
+        stream = data['streams'][0]
+        return int(stream.get('height', 0)), stream.get('codec_name', 'unknown')
     except Exception:
-        return "unknown"
+        return 0, "unknown"
 
+def process_videos():
+    for tool in ["ffmpeg", "ffprobe"]:
+        if not shutil.which(tool):
+            print(f"错误：未找到 {tool}，请检查环境变量。")
+            return
 
-def convert_videos(source_dir):
-    original_title = "Non-H264 to H264 Auto Converter"
+    root_dir = Path.cwd()
+    original_title = "Video 1080P/H264 Optimizer"
     set_terminal_title(original_title)
-    source_path = Path(source_dir).resolve()
-
-    print(f"[*] Scanning directory: {source_path}")
-    print("-" * 50)
-
-    # Pre-scan to count targets and avoid sleeping after the last file
+    
+    # 预扫描目标
     targets = []
-    for file_path in source_path.rglob("*"):
-        if file_path.is_file() and file_path.suffix.lower() in VIDEO_EXTENSIONS:
-            output_path = file_path.with_name(f"{file_path.stem}_h264.mp4")
-            if not (output_path.exists() or file_path.name.endswith("_h264.mp4")):
-                codec = get_codec(file_path)
-                if codec != "h264":
-                    targets.append((file_path, codec, output_path))
+    print(f"[*] 正在扫描目录: {root_dir}")
+    for file_path in root_dir.rglob("*"):
+        if not file_path.is_file() or file_path.suffix.lower() not in VIDEO_EXTENSIONS:
+            continue
+        if SUFFIX in file_path.stem:
+            continue
+            
+        height, codec = get_video_info(file_path)
+        # 判断是否需要处理：高度 > 1080 或 编码不是 h264
+        if height > TARGET_HEIGHT or codec != "h264":
+            output_path = file_path.with_name(f"{file_path.stem}{SUFFIX}.mp4")
+            if not output_path.exists():
+                targets.append((file_path, height, codec, output_path))
 
     total = len(targets)
     if total == 0:
-        print("[i] No files need conversion.")
+        print("[i] 没有发现需要转换的文件。")
         return
 
-    for index, (file_path, codec, output_path) in enumerate(targets):
-        print(
-            f"[+] Processing {index + 1}/{total}: {file_path.name} (Found {codec} codec)"
-        )
+    print(f"[i] 找到 {total} 个待处理文件\n" + "-"*50)
+
+    for index, (src, h, codec, dst) in enumerate(targets):
+        print(f"[+] 进度 {index + 1}/{total}")
+        print(f"    输入: {src.name} ({h}p, {codec})")
+        print(f"    输出: {dst.name}")
+        
+        set_terminal_title(f"Processing: {src.name}")
+
+        # 构建命令：使用 QSV 硬件编码，高度限制为 1080，音频流拷贝
+        # scale=-2:'min(ih,1080)' 确保高度不超过1080且宽度为偶数
+        command = [
+            "ffmpeg", "-y",
+            "-i", str(src),
+            "-vf", f"format=nv12,scale=-2:'min(ih,{TARGET_HEIGHT})'",
+            "-c:v", "h264_qsv",
+            "-global_quality", "25",
+            "-c:a", "copy",
+            "-movflags", "+faststart",
+            str(dst)
+        ]
 
         try:
-            display_path = output_path.relative_to(source_path)
-        except ValueError:
-            display_path = output_path
-
-        print(f"    -> Output to: {display_path}")
-        set_terminal_title(f"Converting: {file_path.name}")
-
-        command = ["ffmpeg", "-i", str(file_path), *FFMPEG_PARAMS, str(output_path)]
-
-        try:
+            # 实时打印 ffmpeg 输出 (从第二个脚本集成的逻辑)
             process = subprocess.Popen(
-                command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                universal_newlines=True,
-                encoding="utf-8",
-                errors="replace",
+                command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                universal_newlines=True, encoding="utf-8", errors="replace"
             )
-
             for line in process.stdout:
-                print(f"    [{file_path.name}] {line.strip()}")
-
+                if "frame=" in line: # 只显示进度行，防止刷屏
+                    print(f"\r    {line.strip()}", end="")
             process.wait()
-
-            if process.returncode == 0:
-                print(f"[✔] Success: {file_path.name}")
-            else:
-                print(
-                    f"[!] Failed: {file_path.name} (Code: {process.returncode})",
-                    file=sys.stderr,
-                )
-
-        except FileNotFoundError:
-            print("[!] Error: ffmpeg not found.", file=sys.stderr)
-            sys.exit(1)
+            print(f"\n[✔] 成功: {src.name}")
         except Exception as e:
-            print(f"[!] Unknown error: {e}", file=sys.stderr)
+            print(f"\n[!] 错误: {src.name}\n{e}")
         finally:
             set_terminal_title(original_title)
 
-        print("-" * 50)
-
-        # Sleep 5 minutes between tasks, skip if it is the last file
+        # 任务间冷却
         if index < total - 1:
-            print(f"[i] Cooldown: Waiting 5 minutes before next task...")
-            time.sleep(300)
+            print(f"[i] 冷却中：等待 {COOLDOWN_SECONDS // 60} 分钟...")
+            time.sleep(COOLDOWN_SECONDS)
+            print("-"*50)
 
-    print("[*] All tasks completed.")
-
-
-def main():
-    source_directory_to_process = "."
-    convert_videos(source_directory_to_process)
-
+    print("\n[*] 所有任务已完成。")
 
 if __name__ == "__main__":
-    main()
+    process_videos()
