@@ -9,7 +9,7 @@ from pathlib import Path
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov"}
 TARGET_HEIGHT = 1080
 SUFFIX = "_1080p"
-COOLDOWN_SECONDS = 300  
+COOLDOWN_SECONDS = 60  
 # 针对 i5-4570T (4线程)，设置为 2 可约占用 50% CPU
 CPU_THREADS = 2 
 
