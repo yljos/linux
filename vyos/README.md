@@ -58,6 +58,10 @@ set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 option name-s
 set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 range 0 start 10.0.0.101
 set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 range 0 stop 10.0.0.200
 ```
+```bash
+set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 static-mapping void ip-address 
+set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 static-mapping void mac 
+```
 
 ## 4. DNS Forwarding
 
