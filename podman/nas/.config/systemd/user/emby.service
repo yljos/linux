@@ -17,7 +17,7 @@ ExecStart=/usr/bin/podman run \
   -e PUID=0 \
   -e PGID=0 \
   -v /data/appdata/emby:/config:Z \
-  -v /data/media:/media:rw,z \
+  -v /data/media:/media:ro,z \
   docker.io/emby/embyserver:latest
 
 ExecStop=/usr/bin/podman stop -t 10 emby
