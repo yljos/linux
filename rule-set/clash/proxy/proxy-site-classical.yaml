@@ -1,5 +1,6 @@
 payload:
   - DOMAIN,open-vsx.org
+  - DOMAIN,static.redircdn.com
   - DOMAIN,www.7-zip.org
   - DOMAIN,mini4k.io
   - DOMAIN,openvsx.eclipsecontent.org
