@@ -9,7 +9,7 @@ from pathlib import Path
 # --- 配置 ---
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov"}
 TARGET_HEIGHT = 1080
-SUFFIX = "_upd"
+SUFFIX = "_h264_1080p"
 COOLDOWN_SECONDS = 300  # 任务间冷却5分钟
 
 def set_terminal_title(title):
