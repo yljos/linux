@@ -5,13 +5,12 @@ import time
 import sys
 from pathlib import Path
 
-# --- 配置 ---
+# --- Configuration ---
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov"}
-TARGET_HEIGHT = 1080
+THRESHOLD = 1080 
 SUFFIX = "_1080p"
-COOLDOWN_SECONDS = 60  
-# 针对 i5-4570T (4线程)，设置为 2 可约占用 50% CPU
-CPU_THREADS = 2 
+COOLDOWN_SECONDS = 60
+CPU_THREADS = 2 # Limit to 2 threads for ~50% CPU usage on i5-4570T
 
 def set_terminal_title(title):
     try:
@@ -21,62 +20,74 @@ def set_terminal_title(title):
         else:
             sys.stdout.write(f"\x1b]2;{title}\x07")
             sys.stdout.flush()
-    except Exception:
-        pass
+    except Exception: pass
 
 def get_video_info(file_path):
+    """Get width, height, and codec name using ffprobe"""
     cmd = [
         "ffprobe", "-v", "error", "-select_streams", "v:0",
-        "-show_entries", "stream=height,codec_name", "-of", "json", str(file_path)
+        "-show_entries", "stream=width,height,codec_name", "-of", "json", str(file_path)
     ]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(result.stdout)
-        stream = data['streams'][0]
-        return int(stream.get('height', 0)), stream.get('codec_name', 'unknown')
-    except Exception:
-        return 0, "unknown"
+        s = data['streams'][0]
+        return int(s.get('width', 0)), int(s.get('height', 0)), s.get('codec_name', 'unknown')
+    except:
+        return 0, 0, "unknown"
 
 def process_videos():
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
-        print("错误：未找到 FFmpeg 或 ffprobe。")
+        print("Error: FFmpeg or ffprobe not found in PATH.")
         return
 
     root_dir = Path.cwd()
-    original_title = "Video Optimizer (Threads Limited)"
-    set_terminal_title(original_title)
+    set_terminal_title("H264 & 1080P Optimizer")
     
     targets = []
-    print(f"[*] 扫描目录: {root_dir}")
+    print(f"[*] Scanning: {root_dir}")
+    
     for file_path in root_dir.rglob("*"):
         if not file_path.is_file() or file_path.suffix.lower() not in VIDEO_EXTENSIONS:
             continue
         if SUFFIX in file_path.stem:
             continue
             
-        height, codec = get_video_info(file_path)
-        if height > TARGET_HEIGHT or codec != "h264":
+        w, h, codec = get_video_info(file_path)
+        short_side = min(w, h)
+        
+        # Logic: Process if resolution > 1080p OR codec is not h264
+        needs_downscale = short_side > THRESHOLD
+        needs_transcode = codec != "h264"
+        
+        if needs_downscale or needs_transcode:
             output_path = file_path.with_name(f"{file_path.stem}{SUFFIX}.mp4")
             if not output_path.exists():
-                targets.append((file_path, height, codec, output_path))
+                targets.append((file_path, w, h, codec, output_path, needs_downscale))
 
     total = len(targets)
     if total == 0:
-        print("[i] 未发现需要处理的文件。")
+        print("[i] No files need optimization.")
         return
 
-    print(f"[i] 待处理: {total} 个，线程限制: {CPU_THREADS}\n" + "-"*50)
+    print(f"[i] Found {total} targets. Thread limit: {CPU_THREADS}\n" + "-"*50)
 
-    for index, (src, h, codec, dst) in enumerate(targets):
-        print(f"[+] 进度 {index + 1}/{total} | {src.name}")
+    for index, (src, w, h, codec, dst, downscale) in enumerate(targets):
+        print(f"[+] Task {index + 1}/{total} | {src.name} ({w}x{h}, {codec})")
         set_terminal_title(f"[{index+1}/{total}] {src.name}")
 
-        # --- 核心控制：通过 -threads 限制占用 ---
+        # Build video filter: Always ensure NV12 for QSV
+        filters = ["format=nv12"]
+        if downscale:
+            # Apply scaling logic for landscape or portrait
+            s_filter = f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
+            filters.append(s_filter)
+
         command = [
             "ffmpeg", "-y",
             "-threads", str(CPU_THREADS), 
             "-i", str(src),
-            "-vf", f"format=nv12,scale=-2:'min(ih,{TARGET_HEIGHT})'",
+            "-vf", ",".join(filters),
             "-c:v", "h264_qsv",
             "-global_quality", "25",
             "-c:a", "copy",
@@ -86,30 +97,23 @@ def process_videos():
 
         try:
             process = subprocess.Popen(
-                command, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.STDOUT,
-                universal_newlines=True, 
-                encoding="utf-8", 
-                errors="replace"
+                command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                universal_newlines=True, encoding="utf-8", errors="replace"
             )
-
             for line in process.stdout:
                 if "frame=" in line:
                     print(f"\r    {line.strip()}", end="")
             process.wait()
-            print(f"\n[✔] 完成")
+            print(f"\n[✔] Done")
         except Exception as e:
-            print(f"\n[!] 出错: {e}")
-        finally:
-            set_terminal_title(original_title)
+            print(f"\n[!] Error: {e}")
 
         if index < total - 1:
-            print(f"[i] 冷却中 ({COOLDOWN_SECONDS}s)...")
+            print(f"[i] Cooldown: {COOLDOWN_SECONDS}s...")
             time.sleep(COOLDOWN_SECONDS)
             print("-" * 50)
 
-    print("\n[*] 全部任务执行完毕。")
+    print("\n[*] All tasks finished.")
 
 if __name__ == "__main__":
     process_videos()
