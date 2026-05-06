@@ -13,16 +13,23 @@ if os.path.exists(mount_point):
 else:
     # Mount if not mounted
     cmd = [
-        "rclone", "mount", "pikpak:", "P:",
-        "--config", conf_path,
-        "--vfs-cache-mode", "full",
-        "--vfs-cache-max-size", "10G",
+        "rclone",
+        "mount",
+        "pikpak:",
+        "P:",
+        "--config",
+        conf_path,
+        "--vfs-cache-mode",
+        "full",
+        "--vfs-cache-max-size",
+        "10G",
         "--network-mode",
         "--no-console",
         "--rc",
         "--rc-no-auth",
-        "--rc-addr", pik_rc,
+        "--rc-addr",
+        pik_rc,
         "--no-modtime",
-        "--no-checksum"
+        "--no-checksum",
     ]
     subprocess.Popen(cmd)

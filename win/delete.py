@@ -10,14 +10,18 @@ ROOT_DIR = os.path.abspath(r"P:\My Pack")
 
 print_lock = threading.Lock()
 
+
 def delete_file(path: str) -> bool:
     try:
         os.remove(path)
-        with print_lock: print(f"[Deleted] {path}")
+        with print_lock:
+            print(f"[Deleted] {path}")
         return True
     except Exception as e:
-        with print_lock: print(f"[Error] {path}: {e}")
+        with print_lock:
+            print(f"[Error] {path}: {e}")
         return False
+
 
 def main():
     script_path = os.path.abspath(__file__)
@@ -45,7 +49,7 @@ def main():
                         continue
                 except OSError:
                     continue
-            
+
             files_to_del.append(path)
 
     if not files_to_del:
@@ -58,14 +62,18 @@ def main():
     # Cleanup empty folders bottom-up in a single pass
     deleted_folders = 0
     for d in reversed(folders):
-        if d == ROOT_DIR: continue
+        if d == ROOT_DIR:
+            continue
         try:
             os.rmdir(d)
             deleted_folders += 1
         except OSError:
             pass
 
-    print(f"Done! Files: {sum(results)}/{len(files_to_del)} | Empty Folders: {deleted_folders}")
+    print(
+        f"Done! Files: {sum(results)}/{len(files_to_del)} | Empty Folders: {deleted_folders}"
+    )
+
 
 if __name__ == "__main__":
     main()

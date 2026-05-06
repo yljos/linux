@@ -63,13 +63,32 @@ RENAME_MAP = {
 }
 
 SHARED_KEYWORDS = [
-    "US", "HK", "SG", "JP", "Hong Kong", "Singapore", "Japan", "United States",
-    "美国", "香港", "新加坡", "日本",
+    "US",
+    "HK",
+    "SG",
+    "JP",
+    "Hong Kong",
+    "Singapore",
+    "Japan",
+    "United States",
+    "美国",
+    "香港",
+    "新加坡",
+    "日本",
 ]
 
 SHARED_EXCLUDE_KEYWORDS = [
-    "官网", "流量", "倍率", "剩余", "Australia", "到期", "重置",
-    "HK2-HY2", "HK3-HY2", "HK4-HY2", "HK5-HY2",
+    "官网",
+    "流量",
+    "倍率",
+    "剩余",
+    "Australia",
+    "到期",
+    "重置",
+    "HK2-HY2",
+    "HK3-HY2",
+    "HK4-HY2",
+    "HK5-HY2",
 ]
 
 # ================= Logging and Utilities =================
@@ -142,7 +161,9 @@ def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expi
                 with open(yaml_cache_file, "r", encoding="utf-8") as f:
                     return f.read(), load_headers_from_disk(source_name, cache_dir)
         except Exception as e:
-            logger.warning(f"Failed to read cache attributes, will try network request: {e}")
+            logger.warning(
+                f"Failed to read cache attributes, will try network request: {e}"
+            )
 
     if force_refresh:
         logger.info(f"[{source_name}] [Clash] [Received u]")
@@ -174,7 +195,9 @@ def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expi
 
 def filter_node_names_clash(proxies, shared_kw, shared_ex_kw):
     all_names = [
-        str(p.get("name"))  # Explicitly declare as str to eliminate editor type warnings
+        str(
+            p.get("name")
+        )  # Explicitly declare as str to eliminate editor type warnings
         for p in proxies
         if isinstance(p, dict) and isinstance(p.get("name"), str)
     ]
@@ -186,7 +209,7 @@ def filter_node_names_clash(proxies, shared_kw, shared_ex_kw):
         n
         for n in all_names
         if any(kw in n.lower() for kw in valid_kw)
-           and not any(ex in n.lower() for ex in valid_ex_kw)
+        and not any(ex in n.lower() for ex in valid_ex_kw)
     ]
 
     return filtered, all_names
@@ -209,13 +232,13 @@ def process_proxy_config_clash(proxy, up_pref, down_pref):
 
 
 def process_yaml_content_clash(
-        yaml_text: str,
-        template_path: Path,
-        up_pref: str,
-        down_pref: str,
-        shared_kw,
-        shared_ex_kw,
-        clean_node_fn,
+    yaml_text: str,
+    template_path: Path,
+    up_pref: str,
+    down_pref: str,
+    shared_kw,
+    shared_ex_kw,
+    clean_node_fn,
 ):
     try:
         input_data = yaml.safe_load(yaml_text)
@@ -305,7 +328,7 @@ def process_yaml_content_clash(
 
 
 def inject_custom_clash_node(
-        yaml_bytes: bytes, node_path: Path, target_groups: list
+    yaml_bytes: bytes, node_path: Path, target_groups: list
 ) -> bytes:
     """Inject custom Clash nodes and add to specified proxy groups"""
     if not node_path.exists():
@@ -350,11 +373,13 @@ def inject_custom_clash_node(
 
                 # 核心修复 1：如果目标策略组在前面的清洗中因为“空节点”被删除了，我们需要把它重新建出来
                 if not group_found:
-                    config["proxy-groups"].append({
-                        "name": target,
-                        "type": "select",  # 默认重建为 select 类型
-                        "proxies": [node_name]
-                    })
+                    config["proxy-groups"].append(
+                        {
+                            "name": target,
+                            "type": "select",  # 默认重建为 select 类型
+                            "proxies": [node_name],
+                        }
+                    )
 
         # 核心修复 2：加上 default_flow_style=False 和 width=4096，保证输出严格、标准的多行 YAML 格式
         return yaml.dump(
@@ -362,7 +387,7 @@ def inject_custom_clash_node(
             allow_unicode=True,
             sort_keys=False,
             default_flow_style=False,
-            width=4096
+            width=4096,
         ).encode("utf-8")
 
     except Exception as e:
@@ -465,9 +490,7 @@ def process_source(source):
             )
             if headers_data:
                 for h, v in headers_data.items():
-                    if h.lower() in {
-                        ih.lower() for ih in CLASH_INCLUDED_HEADERS
-                    }:
+                    if h.lower() in {ih.lower() for ih in CLASH_INCLUDED_HEADERS}:
                         response.headers[h] = v
             return response
         except Exception as e:

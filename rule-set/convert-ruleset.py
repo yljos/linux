@@ -7,7 +7,7 @@ from collections import defaultdict
 # --- 配置 ---
 
 # 自动适配可执行文件名
-mihomo_bin = "mihomo-windows-amd64.exe" 
+mihomo_bin = "mihomo-windows-amd64.exe"
 singbox_bin = "sing-box.exe"
 
 

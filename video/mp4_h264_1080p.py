@@ -7,34 +7,51 @@ from pathlib import Path
 
 # --- Configuration ---
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov"}
-THRESHOLD = 1080 
+THRESHOLD = 1080
 SUFFIX = "_1080p"
 COOLDOWN_SECONDS = 60
-CPU_THREADS = 2 # Limit to 2 threads for ~50% CPU usage on i5-4570T
+CPU_THREADS = 2  # Limit to 2 threads for ~50% CPU usage on i5-4570T
+
 
 def set_terminal_title(title):
     try:
         import platform
+
         if platform.system() == "Windows":
             subprocess.run(["title", title], shell=True)
         else:
             sys.stdout.write(f"\x1b]2;{title}\x07")
             sys.stdout.flush()
-    except Exception: pass
+    except Exception:
+        pass
+
 
 def get_video_info(file_path):
     """Get width, height, and codec name using ffprobe"""
     cmd = [
-        "ffprobe", "-v", "error", "-select_streams", "v:0",
-        "-show_entries", "stream=width,height,codec_name", "-of", "json", str(file_path)
+        "ffprobe",
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=width,height,codec_name",
+        "-of",
+        "json",
+        str(file_path),
     ]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(result.stdout)
-        s = data['streams'][0]
-        return int(s.get('width', 0)), int(s.get('height', 0)), s.get('codec_name', 'unknown')
+        s = data["streams"][0]
+        return (
+            int(s.get("width", 0)),
+            int(s.get("height", 0)),
+            s.get("codec_name", "unknown"),
+        )
     except:
         return 0, 0, "unknown"
+
 
 def process_videos():
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
@@ -43,23 +60,23 @@ def process_videos():
 
     root_dir = Path.cwd()
     set_terminal_title("H264 & 1080P Optimizer")
-    
+
     targets = []
     print(f"[*] Scanning: {root_dir}")
-    
+
     for file_path in root_dir.rglob("*"):
         if not file_path.is_file() or file_path.suffix.lower() not in VIDEO_EXTENSIONS:
             continue
         if SUFFIX in file_path.stem:
             continue
-            
+
         w, h, codec = get_video_info(file_path)
         short_side = min(w, h)
-        
+
         # Logic: Process if resolution > 1080p OR codec is not h264
         needs_downscale = short_side > THRESHOLD
         needs_transcode = codec != "h264"
-        
+
         if needs_downscale or needs_transcode:
             output_path = file_path.with_name(f"{file_path.stem}{SUFFIX}.mp4")
             if not output_path.exists():
@@ -70,7 +87,7 @@ def process_videos():
         print("[i] No files need optimization.")
         return
 
-    print(f"[i] Found {total} targets. Thread limit: {CPU_THREADS}\n" + "-"*50)
+    print(f"[i] Found {total} targets. Thread limit: {CPU_THREADS}\n" + "-" * 50)
 
     for index, (src, w, h, codec, dst, downscale) in enumerate(targets):
         print(f"[+] Task {index + 1}/{total} | {src.name} ({w}x{h}, {codec})")
@@ -84,21 +101,33 @@ def process_videos():
             filters.append(s_filter)
 
         command = [
-            "ffmpeg", "-y",
-            "-threads", str(CPU_THREADS), 
-            "-i", str(src),
-            "-vf", ",".join(filters),
-            "-c:v", "h264_qsv",
-            "-global_quality", "25",
-            "-c:a", "copy",
-            "-movflags", "+faststart",
-            str(dst)
+            "ffmpeg",
+            "-y",
+            "-threads",
+            str(CPU_THREADS),
+            "-i",
+            str(src),
+            "-vf",
+            ",".join(filters),
+            "-c:v",
+            "h264_qsv",
+            "-global_quality",
+            "25",
+            "-c:a",
+            "copy",
+            "-movflags",
+            "+faststart",
+            str(dst),
         ]
 
         try:
             process = subprocess.Popen(
-                command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                universal_newlines=True, encoding="utf-8", errors="replace"
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                encoding="utf-8",
+                errors="replace",
             )
             for line in process.stdout:
                 if "frame=" in line:
@@ -114,6 +143,7 @@ def process_videos():
             print("-" * 50)
 
     print("\n[*] All tasks finished.")
+
 
 if __name__ == "__main__":
     process_videos()
