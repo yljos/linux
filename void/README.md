@@ -4,15 +4,15 @@
 Manually sync the current kernel and initrd to a static directory within the EFI System Partition (ESP).
 
 ```bash
-# Set target directory (e.g., /boot/efi/EFI/[NAME])
-TARGET_DIR="/boot/efi/EFI/[NAME]"
+# Set target directory (e.g., /boot/efi/EFI/void)
+TARGET_DIR="/boot/efi/EFI/void"
 
 # Create the directory
-sudo mkdir -p "$TARGET_DIR"
+sudo mkdir -p "/boot/efi/EFI/void"
 
 # Copy kernel and initrd to static filenames
-sudo cp -f /boot/vmlinuz-$(uname -r) "$TARGET_DIR/vmlinuz"
-sudo cp -f /boot/initrd.img-$(uname -r) "$TARGET_DIR/initrd.img"
+sudo cp -f /boot/vmlinuz-$(uname -r) "/boot/efi/EFI/void/vmlinuz"
+sudo cp -f /boot/initrd-$(uname -r).img "/boot/efi/EFI/void/initrd.img"
 ```
 
 ## 2. NVRAM Boot Entry Creation
@@ -20,9 +20,10 @@ Use `efibootmgr` to register the kernel as a standalone EFI application in the m
 
 ```bash
 # Replace placeholders with actual values
-sudo efibootmgr --create --disk /dev/ --part 1 --label "[NAME]" \
-    --loader /EFI/[NAME]/vmlinuz \
-    --unicode "root=UUID=[ROOT_UUID] ro quiet initrd=/EFI/[NAME]/initrd.img"
+blkid
+sudo efibootmgr --create --disk /dev/nvme0p1 --part 1 --label "void" \
+    --loader /EFI/void/vmlinuz \
+    --unicode "root=UUID=[ROOT_UUID] ro quiet initrd=/EFI/void/initramfs.img"
 ```
 
 ## 3. Cleanup
@@ -36,3 +37,4 @@ sudo efibootmgr -b 0007 -B
 ```
 
 sudo xbps-install -Su gnupg2-scdaemon
+sudo xbps-remove -R grub-x86_64-efi grub
