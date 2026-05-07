@@ -38,3 +38,5 @@ sudo efibootmgr -b 0007 -B
 
 sudo xbps-install -Su gnupg2-scdaemon
 sudo xbps-remove -R grub-x86_64-efi grub
+sudo xbps-install -S base-devel libX11-devel libXft-devel libXinerama-devel
+sudo xbps-install -S xinit xorg-server
