@@ -41,3 +41,5 @@ sudo xbps-remove -R grub-x86_64-efi grub
 sudo xbps-install -S base-devel libX11-devel libXft-devel libXinerama-devel
 sudo xbps-install -S xinit xorg-server font-hack-ttf
 sudo xbps-install -S xf86-input-libinput
+sudo xbps-install -S intel-media-driver libva-utils
+sudo xbps-install -S alsa-utils
