@@ -34,3 +34,5 @@ After confirming `efibootmgr -v` shows `BootCurrent` matches your new entry, rem
 sudo efibootmgr -b 0007 -B
 
 ```
+
+sudo xbps-install -Su gnupg2-scdaemon
