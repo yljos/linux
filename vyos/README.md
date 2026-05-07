@@ -61,6 +61,8 @@ set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 range 0 stop 
 ```bash
 set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 static-mapping void ip-address 
 set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 static-mapping void mac 
+set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 ignore-client-id
+
 ```
 
 ## 4. DNS Forwarding
