@@ -43,3 +43,4 @@ sudo xbps-install -S xinit xorg-server font-hack-ttf
 sudo xbps-install -S xf86-input-libinput
 sudo xbps-install -S intel-media-driver libva-utils
 sudo xbps-install -S alsa-utils
+sudo xbps-install -S noto-fonts-cjk font-hack-ttf
