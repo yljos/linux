@@ -204,6 +204,9 @@ proxy-groups:
     hidden: true
     name: Youtube
     filter: "(?i)^(?=.*(US))(?!.*(ss|gemini)).*$"
+    proxies:
+      - US-TCP-url-test
+      - US-UDP-url-test
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
