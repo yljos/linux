@@ -11,8 +11,11 @@ TARGET_DIR="/boot/efi/EFI/void"
 sudo mkdir -p "/boot/efi/EFI/void"
 
 # Copy kernel and initrd to static filenames
-sudo cp -f /boot/vmlinuz-$(uname -r) "/boot/efi/EFI/void/vmlinuz"
-sudo cp -f /boot/initrd-$(uname -r).img "/boot/efi/EFI/void/initrd.img"
+# Copy the latest kernel to ESP
+sudo cp -f $(ls -v /boot/vmlinuz-* | tail -n 1) /boot/efi/EFI/void/vmlinuz
+
+# Copy the latest initramfs to ESP
+sudo cp -f $(ls -v /boot/initramfs-*.img | tail -n 1) /boot/efi/EFI/void/initramfs.img
 ```
 
 ## 2. NVRAM Boot Entry Creation
