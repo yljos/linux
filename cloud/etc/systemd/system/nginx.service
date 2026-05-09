@@ -1,0 +1,24 @@
+[Unit]
+Description=Nginx Container (Host Network)
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+StandardOutput=null
+StandardError=null
+
+ExecStart=/usr/bin/podman run \
+  --name nginx \
+  --replace \
+  --rm \
+  --network=host \
+  --log-driver=none \
+  -v /root/nginx/202309.xyz.conf:/etc/nginx/conf.d/default.conf:ro,Z \
+  -v /root/nginx/map.conf:/etc/nginx/conf.d/map.conf:ro,Z \
+  -v /root/nginx/headers.inc:/etc/nginx/conf.d/headers.inc:ro,Z \
+  docker.io/nginx:latest
+
+[Install]
+WantedBy=multi-user.target
