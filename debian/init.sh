@@ -1,57 +1,44 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# [1] Data Directory
+mkdir -p /data
+chown huai:huai /data
+chmod 755 /data
 
-# ---------------------------------------------------------
-# [1] Directories & Dotfiles
-# ---------------------------------------------------------
-mkdir -p /home/huai/.ssh \
-	/home/huai/.gnupg \
-	/home/huai/.config/systemd/user
+# [2] Package Installation
+apt update
+apt install -y \
+    locales git curl vim shfmt build-essential \
+    libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
+    freerdp2-x11 scdaemon pcscd x11-xserver-utils \
+    fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
+    pipewire wireplumber dunst rofi numlockx rsync
 
-# Ensure GPG directory is secure
-chmod 700 /home/huai/.gnupg
+# [3] System Configuration (Locale)
+echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+locale-gen
+update-locale LANG=en_US.UTF-8
 
-# Remove the file only if it is a regular file (-f) and NOT a symlink (! -L)
-[ -f /home/huai/.bashrc ] && [ ! -L /home/huai/.bashrc ] && rm -f /home/huai/.bashrc
+# [4] Data Sync & Keys
+curl -sL "http://10.0.0.21/key/yljos_pub.asc" | sudo -u huai gpg --import >/dev/null 2>&1
 
-# ---------------------------------------------------------
-# [2] Data Directory
-# ---------------------------------------------------------
-sudo mkdir -p /data
-sudo chown huai:huai /data
-sudo chmod 755 /data
+rsync -r huai/ /home/huai/
 
-# ---------------------------------------------------------
-# [3] Package Installation
-# ---------------------------------------------------------
-sudo apt update
-sudo apt install -y \
-	locales git curl vim stow shfmt build-essential \
-	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
-	freerdp2-x11 scdaemon pcscd x11-xserver-utils \
-	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
-	pipewire wireplumber dunst rofi numlockx
+if [[ -d "etc" ]]; then
+    rsync -r etc/ /etc/
+fi
 
-systemctl --user daemon-reload
+# [5] Permissions & Ownership
+chown huai:huai -R /home/huai/
 
-# ---------------------------------------------------------
-# [4] System Configuration
-# ---------------------------------------------------------
-# Overwrite locale.gen directly for en_US.UTF-8
-echo "en_US.UTF-8 UTF-8" | sudo tee /etc/locale.gen >/dev/null
-sudo locale-gen
-sudo update-locale LANG=en_US.UTF-8
+find /home/huai/.ssh /home/huai/.gnupg -type d -exec chmod 700 {} +
+find /home/huai/.ssh /home/huai/.gnupg -type f -exec chmod 600 {} +
 
-# Enable audio services
-systemctl --user --now enable pipewire wireplumber dwm-status shutdown
+# [6] Services Management
+systemctl disable --now networking
+systemctl enable --now systemd-networkd
 
-# ---------------------------------------------------------
-# [5] Network Service Swap
-# ---------------------------------------------------------
-sudo systemctl disable --now networking
-sudo systemctl enable --now systemd-networkd
+export XDG_RUNTIME_DIR="/run/user/$(id -u huai)"
+sudo -u huai systemctl --user daemon-reload
+sudo -u huai systemctl --user --now enable pipewire wireplumber dwm-status
 
-# ---------------------------------------------------------
-# [6] SSH & GPG Keys
-# ---------------------------------------------------------
-
-curl -sL "http://10.0.0.21/key/yljos_pub.asc" | gpg --import >/dev/null 2>&1
+echo "Done."
