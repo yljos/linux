@@ -57,3 +57,5 @@ vim /etc/fstab
 # Append the following line (replace <UUID> with actual output):
 # UUID=<UUID> /data ext4 defaults 0 0
 ```
+
+sudo xbps-install -S catatonit
