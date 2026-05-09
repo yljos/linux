@@ -9,7 +9,6 @@ fi
 chown huai:huai -R /home/huai/
 
 # Fix file permissions
-find /home/huai/.ssh /home/huai/.gnupg -type d -exec chmod 700 {} +
-find /home/huai/.ssh /home/huai/.gnupg -type f -exec chmod 600 {} +
+find /home/huai/.ssh  -type d -exec chmod 700 {} +
+find /home/huai/.ssh  -type f -exec chmod 600 {} +
 
-curl -sL "http://10.0.0.21/key/yljos_pub.asc" | sudo -u huai gpg --import >/dev/null 2>&1
