@@ -1,0 +1,9 @@
+#!/bin/sh
+
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=ha \
+  -p 8123:8123 \
+  -v /data/appdata/ha:/config:Z \
+  ghcr.io/home-assistant/home-assistant:stable

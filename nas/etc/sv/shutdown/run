@@ -1,0 +1,10 @@
+#!/bin/sh
+
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --init \
+  --name=shutdown \
+  -p 5008:5008 \
+  -v /data/www:/data/www:z \
+  localhost/shutdown:latest

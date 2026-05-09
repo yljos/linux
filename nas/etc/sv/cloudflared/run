@@ -1,0 +1,10 @@
+#!/bin/sh
+
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --name cloudflared \
+  --network=host \
+  --env-file /home/huai/token.env \
+  docker.io/cloudflare/cloudflared:latest \
+  tunnel --no-autoupdate --protocol http2 run
