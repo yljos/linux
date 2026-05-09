@@ -45,3 +45,4 @@ sudo xbps-install -S intel-media-driver libva-utils
 sudo xbps-install -S alsa-utils
 sudo xbps-install -S noto-fonts-cjk font-hack-ttf
 sudo xbps-install -S yubikey-manager
+sudo xbps-install -S dbus
