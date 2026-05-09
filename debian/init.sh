@@ -7,14 +7,14 @@ chmod 755 /data
 # [2] Package Installation
 apt update
 apt install -y \
-    locales git curl vim shfmt build-essential \
-    libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
-    freerdp2-x11 scdaemon pcscd x11-xserver-utils \
-    fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
-    pipewire wireplumber dunst rofi numlockx rsync
+	locales git curl vim shfmt build-essential \
+	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
+	freerdp2-x11 scdaemon pcscd x11-xserver-utils \
+	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
+	pipewire wireplumber dunst rofi numlockx rsync
 
 # [3] System Configuration (Locale)
-echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+echo "en_US.UTF-8 UTF-8" >/etc/locale.gen
 locale-gen
 update-locale LANG=en_US.UTF-8
 
@@ -24,7 +24,7 @@ curl -sL "http://10.0.0.21/key/yljos_pub.asc" | sudo -u huai gpg --import >/dev/
 rsync -r huai/ /home/huai/
 
 if [[ -d "etc" ]]; then
-    rsync -r etc/ /etc/
+	rsync -r etc/ /etc/
 fi
 
 # [5] Permissions & Ownership

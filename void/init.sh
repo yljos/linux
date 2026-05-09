@@ -6,4 +6,3 @@ chmod 700 ~/.ssh ~/.gnupg
 
 # Fix file permissions
 chmod 600 ~/.ssh/* ~/.gnupg/*
-

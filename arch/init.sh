@@ -6,7 +6,7 @@ rsync -r huai/ /home/huai/
 
 # Sync system-wide configurations if the source directory exists
 if [[ -d "etc" ]]; then
-    rsync -r etc/ /etc/
+	rsync -r etc/ /etc/
 fi
 
 # --- [2] Ownership & Permissions ---
