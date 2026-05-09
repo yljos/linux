@@ -1,7 +1,0 @@
-# /etc/systemd/network/10-lo.network
-[Match]
-Name=lo
-
-[Network]
-Address=127.0.0.1/8
-Address=::1/128
