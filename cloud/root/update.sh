@@ -69,8 +69,8 @@ for SERVICE in $SERVICES; do
             if podman build -t "$SERVICE" . >/dev/null; then
                 log "[$SERVICE] Build successful, restarting service..."
 
-                # Restart service via runit
-                sv restart "$SERVICE"
+                # Restart service via systemd (Debian default)
+                systemctl restart "$SERVICE"
 
                 echo "$CURRENT_HASH" >"$HASH_FILE"
                 sleep 2
