@@ -8,4 +8,3 @@ export TERM=xterm-256color
 export HISTCONTROL=ignoreboth:erasedups
 shopt -s histappend
 [[ -f ~/.aliases ]] && . ~/.aliases
-export PATH="$PATH:/home/huai/.local/bin"
