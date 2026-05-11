@@ -166,8 +166,9 @@ proxy-groups:
     name: Youtube
     proxies:
       - US-fallback
-    proxies:
-      - US-fallback
+      - JP-fallback
+      - SG-fallback
+      - HK-fallback
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
