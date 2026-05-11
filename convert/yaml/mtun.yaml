@@ -242,7 +242,8 @@ proxy-groups:
     max-failed-times: 3
     name: SG-fallback
     proxies:
-      - SG-fallback
+      - SG-TCP-url-test
+      - SG-UDP-url-test
   - type: fallback
     url: "https://www.gstatic.com/generate_204"
     interval: 30
@@ -250,7 +251,8 @@ proxy-groups:
     max-failed-times: 3
     name: JP-fallback
     proxies:
-      - JP-fallback
+      - JP-TCP-url-test
+      - JP-UDP-url-test
   - type: fallback
     url: "https://www.gstatic.com/generate_204"
     interval: 30
@@ -258,7 +260,8 @@ proxy-groups:
     max-failed-times: 3
     name: US-fallback
     proxies:
-      - US-fallback
+      - US-TCP-url-test
+      - US-UDP-url-test
   - type: fallback
     url: "https://www.gstatic.com/generate_204"
     interval: 30
@@ -266,7 +269,8 @@ proxy-groups:
     max-failed-times: 3
     name: HK-fallback
     proxies:
-      - HK-fallback
+      - HK-TCP-url-test
+      - HK-UDP-url-test
 rule-providers:
   adguard-site:
     proxy: M
