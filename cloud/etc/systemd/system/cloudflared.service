@@ -13,6 +13,7 @@ ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
   --name cloudflared \
+  --label "io.containers.autoupdate=registry" \
   --network=host \
   --log-driver=none \
   --env-file /root/cloudflared/token.env \

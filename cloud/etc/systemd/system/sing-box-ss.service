@@ -11,6 +11,7 @@ StandardError=null
 ExecStart=/usr/bin/podman run \
     --replace \
     --name sing-box-ss \
+    --label "io.containers.autoupdate=registry" \
     --network host \
     --log-driver=none \
     -v /root/sing-box/config.json:/etc/sing-box/config.json:ro \
