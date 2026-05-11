@@ -1,0 +1,10 @@
+#!/bin/sh
+
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=plex \
+  -p 32400:32400 \
+  -v /data/appdata/plex:/config:Z \
+  -v /data/media:/media:z \
+  docker.io/linuxserver/plex:latest
