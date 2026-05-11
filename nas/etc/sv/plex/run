@@ -8,4 +8,4 @@ exec /usr/bin/podman run \
   --device /dev/dri:/dev/dri \
   -v /data/appdata/plex:/config:Z \
   -v /data/media:/media:z \
-  docker.io/linuxserver/plex:latest
+  docker.io/plexinc/pms-docker/plex:latest
