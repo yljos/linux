@@ -5,6 +5,6 @@ exec /usr/bin/podman run \
   --rm \
   --name cloudflared \
   --network=host \
-  --env-file /home/huai/token.env \
+  --env-file /root/token.env \
   docker.io/cloudflare/cloudflared:latest \
   tunnel --no-autoupdate --protocol http2 run
