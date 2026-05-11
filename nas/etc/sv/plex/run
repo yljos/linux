@@ -5,6 +5,7 @@ exec /usr/bin/podman run \
   --rm \
   --name=plex \
   -p 32400:32400 \
+  -e PLEX_CLAIM="claim-kxYxwKTy79tmuz3QsvKJ" \
   --device /dev/dri:/dev/dri \
   -v /data/appdata/plex:/config:Z \
   -v /data/media:/media:z \
