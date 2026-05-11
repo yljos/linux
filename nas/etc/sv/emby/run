@@ -5,6 +5,7 @@ exec /usr/bin/podman run \
   --rm \
   --name=emby \
   -p 8096:8096 \
+  --device /dev/dri:/dev/dri \
   -v /data/appdata/emby:/config:Z \
   -v /data/media:/media:z \
   docker.io/emby/embyserver:latest
