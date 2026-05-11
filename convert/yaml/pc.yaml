@@ -82,14 +82,10 @@ proxy-groups:
   - type: select
     name: M
     proxies:
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - SG-fallback
+      - JP-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     name: Default
     proxies:
@@ -102,99 +98,69 @@ proxy-groups:
     include-all-proxies: true
     filter: "(?i)^(?=.*gemini)(?=.*us)"
     proxies:
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - US-fallback
+      - JP-fallback
+      - SG-fallback
+      - HK-fallback
   - type: select
     hidden: true
     name: OpenAi
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     hidden: true
     name: Telegram
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     hidden: true
     name: Steam
     proxies:
       - DIRECT
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     hidden: true
     name: PikPak
     proxies:
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - SG-fallback
+      - JP-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     hidden: true
     name: GitHub
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     hidden: true
     name: Microsoft
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     hidden: true
     name: TikTok
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
+      - JP-fallback
   - type: select
     hidden: true
     name: Twitter
     proxies:
-      - US-TCP-url-test
-      - US-UDP-url-test
+      - US-fallback
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -275,6 +241,38 @@ proxy-groups:
     hidden: true
     name: US-UDP-url-test
     filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
+  - type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    timeout: 3000
+    max-failed-times: 3
+    name: SG-fallback
+    proxies:
+      - SG-fallback
+  - type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    timeout: 3000
+    max-failed-times: 3
+    name: JP-fallback
+    proxies:
+      - JP-fallback
+  - type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    timeout: 3000
+    max-failed-times: 3
+    name: US-fallback
+    proxies:
+      - US-fallback
+  - type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    timeout: 3000
+    max-failed-times: 3
+    name: HK-fallback
+    proxies:
+      - HK-fallback
 rule-providers:
   adguard-site:
     proxy: M
