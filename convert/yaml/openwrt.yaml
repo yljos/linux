@@ -84,14 +84,10 @@ proxy-groups:
   - type: select
     name: M
     proxies:
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - SG-fallback
+      - JP-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     name: Default
     proxies:
@@ -101,112 +97,77 @@ proxy-groups:
   - type: select
     name: Google
     proxies:
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - US-fallback
+      - JP-fallback
+      - SG-fallback
+      - HK-fallback
   - type: select
     name: Relay
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     name: OpenAi
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     name: Telegram
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     name: Steam
     proxies:
       - DIRECT
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     name: PikPak
     proxies:
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - SG-fallback
+      - JP-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     name: GitHub
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     name: Microsoft
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-      - US-TCP-url-test
-      - US-UDP-url-test
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+      - JP-fallback
+      - SG-fallback
+      - US-fallback
+      - HK-fallback
   - type: select
     hidden: true
     name: TikTok
     proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
+      - JP-fallback
   - type: select
     hidden: true
     name: Twitter
     proxies:
-      - US-TCP-url-test
-      - US-UDP-url-test
+      - US-fallback
   - type: select
     include-all-proxies: true
     hidden: true
     name: Youtube
     filter: "(?i)^(?=.*(US))(?!.*(ss|gemini)).*$"
     proxies:
-      - US-TCP-url-test
-      - US-UDP-url-test
+      - US-fallback
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -287,6 +248,42 @@ proxy-groups:
     hidden: true
     name: US-UDP-url-test
     filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
+  - type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    timeout: 3000
+    max-failed-times: 3
+    name: SG-fallback
+    proxies:
+      - SG-TCP-url-test
+      - SG-UDP-url-test
+  - type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    timeout: 3000
+    max-failed-times: 3
+    name: JP-fallback
+    proxies:
+      - JP-TCP-url-test
+      - JP-UDP-url-test
+  - type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    timeout: 3000
+    max-failed-times: 3
+    name: US-fallback
+    proxies:
+      - US-TCP-url-test
+      - US-UDP-url-test
+  - type: fallback
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    timeout: 3000
+    max-failed-times: 3
+    name: HK-fallback
+    proxies:
+      - HK-TCP-url-test
+      - HK-UDP-url-test
 rule-providers:
   archlinux-site:
     proxy: M
@@ -684,7 +681,7 @@ rules:
   - RULE-SET,telegram-ip,Telegram
   - RULE-SET,twitter-ip,Twitter
   - AND,((SRC-IP-CIDR,10.0.0.121/32),(RULE-SET,google-ip)),Youtube
-  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-ip)),Youtube  
+  - AND,((SRC-IP-CIDR,10.0.0.8/32),(RULE-SET,google-ip)),Youtube
   - RULE-SET,google-ip,Google
   - RULE-SET,cn-ip,DIRECT
   - MATCH,Default
