@@ -12,6 +12,7 @@ ExecStart=/usr/bin/podman run \
     --replace \
     --name sing-box-ss \
     --label "io.containers.autoupdate=registry" \
+    --label PODMAN_SYSTEMD_UNIT=%n \
     --network host \
     --log-driver=none \
     -v /root/sing-box/config.json:/etc/sing-box/config.json:ro \
