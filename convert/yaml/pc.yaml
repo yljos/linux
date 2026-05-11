@@ -247,6 +247,7 @@ proxy-groups:
     timeout: 3000
     max-failed-times: 3
     name: SG-fallback
+    hidden: true
     proxies:
       - SG-TCP-url-test
       - SG-UDP-url-test
@@ -256,6 +257,7 @@ proxy-groups:
     timeout: 3000
     max-failed-times: 3
     name: JP-fallback
+    hidden: true
     proxies:
       - JP-TCP-url-test
       - JP-UDP-url-test
@@ -265,6 +267,7 @@ proxy-groups:
     timeout: 3000
     max-failed-times: 3
     name: US-fallback
+    hidden: true
     proxies:
       - US-TCP-url-test
       - US-UDP-url-test
@@ -274,6 +277,7 @@ proxy-groups:
     timeout: 3000
     max-failed-times: 3
     name: HK-fallback
+    hidden: true
     proxies:
       - HK-TCP-url-test
       - HK-UDP-url-test
