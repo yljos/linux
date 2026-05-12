@@ -1,4 +1,0 @@
-#!/usr/bin/sh
-waybar & 
-sleep 10
-killall waybar
