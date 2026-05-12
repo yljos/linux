@@ -7,6 +7,5 @@ if [[ -d "etc" ]]; then
 fi
 
 # Fix file permissions
-find /root/.ssh  -type d -exec chmod 700 {} +
-find /root/.ssh  -type f -exec chmod 600 {} +
-
+find /root/.ssh -type d -exec chmod 700 {} +
+find /root/.ssh -type f -exec chmod 600 {} +
