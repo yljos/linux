@@ -10,8 +10,7 @@ command -v numlockx &>/dev/null && numlockx &
 
 # [[ -f /home/huai/.config/wallpaperchange.sh ]] && /bin/bash /home/huai/.config/wallpaperchange.sh
 [[ -f /home/huai/.config/dwm/dwm_status.sh ]] && /bin/bash /home/huai/.config/dwm/dwm_status.sh &
-[[ -f /home/huai/.config/dwm/shutdown.sh ]] && /bin/bash /home/huai/.config/shutdown.sh &
-
+[[ -f /home/huai/.config/shutdown.sh ]] && /bin/bash /home/huai/.config/shutdown.sh &
 
 sleep 1
 # ! pgrep -f "firefox" &>/dev/null && firefox &
