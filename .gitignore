@@ -1,9 +1,5 @@
 **/mihomo-windows-amd64.exe
 **/sing-box.exe
-**/.config/mpd/log
-**/.config/mpd/state
-**/.config/mpd/socket
-**/huai/.config/mpd/sticker.sql
 **/.idea/
 **/.venv/
 **/__pycache__/
@@ -15,12 +11,6 @@
 **/.env
 **/node.json
 **/node.yaml
-**/default.target.wants/
-arch/huai/.config/systemd/user/*
-!arch/huai/.config/systemd/user/shutdown.service
-!arch/huai/.config/systemd/user/dwm-status.service
-debian/huai/.config/systemd/user/*
-!debian/huai/.config/systemd/user/shutdown.service
-!debian/huai/.config/systemd/user/dwm-status.service
+
 
 
