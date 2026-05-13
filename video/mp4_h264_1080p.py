@@ -112,7 +112,7 @@ def process_videos():
             "-c:v",
             "h264_qsv",
             "-global_quality",
-            "25",
+            "20",
             "-c:a",
             "copy",
             "-movflags",
