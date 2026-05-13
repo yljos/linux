@@ -19,7 +19,7 @@ alias mute="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
 # [4] Scripts & SSH Management
 # ---------------------------------------------------------
 alias win="/usr/bin/bash /home/huai/.config/win.sh"
-alias wol="/usr/bin/bash /home/huai/.config/wol.sh"
+alias up="/usr/bin/bash /home/huai/.config/wol.sh"
 
 # SFTP (SSHFS) Mount Function
 mount-data() {
