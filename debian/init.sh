@@ -7,7 +7,7 @@ chmod 755 -R /data
 # [2] Package Installation
 apt update
 apt install -y \
-	locales curl mpv vim shfmt build-essential \
+	locales curl wakeonlan mpv vim shfmt build-essential \
 	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
 	freerdp2-x11 scdaemon pcscd x11-xserver-utils \
 	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
