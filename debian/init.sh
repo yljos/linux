@@ -11,7 +11,7 @@ apt install -y \
 	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
 	freerdp2-x11 scdaemon pcscd x11-xserver-utils \
 	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
-	pipewire wireplumber dunst rofi numlockx rsync
+	pipewire wireplumber dunst rofi numlockx rsync alacritty fonts-hack-ttf
 
 # [3] System Configuration (Locale)
 echo "en_US.UTF-8 UTF-8" >/etc/locale.gen
