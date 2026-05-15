@@ -1,0 +1,23 @@
+[Unit]
+Description=Home Assistant Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# Configuration derived from provided script 
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=ha \
+  -p 8123:8123 \
+  -v /data/appdata/ha:/config:Z \
+  ghcr.io/home-assistant/home-assistant:stable
+
+ExecStop=/usr/bin/podman stop -t 10 ha
+
+[Install]
+WantedBy=multi-user.target

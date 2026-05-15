@@ -1,0 +1,25 @@
+[Unit]
+Description=WebDAV Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# Execute podman run for WebDAV
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=webdav \
+  -e WEBDAV_CONFIG=/config.yaml \
+  -p 6065:6065 \
+  -v /data/webdav:/srv:Z \
+  -v /data/appdata/webdav/config.yaml:/config.yaml:Z \
+  docker.io/hacdias/webdav:latest
+
+ExecStop=/usr/bin/podman stop -t 10 webdav
+
+[Install]
+WantedBy=multi-user.target

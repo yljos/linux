@@ -1,0 +1,24 @@
+[Unit]
+Description=Shutdown Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# Execute podman run for shutdown container
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --init \
+  --name=shutdown \
+  -p 5008:5008 \
+  -v /data/www:/data/www:z \
+  localhost/shutdown:latest
+
+ExecStop=/usr/bin/podman stop -t 10 shutdown
+
+[Install]
+WantedBy=multi-user.target

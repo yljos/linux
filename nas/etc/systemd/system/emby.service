@@ -1,0 +1,25 @@
+[Unit]
+Description=Emby Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# Execute podman run for Emby
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=emby \
+  -p 8096:8096 \
+  --device /dev/dri:/dev/dri \
+  -v /data/appdata/emby:/config:Z \
+  -v /data/media:/media:z \
+  docker.io/emby/embyserver:latest
+
+ExecStop=/usr/bin/podman stop -t 10 emby
+
+[Install]
+WantedBy=multi-user.target
