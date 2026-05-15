@@ -1,28 +1,33 @@
 #!/usr/bin/bash
 
-# --- 加载脚本锁库 ---
+# Load script lock library
 source "$HOME/.config/script_lock.sh"
-# --- 检查脚本锁 ---
+# Check script lock
 acquire_script_lock || exit 0
 
 SHUTDOWN_FILE="http://10.0.0.21/shutdown"
-INTERVAL=60 # 循环间隔秒
+INTERVAL=60 # Loop interval in seconds
+
+# Initial delay before entering the loop
+sleep "$INTERVAL"
 
 while true; do
-	# 获取远程文件内容，局域网优化超时
+	# Fetch remote file content with optimized timeout
 	CONTENT=$(curl -s --connect-timeout 1 --max-time 2 "$SHUTDOWN_FILE")
 
-	# 文件不存在或 curl 失败 → 等待下一轮
+	# Empty content or curl failed -> wait for next round
 	if [ -z "$CONTENT" ]; then
 		sleep "$INTERVAL"
 		continue
 	fi
 
-	# 如果内容为1 → 关机
+	# If content is 1 -> shutdown
 	if [ "$CONTENT" = "1" ]; then
 		sleep 60
-		systemctl poweroff # 测试时注释
+		systemctl poweroff # Comment out during testing
 		exit 0
-	fi # 等待固定间隔再检测
+	fi
+
+	# Wait before next check
 	sleep "$INTERVAL"
 done

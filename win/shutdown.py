@@ -8,6 +8,9 @@ WAIT_SECONDS = 1 * 60  # Check interval: 1 minutes
 
 
 def main():
+    # Initial delay before entering the loop
+    time.sleep(WAIT_SECONDS)
+
     while True:
         try:
             # Try to fetch remote signal
