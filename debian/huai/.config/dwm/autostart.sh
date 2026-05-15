@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 sleep 0.5
-mpv --no-video /home/huai/.config/dunst/xp.wav &
+mpv --no-video /home/huai/.config/dunst/system_online.mp3 &
 
 command -v numlockx &>/dev/null && numlockx &
 # ! pgrep -x "picom" &>/dev/null && picom -b
