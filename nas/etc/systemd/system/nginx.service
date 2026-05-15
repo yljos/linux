@@ -1,0 +1,25 @@
+[Unit]
+Description=Nginx Container (Host Network)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=nginx \
+  --network=host \
+  --log-driver=journald \
+  -v /data/appdata/nginx/conf.d:/etc/nginx/conf.d:Z \
+  -v /data/appdata/nginx/nginx.conf:/etc/nginx/nginx.conf:Z \
+  -v /data/www:/usr/share/nginx/html:ro,z \
+  docker.io/nginx:latest
+
+ExecStop=/usr/bin/podman stop -t 10 nginx
+
+[Install]
+WantedBy=multi-user.target
