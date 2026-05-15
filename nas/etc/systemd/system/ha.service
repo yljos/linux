@@ -7,6 +7,8 @@ After=network-online.target
 Type=simple
 Restart=always
 RestartSec=5s
+StandardOutput=null
+StandardError=null
 
 # Configuration derived from provided script 
 ExecStart=/usr/bin/podman run \
@@ -14,6 +16,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --name=ha \
   -p 8123:8123 \
+  --log-driver=journald \
   -v /data/appdata/ha:/config:Z \
   ghcr.io/home-assistant/home-assistant:stable
 

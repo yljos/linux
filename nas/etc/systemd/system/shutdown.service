@@ -7,6 +7,8 @@ After=network-online.target
 Type=simple
 Restart=always
 RestartSec=5s
+StandardOutput=null
+StandardError=null
 
 # Execute podman run for shutdown container
 ExecStart=/usr/bin/podman run \
@@ -15,6 +17,7 @@ ExecStart=/usr/bin/podman run \
   --init \
   --name=shutdown \
   -p 5008:5008 \
+  --log-driver=journald \
   -v /data/www:/data/www:z \
   localhost/shutdown:latest
 

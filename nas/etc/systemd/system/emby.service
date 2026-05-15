@@ -7,6 +7,8 @@ After=network-online.target
 Type=simple
 Restart=always
 RestartSec=5s
+StandardOutput=null
+StandardError=null
 
 # Execute podman run for Emby
 ExecStart=/usr/bin/podman run \
@@ -14,6 +16,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --name=emby \
   -p 8096:8096 \
+  --log-driver=journald \
   --device /dev/dri:/dev/dri \
   -v /data/appdata/emby:/config:Z \
   -v /data/media:/media:z \

@@ -16,7 +16,7 @@ ExecStart=/usr/bin/podman run \
   --label "io.containers.autoupdate=registry" \
   --label PODMAN_SYSTEMD_UNIT=%n \
   --network=host \
-  --log-driver=none \
+  --log-driver=journald \
   --env-file /root/cloudflared/token.env \
   docker.io/cloudflare/cloudflared:latest \
   tunnel --no-autoupdate run

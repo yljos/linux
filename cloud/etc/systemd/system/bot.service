@@ -15,9 +15,9 @@ ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
   --init \
-  --log-driver=none \
   -p 5005:5005 \
   --env-file /root/bot/.env \
+  --log-driver=journald \
   -v /root/bot/blocked_users.json:/app/blocked_users.json:Z \
   -v /root/bot/whitelist.json:/app/whitelist.json:Z \
   localhost/bot:latest

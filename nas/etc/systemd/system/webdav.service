@@ -7,6 +7,8 @@ After=network-online.target
 Type=simple
 Restart=always
 RestartSec=5s
+StandardOutput=null
+StandardError=null
 
 # Execute podman run for WebDAV
 ExecStart=/usr/bin/podman run \
@@ -15,6 +17,7 @@ ExecStart=/usr/bin/podman run \
   --name=webdav \
   -e WEBDAV_CONFIG=/config.yaml \
   -p 6065:6065 \
+  --log-driver=journald \
   -v /data/webdav:/srv:Z \
   -v /data/appdata/webdav/config.yaml:/config.yaml:Z \
   docker.io/hacdias/webdav:latest

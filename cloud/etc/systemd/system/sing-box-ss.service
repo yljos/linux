@@ -14,7 +14,7 @@ ExecStart=/usr/bin/podman run \
     --label "io.containers.autoupdate=registry" \
     --label PODMAN_SYSTEMD_UNIT=%n \
     --network host \
-    --log-driver=none \
+    --log-driver=journald \
     -v /root/sing-box/config.json:/etc/sing-box/config.json:ro \
     ghcr.io/sagernet/sing-box:latest \
     run -c /etc/sing-box/config.json
