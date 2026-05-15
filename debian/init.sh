@@ -27,6 +27,10 @@ if [[ -d "etc" ]]; then
 	rsync -r etc/ /etc/
 fi
 
+if [[ -d "usr" ]]; then
+	rsync -r usr/ /usr/
+fi
+
 # [5] Permissions & Ownership
 chown huai:huai -R /home/huai/
 

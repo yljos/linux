@@ -1,0 +1,16 @@
+[Unit]
+Description=Remote Shutdown Monitor Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/shutdown.sh
+
+# 守护进程策略
+Restart=always
+RestartSec=10
+
+[Install]
+# 系统级多用户模式（对应命令行就绪状态）
+WantedBy=multi-user.target
