@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # [1] Data Directory
 mkdir -p /data
-chown huai:huai /data
-chmod 755 /data
+chown huai:huai -R /data
+chmod 755 -R /data
 
 # [2] Package Installation
 apt update
 apt install -y \
-	locales git curl vim shfmt build-essential \
+	locales curl mpv vim shfmt build-essential \
 	libx11-dev libxinerama-dev libxft-dev xserver-xorg xinit \
 	freerdp2-x11 scdaemon pcscd x11-xserver-utils \
 	fonts-noto-cjk fonts-noto-color-emoji libnotify-bin \
@@ -38,11 +38,14 @@ find /home/huai/.ssh /home/huai/.gnupg -type d -exec chmod 700 {} +
 find /home/huai/.ssh /home/huai/.gnupg -type f -exec chmod 600 {} +
 
 # [6] Services Management
+systemctl daemon-reload
+systemctl enable shutdown --now
 systemctl disable --now networking
 systemctl enable --now systemd-networkd
 
+
 export XDG_RUNTIME_DIR="/run/user/$(id -u huai)"
 sudo -u huai systemctl --user daemon-reload
-sudo -u huai systemctl --user --now enable pipewire wireplumber dwm-status
+sudo -u huai systemctl --user --now enable pipewire wireplumber dwm_status
 
 echo "Done."
