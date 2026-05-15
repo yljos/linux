@@ -46,6 +46,6 @@ systemctl enable --now systemd-networkd
 
 export XDG_RUNTIME_DIR="/run/user/$(id -u huai)"
 sudo -u huai systemctl --user daemon-reload
-sudo -u huai systemctl --user --now enable pipewire wireplumber dwm_status
+sudo -u huai systemctl --user --now enable pipewire wireplumber 
 
 echo "Done."

@@ -8,8 +8,9 @@ command -v numlockx &>/dev/null && numlockx &
 # ! pgrep -x "fcitx5" &>/dev/null && fcitx5 -d
 ! pgrep -x "dunst" &>/dev/null && dunst &
 
-[[ -f /home/huai/.config/wallpaperchange.sh ]] && /bin/bash /home/huai/.config/wallpaperchange.sh
+# [[ -f /home/huai/.config/wallpaperchange.sh ]] && /bin/bash /home/huai/.config/wallpaperchange.sh
+[[ -f /home/huai/.config/dwm/dwm_status.sh ]] && /bin/bash /home/huai/.config/dwm/dwm_status.sh &
 
 sleep 1
-! pgrep -f "librewolf" &>/dev/null && librewolf &
+! pgrep -f "firefox-esr" &>/dev/null && firefox-esr &
 # ! pgrep -x "Telegram" &>/dev/null && Telegram &
