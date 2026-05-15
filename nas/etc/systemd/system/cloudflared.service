@@ -13,6 +13,8 @@ ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
   --name cloudflared \
+  --label "io.containers.autoupdate=registry" \
+  --label PODMAN_SYSTEMD_UNIT=%n \
   --network=host \
   --env-file /data/appdata/cloudflared/token.env \
   docker.io/cloudflare/cloudflared:latest \
