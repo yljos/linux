@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-
+if ! command -v rsync &> /dev/null; then
+    apt-get update && apt-get install -y rsync
+fi
 rsync -r root/ /root/
 rsync -r etc/ /etc/
 
