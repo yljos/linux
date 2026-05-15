@@ -1,10 +1,5 @@
 #!/usr/bin/bash
 
-# Load script lock library
-source "$HOME/.config/script_lock.sh"
-# Check script lock
-acquire_script_lock || exit 0
-
 SHUTDOWN_FILE="http://10.0.0.21/shutdown"
 INTERVAL=60 # Loop interval in seconds
 
