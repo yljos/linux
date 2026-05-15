@@ -25,8 +25,8 @@ while true; do
 
 		sudo poweroff # Comment out for testing
 		exit 0
-	fi 
-	
+	fi
+
 	# Wait fixed interval before next check
 	sleep "$INTERVAL"
 done
