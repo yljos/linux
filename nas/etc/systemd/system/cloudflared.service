@@ -1,0 +1,24 @@
+[Unit]
+Description=Cloudflared Container (Host Network)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# Execute podman run for cloudflared
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name cloudflared \
+  --network=host \
+  --env-file /data/appdata/cloudflared/token.env \
+  docker.io/cloudflare/cloudflared:latest \
+  tunnel --no-autoupdate --protocol http2 run
+
+ExecStop=/usr/bin/podman stop -t 10 cloudflared
+
+[Install]
+WantedBy=multi-user.target
