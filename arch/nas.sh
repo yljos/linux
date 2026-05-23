@@ -21,8 +21,7 @@ mount "${DISK}p2" /mnt
 mkdir -p /mnt/boot && mount "${DISK}p1" /mnt/boot
 
 # echo 'Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch' >/etc/pacman.d/mirrorlist
-reflector -c China --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
-pacman-key --init
+reflector -c China --latest 3 --protocol https --sort rate --save /etc/pacman.d/mirrorlistpacman-key --init
 pacman-key --populate archlinux
 
 pacstrap /mnt base linux-lts linux-firmware vi git btop rsync openssh nfs-utils samba mdadm ttf-hack dhcpcd
