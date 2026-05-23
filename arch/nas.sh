@@ -46,6 +46,7 @@ echo "root:1" | chpasswd
 useradd -M -s /usr/bin/nologin "$USERNAME"
 mkdir -p /data 
 chmod 755 -R /data
+mkdir -p /podman
 
 pacman -S --noconfirm efibootmgr $UCODE
 
