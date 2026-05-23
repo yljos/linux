@@ -12,6 +12,7 @@ env_blacklist = os.getenv("BLACKLIST_MP4", "")
 # Keep exact case for blacklist terms
 BLACKLIST_MP4 = {name.strip() for name in env_blacklist.split(",") if name.strip()}
 
+
 MAX_WORKERS = 5
 ROOT_DIR = os.path.abspath(r"P:\My Pack")
 TREE_OUTPUT_FILE = "mp4_tree.json"
@@ -34,7 +35,7 @@ def delete_file(path: str) -> bool:
 def main():
     script_path = os.path.abspath(__file__)
     files_to_del, folders = [], []
-    seen_mp4_names = set()
+    mp4_tree = []
 
     # os.walk is optimized for WebDAV network I/O
     for root, dirs, files in os.walk(ROOT_DIR):
@@ -49,25 +50,36 @@ def main():
             name, ext = os.path.splitext(f)
             ext_lower = ext.lower()  # Only lowercase the extension
 
-            if ext_lower == ".mp4":
-                seen_mp4_names.add(name)  # Store original case name
-
+            # Keep explicitly whitelisted formats
             if ext_lower in (".mkv", ".avi", ".mov", ".wmv"):
                 continue
 
-            # Strict exact substring matching for mp4 blacklist (case-sensitive)
-            if ext_lower == ".mp4" and not any(b in name for b in BLACKLIST_MP4):
+            # Add to tree if it is an MP4
+            if ext_lower == ".mp4":
+                mp4_tree.append({
+                    "name": name,
+                    "path": path
+                })
                 continue
 
+            # Any unlisted extensions reach here and are deleted
             files_to_del.append(path)
 
-    # Write the unique names to file as formatted JSON
-    with open(TREE_OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(sorted(list(seen_mp4_names)), f, ensure_ascii=False, indent=4)
+    # Sort tree by path for consistent JSON output
+    mp4_tree.sort(key=lambda x: x["path"])
+
+    # Write the tree to file
+    with open(TREE_OUTPUT_FILE, "w", encoding="utf-8") as f_out:
+        json.dump(mp4_tree, f_out, ensure_ascii=False, indent=4)
 
     print(
-        f"Generated local MP4 tree: {TREE_OUTPUT_FILE} ({len(seen_mp4_names)} unique names)"
+        f"Generated local MP4 tree: {TREE_OUTPUT_FILE} ({len(mp4_tree)} MP4 files)"
     )
+    # Match blacklist against the generated tree
+    for item in mp4_tree:
+        # Substring match: 'b in name' natively checks if the term exists ANYWHERE in the string
+        if any(b in item["name"] for b in BLACKLIST_MP4):
+            files_to_del.append(item["path"])
 
     if not files_to_del:
         return print("No files to delete.")
