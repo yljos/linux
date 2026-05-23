@@ -10,8 +10,8 @@ export GPG_TTY=$(tty)
 # export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 export LANG=en_US.UTF-8
-export VISUAL=vi
-export EDITOR=vi
+export VISUAL=vim
+export EDITOR=vim
 
 
 export HISTCONTROL=ignoreboth:erasedups
