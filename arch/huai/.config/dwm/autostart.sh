@@ -14,3 +14,4 @@ command -v numlockx &>/dev/null && numlockx &
 sleep 1
 ! pgrep -f "firefox" &>/dev/null && firefox &
 ! pgrep -x "Telegram" &>/dev/null && Telegram &
+np
