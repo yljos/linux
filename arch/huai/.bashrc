@@ -35,4 +35,3 @@ current_tty=$(tty)
 # # elif [[ "$current_tty" == /dev/pts* ]]; then
 # #     notify-send "bashrc reloaded" >/dev/null 2>&1
 # fi
-np
