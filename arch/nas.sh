@@ -24,7 +24,7 @@ echo 'Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch' >/
 pacman-key --init
 pacman-key --populate archlinux
 
-pacstrap /mnt base base-devel linux-lts linux-lts-headers linux-firmware vi git less btop rsync openssh nfs-utils samba mdadm ttf-hack dhcpcd
+pacstrap /mnt base linux-lts linux-firmware vi git btop rsync openssh nfs-utils samba mdadm ttf-hack dhcpcd
 
 genfstab -U /mnt >>/mnt/etc/fstab
 
