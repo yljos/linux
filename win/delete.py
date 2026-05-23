@@ -56,10 +56,7 @@ def main():
 
             # Add to tree if it is an MP4
             if ext_lower == ".mp4":
-                mp4_tree.append({
-                    "name": name,
-                    "path": path
-                })
+                mp4_tree.append({"name": name, "path": path})
                 continue
 
             # Any unlisted extensions reach here and are deleted
@@ -72,9 +69,7 @@ def main():
     with open(TREE_OUTPUT_FILE, "w", encoding="utf-8") as f_out:
         json.dump(mp4_tree, f_out, ensure_ascii=False, indent=4)
 
-    print(
-        f"Generated local MP4 tree: {TREE_OUTPUT_FILE} ({len(mp4_tree)} MP4 files)"
-    )
+    print(f"Generated local MP4 tree: {TREE_OUTPUT_FILE} ({len(mp4_tree)} MP4 files)")
     # Match blacklist against the generated tree
     for item in mp4_tree:
         # Substring match: 'b in name' natively checks if the term exists ANYWHERE in the string
