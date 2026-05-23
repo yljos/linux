@@ -1,0 +1,23 @@
+[Unit]
+Description=Sing-box SS Exit Node (Podman)
+After=network-online.target
+
+[Service]
+Restart=always
+RestartSec=5s
+StandardOutput=null
+StandardError=null
+
+ExecStart=/usr/bin/podman run \
+    --replace \
+    --name sing-box-ss \
+    --label "io.containers.autoupdate=registry" \
+    --label PODMAN_SYSTEMD_UNIT=%n \
+    --network host \
+    --log-driver=journald \
+    -v /root/sing-box/config.json:/etc/sing-box/config.json:ro \
+    ghcr.io/sagernet/sing-box:latest \
+    run -c /etc/sing-box/config.json
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+{
+  "version": 3,
+  "rules": [
+    {
+      "package_name": [
+        "com.eg.android.AlipayGphone",
+        "com.whmstr.whsmk",
+        "com.unionpay",
+        "com.taobao.taobao",
+        "com.xiaomi.smarthome",
+        "com.bilibili.app.in",
+        "com.cmbchina.ccd.pluto.cmbActivity",
+        "com.autonavi.minimap",
+        "com.ximalaya.ting.android",
+        "com.tecent.mm"
+      ]
+    }
+  ]
+}

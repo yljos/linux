@@ -1,0 +1,13 @@
+[Match]
+Name=enp0s31f6
+
+[Network]
+DHCP=yes
+
+
+[Link]
+RequiredForOnline=routable
+
+#[Link]
+#Unmanaged=yes
+

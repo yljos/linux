@@ -1,0 +1,6 @@
+payload:
+  - DOMAIN-SUFFIX,argotunnel.com
+  - DOMAIN-SUFFIX,cftunnel.com
+  - DOMAIN-SUFFIX,cloudflare.com
+  - DOMAIN-SUFFIX,cloudflare.net
+  - DOMAIN-SUFFIX,arc-trust.com

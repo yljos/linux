@@ -1,0 +1,25 @@
+[Unit]
+Description=Cloudflare Tunnel Container
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+StandardOutput=null
+StandardError=null
+
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name cloudflared \
+  --label "io.containers.autoupdate=registry" \
+  --label PODMAN_SYSTEMD_UNIT=%n \
+  --network=host \
+  --log-driver=journald \
+  --env-file /root/cloudflared/token.env \
+  docker.io/cloudflare/cloudflared:latest \
+  tunnel --no-autoupdate run
+
+[Install]
+WantedBy=multi-user.target

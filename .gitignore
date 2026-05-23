@@ -1,0 +1,17 @@
+**/mihomo-windows-amd64.exe
+**/sing-box.exe
+**/.idea/
+**/.venv/
+**/__pycache__/
+**/bajie
+**/mitce
+**/westdata
+**/.pdm-python
+**/cache/
+**/.env
+**/node.json
+**/node.yaml
+**/mp4_tree.json
+
+
+

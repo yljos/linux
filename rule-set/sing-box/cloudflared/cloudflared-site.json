@@ -1,0 +1,14 @@
+{
+  "version": 3,
+  "rules": [
+    {
+      "domain_suffix": [
+        "argotunnel.com",
+        "cftunnel.com",
+        "cloudflare.com",
+        "cloudflare.net",
+        "arc-trust.com"
+      ]
+    }
+  ]
+}

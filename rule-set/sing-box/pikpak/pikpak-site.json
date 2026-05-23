@@ -1,0 +1,15 @@
+{
+  "version": 3,
+  "rules": [
+    {
+      "domain_suffix": [
+        "pikpak.me",
+        "pikpakdrive.com",
+        "mypikpak.net",
+        "mypikpak.com",
+        "pickpackapp.com",
+        "pikpak.io"
+      ]
+    }
+  ]
+}
