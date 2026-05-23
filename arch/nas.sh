@@ -20,7 +20,8 @@ mkfs.ext4 "${DISK}p2" -F
 mount "${DISK}p2" /mnt
 mkdir -p /mnt/boot && mount "${DISK}p1" /mnt/boot
 
-echo 'Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch' >/etc/pacman.d/mirrorlist
+# echo 'Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch' >/etc/pacman.d/mirrorlist
+reflector -c China --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
 pacman-key --init
 pacman-key --populate archlinux
 
