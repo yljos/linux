@@ -66,7 +66,6 @@ dns:
     - https://dns.alidns.com/dns-query#DIRECT
   nameserver-policy:
     rule-set:microsoft-site: https://cloudflare-dns.com/dns-query#Microsoft
-    rule-set:ad-site: rcode://refused
     rule-set:huawei-site: rcode://refused
     rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
     rule-set:steam-site-classical: https://cloudflare-dns.com/dns-query#Steam
@@ -169,6 +168,12 @@ proxy-groups:
       - JP-fallback
       - SG-fallback
       - HK-fallback
+  - type: select
+    hidden: true
+    name: AD
+    proxies:
+      - REJECT-DROP
+      - PASS   
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -629,8 +634,8 @@ rule-providers:
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,53,dns-out
-  - RULE-SET,ad-site,REJECT-DROP
-  - RULE-SET,ad-ip,REJECT-DROP
+  - RULE-SET,ad-site,AD
+  - RULE-SET,ad-ip,AD
   - RULE-SET,huawei-site,REJECT-DROP
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,huawei-direct-site,DIRECT

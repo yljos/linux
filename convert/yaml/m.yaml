@@ -67,7 +67,6 @@ dns:
   nameserver-policy:
     rule-set:microsoft-site: https://cloudflare-dns.com/dns-query#Microsoft
     rule-set:cloudflare-site: https://cloudflare-dns.com/dns-query#M
-    rule-set:ad-site: rcode://refused
     rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
@@ -159,6 +158,12 @@ proxy-groups:
     name: Twitter
     proxies:
       - US-fallback
+  - type: select
+    hidden: true
+    name: AD
+    proxies:
+      - REJECT-DROP
+      - PASS         
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -557,8 +562,8 @@ rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,53,dns-out
   - DST-PORT,853,REJECT
-  - RULE-SET,ad-site,REJECT-DROP
-  - RULE-SET,ad-ip,REJECT-DROP
+  - RULE-SET,ad-site,AD
+  - RULE-SET,ad-ip,AD
   - RULE-SET,mobile,DIRECT
   - RULE-SET,cloudflare-site,M
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
