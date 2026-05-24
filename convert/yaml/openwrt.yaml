@@ -164,6 +164,8 @@ proxy-groups:
   - type: select
     hidden: true
     name: Youtube
+    include-all-proxies: true
+    filter: "(?i)^(?=.*(US))(?!.*(gemini)).*$"
     proxies:
       - US-fallback
       - JP-fallback
