@@ -138,9 +138,9 @@ def inject_custom_clash_node(
             config.setdefault("proxies", []).append(node)
 
             # 2. 策略组追加
-            for group in config.get("proxy-groups", []):
-                if group.get("name") in target_groups:
-                    group.setdefault("proxies", []).append(node_name)
+            # for group in config.get("proxy-groups", []):
+            #     if group.get("name") in target_groups:
+            #         group.setdefault("proxies", []).append(node_name)
 
         return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode(
             "utf-8"
