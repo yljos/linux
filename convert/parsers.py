@@ -1,8 +1,11 @@
 from typing import Any, Dict, Union, List, Tuple
 from config import CLASH_FINGERPRINT
 
+
 # ================= Sing-box Parsers =================
-def process_shadowsocks_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+def process_shadowsocks_sb(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
     node = base_node.copy()
     node["type"] = "shadowsocks"
     node["server_port"] = int(proxy["port"])
@@ -18,7 +21,10 @@ def process_shadowsocks_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> 
             node["plugin_opts"] = f"obfs={mode};obfs-host={host}"
     return node
 
-def process_vless_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+
+def process_vless_sb(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
     node = base_node.copy()
     node["type"] = "vless"
     node["server_port"] = int(proxy["port"])
@@ -59,7 +65,10 @@ def process_vless_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[s
         node["tls"] = tls
     return node
 
-def process_hysteria2_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
+
+def process_hysteria2_sb(
+    proxy: Dict[str, Any], base_node: Dict[str, Any]
+) -> Dict[str, Any]:
     node = base_node.copy()
     node["type"] = "hysteria2"
     node["password"] = proxy.get("password")
@@ -77,36 +86,59 @@ def process_hysteria2_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Di
     node["up_mbps"] = 50
     node["down_mbps"] = 200
     if "obfs" in proxy:
-        node["obfs"] = {"type": "salamander", "password": proxy.get("obfs-password", "")}
-    tls = {"enabled": True, "insecure": proxy.get("skip-cert-verify", False), "server_name": proxy.get("sni", "")}
+        node["obfs"] = {
+            "type": "salamander",
+            "password": proxy.get("obfs-password", ""),
+        }
+    tls = {
+        "enabled": True,
+        "insecure": proxy.get("skip-cert-verify", False),
+        "server_name": proxy.get("sni", ""),
+    }
     node["tls"] = tls
     return node
+
 
 def clash_to_singbox(proxy: Dict[str, Any]) -> Union[Dict[str, Any], None]:
     p_type = proxy.get("type", "").lower()
     base_node = {"tag": proxy.get("name"), "server": proxy.get("server")}
-    if p_type == "ss": return process_shadowsocks_sb(proxy, base_node)
-    elif p_type == "vless": return process_vless_sb(proxy, base_node)
-    elif p_type == "hysteria2": return process_hysteria2_sb(proxy, base_node)
+    if p_type == "ss":
+        return process_shadowsocks_sb(proxy, base_node)
+    elif p_type == "vless":
+        return process_vless_sb(proxy, base_node)
+    elif p_type == "hysteria2":
+        return process_hysteria2_sb(proxy, base_node)
     return None
+
 
 # ================= Clash Parsers =================
 def is_valid_clash_yaml(text: str) -> bool:
     return bool(text and "proxies:" in text)
 
-def filter_node_names_clash(proxies: List[Any], shared_kw: List[str], shared_ex_kw: List[str]) -> Tuple[List[str], List[str]]:
-    all_names = [str(p.get("name")) for p in proxies if isinstance(p, dict) and isinstance(p.get("name"), str)]
+
+def filter_node_names_clash(
+    proxies: List[Any], shared_kw: List[str], shared_ex_kw: List[str]
+) -> Tuple[List[str], List[str]]:
+    all_names = [
+        str(p.get("name"))
+        for p in proxies
+        if isinstance(p, dict) and isinstance(p.get("name"), str)
+    ]
     valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
     valid_ex_kw = [str(ex).lower() for ex in shared_ex_kw if isinstance(ex, str)]
-    
+
     filtered = [
-        n for n in all_names
-        if any(kw in n.lower() for kw in valid_kw) and not any(ex in n.lower() for ex in valid_ex_kw)
+        n
+        for n in all_names
+        if any(kw in n.lower() for kw in valid_kw)
+        and not any(ex in n.lower() for ex in valid_ex_kw)
     ]
     return filtered, all_names
 
+
 def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: str):
-    if not isinstance(proxy, dict): return
+    if not isinstance(proxy, dict):
+        return
     p_type = proxy.get("type")
     up_pref, down_pref = str(up_pref or "100"), str(down_pref or "100")
 

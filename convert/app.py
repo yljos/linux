@@ -6,13 +6,32 @@ from urllib.parse import unquote
 from flask import Flask, send_file, request, abort, Response, jsonify
 
 from config import (
-    ACCESS_KEY_SHA256, CACHE_DIR, CACHE_EXPIRE_SECONDS, SOURCE_MAP, 
-    INJECT_TEMPLATES, TARGET_GROUPS, CUSTOM_CLASH_NODE, CUSTOM_SINGBOX_NODE,
-    SHARED_KEYWORDS, SHARED_EXCLUDE_KEYWORDS,
-    CLASH_TEMPLATE_M, CLASH_TEMPLATE_MTUN, CLASH_TEMPLATE_PC, CLASH_TEMPLATE_OPENWRT,
-    CLASH_HY2_UP_M, CLASH_HY2_DOWN_M, CLASH_HY2_UP, CLASH_HY2_DOWN, CLASH_INCLUDED_HEADERS
+    ACCESS_KEY_SHA256,
+    CACHE_DIR,
+    CACHE_EXPIRE_SECONDS,
+    SOURCE_MAP,
+    INJECT_TEMPLATES,
+    TARGET_GROUPS,
+    CUSTOM_CLASH_NODE,
+    CUSTOM_SINGBOX_NODE,
+    SHARED_KEYWORDS,
+    SHARED_EXCLUDE_KEYWORDS,
+    CLASH_TEMPLATE_M,
+    CLASH_TEMPLATE_MTUN,
+    CLASH_TEMPLATE_PC,
+    CLASH_TEMPLATE_OPENWRT,
+    CLASH_HY2_UP_M,
+    CLASH_HY2_DOWN_M,
+    CLASH_HY2_UP,
+    CLASH_HY2_DOWN,
+    CLASH_INCLUDED_HEADERS,
 )
-from utils import read_url_from_file, clean_node_name, inject_custom_clash_node, inject_custom_singbox_node
+from utils import (
+    read_url_from_file,
+    clean_node_name,
+    inject_custom_clash_node,
+    inject_custom_singbox_node,
+)
 from core_clash import fetch_yaml_text_clash, process_yaml_content_clash
 from core_singbox import fetch_and_process_singbox
 
@@ -22,6 +41,7 @@ ENABLE_SINGBOX = False
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
+
 
 # ================= Routing Protection & Dispatch =================
 @app.before_request
@@ -34,6 +54,7 @@ def restrict_paths():
     digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
     if not hmac.compare_digest(digest, ACCESS_KEY_SHA256):
         abort(404)
+
 
 @app.route("/<source>")
 def process_source(source):
@@ -55,21 +76,34 @@ def process_source(source):
 
         for keyword, config_val in singbox_ua_map.items():
             if keyword in ua:
-                logger.info(f"[Sing-Box] | [Template: {config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]")
+                logger.info(
+                    f"[Sing-Box] | [Template: {config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
+                )
                 try:
                     url = read_url_from_file(path)
                     json_str = fetch_and_process_singbox(
-                        source, config_val, is_force_refresh, url, CACHE_DIR,
-                        CACHE_EXPIRE_SECONDS, SHARED_KEYWORDS, SHARED_EXCLUDE_KEYWORDS, clean_node_name
+                        source,
+                        config_val,
+                        is_force_refresh,
+                        url,
+                        CACHE_DIR,
+                        CACHE_EXPIRE_SECONDS,
+                        SHARED_KEYWORDS,
+                        SHARED_EXCLUDE_KEYWORDS,
+                        clean_node_name,
                     )
 
                     if config_val in INJECT_TEMPLATES:
-                        json_str = inject_custom_singbox_node(json_str, CUSTOM_SINGBOX_NODE, TARGET_GROUPS)
+                        json_str = inject_custom_singbox_node(
+                            json_str, CUSTOM_SINGBOX_NODE, TARGET_GROUPS
+                        )
 
                     return Response(
                         json_str,
                         mimetype="application/json",
-                        headers={"Content-Disposition": "attachment; filename=config.json"},
+                        headers={
+                            "Content-Disposition": "attachment; filename=config.json"
+                        },
                     )
                 except FileNotFoundError as e:
                     return jsonify({"error": str(e)}), 500
@@ -82,10 +116,14 @@ def process_source(source):
     # --- 2. Clash Dispatch Logic ---
     if ENABLE_CLASH:
         clash_config_val = None
-        if "ClashMetaForAndroid" in ua: clash_config_val = "mtun"
-        elif "clash_pc" in ua: clash_config_val = "pc"
-        elif "clash_openwrt" in ua: clash_config_val = "openwrt"
-        elif "clash_m" in ua: clash_config_val = "m"
+        if "ClashMetaForAndroid" in ua:
+            clash_config_val = "mtun"
+        elif "clash_pc" in ua:
+            clash_config_val = "pc"
+        elif "clash_openwrt" in ua:
+            clash_config_val = "openwrt"
+        elif "clash_m" in ua:
+            clash_config_val = "m"
 
         if clash_config_val:
             config_map = {
@@ -95,19 +133,33 @@ def process_source(source):
                 "openwrt": (CLASH_TEMPLATE_OPENWRT, CLASH_HY2_UP, CLASH_HY2_DOWN),
             }
             template_path, up, down = config_map[clash_config_val]
-            logger.info(f"[Clash] | [Template: {clash_config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]")
+            logger.info(
+                f"[Clash] | [Template: {clash_config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
+            )
 
             try:
                 url = read_url_from_file(path)
                 yaml_text, headers_data = fetch_yaml_text_clash(
-                    unquote(url), source, is_force_refresh, CACHE_DIR, CACHE_EXPIRE_SECONDS
+                    unquote(url),
+                    source,
+                    is_force_refresh,
+                    CACHE_DIR,
+                    CACHE_EXPIRE_SECONDS,
                 )
                 output_bytes = process_yaml_content_clash(
-                    yaml_text, template_path, up, down, SHARED_KEYWORDS, SHARED_EXCLUDE_KEYWORDS, clean_node_name
+                    yaml_text,
+                    template_path,
+                    up,
+                    down,
+                    SHARED_KEYWORDS,
+                    SHARED_EXCLUDE_KEYWORDS,
+                    clean_node_name,
                 )
 
                 if clash_config_val in INJECT_TEMPLATES:
-                    output_bytes = inject_custom_clash_node(output_bytes, CUSTOM_CLASH_NODE, TARGET_GROUPS)
+                    output_bytes = inject_custom_clash_node(
+                        output_bytes, CUSTOM_CLASH_NODE, TARGET_GROUPS
+                    )
 
                 response = send_file(
                     io.BytesIO(output_bytes),
@@ -125,6 +177,7 @@ def process_source(source):
                 return str(e), 500
 
     abort(404)
+
 
 if __name__ == "__main__":
     app.run(port=5000, host="0.0.0.0")

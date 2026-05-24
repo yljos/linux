@@ -26,17 +26,40 @@ INJECT_TEMPLATES = ["m", "openwrt"]
 
 # ================= Keywords & Rename Maps =================
 RENAME_MAP = {
-    "香港": "HK", "美国": "US", "新加坡": "SG", "日本": "JP", "家宽": "ISP",
+    "香港": "HK",
+    "美国": "US",
+    "新加坡": "SG",
+    "日本": "JP",
+    "家宽": "ISP",
 }
 
 SHARED_KEYWORDS = [
-    "US", "HK", "SG", "JP", "Hong Kong", "Singapore", "Japan", "United States",
-    "美国", "香港", "新加坡", "日本",
+    "US",
+    "HK",
+    "SG",
+    "JP",
+    "Hong Kong",
+    "Singapore",
+    "Japan",
+    "United States",
+    "美国",
+    "香港",
+    "新加坡",
+    "日本",
 ]
 
 SHARED_EXCLUDE_KEYWORDS = [
-    "官网", "流量", "倍率", "剩余", "Australia", "到期", "重置",
-    "HK2-HY2", "HK3-HY2", "HK4-HY2", "HK5-HY2",
+    "官网",
+    "流量",
+    "倍率",
+    "剩余",
+    "Australia",
+    "到期",
+    "重置",
+    "HK2-HY2",
+    "HK3-HY2",
+    "HK4-HY2",
+    "HK5-HY2",
 ]
 
 # ================= Sing-box Config =================

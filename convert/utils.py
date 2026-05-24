@@ -7,6 +7,7 @@ from config import RENAME_MAP, CLASH_INCLUDED_HEADERS
 
 logger = logging.getLogger(__name__)
 
+
 def read_url_from_file(path: Path) -> str:
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
@@ -14,6 +15,7 @@ def read_url_from_file(path: Path) -> str:
             if url:
                 return url
     raise ValueError(f"URL [None]: {path}")
+
 
 def clean_node_name(name: str) -> str:
     if not name:
@@ -24,7 +26,10 @@ def clean_node_name(name: str) -> str:
     name = re.sub(r"\s+", " ", name).strip()
     return name
 
-def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path, target_groups: list) -> bytes:
+
+def inject_custom_clash_node(
+    yaml_bytes: bytes, node_path: Path, target_groups: list
+) -> bytes:
     if not node_path.exists():
         return yaml_bytes
     try:
@@ -41,12 +46,17 @@ def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path, target_groups: 
                 continue
             config.setdefault("proxies", []).append(node)
 
-        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode("utf-8")
+        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode(
+            "utf-8"
+        )
     except Exception as e:
         logger.error(f"[Clash] Custom node injection failed: {e}")
         return yaml_bytes
 
-def inject_custom_singbox_node(json_str: str, node_path: Path, target_groups: list) -> str:
+
+def inject_custom_singbox_node(
+    json_str: str, node_path: Path, target_groups: list
+) -> str:
     if not node_path.exists():
         return json_str
     try:
@@ -63,9 +73,11 @@ def inject_custom_singbox_node(json_str: str, node_path: Path, target_groups: li
                 continue
             node_tag = outbound["tag"]
             config.setdefault("outbounds", []).append(outbound)
-            
+
             for cfg_outbound in config.get("outbounds", []):
-                if cfg_outbound.get("tag") in target_groups and cfg_outbound.get("type") in ["selector", "urltest"]:
+                if cfg_outbound.get("tag") in target_groups and cfg_outbound.get(
+                    "type"
+                ) in ["selector", "urltest"]:
                     cfg_outbound.setdefault("outbounds", []).append(node_tag)
 
         return json.dumps(config, ensure_ascii=False, indent=2)
@@ -73,9 +85,14 @@ def inject_custom_singbox_node(json_str: str, node_path: Path, target_groups: li
         logger.error(f"[Sing-box] Custom node injection failed: {e}")
         return json_str
 
+
 def save_headers_to_disk(source_name: str, headers: dict, cache_dir: Path) -> dict:
     try:
-        filtered = {k: v for k, v in headers.items() if k.lower() in {h.lower() for h in CLASH_INCLUDED_HEADERS}}
+        filtered = {
+            k: v
+            for k, v in headers.items()
+            if k.lower() in {h.lower() for h in CLASH_INCLUDED_HEADERS}
+        }
         if not filtered:
             return {}
         file_path = cache_dir / f"{source_name}.headers.json"
@@ -85,6 +102,7 @@ def save_headers_to_disk(source_name: str, headers: dict, cache_dir: Path) -> di
     except Exception as e:
         logger.error(f"Save headers error: {e}")
         return {}
+
 
 def load_headers_from_disk(source_name: str, cache_dir: Path) -> dict:
     file_path = cache_dir / f"{source_name}.headers.json"
