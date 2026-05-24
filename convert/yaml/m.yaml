@@ -94,6 +94,7 @@ proxy-groups:
   - type: select
     name: Google
     proxies:
+      - GCP-outbound    
       - US-fallback
       - JP-fallback
       - SG-fallback

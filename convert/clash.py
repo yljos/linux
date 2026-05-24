@@ -203,7 +203,7 @@ def process_yaml_content_clash(
 
             final_groups = []
             surviving_group_names = {g["name"] for g in temp_groups if "name" in g}
-            built_in = {"DIRECT", "REJECT", "PASS","REJECT-DROP"}
+            built_in = {"DIRECT", "REJECT", "PASS","REJECT-DROP","GCP-outbound"}
             valid_targets = set(all_node_names) | surviving_group_names | built_in
 
             for group in temp_groups:
