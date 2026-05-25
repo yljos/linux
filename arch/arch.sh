@@ -33,7 +33,7 @@ pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-fir
 	freerdp libva libva-intel-driver intel-media-driver libva-utils mpv arp-scan \
 	ttf-liberation fontconfig wakeonlan ttf-hack noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
 	telegram-desktop bc firejail nodejs firefox python-black shfmt dhcpcd \
-	cloudflared xorg-server xorg-xinit xorg-xsetroot alacritty rofi dunst
+	cloudflared xorg-server xorg-xinit xorg-xsetroot alacritty rofi dunst picom numlockx
 genfstab -U /mnt >>/mnt/etc/fstab
 
 ROOT_UUID=$(blkid -s UUID -o value "${DISK}${P}2")
