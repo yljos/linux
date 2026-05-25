@@ -62,7 +62,7 @@ update_net() {
 	NET_STATUS_STR="${ICON_NET_DOWN}${rx_kb}K ${ICON_NET_UP}${tx_kb}K"
 }
 
-update_time() { TIME_STATUS=$(printf "%(%a %m.%d %H:%M)T" -1); }
+update_time() { TIME_STATUS=$(printf "%(%a %Y-%m-%d %H:%M)T" -1); }
 
 print_status_bar() {
 	# Concatenate only necessary info
