@@ -28,7 +28,7 @@ reflector -c China --latest 3 --protocol https --sort rate --save /etc/pacman.d/
 pacman-key --init
 pacman-key --populate archlinux
 
-pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vi git less polkit \
+pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less polkit \
 	fastfetch btop pipewire wireplumber pipewire-pulse pipewire-alsa rtkit pcsclite ccid rsync ntfs-3g curl p7zip libnotify openssh nfs-utils \
 	freerdp libva libva-intel-driver intel-media-driver libva-utils mpv arp-scan \
 	ttf-liberation fontconfig wakeonlan ttf-hack noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \

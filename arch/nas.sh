@@ -25,7 +25,7 @@ reflector -c China --latest 3 --protocol https --sort rate --save /etc/pacman.d/
 pacman-key --init
 pacman-key --populate archlinux
 
-pacstrap /mnt base linux-lts linux-firmware vi git btop rsync openssh nfs-utils samba mdadm ttf-hack dhcpcd
+pacstrap /mnt base linux-lts linux-firmware vim git btop rsync openssh nfs-utils samba mdadm ttf-hack dhcpcd
 
 genfstab -U /mnt >>/mnt/etc/fstab
 
