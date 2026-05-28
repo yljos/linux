@@ -8,3 +8,5 @@ git config --global user.email "yljos@ihuai.top"
 
 systemctl --user daemon-reload
 systemctl --user enable --now pipewire wireplumber >/dev/null 2>&1
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
