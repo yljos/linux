@@ -10,4 +10,4 @@ export HISTCONTROL=ignoreboth:erasedups
 shopt -s histappend 
 export LANG=en_US.UTF-8
 
-export PATH=$PATH:"/c/Users/huai/program/VSCodium-win32-x64-1.107.18627/bin"
+export PATH=$PATH:"/c/Users/huai/program/VSCodium-win32-x64-1.102.35058/bin"
