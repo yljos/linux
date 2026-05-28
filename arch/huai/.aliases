@@ -13,9 +13,6 @@ alias rsyncdir="rsync -avzh --delete"
 alias volup="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
 alias voldown="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
 
-# GPG as SSH agent
-export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
-
 # NFS4 mount function
 mount-data() {
     if ! mountpoint -q /data; then

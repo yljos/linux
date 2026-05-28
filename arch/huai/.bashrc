@@ -5,7 +5,7 @@
 if ! pgrep -x -u "$USER" gpg-agent >/dev/null; then
     gpg-agent --daemon >/dev/null 2>&1
 fi
-export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+# export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
 export GPG_TTY=$(tty)
 # export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
@@ -24,14 +24,6 @@ umask 022
 
 # Bash specific prompt and environment
 PS1='\[\e[1;33m\]\h\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]\[\e[1;35m\]:\w\$\[\e[0m\] '
-# PS1='\[\e[1;33m\]Arch\[\e[0m\] \[\e[1;32m\]\u\[\e[0m\]$(_ssh_status)\[\e[1;35m\]:\w\$\[\e[0m\] '
-
 
 # Get current TTY device name
 current_tty=$(tty)
-
-# if [[ "$current_tty" == /dev/tty* ]]; then
-#     x > /dev/null 2>&1 
-# # elif [[ "$current_tty" == /dev/pts* ]]; then
-# #     notify-send "bashrc reloaded" >/dev/null 2>&1
-# fi
