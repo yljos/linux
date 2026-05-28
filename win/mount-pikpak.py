@@ -5,13 +5,15 @@ import subprocess
 conf_path = os.path.expandvars(r"%AppData%\rclone\rclone.conf")
 pik_rc = "127.0.0.1:5573"
 mount_point = "P:\\"
+# Define cache directory on D drive to bypass UWF overlay on C:
+cache_dir = "D:\\rclone_cache"
 
 # Check if P: is mounted
 if os.path.exists(mount_point):
     # Unmount if already mounted
     subprocess.run(["rclone", "rc", "core/quit", "--rc-addr", pik_rc])
 else:
-    # Mount if not mounted
+    # Mount if not mounted, explicitly setting the cache directory
     cmd = [
         "rclone",
         "mount",
@@ -21,6 +23,8 @@ else:
         conf_path,
         "--vfs-cache-mode",
         "full",
+        "--cache-dir",
+        cache_dir,
         "--vfs-cache-max-size",
         "10G",
         "--network-mode",
