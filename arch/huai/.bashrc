@@ -1,13 +1,8 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-#export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
-if ! pgrep -x -u "$USER" gpg-agent >/dev/null; then
-    gpg-agent --daemon >/dev/null 2>&1
-fi
-# export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
 export GPG_TTY=$(tty)
-# export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 export LANG=en_US.UTF-8
 export VISUAL=vim
