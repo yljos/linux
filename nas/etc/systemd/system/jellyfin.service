@@ -15,7 +15,7 @@ ExecStart=/usr/bin/podman run \
   --replace \
   --rm \
   --name=jellyfin \
-  -p 8080:8096 \
+  -p 8096:8096 \
   --log-driver=journald \
   --label "io.containers.autoupdate=registry" \
   --label PODMAN_SYSTEMD_UNIT=%n \
