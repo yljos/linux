@@ -1,0 +1,30 @@
+[Unit]
+Description=Jellyfin Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+StandardOutput=null
+StandardError=null
+
+# Execute podman run for Jellyfin
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=jellyfin \
+  -p 8080:8096 \
+  --log-driver=journald \
+  --label "io.containers.autoupdate=registry" \
+  --label PODMAN_SYSTEMD_UNIT=%n \
+  --device /dev/dri:/dev/dri \
+  -v /data/appdata/jellyfin:/config:Z \
+  -v /data/media:/media:z \
+  docker.io/jellyfin/jellyfin:latest
+
+ExecStop=/usr/bin/podman stop -t 10 jellyfin
+
+[Install]
+WantedBy=multi-user.target
