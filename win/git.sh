@@ -6,3 +6,7 @@ git config --global commit.gpgsign true
 git config --global user.name "yljos"
 git config --global user.email "yljos@ihuai.top"
 git config --global core.sshCommand "C:/Windows/System32/OpenSSH/ssh.exe"
+
+
+Get-Service ssh-agent | Set-Service -StartupType Automatic
+Start-Service ssh-agent
