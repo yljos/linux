@@ -3,6 +3,7 @@
   "rules": [
     {
       "domain": [
+        "b4.timschumi.net",
         "open-vsx.org",
         "static.redircdn.com",
         "www.7-zip.org",
