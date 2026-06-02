@@ -1,0 +1,11 @@
+/* 隐藏顶部标签栏 */
+#TabsToolbar { visibility: collapse !important; }
+
+/* 隐藏地址栏与导航栏 */
+#nav-bar { visibility: collapse !important; } 
+
+/* 隐藏书签栏 */
+#PersonalToolbar { visibility: collapse !important; }
+
+/* 隐藏侧边栏头部（如果你不用侧边栏，这行无所谓）*/
+#sidebar-header { display: none !important; }
