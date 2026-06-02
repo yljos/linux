@@ -1,4 +1,7 @@
 export GPG_TTY=$(tty)
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    eval "$(ssh-agent -s)" > /dev/null
+fi
 
 gpgconf --launch gpg-agent
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
