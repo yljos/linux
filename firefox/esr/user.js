@@ -208,7 +208,7 @@ user_pref("layout.word_select.eat_space_to_next_word", false);
 // Memory limits & process locks
 user_pref("browser.cache.memory.capacity", 131072);
 user_pref("browser.sessionhistory.max_entries", 5);
-user_pref("dom.ipc.processCount", 1);
+user_pref("dom.ipc.processCount", 2);
 
 // Disable session restore completely
 user_pref("browser.sessionstore.resume_from_crash", false);
