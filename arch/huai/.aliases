@@ -23,4 +23,5 @@ mount-data() {
 alias win="/usr/bin/bash /home/huai/.config/win.sh"
 alias wol="/usr/bin/bash /home/huai/.config/wol.sh"
 alias x="startx"
+alias y="/usr/bin/bash /home/huai/.config/dwl/dwl_status.sh | dwl"
 alias np="/usr/bin/bash /home/huai/.config/wallpaper.sh"
