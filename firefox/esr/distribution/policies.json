@@ -27,9 +27,9 @@
       },
       "moziur@internetdownloadmanager.com": {
         "installation_mode": "force_installed",
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/tonec-idm-integration-module/latest.xpi"
+        "install_url": "file:///C:/Program%20Files%20(x86)/Internet%20Download%20Manager/idmmzcc3.xpi"
       },
-      "{036a55b4-5e72-4d05-a06c-cba2dfcc834a}": {
+      "{036a55b4-5e72-4d05-a06c-cba2dfcc134a}": {
         "installation_mode": "force_installed",
         "install_url": "https://addons.mozilla.org/firefox/downloads/latest/traduzir-paginas-web/latest.xpi"
       }
