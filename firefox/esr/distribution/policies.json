@@ -7,6 +7,32 @@
     "DisableTelemetry": true,
     "BackgroundAppUpdate": false,
     "ExtensionUpdate": false,
-    "SystemAddonUpdate": false
+    "SystemAddonUpdate": false,
+    "Homepage": {
+      "URL": "http://10.0.0.21/",
+      "Locked": true
+    },
+    "ExtensionSettings": {
+      "uBlock0@raymondhill.net": {
+        "installation_mode": "force_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi"
+      },
+      "{446900e4-71c2-419f-a6a7-df9c091e268b}": {
+        "installation_mode": "force_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi"
+      },
+      "tridactyl.vim@cmcaine.co.uk": {
+        "installation_mode": "force_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/tridactyl-vim/latest.xpi"
+      },
+      "moziur@internetdownloadmanager.com": {
+        "installation_mode": "force_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/tonec-idm-integration-module/latest.xpi"
+      },
+      "{036a55b4-5e72-4d05-a06c-cba2dfcc834a}": {
+        "installation_mode": "force_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/traduzir-paginas-web/latest.xpi"
+      }
+    }
   }
 }
