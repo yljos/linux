@@ -7,7 +7,7 @@ TABLE_ID=100
 LAN_IF="eth0"
 
 # Source IP blacklist (These devices bypass the proxy and DNS hijacking)
-SOURCE_BLACKLIST="{10.0.0.6}"
+SOURCE_BLACKLIST="{10.0.0.8}"
 
 # Check root privileges
 if [ "$EUID" -ne 0 ]; then
