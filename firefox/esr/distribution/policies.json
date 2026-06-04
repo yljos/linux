@@ -25,7 +25,7 @@
         "installation_mode": "force_installed",
         "install_url": "https://addons.mozilla.org/firefox/downloads/latest/tridactyl-vim/latest.xpi"
       },
-      "moziur@internetdownloadmanager.com": {
+      "mozilla_cc3@internetdownloadmanager.com": {
         "installation_mode": "force_installed",
         "install_url": "file:///C:/Program%20Files%20(x86)/Internet%20Download%20Manager/idmmzcc3.xpi"
       },
