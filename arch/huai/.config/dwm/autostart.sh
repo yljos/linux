@@ -8,7 +8,7 @@ command -v numlockx &>/dev/null && numlockx &
 # ! pgrep -x "fcitx5" &>/dev/null && fcitx5 -d
 ! pgrep -x "dunst" &>/dev/null && dunst &
 
-[[ -f /home/huai/.config/wallpaperchange.sh ]] && /bin/bash /home/huai/.config/wallpaperchange.sh
+[[ -f /home/huai/.config/wallpaper.sh ]] && /bin/bash /home/huai/.config/wallpaper.sh
 [[ -f /home/huai/.config/status.sh ]] && /bin/bash /home/huai/.config/status.sh &
 
 sleep 1
