@@ -1,0 +1,19 @@
+/* Hide tabs and window controls entirely */
+#TabsToolbar,
+.titlebar-buttonbox-container,
+.titlebar-spacer {
+    display: none !important;
+}
+
+/* Push the entire navigator-toolbox off the top of the screen */
+#navigator-toolbox {
+    margin-top: -44.5px !important; 
+    transition: margin-top 0.1s fast !important;
+    border-bottom: none !important;
+    z-index: 1 !important;
+}
+
+/* Pull the toolbox back down when Ctrl+L is pressed */
+#navigator-toolbox:focus-within {
+    margin-top: 0px !important;
+}
