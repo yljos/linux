@@ -7,25 +7,47 @@ if type acquire_script_lock >/dev/null 2>&1; then
 fi
 
 # =============================================================================
-# --- Configuration Area ---
+# --- CONFIGURATION ---
 # =============================================================================
 
 ICON_TEMP="T:"
+ICON_CPU="C:"
 ICON_MEM="M:"
 ICON_NET_DOWN="D:"
 ICON_NET_UP="U:"
-ICON_TIME=""
+SEPARATOR="|"
 
 INTERFACE="enp0s31f6"
 CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
 
 UPDATE_INTERVAL_MEDIUM=5
 UPDATE_INTERVAL_LONG=60
-SEPARATOR="|"
+
+# --- Mode Auto-Detection ---
+# If stdout is a pipe (e.g., ./status.sh | dwl), use stdout. Otherwise, use dwm (xsetroot).
+if [[ -p /dev/stdout ]]; then
+	WM_MODE="stdout"
+else
+	WM_MODE="dwm"
+fi
 
 # =============================================================================
-# --- High-performance Functions ---
+# --- HIGH PERFORMANCE FUNCTIONS ---
 # =============================================================================
+
+update_cpu() {
+	read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
+	local curr_cpu=$((cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iowait + cpu_irq + cpu_softirq))
+	local curr_idle=$cpu_idle
+	local total_diff=$((curr_cpu - PREV_CPU))
+	local idle_diff=$((curr_idle - PREV_IDLE))
+	local usage=0
+	if ((total_diff > 0)); then usage=$(((100 * (total_diff - idle_diff)) / total_diff)); fi
+
+	PREV_CPU=$curr_cpu
+	PREV_IDLE=$curr_idle
+	CPU_STATUS="$(printf "%02d%%" "$usage")"
+}
 
 update_mem() {
 	MEM_STATUS=$(awk '/^MemTotal:/ {t=$2/1024} /^MemAvailable:/ {a=$2/1024} END {printf "%d/%dMB", (t-a), t}' /proc/meminfo)
@@ -58,17 +80,15 @@ update_net() {
 
 	local rx_kb=$((RX_DIFF / 1024))
 	local tx_kb=$((TX_DIFF / 1024))
-
 	NET_STATUS_STR="${ICON_NET_DOWN}${rx_kb}K ${ICON_NET_UP}${tx_kb}K"
 }
 
 update_time() { TIME_STATUS=$(printf "%(%a %Y-%m-%d %H:%M)T" -1); }
 
 print_status_bar() {
-	# Concatenate only necessary info
-	local output="${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${NET_STATUS_STR}${SEPARATOR}${ICON_TIME}${TIME_STATUS}"
+	local output="${ICON_TEMP}${TEMP_STATUS}${SEPARATOR}${ICON_CPU}${CPU_STATUS}${SEPARATOR}${ICON_MEM}${MEM_STATUS}${SEPARATOR}${NET_STATUS_STR}${SEPARATOR}${TIME_STATUS}"
 
-	# Use Bash native replacement: replace duplicate | with |
+	# Clean up duplicate separators
 	while [[ "$output" == *"${SEPARATOR}${SEPARATOR}"* ]]; do
 		output="${output//"${SEPARATOR}${SEPARATOR}"/"${SEPARATOR}"}"
 	done
@@ -77,11 +97,15 @@ print_status_bar() {
 	output="${output#"$SEPARATOR"}"
 	output="${output%"$SEPARATOR"}"
 
-	xsetroot -name "$output"
+	if [[ "$WM_MODE" == "dwm" ]]; then
+		xsetroot -name "$output" 2>/dev/null
+	else
+		printf "%s\n" "$output"
+	fi
 }
 
 # =============================================================================
-# --- Main Logic ---
+# --- MAIN LOGIC ---
 # =============================================================================
 
 NET_RX_FILE="/sys/class/net/$INTERFACE/statistics/rx_bytes"
@@ -94,18 +118,23 @@ else
 	NET_STATUS_STR="N/A"
 fi
 
-trap 'print_status_bar' SIGRTMIN+2
+# Initialize CPU stats
+read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq _ </proc/stat
+PREV_CPU=$((cpu_user + cpu_nice + cpu_system + cpu_idle + cpu_iowait + cpu_irq + cpu_softirq))
+PREV_IDLE=$cpu_idle
+
 trap 'exit 0' SIGTERM SIGINT
 
-# --- First Run ---
+# Initial run
+update_cpu
 update_mem
 update_temp
 update_time
 update_net
 
-# --- Loop ---
 SEC=0
 while true; do
+	update_cpu
 	update_temp
 	update_net
 
