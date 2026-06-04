@@ -160,6 +160,7 @@ proxy-groups:
     hidden: true
     name: Twitter
     proxies:
+      - GCP-outbound
       - US-fallback
   - type: select
     hidden: true
