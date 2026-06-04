@@ -1,5 +1,6 @@
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 user_pref("media.peerconnection.enabled", false);
+user_pref("permissions.default.shortcuts", 2);
 
 /** MOZILLA UI ***/
 user_pref("browser.privatebrowsing.vpnpromourl", "");

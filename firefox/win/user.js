@@ -18,6 +18,7 @@
 ****************************************************************************/
 /** GENERAL ***/
 user_pref("content.notify.interval", 100000);
+user_pref("permissions.default.shortcuts", 2);
 
 /** GFX ***/
 user_pref("gfx.canvas.accelerated.cache-size", 512);
