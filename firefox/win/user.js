@@ -23,12 +23,16 @@ user_pref("permissions.default.shortcuts", 2);
 /** GFX ***/
 user_pref("gfx.canvas.accelerated.cache-size", 512);
 user_pref("gfx.content.skia-font-cache-size", 20);
+user_pref("general.smoothScroll", false);
+user_pref("dom.animations-api.core.enabled", false);
+user_pref("javascript.options.mem.gc_incremental_slice_ms", 10);
+user_pref("gfx.canvas.willReadFrequently.enable", true);
 
 /** DISK CACHE ***/
 user_pref("browser.cache.disk.enable", false);
 
 /** MEMORY CACHE ***/
-user_pref("browser.sessionhistory.max_total_viewers", 4);
+user_pref("browser.sessionhistory.max_total_viewers", 0);
 
 /** MEDIA CACHE ***/
 // Overridden below in MY OVERRIDES
@@ -37,7 +41,7 @@ user_pref("browser.sessionhistory.max_total_viewers", 4);
 user_pref("image.mem.decode_bytes_at_a_time", 32768);
 
 /** NETWORK ***/
-user_pref("network.http.max-connections", 1800);
+user_pref("network.http.max-connections", 300);
 user_pref("network.http.max-persistent-connections-per-server", 10);
 user_pref("network.http.max-urgent-start-excessive-connections-per-host", 5);
 user_pref("network.http.pacing.requests.enabled", false);
@@ -208,8 +212,8 @@ user_pref("layout.word_select.eat_space_to_next_word", false);
 
 // Memory limits & process locks
 user_pref("browser.cache.memory.capacity", 131072);
-user_pref("browser.sessionhistory.max_entries", 5);
-user_pref("dom.ipc.processCount", 2);
+user_pref("browser.sessionhistory.max_entries", 1);
+user_pref("dom.ipc.processCount", 1);
 
 // Disable session restore completely
 user_pref("browser.sessionstore.resume_from_crash", false);
