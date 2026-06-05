@@ -9,91 +9,94 @@ load_dotenv()
 
 # Configuration
 env_blacklist = os.getenv("BLACKLIST_MP4", "")
-# Keep exact case for blacklist terms
 BLACKLIST_MP4 = {name.strip() for name in env_blacklist.split(",") if name.strip()}
+WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv"}
 
-
-MAX_WORKERS = 5
+MAX_WORKERS = 10  # Tuned for WebDAV
 ROOT_DIR = os.path.abspath(r"P:\My Pack")
 TREE_OUTPUT_FILE = "mp4_tree.json"
-DELETED_OUTPUT_FILE = "deleted_files.json"  # New file to store deleted files
+DELETED_OUTPUT_FILE = "deleted_files.json"
 
 print_lock = threading.Lock()
 
 
-def delete_file(path: str) -> bool:
+def delete_file(path: str) -> str:
+    # [Phase 3: Network I/O]
     try:
         os.remove(path)
         with print_lock:
             print(f"[Deleted] {path}")
-        return True
+        return path
     except Exception as e:
         with print_lock:
             print(f"[Error] {path}: {e}")
-        return False
+        return ""
 
 
 def main():
     script_path = os.path.abspath(__file__)
-    files_to_del, folders = [], []
-    mp4_tree = []
-
-    # os.walk is optimized for WebDAV network I/O
+    
+    # --- PHASE 1: Network I/O (Directory Traversal ONLY) ---
+    print("Scanning network directory...")
+    raw_files = []
+    folders = []
+    
     for root, dirs, files in os.walk(ROOT_DIR):
         dirs[:] = [d for d in dirs if not d.startswith("#")]
         folders.append(root)
-
         for f in files:
-            path = os.path.join(root, f)
-            if f.startswith("#") or path == script_path:
-                continue
+            if not f.startswith("#"):
+                raw_files.append((root, f))
 
-            name, ext = os.path.splitext(f)
-            ext_lower = ext.lower()  # Only lowercase the extension
+    # --- PHASE 2: Local Processing ---
+    print("Processing data locally...")
+    files_to_del = []
+    mp4_tree = []
 
-            # Keep explicitly whitelisted formats
-            if ext_lower in (".mkv", ".avi", ".mov", ".wmv"):
-                continue
+    for root, f in raw_files:
+        path = os.path.join(root, f)
+        if path == script_path:
+            continue
 
-            # Add to tree if it is an MP4
-            if ext_lower == ".mp4":
-                mp4_tree.append({"name": name, "path": path})
-                continue
+        name, ext = os.path.splitext(f)
+        ext_lower = ext.lower()
 
-            # Any unlisted extensions reach here and are deleted
+        if ext_lower in WHITELIST_EXT:
+            continue
+
+        if ext_lower == ".mp4":
+            mp4_tree.append({"name": name, "path": path})
+        else:
             files_to_del.append(path)
 
-    # Sort tree by path for consistent JSON output
+    # Write the full tree first
     mp4_tree.sort(key=lambda x: x["path"])
-
-    # Write the tree to file
     with open(TREE_OUTPUT_FILE, "w", encoding="utf-8") as f_out:
         json.dump(mp4_tree, f_out, ensure_ascii=False, indent=4)
-
     print(f"Generated local MP4 tree: {TREE_OUTPUT_FILE} ({len(mp4_tree)} MP4 files)")
-    # Match blacklist against the generated tree
-    for item in mp4_tree:
-        # Substring match: 'b in name' natively checks if the term exists ANYWHERE in the string
+
+    # Read and apply original blacklist logic
+    with open(TREE_OUTPUT_FILE, "r", encoding="utf-8") as f_in:
+        local_mp4_tree = json.load(f_in)
+
+    for item in local_mp4_tree:
         if any(b in item["name"] for b in BLACKLIST_MP4):
             files_to_del.append(item["path"])
 
-    if not files_to_del:
-        return print("No files to delete.")
+    # --- PHASE 3: Network I/O (Deletion Execution) ---
+    successfully_deleted = []
+    if files_to_del:
+        print(f"Executing deletions over network ({len(files_to_del)} files)...")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+            successfully_deleted = [p for p in pool.map(delete_file, files_to_del) if p]
 
-    print(f"Deleting {len(files_to_del)} files...")
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-        results = list(pool.map(delete_file, files_to_del))
+        with open(DELETED_OUTPUT_FILE, "w", encoding="utf-8") as f_del:
+            json.dump(successfully_deleted, f_del, ensure_ascii=False, indent=4)
+        print(f"Generated deleted files log: {DELETED_OUTPUT_FILE}")
+    else:
+        print("No files to delete.")
 
-    # Extract successfully deleted files and write to a new JSON file
-    successfully_deleted = [
-        path for path, success in zip(files_to_del, results) if success
-    ]
-    with open(DELETED_OUTPUT_FILE, "w", encoding="utf-8") as f_del:
-        json.dump(successfully_deleted, f_del, ensure_ascii=False, indent=4)
-
-    print(f"Generated deleted files log: {DELETED_OUTPUT_FILE}")
-
-    # Cleanup empty folders bottom-up in a single pass
+    # Cleanup empty folders
     deleted_folders = 0
     for d in reversed(folders):
         if d == ROOT_DIR:
@@ -104,9 +107,7 @@ def main():
         except OSError:
             pass
 
-    print(
-        f"Done! Files: {sum(results)}/{len(files_to_del)} | Empty Folders: {deleted_folders}"
-    )
+    print(f"Done! Files Deleted: {len(successfully_deleted)}/{len(files_to_del)} | Empty Folders: {deleted_folders}")
 
 
 if __name__ == "__main__":
