@@ -1,17 +1,19 @@
 #!/usr/bin/bash
 
-# Require password as the first argument
-if [ -z "$1" ]; then
-    echo "Usage: win <password>"
-    exit 1
-fi
+# Define password file path
+PASS_FILE="$HOME/m"
+
+# Exit silently if password file does not exist
+[ ! -f "$PASS_FILE" ] && exit 1
+
+# Read password from file
+read -r PASS < "$PASS_FILE"
 
 IP="10.0.0.15"
-PASS="$1"
 
-# Execute xfreerdp3 if XWayland/X11 is available, otherwise fallback to wlfreerdp3
-if [ -n "$DISPLAY" ]; then
-    xfreerdp3 /v:"$IP" /u:huai /p:"$PASS" /cert:ignore /sound /w:1916 /h:1056 >/dev/null 2>&1 &
-else
+# Prioritize Wayland, fallback to X11 directly
+if [ -n "$WAYLAND_DISPLAY" ]; then
     wlfreerdp3 /v:"$IP" /u:huai /p:"$PASS" /cert:ignore /sound /w:1916 /h:1056 >/dev/null 2>&1 &
+else
+    xfreerdp3 /v:"$IP" /u:huai /p:"$PASS" /cert:ignore /sound /w:1916 /h:1056 >/dev/null 2>&1 &
 fi
