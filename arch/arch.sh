@@ -31,9 +31,9 @@ pacman-key --populate archlinux
 
 # Set packages based on the chosen environment
 if [ "$WM_ENV" = "dwl" ]; then
-    WM_PKGS="wlroots0.19 tllist fcft wayland-protocols wayland fuzzel mako foot"
+	WM_PKGS="wlroots0.19 tllist fcft wayland-protocols wayland fuzzel mako foot"
 else
-    WM_PKGS="xorg-server xorg-xinit xorg-xsetroot alacritty rofi dunst picom numlockx"
+	WM_PKGS="xorg-server xorg-xinit xorg-xsetroot alacritty rofi dunst picom numlockx"
 fi
 
 pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less polkit \
@@ -42,7 +42,7 @@ pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-fir
 	ttf-liberation fontconfig wakeonlan ttf-hack noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
 	telegram-desktop bc firejail nodejs firefox python-black shfmt dhcpcd \
 	cloudflared reflector $WM_PKGS
-	
+
 genfstab -U /mnt >>/mnt/etc/fstab
 
 ROOT_UUID=$(blkid -s UUID -o value "${DISK}${P}2")

@@ -10,7 +10,7 @@ load_dotenv()
 # Configuration
 env_blacklist = os.getenv("BLACKLIST_MP4", "")
 BLACKLIST_MP4 = {name.strip() for name in env_blacklist.split(",") if name.strip()}
-WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv",".ts"}
+WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv", ".ts"}
 
 MAX_WORKERS = 10  # Tuned for WebDAV
 ROOT_DIR = os.path.abspath(r"P:\My Pack")
@@ -35,12 +35,12 @@ def delete_file(path: str) -> str:
 
 def main():
     script_path = os.path.abspath(__file__)
-    
+
     # --- PHASE 1: Network I/O (Directory Traversal ONLY) ---
     print("Scanning network directory...")
     raw_files = []
     folders = []
-    
+
     for root, dirs, files in os.walk(ROOT_DIR):
         dirs[:] = [d for d in dirs if not d.startswith("#")]
         folders.append(root)
@@ -107,7 +107,9 @@ def main():
         except OSError:
             pass
 
-    print(f"Done! Files Deleted: {len(successfully_deleted)}/{len(files_to_del)} | Empty Folders: {deleted_folders}")
+    print(
+        f"Done! Files Deleted: {len(successfully_deleted)}/{len(files_to_del)} | Empty Folders: {deleted_folders}"
+    )
 
 
 if __name__ == "__main__":
