@@ -10,10 +10,10 @@ cache_dir = "D:\\rclone_cache"
 
 # Check if P: is mounted
 if os.path.exists(mount_point):
-    # Unmount if already mounted
+    # Unmount via remote control
     subprocess.run(["rclone", "rc", "core/quit", "--rc-addr", pik_rc])
 else:
-    # Mount if not mounted, explicitly setting the cache directory
+    # Mount with optimized parameters for PikPak API and streaming
     cmd = [
         "rclone",
         "mount",
@@ -28,15 +28,17 @@ else:
         "--vfs-cache-max-size",
         "10G",
         "--network-mode",
+        "--volname", "PikPak",               # Clean volume name
         "--no-console",
         "--rc",
         "--rc-no-auth",
         "--rc-addr",
         pik_rc,
-        "--no-modtime",
-        "--no-checksum",
-        "--dir-cache-time", "72h",      
-        "--attr-timeout", "72h",        
+        "--no-modtime",                      # Avoid extra API calls for modification times
+        "--no-checksum",                     # Avoid hashing overhead
+        "--dir-cache-time", "12h",           # Balanced sync time for native API
+        "--attr-timeout", "12h",        
         "--vfs-read-chunk-size", "32M", 
+        "--vfs-read-chunk-size-limit", "2G"  # Ramp up chunk size to prevent API rate limiting during video playback
     ]
     subprocess.Popen(cmd)
