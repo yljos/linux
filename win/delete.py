@@ -16,6 +16,7 @@ BLACKLIST_MP4 = {name.strip() for name in env_blacklist.split(",") if name.strip
 MAX_WORKERS = 5
 ROOT_DIR = os.path.abspath(r"P:\My Pack")
 TREE_OUTPUT_FILE = "mp4_tree.json"
+DELETED_OUTPUT_FILE = "deleted_files.json"  # New file to store deleted files
 
 print_lock = threading.Lock()
 
@@ -82,6 +83,13 @@ def main():
     print(f"Deleting {len(files_to_del)} files...")
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
         results = list(pool.map(delete_file, files_to_del))
+
+    # Extract successfully deleted files and write to a new JSON file
+    successfully_deleted = [path for path, success in zip(files_to_del, results) if success]
+    with open(DELETED_OUTPUT_FILE, "w", encoding="utf-8") as f_del:
+        json.dump(successfully_deleted, f_del, ensure_ascii=False, indent=4)
+        
+    print(f"Generated deleted files log: {DELETED_OUTPUT_FILE}")
 
     # Cleanup empty folders bottom-up in a single pass
     deleted_folders = 0
