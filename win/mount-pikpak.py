@@ -28,17 +28,22 @@ else:
         "--vfs-cache-max-size",
         "10G",
         "--network-mode",
-        "--volname", "PikPak",               # Clean volume name
+        "--volname",
+        "PikPak",  # Clean volume name
         "--no-console",
         "--rc",
         "--rc-no-auth",
         "--rc-addr",
         pik_rc,
-        "--no-modtime",                      # Avoid extra API calls for modification times
-        "--no-checksum",                     # Avoid hashing overhead
-        "--dir-cache-time", "12h",           # Balanced sync time for native API
-        "--attr-timeout", "12h",        
-        "--vfs-read-chunk-size", "32M", 
-        "--vfs-read-chunk-size-limit", "2G"  # Ramp up chunk size to prevent API rate limiting during video playback
+        "--no-modtime",  # Avoid extra API calls for modification times
+        "--no-checksum",  # Avoid hashing overhead
+        "--dir-cache-time",
+        "12h",  # Balanced sync time for native API
+        "--attr-timeout",
+        "12h",
+        "--vfs-read-chunk-size",
+        "32M",
+        "--vfs-read-chunk-size-limit",
+        "2G",  # Ramp up chunk size to prevent API rate limiting during video playback
     ]
     subprocess.Popen(cmd)
