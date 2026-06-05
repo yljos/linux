@@ -4,6 +4,7 @@ set -e
 DISK="/dev/nvme0n1"
 HOSTNAME="Arch"
 USERNAME="huai"
+WM_ENV="dwm" # Options: "dwm" or "dwl"
 
 # Detect partition prefix and CPU microcode
 [[ $DISK == *"nvme"* || $DISK == *"mmcblk"* ]] && P="p" || P=""
@@ -28,12 +29,20 @@ reflector -c China --latest 3 --protocol https --sort rate --save /etc/pacman.d/
 pacman-key --init
 pacman-key --populate archlinux
 
+# Set packages based on the chosen environment
+if [ "$WM_ENV" = "dwl" ]; then
+    WM_PKGS="wlroots0.19 tllist fcft wayland-protocols wayland fuzzel mako foot"
+else
+    WM_PKGS="xorg-server xorg-xinit xorg-xsetroot alacritty rofi dunst picom numlockx"
+fi
+
 pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less polkit \
 	fastfetch btop pipewire wireplumber pipewire-pulse pipewire-alsa rtkit pcsclite ccid rsync ntfs-3g curl p7zip libnotify openssh nfs-utils \
 	freerdp libva libva-intel-driver intel-media-driver libva-utils mpv arp-scan \
 	ttf-liberation fontconfig wakeonlan ttf-hack noto-fonts noto-fonts-cjk noto-fonts-extra noto-fonts-emoji \
 	telegram-desktop bc firejail nodejs firefox python-black shfmt dhcpcd \
-	cloudflared xorg-server xorg-xinit xorg-xsetroot alacritty rofi dunst picom numlockx
+	cloudflared reflector $WM_PKGS
+	
 genfstab -U /mnt >>/mnt/etc/fstab
 
 ROOT_UUID=$(blkid -s UUID -o value "${DISK}${P}2")
