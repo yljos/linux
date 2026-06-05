@@ -64,4 +64,4 @@ user_pref("browser.aboutConfig.showWarning", false);
 user_pref("browser.aboutwelcome.enabled", false);
 user_pref("browser.profiles.enabled", true);
 user_pref("permissions.default.shortcuts", 2);
-user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", false); // Set true ONLY if userChrome.css is used
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true); // Set true ONLY if userChrome.css is used
