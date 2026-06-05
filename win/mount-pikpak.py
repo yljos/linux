@@ -2,7 +2,7 @@ import os
 import subprocess
 
 # Configuration
-conf_path = os.path.expandvars(r"%AppData%\rclone\rclone.conf")
+conf_path = os.path.expandvars(r"D:\\rclone.conf")
 pik_rc = "127.0.0.1:5573"
 mount_point = "P:\\"
 # Define cache directory on D drive to bypass UWF overlay on C:
