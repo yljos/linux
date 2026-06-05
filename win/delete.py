@@ -85,10 +85,12 @@ def main():
         results = list(pool.map(delete_file, files_to_del))
 
     # Extract successfully deleted files and write to a new JSON file
-    successfully_deleted = [path for path, success in zip(files_to_del, results) if success]
+    successfully_deleted = [
+        path for path, success in zip(files_to_del, results) if success
+    ]
     with open(DELETED_OUTPUT_FILE, "w", encoding="utf-8") as f_del:
         json.dump(successfully_deleted, f_del, ensure_ascii=False, indent=4)
-        
+
     print(f"Generated deleted files log: {DELETED_OUTPUT_FILE}")
 
     # Cleanup empty folders bottom-up in a single pass
