@@ -10,7 +10,7 @@ load_dotenv()
 # Configuration
 env_blacklist = os.getenv("BLACKLIST_MP4", "")
 BLACKLIST_MP4 = {name.strip() for name in env_blacklist.split(",") if name.strip()}
-WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv"}
+WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv",".ts"}
 
 MAX_WORKERS = 10  # Tuned for WebDAV
 ROOT_DIR = os.path.abspath(r"P:\My Pack")
