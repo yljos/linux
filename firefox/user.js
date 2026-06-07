@@ -3,8 +3,8 @@
 // ==========================================================================
 user_pref("dom.ipc.processCount", 1);               // Enforce single process
 user_pref("browser.cache.memory.capacity", 65536);  // Hard cap memory cache at 64MB
-user_pref("browser.sessionhistory.max_total_viewers", 0);
-user_pref("browser.sessionhistory.max_entries", 1);
+user_pref("fission.bfcacheInParent", false);        // Disable bfcache (modern architecture)
+user_pref("browser.sessionhistory.max_serialized_entries", 1); // Kill Back/Forward chain (modern replacement)
 user_pref("browser.sessionstore.resume_from_crash", false);
 user_pref("browser.sessionstore.max_tabs_undo", 0);
 user_pref("browser.sessionstore.max_windows_undo", 0);
@@ -21,6 +21,9 @@ user_pref("javascript.options.mem.gc_incremental_slice_ms", 10); // Force aggres
 // RENDERING & CPU MITIGATION
 // ==========================================================================
 user_pref("general.smoothScroll", false);            // Disable physics scroll animations
+user_pref("general.smoothScroll.scrollbar", false);
+user_pref("general.smoothScroll.mouseWheel", false);
+user_pref("general.smoothScroll.keyboard", false);
 user_pref("dom.animations-api.core.enabled", false);
 user_pref("gfx.canvas.willReadFrequently.enable", true);
 user_pref("image.animation_mode", "none");          // Stop GIF/WebP loop animations
@@ -39,15 +42,19 @@ user_pref("network.http.speculative-parallel-limit", 0);
 user_pref("network.dns.disableIPv6", true);
 
 // ==========================================================================
-// HARDWARE DECODING FORCE & GRAPHICS STRIPPING (HD 4600 MSDK)
+// HARDWARE DECODING FORCE & CROSS-PLATFORM COMPATIBILITY
 // ==========================================================================
-user_pref("media.av1.enabled", false);
+user_pref("media.av1.enabled", false);               // Disable heavy AV1 decode
 user_pref("media.mediasource.vp9.enabled", false);
 user_pref("media.vp9.enabled", false);
 user_pref("media.mediasource.webm.enabled", false);
-user_pref("media.windows-media-foundation.enabled", true);
 user_pref("media.peerconnection.enabled", false);
 user_pref("webgl.disabled", true);                   // Kill WebGL to save CPU/GPU overhead
+
+// [Cross-Platform Hardware Acceleration]
+user_pref("media.windows-media-foundation.enabled", true); // Native hardware decode for Windows
+user_pref("media.ffmpeg.vaapi.enabled", true);             // Native hardware decode (VA-API) for Linux
+user_pref("media.rdd-ffmpeg.enabled", true);               // Process isolation for Linux media engine
 
 // ==========================================================================
 // MOZILLA UI STRIPPING & PRIVACY
@@ -64,4 +71,5 @@ user_pref("browser.aboutConfig.showWarning", false);
 user_pref("browser.aboutwelcome.enabled", false);
 user_pref("browser.profiles.enabled", true);
 user_pref("permissions.default.shortcuts", 2);
+user_pref("browser.backspace_action", 2);            // Disable backspace for back navigation
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true); // Set true ONLY if userChrome.css is used
