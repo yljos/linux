@@ -17,7 +17,6 @@ ZSH_THEME="robbyrussell"
 CASE_SENSITIVE="true"
 
 plugins=(
-  git
   zsh-autosuggestions
   zsh-syntax-highlighting
 )
