@@ -28,7 +28,7 @@ def auto_create_and_delete():
     try:
         SHUTDOWN_FILE.write_text("1")
         delayed_delete(SHUTDOWN_FILE, AUTO_DELETE_DELAY_SEC)
-        return f"[{t}] Created {SHUTDOWN_FILE}, auto-deleting in {AUTO_DELETE_DELAY_SEC} seconds"
+        return "Command executed"
     except Exception as e:
         return f"[{t}] Operation failed: {e}", 500
 
