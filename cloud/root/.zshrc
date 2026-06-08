@@ -22,7 +22,7 @@ plugins=(
 )
 
 source $ZSH/oh-my-zsh.sh
-PROMPT='%F{yellow}%m%f %F{green}%n%f%F{magenta}:%~%F{magenta}$%f '
+PROMPT='%F{yellow}Cloud%f %F{green}%n%f%F{magenta}:%~%F{magenta}$%f '
 setopt HIST_IGNORE_ALL_DUPS
 # =============================================================================
 # 3. CUSTOM ALIASES
