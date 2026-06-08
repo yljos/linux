@@ -33,20 +33,3 @@ if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
 
-# =============================================================================
-# 4. GPG & YUBIKEY SSH-AGENT CONFIGURATION
-# =============================================================================
-
-# Export SSH socket globally
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
-
-# Set GPG_TTY based on tty output to prevent 'not a tty' error
-export GPG_TTY=$(tty)
-
-# Start gpg-agent daemon if not running
-if ! pgrep -x -u "$USER" gpg-agent >/dev/null; then
-    gpg-agent --daemon >/dev/null 2>&1
-fi
-
-# Bind current TTY to agent
-gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
