@@ -31,7 +31,6 @@ sleep 1
 # ==========================================
 # Function: Install Package
 # ==========================================
-# Minimalist helper to avoid repeating package manager logic
 install_package() {
 	local PACKAGE_NAME=$1
 	if command -v "$PACKAGE_NAME" &>/dev/null; then
@@ -56,7 +55,6 @@ install_package() {
 # ==========================================
 # Dependency Installation
 # ==========================================
-# Install zsh, git, and curl (Required for OMZ installer)
 install_package "zsh"
 install_package "git"
 install_package "curl"
@@ -75,7 +73,6 @@ fi
 # Set zsh as default shell
 if [[ "$SHELL" != *"$ZSH_PATH"* ]]; then
 	echo -e "${YELLOW}>> Setting zsh as default shell${NC}"
-	# Use standard chsh. Note: This may prompt for password.
 	chsh -s "$ZSH_PATH"
 	echo -e "${GREEN}>> zsh set as default shell${NC}"
 else
@@ -93,11 +90,9 @@ else
 	echo -e "${YELLOW}>> Installing oh-my-zsh${NC}"
 fi
 
-# Run installer (using curl which we just ensured exists)
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
 sleep 1
 
-# Minimalist cleanup: remove .git to save space
 rm -rf ~/.oh-my-zsh/.git
 echo -e "${GREEN}>> oh-my-zsh installation completed${NC}"
 sleep 1
@@ -107,9 +102,8 @@ sleep 1
 # ==========================================
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 
-# Function to install custom plugins/themes
 install_zsh_extension() {
-	local TYPE=$1 # themes or plugins
+	local TYPE=$1
 	local NAME=$2
 	local REPO=$3
 	local TARGET_DIR="$ZSH_CUSTOM/$TYPE/$NAME"
@@ -121,13 +115,11 @@ install_zsh_extension() {
 	echo -e "${YELLOW}>> Installing $NAME $TYPE${NC}"
 	git clone --depth 1 "$REPO" "$TARGET_DIR"
 
-	# Minimalist cleanup
 	rm -rf "$TARGET_DIR/.git"
 	echo -e "${GREEN}>> $NAME installed${NC}"
 	sleep 1
 }
 
-install_zsh_extension "themes" "powerlevel10k" "https://github.com/romkatv/powerlevel10k.git"
 install_zsh_extension "plugins" "zsh-autosuggestions" "https://github.com/zsh-users/zsh-autosuggestions"
 install_zsh_extension "plugins" "zsh-syntax-highlighting" "https://github.com/zsh-users/zsh-syntax-highlighting"
 
@@ -136,14 +128,6 @@ install_zsh_extension "plugins" "zsh-syntax-highlighting" "https://github.com/zs
 # ==========================================
 echo -e "${BLUE}>> Configuring .zshrc${NC}"
 sleep 1
-
-# Set theme
-if grep -q 'ZSH_THEME="powerlevel10k/powerlevel10k"' ~/.zshrc; then
-	echo -e "${GREEN}>> Theme already set${NC}"
-else
-	echo -e "${CYAN}>> Setting theme to powerlevel10k${NC}"
-	sed -i 's/ZSH_THEME=".*"/ZSH_THEME="powerlevel10k\/powerlevel10k"/' ~/.zshrc
-fi
 
 # Configure plugins
 if grep -q 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting)' ~/.zshrc; then
@@ -170,6 +154,7 @@ append_if_missing "export LANG=" "export LANG=en_US.UTF-8"
 append_if_missing "export VISUAL=" "export VISUAL=vim"
 append_if_missing "export EDITOR=" "export EDITOR=vim"
 append_if_missing "export TERM=" "export TERM=xterm-256color"
+append_if_missing "CASE_SENSITIVE=" 'CASE_SENSITIVE="true"'
 
 # Completion message
 echo -e "${GREEN}Installation completed! Please restart your terminal or run 'source ~/.zshrc'.${NC}"
