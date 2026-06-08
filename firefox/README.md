@@ -5,5 +5,7 @@ bind gbh open http://10.0.0.21
 bind gbv open http://10.0.0.21:8096
 bind gbg open https://gemini.google.com
 bind gbp open http://10.0.0.21:5008/auto
+bind gbu open http://10.0.0.1:9090/ui
+
 
 sanitize tridactylrc
