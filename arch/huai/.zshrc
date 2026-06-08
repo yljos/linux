@@ -23,8 +23,7 @@ plugins=(
 )
 
 source $ZSH/oh-my-zsh.sh
-PROMPT='%F{yellow}%m%f %F{green}%n%f%F{magenta}:%~%#%f '
-
+PROMPT='%F{yellow}%m%f %F{green}%n%f%F{magenta}:%~%f$ '
 # =============================================================================
 # 3. CUSTOM ALIASES
 # =============================================================================
