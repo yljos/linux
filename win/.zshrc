@@ -8,7 +8,6 @@ export VISUAL=vim
 export EDITOR=vim
 export TERM=xterm-256color 
 export GPG_TTY=$(tty)
-# export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 
 if [ -f ~/.gnupg/gpg-agent.conf ]; then
     gpgconf --launch gpg-agent  
