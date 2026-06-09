@@ -1,9 +1,33 @@
 {
-    "update.mode": "none",
-    
+    "update.enableWindowsBackgroundUpdates": false,
     "update.showReleaseNotes": false,
-    
-    "extensions.autoUpdate": false,
-    
-    "extensions.autoCheckUpdates": false
+    "workbench.startupEditor": "none",
+    "git.openRepositoryInParentFolders": "always",
+    "git.autofetch": true,
+    "update.mode": "none",
+    "extensions.autoCheckUpdates": false,
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false,
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "diffEditor.renderSideBySide": true,
+    "security.workspace.trust.untrustedFiles": "open",
+    "terminal.integrated.profiles.windows": {
+        "MSYS2": {
+            "path": "C:\\msys64\\usr\\bin\\zsh.exe",
+            "args": [
+                "--login",
+                "-i"
+            ],
+            "env": {
+                "MSYSTEM": "UCRT64",
+                "CHERE_INVOKING": "1"
+            }
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "MSYS2",
+    "git.path": "C:\\msys64\\usr\\bin\\git.exe",
+    "vim.disableAnnoyingNeovimMessage": true
 }
