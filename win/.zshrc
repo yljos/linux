@@ -38,4 +38,5 @@ if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
 export PATH="/c/Windows/System32/OpenSSH:$PATH"
+export PATH="$PATH:/c/Program Files/VSCodium-win32-x64-1.108.20787/bin"
 
