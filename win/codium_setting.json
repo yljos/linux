@@ -28,6 +28,6 @@
         }
     },
     "terminal.integrated.defaultProfile.windows": "MSYS2",
-    "git.path": "C:\\msys64\\usr\\bin\\git.exe",
+    "git.path": "C:\\msys64\\ucrt64\\bin\\git.exe",
     "vim.disableAnnoyingNeovimMessage": true
 }
