@@ -44,10 +44,14 @@ user_pref("network.dns.disableIPv6", true);
 // ==========================================================================
 // HARDWARE DECODING FORCE & CROSS-PLATFORM COMPATIBILITY
 // ==========================================================================
+user_pref("media.h264.enabled", true);               // Force H.264 decode
+user_pref("media.wmf.h264.enabled", true);           // Force H.264 decode on Windows
+user_pref("media.mp4.hevc.enabled", false);          // Disable HEVC decode
 user_pref("media.av1.enabled", false);               // Disable heavy AV1 decode
-user_pref("media.mediasource.vp9.enabled", false);
-user_pref("media.vp9.enabled", false);
-user_pref("media.mediasource.webm.enabled", false);
+user_pref("media.vp9.enabled", false);               // Disable VP9 decode
+user_pref("media.mediasource.vp9.enabled", false);   // Disable VP9 MediaSource
+user_pref("media.webm.enabled", false);              // Disable WebM container (VP8/VP9)
+user_pref("media.mediasource.webm.enabled", false);  // Disable WebM MediaSource
 user_pref("media.peerconnection.enabled", false);
 user_pref("webgl.disabled", true);                   // Kill WebGL to save CPU/GPU overhead
 
