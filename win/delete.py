@@ -42,11 +42,9 @@ def main():
     folders = []
 
     for root, dirs, files in os.walk(ROOT_DIR):
-        dirs[:] = [d for d in dirs if not d.startswith("#")]
         folders.append(root)
         for f in files:
-            if not f.startswith("#"):
-                raw_files.append((root, f))
+            raw_files.append((root, f))
 
     # --- PHASE 2: Local Processing ---
     print("Processing data locally...")
