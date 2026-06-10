@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 # --- Configuration ---
-VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov"}
+VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov",".ts"}
 THRESHOLD = 1080
 SUFFIX = "_1080p"
 COOLDOWN_SECONDS = 60
@@ -26,16 +26,14 @@ def set_terminal_title(title):
         pass
 
 
-def get_video_info(file_path):
-    """Get width, height, and codec name using ffprobe"""
+def get_video_audio_info(file_path):
+    """Get width, height, video codec, and audio codec using ffprobe"""
     cmd = [
         "ffprobe",
         "-v",
         "error",
-        "-select_streams",
-        "v:0",
         "-show_entries",
-        "stream=width,height,codec_name",
+        "stream=width,height,codec_name,codec_type",
         "-of",
         "json",
         str(file_path),
@@ -43,14 +41,22 @@ def get_video_info(file_path):
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(result.stdout)
-        s = data["streams"][0]
-        return (
-            int(s.get("width", 0)),
-            int(s.get("height", 0)),
-            s.get("codec_name", "unknown"),
-        )
+        
+        v_w, v_h, v_codec = 0, 0, "unknown"
+        a_codec = "none"  # Default if no audio stream exists
+        
+        for stream in data.get("streams", []):
+            s_type = stream.get("codec_type")
+            if s_type == "video" and v_codec == "unknown":
+                v_w = int(stream.get("width", 0))
+                v_h = int(stream.get("height", 0))
+                v_codec = stream.get("codec_name", "unknown")
+            elif s_type == "audio" and a_codec == "none":
+                a_codec = stream.get("codec_name", "unknown")
+                
+        return v_w, v_h, v_codec, a_codec
     except:
-        return 0, 0, "unknown"
+        return 0, 0, "unknown", "unknown"
 
 
 def process_videos():
@@ -70,17 +76,17 @@ def process_videos():
         if SUFFIX in file_path.stem:
             continue
 
-        w, h, codec = get_video_info(file_path)
+        w, h, v_codec, a_codec = get_video_audio_info(file_path)
         short_side = min(w, h)
 
-        # Logic: Process if resolution > 1080p OR codec is not h264
         needs_downscale = short_side > THRESHOLD
-        needs_transcode = codec != "h264"
+        needs_v_transcode = v_codec != "h264"
+        needs_a_transcode = a_codec != "aac" and a_codec != "none"
 
-        if needs_downscale or needs_transcode:
+        if needs_downscale or needs_v_transcode or needs_a_transcode:
             output_path = file_path.with_name(f"{file_path.stem}{SUFFIX}.mp4")
             if not output_path.exists():
-                targets.append((file_path, w, h, codec, output_path, needs_downscale))
+                targets.append((file_path, w, h, v_codec, a_codec, output_path, needs_downscale, needs_a_transcode))
 
     total = len(targets)
     if total == 0:
@@ -89,16 +95,18 @@ def process_videos():
 
     print(f"[i] Found {total} targets. Thread limit: {CPU_THREADS}\n" + "-" * 50)
 
-    for index, (src, w, h, codec, dst, downscale) in enumerate(targets):
-        print(f"[+] Task {index + 1}/{total} | {src.name} ({w}x{h}, {codec})")
+    for index, (src, w, h, v_codec, a_codec, dst, downscale, transcode_audio) in enumerate(targets):
+        print(f"[+] Task {index + 1}/{total} | {src.name} (Video: {w}x{h} {v_codec}, Audio: {a_codec})")
         set_terminal_title(f"[{index+1}/{total}] {src.name}")
 
-        # Build video filter: Always ensure NV12 for QSV
         filters = ["format=nv12"]
         if downscale:
-            # Apply scaling logic for landscape or portrait
             s_filter = f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
             filters.append(s_filter)
+
+        audio_args = ["-c:a", "aac", "-b:a", "128k"] if transcode_audio else ["-c:a", "copy"]
+        if a_codec == "none":
+            audio_args = ["-an"]
 
         command = [
             "ffmpeg",
@@ -113,10 +121,7 @@ def process_videos():
             "h264_qsv",
             "-global_quality",
             "20",
-            "-c:a",
-            "aac",  # Use AAC encoder instead of copy
-            "-b:a",
-            "128k",  # Set audio bitrate (optional but recommended)
+        ] + audio_args + [
             "-movflags",
             "+faststart",
             str(dst),
