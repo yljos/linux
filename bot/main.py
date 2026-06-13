@@ -27,29 +27,23 @@ token = os.getenv("BOT_TOKEN")
 admin_id = os.getenv("ADMIN_ID")
 target_url = os.getenv("URL")
 webhook_host = os.getenv("WEBHOOK_HOST")
-ha_url = os.getenv("HA_URL")
-ha_token = os.getenv("HA_TOKEN")
-if not token or not admin_id or not webhook_host or not ha_url or not ha_token:
+if not token or not admin_id or not webhook_host:
     raise ValueError("Please check .env file")
 
 
 # ========== Auto-delete Helper ==========
 async def delete_message_job(context: CallbackContext):
-    """Callback function to delete a message after a delay."""
     job = context.job
     try:
         await context.bot.delete_message(chat_id=job.chat_id, message_id=job.data)
     except Exception:
-        # Ignore if message is already deleted or not found
         pass
 
 
 async def send_temp_message(
     update: Update, context: CallbackContext, text: str, delay: int = 30, **kwargs
 ):
-    """Send a message and schedule its deletion."""
     msg = await update.message.reply_text(text, **kwargs)
-    # Schedule the deletion job
     context.job_queue.run_once(
         delete_message_job,
         when=delay,
@@ -206,7 +200,6 @@ async def ban_user(
 ):
     add_to_blocklist(user_id)
 
-    # Silent ban, do not notify admin of auto-bans
     if (
         reason.startswith("Immediate Ban")
         or reason.startswith("Message too long")
@@ -466,8 +459,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 f"{message.text}"
             )
             
-            # Inline keyboard for quick ban
-            keyboard = [[InlineKeyboardButton("封禁 (Ban)", callback_data=f"ban_{chat_id}")]]
+            keyboard = [[InlineKeyboardButton("Ban", callback_data=f"ban_{chat_id}")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
             await context.bot.send_message(
@@ -560,7 +552,6 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 await send_temp_message(update, context, "Reply failed.")
 
 
-# Handle callback queries from inline keyboards
 async def button_callback(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
@@ -592,7 +583,6 @@ async def button_callback(update: Update, context: CallbackContext):
         except Exception:
             pass
         
-        # Remove the button after action is taken
         await query.edit_message_reply_markup(reply_markup=None)
 
 
@@ -616,7 +606,6 @@ def main():
     application.add_handler(CommandHandler("s", s_command))
     application.add_handler(CommandHandler("ping", ping))
 
-    # Register callback query handler for the ban button
     application.add_handler(CallbackQueryHandler(button_callback))
 
     application.add_handler(
