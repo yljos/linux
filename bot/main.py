@@ -268,6 +268,7 @@ def extract_user_id_from_text(text: str):
 
 # ========== Bot Commands ==========
 
+
 async def start(update: Update, context: CallbackContext):
     if not update.effective_user or update.effective_chat.type != "private":
         return
@@ -458,14 +459,12 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 f"------------------------\n"
                 f"{message.text}"
             )
-            
+
             keyboard = [[InlineKeyboardButton("Ban", callback_data=f"ban_{chat_id}")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
             await context.bot.send_message(
-                admin_id, 
-                sender_content, 
-                reply_markup=reply_markup
+                admin_id, sender_content, reply_markup=reply_markup
             )
 
             if "user_chat_ids" not in context.bot_data:
@@ -561,7 +560,7 @@ async def button_callback(update: Update, context: CallbackContext):
 
     if query.data.startswith("ban_"):
         user_to_ban = query.data.split("_")[1]
-        
+
         try:
             chat = await context.bot.get_chat(int(user_to_ban))
         except Exception:
@@ -578,11 +577,13 @@ async def button_callback(update: Update, context: CallbackContext):
         try:
             name = getattr(chat, "first_name", None) if chat else None
             username = getattr(chat, "username", None) if chat else None
-            text = _render_ban_notice(user_to_ban, name, username, "Quick ban via button")
+            text = _render_ban_notice(
+                user_to_ban, name, username, "Quick ban via button"
+            )
             await context.bot.send_message(admin_id, text)
         except Exception:
             pass
-        
+
         await query.edit_message_reply_markup(reply_markup=None)
 
 
