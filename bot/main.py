@@ -2,11 +2,12 @@ import logging
 import httpx
 import json
 import os
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
     MessageHandler,
+    CallbackQueryHandler,
     filters,
     CallbackContext,
 )
@@ -277,7 +278,6 @@ def extract_user_id_from_text(text: str):
 
 # ========== Bot Commands ==========
 
-
 async def start(update: Update, context: CallbackContext):
     if not update.effective_user or update.effective_chat.type != "private":
         return
@@ -468,7 +468,16 @@ async def forward_to_admin(update: Update, context: CallbackContext):
                 f"------------------------\n"
                 f"{message.text}"
             )
-            await context.bot.send_message(admin_id, sender_content)
+            
+            # Inline keyboard for quick ban
+            keyboard = [[InlineKeyboardButton("封禁 (Ban)", callback_data=f"ban_{chat_id}")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
+            await context.bot.send_message(
+                admin_id, 
+                sender_content, 
+                reply_markup=reply_markup
+            )
 
             if "user_chat_ids" not in context.bot_data:
                 context.bot_data["user_chat_ids"] = {}
@@ -574,6 +583,42 @@ async def set_chinese(update: Update, context: CallbackContext):
     )
 
 
+# Handle callback queries from inline keyboards
+async def button_callback(update: Update, context: CallbackContext):
+    query = update.callback_query
+    await query.answer()
+
+    if str(update.effective_user.id) != admin_id:
+        return
+
+    if query.data.startswith("ban_"):
+        user_to_ban = query.data.split("_")[1]
+        
+        try:
+            chat = await context.bot.get_chat(int(user_to_ban))
+        except Exception:
+            chat = None
+
+        await ban_user(
+            context,
+            user_to_ban,
+            "Quick ban via button",
+            chat,
+            actor_admin_id=admin_id,
+        )
+
+        try:
+            name = getattr(chat, "first_name", None) if chat else None
+            username = getattr(chat, "username", None) if chat else None
+            text = _render_ban_notice(user_to_ban, name, username, "Quick ban via button")
+            await context.bot.send_message(admin_id, text)
+        except Exception:
+            pass
+        
+        # Remove the button after action is taken
+        await query.edit_message_reply_markup(reply_markup=None)
+
+
 async def post_initialization(application: Application):
     try:
         await application.bot.send_message(
@@ -594,6 +639,9 @@ def main():
     application.add_handler(CommandHandler("s", s_command))
     application.add_handler(CommandHandler("ping", ping))
     application.add_handler(CommandHandler("zh", set_chinese))
+
+    # Register callback query handler for the ban button
+    application.add_handler(CallbackQueryHandler(button_callback))
 
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, forward_to_admin)
@@ -620,7 +668,7 @@ def main():
         url_path=url_path,
         webhook_url=webhook_url,
         secret_token=webhook_secret_token,
-        allowed_updates=["message"],
+        allowed_updates=["message", "callback_query"], # Added callback_query to allowed updates
     )
 
 
