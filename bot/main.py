@@ -16,9 +16,6 @@ from dotenv import load_dotenv
 # ========== Load Environment Variables ==========
 load_dotenv()
 
-# ========== Import HA Module ==========
-import ha
-
 # ========== Logging Configuration (WARNING level) ==========
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.WARNING
@@ -561,26 +558,6 @@ async def forward_to_admin(update: Update, context: CallbackContext):
             except Exception as e:
                 logging.error(f"Error replying to message: {e}")
                 await send_temp_message(update, context, "Reply failed.")
-        else:
-            if message.text and not message.text.startswith("/"):
-                parts = message.text.strip().split()
-                room = parts[0].lower()
-                action = parts[1] if len(parts) > 1 else "toggle"
-
-                if room in ha.DEVICE_MAP:
-                    if await ha.control_device(room, action):
-                        await send_temp_message(update, context, "OK")
-                    else:
-                        await send_temp_message(update, context, "Er")
-                else:
-                    await send_temp_message(update, context, "Unknown")
-
-
-async def set_chinese(update: Update, context: CallbackContext):
-    link = "tg://setlanguage?lang=zhcncc"
-    await send_temp_message(
-        update, context, text=f"[Set Chinese]({link})", parse_mode="Markdown"
-    )
 
 
 # Handle callback queries from inline keyboards
@@ -638,7 +615,6 @@ def main():
     application.add_handler(CommandHandler("unban", unban))
     application.add_handler(CommandHandler("s", s_command))
     application.add_handler(CommandHandler("ping", ping))
-    application.add_handler(CommandHandler("zh", set_chinese))
 
     # Register callback query handler for the ban button
     application.add_handler(CallbackQueryHandler(button_callback))
@@ -668,7 +644,7 @@ def main():
         url_path=url_path,
         webhook_url=webhook_url,
         secret_token=webhook_secret_token,
-        allowed_updates=["message", "callback_query"], # Added callback_query to allowed updates
+        allowed_updates=["message", "callback_query"],
     )
 
 
