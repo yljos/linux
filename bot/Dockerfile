@@ -30,8 +30,8 @@ WORKDIR /app
 # 1. Copy the pre-built virtual environment from builder stage
 COPY --from=builder /app/.venv /app/.venv
 
-# 2. Copy core code (app.py and ha.py)
-COPY main.py ha.py .
+# 2. Copy core code (main.py)
+COPY main.py .
 
 # Note: JSON data files (blocked_users.json, whitelist.json) do not need to be COPY'd
 # They require persistence and will be mounted via -v at runtime
