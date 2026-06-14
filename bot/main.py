@@ -158,6 +158,10 @@ async def forward_to_admin(update: Update, context: CallbackContext):
 
         if not msg.text: return await handle_ban_action(context, chat_id, "Non-text message", is_ban=True, notify_admin=False)
         if len(msg.text) > MAX_MSG_LEN: return await handle_ban_action(context, chat_id, "Message too long", is_ban=True, notify_admin=False)
+        
+        # Ban immediately if verified user sends "Hi" again
+        if msg.text == "Hi":
+            return await handle_ban_action(context, chat_id, "Immediate Ban: Sent 'Hi' after verification", is_ban=True, notify_admin=False)
 
         # Forwarding
         content = f"From user: {user.first_name} (@{user.username or 'No username'})\nUser ID: {chat_id}\n---\n{msg.text}"
