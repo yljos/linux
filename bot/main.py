@@ -2,641 +2,260 @@ import logging
 import httpx
 import json
 import os
+import re
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
-    Application,
-    CommandHandler,
-    MessageHandler,
-    CallbackQueryHandler,
-    filters,
-    CallbackContext,
+    Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, CallbackContext
 )
 from dotenv import load_dotenv
 
 # ========== Load Environment Variables ==========
 load_dotenv()
 
-# ========== Logging Configuration (WARNING level) ==========
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.WARNING
-)
+# ========== Logging Configuration ==========
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-# ========== Telegram Configuration ==========
-token = os.getenv("BOT_TOKEN")
-admin_id = os.getenv("ADMIN_ID")
-target_url = os.getenv("URL")
-webhook_host = os.getenv("WEBHOOK_HOST")
-if not token or not admin_id or not webhook_host:
+# ========== Configuration & Constants ==========
+TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = os.getenv("ADMIN_ID")
+TARGET_URL = os.getenv("URL")
+WEBHOOK_HOST = os.getenv("WEBHOOK_HOST")
+
+if not all([TOKEN, ADMIN_ID, WEBHOOK_HOST]):
     raise ValueError("Please check .env file")
 
+MAX_MSG_LEN = 15
+BLOCK_FILE = "blocked_users.json"
+WHITE_FILE = "whitelist.json"
 
-# ========== Auto-delete Helper ==========
-async def delete_message_job(context: CallbackContext):
-    job = context.job
+# ========== File/Set Management ==========
+def load_set(path):
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return set(json.load(f))
+        except Exception as e:
+            logging.error(f"Error loading {path}: {e}")
+    return set()
+
+def save_set(path, data_set):
     try:
-        await context.bot.delete_message(chat_id=job.chat_id, message_id=job.data)
-    except Exception:
-        pass
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(list(data_set), f)
+    except Exception as e:
+        logging.error(f"Error saving {path}: {e}")
 
+blocked_users = load_set(BLOCK_FILE)
+whitelist_users = load_set(WHITE_FILE)
 
-async def send_temp_message(
-    update: Update, context: CallbackContext, text: str, delay: int = 30, **kwargs
-):
+def update_user_status(user_id: str, to_block: bool):
+    # Add to target list and remove from the other, then save
+    if to_block:
+        blocked_users.add(user_id)
+        whitelist_users.discard(user_id)
+    else:
+        whitelist_users.add(user_id)
+        blocked_users.discard(user_id)
+    save_set(BLOCK_FILE, blocked_users)
+    save_set(WHITE_FILE, whitelist_users)
+
+# ========== Helpers ==========
+async def delete_message_job(context: CallbackContext):
+    try:
+        await context.bot.delete_message(chat_id=context.job.chat_id, message_id=context.job.data)
+    except Exception: pass
+
+async def send_temp_message(update: Update, context: CallbackContext, text: str, delay: int = 30, **kwargs):
     msg = await update.message.reply_text(text, **kwargs)
-    context.job_queue.run_once(
-        delete_message_job,
-        when=delay,
-        chat_id=update.effective_chat.id,
-        data=msg.message_id,
-    )
+    context.job_queue.run_once(delete_message_job, when=delay, chat_id=update.effective_chat.id, data=msg.message_id)
     return msg
 
+def extract_user_id(text: str):
+    # Regex to simplify user ID extraction
+    match = re.search(r'(?:User ID:|用户ID:)\s*(\d+)', text)
+    if match: return match.group(1)
+    match = re.search(r'\d+', text)
+    return match.group(0) if match else None
 
-# ========== Block/White Lists ==========
-block_file_path = "blocked_users.json"
-blocked_users = set()
-whitelist_file_path = "whitelist.json"
-whitelist_users = set()
-
-
-def load_blocked_users():
-    global blocked_users
-    if os.path.exists(block_file_path):
-        try:
-            with open(block_file_path, "r", encoding="utf-8") as f:
-                blocked_users = set(json.load(f))
-        except Exception as e:
-            logging.error(f"Error loading blocked users: {e}")
-
-
-def save_blocked_users():
-    try:
-        with open(block_file_path, "w", encoding="utf-8") as f:
-            json.dump(list(blocked_users), f)
-    except Exception as e:
-        logging.error(f"Error saving blocked users: {e}")
-
-
-load_blocked_users()
-
-
-def load_whitelist_users():
-    global whitelist_users
-    if os.path.exists(whitelist_file_path):
-        try:
-            with open(whitelist_file_path, "r", encoding="utf-8") as f:
-                whitelist_users = set(json.load(f))
-        except Exception as e:
-            logging.error(f"Error loading whitelist users: {e}")
-
-
-def save_whitelist_users():
-    try:
-        with open(whitelist_file_path, "w", encoding="utf-8") as f:
-            json.dump(list(whitelist_users), f)
-    except Exception as e:
-        logging.error(f"Error saving whitelist users: {e}")
-
-
-load_whitelist_users()
-
-# ========== Constants and Strategies ==========
-MAX_MSG_LEN = 15
-CHAT_CACHE_TTL = 60
-
-
-# ========== Ban Strategy Functions ==========
-def strategy_non_text(message):
-    if not message.text:
-        return "Non-text message"
-    return None
-
-
-def strategy_too_long(message):
-    if message.text and len(message.text) > MAX_MSG_LEN:
-        return f"Message too long: {len(message.text)} chars"
-    return None
-
-
-BAN_STRATEGIES = [strategy_non_text, strategy_too_long]
-
-
-# ========== List Mutex Helpers ==========
-def add_to_blocklist(user_id: str):
-    if user_id in whitelist_users:
-        whitelist_users.remove(user_id)
-        save_whitelist_users()
-    blocked_users.add(user_id)
-    save_blocked_users()
-
-
-def add_to_whitelist(user_id: str):
-    if user_id in blocked_users:
-        blocked_users.remove(user_id)
-        save_blocked_users()
-    whitelist_users.add(user_id)
-    save_whitelist_users()
-
-
-# ========== Unified Ban Notification Utilities ==========
-def _render_ban_notice(user_id, name, username, reason):
-    lines = ["Banned user"]
-    if name or username:
-        if username:
-            uname = f"@{username}"
-            if name:
-                lines.append(f"Name: {name} ({uname})")
-            else:
-                lines.append(f"Name: {uname}")
-        else:
-            lines.append(f"Name: {name}")
+def render_notice(action: str, user_id: str, user_obj=None, reason: str = ""):
+    lines = [f"{action} user"]
+    if user_obj:
+        name = getattr(user_obj, "first_name", "")
+        uname = getattr(user_obj, "username", "")
+        if name or uname:
+            lines.append(f"Name: {name} (@{uname})" if uname else f"Name: {name}")
     lines.append(f"User ID: {user_id}")
-    if reason:
-        lines.append(f"Reason: {reason}")
+    if reason: lines.append(f"Reason: {reason}")
     return "\n".join(lines)
 
-
-def _render_unban_notice(user_id, name, username, reason):
-    lines = ["Unbanned user"]
-    if name or username:
-        if username:
-            uname = f"@{username}"
-            if name:
-                lines.append(f"Name: {name} ({uname})")
-            else:
-                lines.append(f"Name: {uname}")
-        else:
-            lines.append(f"Name: {name}")
-    lines.append(f"User ID: {user_id}")
-    if reason:
-        lines.append(f"Reason: {reason}")
-    return "\n".join(lines)
-
-
-async def notify_admin_ban(context: CallbackContext, user_id, reason, user=None):
-    name = getattr(user, "first_name", None) if user else None
-    username = getattr(user, "username", None) if user else None
-
-    if not user:
-        try:
-            chat = await context.bot.get_chat(int(user_id))
-            name = getattr(chat, "first_name", None)
-            username = getattr(chat, "username", None)
-        except Exception:
-            pass
-
-    text = _render_ban_notice(user_id, name, username, reason)
-    await context.bot.send_message(admin_id, text)
-
-
-# ========== Ban/Unban Helpers ==========
-async def ban_user(
-    context: CallbackContext,
-    user_id: str,
-    reason: str,
-    user_obj=None,
-    actor_admin_id: str | None = None,
-):
-    add_to_blocklist(user_id)
-
-    if (
-        reason.startswith("Immediate Ban")
-        or reason.startswith("Message too long")
-        or reason == "Non-text message"
-    ):
-        return
-
-    if actor_admin_id == admin_id:
-        return
-
-    try:
-        await notify_admin_ban(context, user_id, reason, user_obj)
-    except Exception as e:
-        logging.error(f"Failed to notify admin of ban: {e}")
-
-
-async def unban_user(
-    context: CallbackContext,
-    user_id: str,
-    reason: str,
-    user_obj=None,
-    actor_admin_id: str | None = None,
-):
-    if user_id in blocked_users:
-        blocked_users.remove(user_id)
-        save_blocked_users()
-
-    try:
-        await context.bot.send_message(user_id, "Unbanned!")
-    except Exception:
-        pass
-
-    if actor_admin_id == admin_id:
-        return
-
-    try:
-        name = getattr(user_obj, "first_name", None) if user_obj else None
-        username = getattr(user_obj, "username", None) if user_obj else None
-        text = _render_unban_notice(user_id, name, username, reason)
-        await context.bot.send_message(admin_id, text)
-    except Exception as e:
-        logging.error(f"Failed to notify admin of unban: {e}")
-
-
-# ========== Extract User ID Helper ==========
-def extract_user_id_from_text(text: str):
-    try:
-        for label in ("User ID:", "用户ID:"):
-            if label in text:
-                part = text.split(label, 1)[1].strip()
-                line = part.split("\n", 1)[0].strip()
-                digits = "".join(ch for ch in line if ch.isdigit())
-                return digits if digits else None
-        buf = []
-        for ch in text:
-            if ch.isdigit():
-                buf.append(ch)
-            elif buf:
-                break
-        if buf:
-            return "".join(buf)
-    except Exception:
-        pass
+# ========== Ban Strategies ==========
+def check_strategies(message):
+    if not message.text: return "Non-text message"
+    if len(message.text) > MAX_MSG_LEN: return f"Message too long: {len(message.text)} chars"
     return None
 
+# ========== Core Bot Actions ==========
+async def handle_ban_action(context: CallbackContext, user_id: str, reason: str, is_ban: bool, user_obj=None, admin_actor: bool = False):
+    update_user_status(user_id, to_block=is_ban)
+    
+    if not is_ban:
+        try: await context.bot.send_message(user_id, "Unbanned!")
+        except Exception: pass
 
-# ========== Bot Commands ==========
+    if admin_actor or (is_ban and reason in ("Non-text message", "Immediate Ban") or reason.startswith("Message too long")):
+        return # Skip admin notification for specific cases
 
+    if not user_obj and is_ban:
+        try: user_obj = await context.bot.get_chat(int(user_id))
+        except Exception: pass
 
+    action_str = "Banned" if is_ban else "Unbanned"
+    await context.bot.send_message(ADMIN_ID, render_notice(action_str, user_id, user_obj, reason))
+
+# ========== Command Handlers ==========
 async def start(update: Update, context: CallbackContext):
-    if not update.effective_user or update.effective_chat.type != "private":
-        return
+    user = update.effective_user
+    if not user or update.effective_chat.type != "private": return
+    uid = str(user.id)
 
-    user_id = str(update.effective_user.id)
-
-    if user_id == admin_id:
-        await send_temp_message(update, context, "I'm online Master!")
-        return
-
-    if user_id in blocked_users:
-        return
-
-    if user_id in whitelist_users:
-        await send_temp_message(update, context, "You are already verified.")
-        return
-
-    await update.message.reply_text(
-        'Send "Hi" to complete verification (case-sensitive)'
-    )
-
+    if uid == ADMIN_ID:
+        return await send_temp_message(update, context, "I'm online Master!")
+    if uid in blocked_users: return
+    if uid in whitelist_users:
+        return await send_temp_message(update, context, "You are already verified.")
+    await update.message.reply_text('Send "Hi" to complete verification (case-sensitive)')
 
 async def ping(update: Update, context: CallbackContext):
-    if not update.effective_user or str(update.effective_user.id) != admin_id:
-        return
-    await send_temp_message(update, context, "Pong!")
-
+    if update.effective_user and str(update.effective_user.id) == ADMIN_ID:
+        await send_temp_message(update, context, "Pong!")
 
 async def s_command(update: Update, context: CallbackContext):
-    if not update.effective_user:
-        return
-
-    user_id = str(update.effective_user.id)
-
-    if user_id in blocked_users:
-        return
-
-    if user_id != admin_id:
-        await ban_user(
-            context, user_id, "Unauthorized /s command", update.effective_user
-        )
-        return
+    uid = str(update.effective_user.id)
+    if uid in blocked_users: return
+    if uid != ADMIN_ID:
+        return await handle_ban_action(context, uid, "Unauthorized /s command", True, update.effective_user)
 
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            response = await client.get(target_url, timeout=10.0)
-        if response.status_code == 200:
-            await send_temp_message(update, context, "OK")
-        else:
-            await send_temp_message(update, context, "Er")
+            res = await client.get(TARGET_URL, timeout=10.0)
+        await send_temp_message(update, context, "OK" if res.status_code == 200 else "Er")
     except httpx.RequestError:
         await send_temp_message(update, context, "Er")
 
+async def toggle_ban(update: Update, context: CallbackContext, is_ban: bool):
+    if str(update.effective_user.id) != ADMIN_ID: return
 
-async def ban(update: Update, context: CallbackContext):
-    if str(update.effective_user.id) != admin_id:
-        return
+    uid_target = extract_user_id(update.message.reply_to_message.text) if update.message.reply_to_message else (context.args[0] if context.args else None)
+    
+    if not uid_target:
+        return await send_temp_message(update, context, f"Usage: /{'ban' if is_ban else 'unban'} <user_id> or reply")
 
-    try:
-        user_to_ban = None
-        if update.message.reply_to_message:
-            original_text = update.message.reply_to_message.text or ""
-            user_to_ban = extract_user_id_from_text(original_text)
-        elif context.args:
-            user_to_ban = context.args[0]
+    if not is_ban and uid_target not in blocked_users:
+        return await send_temp_message(update, context, f"User {uid_target} was not banned")
 
-        if user_to_ban:
-            try:
-                chat = await context.bot.get_chat(int(user_to_ban))
-            except Exception:
-                chat = None
+    try: chat = await context.bot.get_chat(int(uid_target))
+    except Exception: chat = None
 
-            await ban_user(
-                context,
-                user_to_ban,
-                "Manual ban",
-                chat,
-                actor_admin_id=admin_id,
-            )
+    reason = f"Manual {'ban' if is_ban else 'unban'}"
+    await handle_ban_action(context, uid_target, reason, is_ban, chat, admin_actor=True)
+    await send_temp_message(update, context, render_notice("Banned" if is_ban else "Unbanned", uid_target, chat, reason))
 
-            try:
-                name = getattr(chat, "first_name", None) if chat else None
-                username = getattr(chat, "username", None) if chat else None
-                text = _render_ban_notice(user_to_ban, name, username, "Manual ban")
-                await send_temp_message(update, context, text)
-            except Exception:
-                pass
-        else:
-            await send_temp_message(
-                update, context, "Usage: /ban <user_id> or reply to a message"
-            )
-    except Exception as e:
-        await send_temp_message(update, context, f"Error banning user: {str(e)}")
-
-
-async def unban(update: Update, context: CallbackContext):
-    if str(update.effective_user.id) != admin_id:
-        return
-
-    try:
-        user_to_unban = None
-        if update.message.reply_to_message:
-            original_text = update.message.reply_to_message.text or ""
-            user_to_unban = extract_user_id_from_text(original_text)
-        elif context.args:
-            user_to_unban = context.args[0]
-
-        if user_to_unban:
-            if user_to_unban in blocked_users:
-                try:
-                    chat = await context.bot.get_chat(int(user_to_unban))
-                except Exception:
-                    chat = None
-
-                await unban_user(
-                    context,
-                    user_to_unban,
-                    "Manual unban",
-                    chat,
-                    actor_admin_id=admin_id,
-                )
-
-                try:
-                    name = getattr(chat, "first_name", None) if chat else None
-                    username = getattr(chat, "username", None) if chat else None
-                    text = _render_unban_notice(
-                        user_to_unban, name, username, "Manual unban"
-                    )
-                    await send_temp_message(update, context, text)
-                except Exception:
-                    pass
-            else:
-                await send_temp_message(
-                    update, context, f"User {user_to_unban} was not banned"
-                )
-        else:
-            await send_temp_message(
-                update, context, "Usage: /unban <user_id> or reply to a message"
-            )
-    except Exception as e:
-        await send_temp_message(update, context, f"Error unbanning user: {str(e)}")
-
+async def ban(update: Update, context: CallbackContext): await toggle_ban(update, context, True)
+async def unban(update: Update, context: CallbackContext): await toggle_ban(update, context, False)
 
 async def forward_to_admin(update: Update, context: CallbackContext):
-    message = update.message
-    if not message:
+    msg, user = update.message, update.effective_user
+    if not msg or not user: return
+    
+    chat_id = str(msg.chat.id)
+    if chat_id in blocked_users: return
+
+    # User Logic
+    if chat_id != ADMIN_ID:
+        if msg.text == "Hi" and chat_id not in whitelist_users:
+            update_user_status(chat_id, to_block=False)
+            await send_temp_message(update, context, "Success! You are verified.")
+            return await context.bot.send_message(ADMIN_ID, f"New user verified:\nName: {user.first_name} (@{user.username or 'No username'})\nUser ID: {chat_id}")
+        
+        if chat_id not in whitelist_users:
+            return await handle_ban_action(context, chat_id, "Immediate Ban: Unauthorized message", True, user)
+
+        if reason := check_strategies(msg):
+            return await handle_ban_action(context, chat_id, reason, True, user)
+
+        # Forwarding
+        content = f"From user: {user.first_name} (@{user.username or 'No username'})\nUser ID: {chat_id}\n---\n{msg.text}"
+        markup = InlineKeyboardMarkup([[InlineKeyboardButton("Ban", callback_data=f"ban_{chat_id}")]])
+        try:
+            await context.bot.send_message(ADMIN_ID, content, reply_markup=markup)
+            await send_temp_message(update, context, "Forwarded, please wait for a reply.")
+        except Exception as e:
+            logging.error(f"Forward error: {e}")
+            await msg.reply_text("Forwarding failed.")
         return
 
-    user = message.from_user
-    if not user:
-        return
-
-    chat_id = message.chat.id
-    user_id = str(chat_id)
-
-    if user_id in blocked_users:
-        return
-
-    if user_id != admin_id:
-        if message.text == "Hi":
-            if user_id not in whitelist_users:
-                add_to_whitelist(user_id)
-                await send_temp_message(update, context, "Success! You are verified.")
-
-                admin_msg = f"New user verified:\nName: {user.first_name} (@{user.username if user.username else 'No username'})\nUser ID: {user_id}"
-                await context.bot.send_message(admin_id, admin_msg)
-                return
-        elif user_id not in whitelist_users:
-            await ban_user(
-                context,
-                user_id,
-                "Immediate Ban: Unauthorized message (not 'Hi')",
-                user,
-            )
-            return
-
-    if str(chat_id) != admin_id:
-        for strategy in BAN_STRATEGIES:
-            reason = strategy(message)
-            if reason:
-                await ban_user(context, user_id, reason, user)
-                return
+    # Admin Logic
+    if msg.reply_to_message:
+        target_id = extract_user_id(msg.reply_to_message.text)
+        if not target_id:
+            return await send_temp_message(update, context, "Please reply to a message with a User ID.")
+            
+        text_lower = msg.text.lower() if msg.text else ""
+        if text_lower == "/ban": return await ban(update, context)
+        if text_lower == "/unban": return await unban(update, context)
 
         try:
-            sender_content = (
-                f"From user: {user.first_name} (@{user.username if user.username else 'No username'})\n"
-                f"User ID: {chat_id}\n"
-                f"------------------------\n"
-                f"{message.text}"
-            )
-
-            keyboard = [[InlineKeyboardButton("Ban", callback_data=f"ban_{chat_id}")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-
-            await context.bot.send_message(
-                admin_id, sender_content, reply_markup=reply_markup
-            )
-
-            if "user_chat_ids" not in context.bot_data:
-                context.bot_data["user_chat_ids"] = {}
-            context.bot_data["user_chat_ids"][str(chat_id)] = chat_id
-            await send_temp_message(
-                update, context, "Forwarded, please wait for a reply."
-            )
+            await context.bot.send_message(target_id, msg.text)
+            await send_temp_message(update, context, "Replied.")
         except Exception as e:
-            logging.error(f"Error forwarding message: {e}")
-            await message.reply_text("Forwarding failed.")
-    else:
-        if message.reply_to_message:
-            try:
-                original_text = message.reply_to_message.text or ""
-                user_id_to_reply = extract_user_id_from_text(original_text)
-
-                if user_id_to_reply:
-                    if message.text and message.text.lower() == "/ban":
-                        try:
-                            chat = await context.bot.get_chat(int(user_id_to_reply))
-                        except Exception:
-                            chat = None
-                        await ban_user(
-                            context,
-                            user_id_to_reply,
-                            "Manual ban",
-                            chat,
-                            actor_admin_id=admin_id,
-                        )
-                        try:
-                            name = getattr(chat, "first_name", None) if chat else None
-                            username = getattr(chat, "username", None) if chat else None
-                            text = _render_ban_notice(
-                                user_id_to_reply, name, username, "Manual ban"
-                            )
-                            await send_temp_message(update, context, text)
-                        except Exception:
-                            pass
-                        return
-
-                    elif message.text and message.text.lower() == "/unban":
-                        if user_id_to_reply in blocked_users:
-                            try:
-                                chat = await context.bot.get_chat(int(user_id_to_reply))
-                            except Exception:
-                                chat = None
-                            await unban_user(
-                                context,
-                                user_id_to_reply,
-                                "Manual unban",
-                                chat,
-                                actor_admin_id=admin_id,
-                            )
-                            try:
-                                name = (
-                                    getattr(chat, "first_name", None) if chat else None
-                                )
-                                username = (
-                                    getattr(chat, "username", None) if chat else None
-                                )
-                                text = _render_unban_notice(
-                                    user_id_to_reply, name, username, "Manual unban"
-                                )
-                                await send_temp_message(update, context, text)
-                            except Exception:
-                                pass
-                        else:
-                            await send_temp_message(
-                                update,
-                                context,
-                                f"User {user_id_to_reply} was not banned",
-                            )
-                        return
-
-                    await context.bot.send_message(user_id_to_reply, message.text)
-                    await send_temp_message(update, context, "Replied.")
-                else:
-                    await send_temp_message(
-                        update, context, "Please reply to a message with a User ID."
-                    )
-            except Exception as e:
-                logging.error(f"Error replying to message: {e}")
-                await send_temp_message(update, context, "Reply failed.")
-
+            logging.error(f"Reply error: {e}")
+            await send_temp_message(update, context, "Reply failed.")
 
 async def button_callback(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
+    if str(update.effective_user.id) != ADMIN_ID or not query.data.startswith("ban_"): return
 
-    if str(update.effective_user.id) != admin_id:
-        return
+    target_id = query.data.split("_")[1]
+    try: chat = await context.bot.get_chat(int(target_id))
+    except Exception: chat = None
 
-    if query.data.startswith("ban_"):
-        user_to_ban = query.data.split("_")[1]
+    await handle_ban_action(context, target_id, "Quick ban via button", True, chat, admin_actor=True)
+    await context.bot.send_message(ADMIN_ID, render_notice("Banned", target_id, chat, "Quick ban via button"))
+    await query.edit_message_reply_markup(reply_markup=None)
 
-        try:
-            chat = await context.bot.get_chat(int(user_to_ban))
-        except Exception:
-            chat = None
+async def post_init(app: Application):
+    try: await app.bot.send_message(chat_id=ADMIN_ID, text="Hi Master I'm online")
+    except Exception as e: logging.error(f"Init msg error: {e}")
 
-        await ban_user(
-            context,
-            user_to_ban,
-            "Quick ban via button",
-            chat,
-            actor_admin_id=admin_id,
-        )
-
-        try:
-            name = getattr(chat, "first_name", None) if chat else None
-            username = getattr(chat, "username", None) if chat else None
-            text = _render_ban_notice(
-                user_to_ban, name, username, "Quick ban via button"
-            )
-            await context.bot.send_message(admin_id, text)
-        except Exception:
-            pass
-
-        await query.edit_message_reply_markup(reply_markup=None)
-
-
-async def post_initialization(application: Application):
-    try:
-        await application.bot.send_message(
-            chat_id=admin_id, text="Hi Master I'm online"
-        )
-    except Exception as e:
-        logging.error(f"Error sending initialization message: {e}")
-
-
+# ========== Main ==========
 def main():
-    application = (
-        Application.builder().token(token).post_init(post_initialization).build()
-    )
+    app = Application.builder().token(TOKEN).post_init(post_init).build()
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("ban", ban))
-    application.add_handler(CommandHandler("unban", unban))
-    application.add_handler(CommandHandler("s", s_command))
-    application.add_handler(CommandHandler("ping", ping))
-
-    application.add_handler(CallbackQueryHandler(button_callback))
-
-    application.add_handler(
+    app.add_handlers([
+        CommandHandler("start", start),
+        CommandHandler("ban", ban),
+        CommandHandler("unban", unban),
+        CommandHandler("s", s_command),
+        CommandHandler("ping", ping),
+        CallbackQueryHandler(button_callback),
         MessageHandler(filters.TEXT & ~filters.COMMAND, forward_to_admin)
-    )
+    ])
 
-    webhook_port = int(os.getenv("WEBHOOK_PORT", 5005))
-    webhook_listen = os.getenv("WEBHOOK_LISTEN", "0.0.0.0")
-    webhook_secret_token = os.getenv("WEBHOOK_SECRET_TOKEN")
-    webhook_path = os.getenv("WEBHOOK_PATH", "")
-
-    if webhook_path and not webhook_path.startswith("/"):
-        webhook_path = f"/{webhook_path}"
-
-    clean_webhook_host = webhook_host.rstrip("/")
-    webhook_url = f"{clean_webhook_host}{webhook_path}"
-
-    print(f"Bot is working")
-
-    url_path = webhook_path.lstrip("/") if webhook_path else token
-
-    application.run_webhook(
-        listen=webhook_listen,
-        port=webhook_port,
-        url_path=url_path,
-        webhook_url=webhook_url,
-        secret_token=webhook_secret_token,
+    port = int(os.getenv("WEBHOOK_PORT", 5005))
+    path = f"/{os.getenv('WEBHOOK_PATH', '').lstrip('/')}"
+    url = f"{WEBHOOK_HOST.rstrip('/')}{path}"
+    
+    print("Bot is working")
+    app.run_webhook(
+        listen=os.getenv("WEBHOOK_LISTEN", "0.0.0.0"),
+        port=port,
+        url_path=path.lstrip("/") or TOKEN,
+        webhook_url=url,
+        secret_token=os.getenv("WEBHOOK_SECRET_TOKEN"),
         allowed_updates=["message", "callback_query"],
     )
-
 
 if __name__ == "__main__":
     main()
