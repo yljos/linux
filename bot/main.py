@@ -123,12 +123,8 @@ async def start(update: Update, context: CallbackContext):
         return await send_temp_message(update, context, "I'm online Master!")
     if uid in blocked_users: return
     if uid in whitelist_users:
-        return await send_temp_message(update, context, "You are already verified.")
+        return await send_temp_message(update, context, "Verified.")
     await update.message.reply_text('Send "Hi" to complete verification (case-sensitive)')
-
-async def ping(update: Update, context: CallbackContext):
-    if update.effective_user and str(update.effective_user.id) == ADMIN_ID:
-        await send_temp_message(update, context, "Pong!")
 
 async def s_command(update: Update, context: CallbackContext):
     uid = str(update.effective_user.id)
@@ -175,7 +171,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
     if chat_id != ADMIN_ID:
         if msg.text == "Hi" and chat_id not in whitelist_users:
             update_user_status(chat_id, to_block=False)
-            await send_temp_message(update, context, "Success! You are verified.")
+            await send_temp_message(update, context, "Success!")
             return await context.bot.send_message(ADMIN_ID, f"New user verified:\nName: {user.first_name} (@{user.username or 'No username'})\nUser ID: {chat_id}")
         
         if chat_id not in whitelist_users:
@@ -238,7 +234,6 @@ def main():
         CommandHandler("ban", ban),
         CommandHandler("unban", unban),
         CommandHandler("s", s_command),
-        CommandHandler("ping", ping),
         CallbackQueryHandler(button_callback),
         MessageHandler(filters.TEXT & ~filters.COMMAND, forward_to_admin)
     ])
