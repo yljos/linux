@@ -151,7 +151,8 @@ async def forward_to_admin(update: Update, context: CallbackContext):
         if msg.text == "Hi" and chat_id not in whitelist_users:
             update_user_status(chat_id, to_block=False)
             await send_temp_message(update, context, "Success!")
-            return await context.bot.send_message(ADMIN_ID, f"New user verified:\nName: {user.first_name} (@{user.username or 'No username'})\nUser ID: {chat_id}")
+            # Do not notify admin
+            return
         
         if chat_id not in whitelist_users:
             return await handle_ban_action(context, chat_id, "Immediate Ban: Unauthorized message", is_ban=True, notify_admin=False)
