@@ -3,6 +3,7 @@ import json
 import os
 import re
 import tempfile
+import asyncio
 from contextlib import suppress
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -26,8 +27,8 @@ if not all([TOKEN, ADMIN_ID, WEBHOOK_HOST]):
     raise ValueError("Missing essential environment variables.")
 
 MAX_MSG_LEN = 15
-BLOCK_FILE = "blocked_users.json"
-WHITE_FILE = "whitelist.json"
+BLOCK_FILE = "/app/data/blocked_users.json"
+WHITE_FILE = "/app/data/whitelist.json"
 
 # ========== File/Set Management ==========
 def load_set(path):
@@ -37,27 +38,32 @@ def load_set(path):
                 return set(json.load(f))
     return set()
 
-def save_set(path, data_set):
-    # Atomic write to prevent data corruption during concurrent operations
+def _sync_save_atomic(path, data_set):
+    # Perform the actual blocking file operations atomically
+    dir_name = os.path.dirname(path) or "."
+    fd, temp_path = tempfile.mkstemp(dir=dir_name, text=True)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump(list(data_set), f)
+    # Atomic rename to prevent data corruption
+    os.replace(temp_path, path)
+
+async def save_set(path, data_set):
+    dataset_copy = data_set.copy() 
     with suppress(Exception):
-        dir_name = os.path.dirname(path) or "."
-        fd, temp_path = tempfile.mkstemp(dir=dir_name, text=True)
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(list(data_set), f)
-        os.replace(temp_path, path)
+        await asyncio.to_thread(_sync_save_atomic, path, dataset_copy)
 
 blocked_users = load_set(BLOCK_FILE)
 whitelist_users = load_set(WHITE_FILE)
 
-def update_user_status(user_id: str, to_block: bool):
+async def update_user_status(user_id: str, to_block: bool):
     if to_block:
         blocked_users.add(user_id)
         whitelist_users.discard(user_id)
     else:
         whitelist_users.add(user_id)
         blocked_users.discard(user_id)
-    save_set(BLOCK_FILE, blocked_users)
-    save_set(WHITE_FILE, whitelist_users)
+    await save_set(BLOCK_FILE, blocked_users)
+    await save_set(WHITE_FILE, whitelist_users)
 
 # ========== Helpers ==========
 async def delete_message_job(context: CallbackContext):
@@ -86,7 +92,7 @@ def render_notice(action: str, user_id: str, user_obj=None, reason: str = ""):
 
 # ========== Core Bot Actions ==========
 async def handle_ban_action(context: CallbackContext, user_id: str, reason: str, is_ban: bool, notify_admin: bool = False):
-    update_user_status(user_id, to_block=is_ban)
+    await update_user_status(user_id, to_block=is_ban)
     
     if not is_ban:
         with suppress(Exception):
@@ -154,7 +160,7 @@ async def forward_to_admin(update: Update, context: CallbackContext):
     # User Logic
     if chat_id != ADMIN_ID:
         if msg.text == "Hi" and chat_id not in whitelist_users:
-            update_user_status(chat_id, to_block=False)
+            await update_user_status(chat_id, to_block=False)
             await send_temp_message(update, context, "Success!")
             return
         
