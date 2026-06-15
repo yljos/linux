@@ -2,6 +2,7 @@ import logging
 import json
 import os
 import re
+import tempfile
 from contextlib import suppress
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -37,9 +38,13 @@ def load_set(path):
     return set()
 
 def save_set(path, data_set):
+    # Atomic write to prevent data corruption during concurrent operations
     with suppress(Exception):
-        with open(path, "w", encoding="utf-8") as f:
+        dir_name = os.path.dirname(path) or "."
+        fd, temp_path = tempfile.mkstemp(dir=dir_name, text=True)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(list(data_set), f)
+        os.replace(temp_path, path)
 
 blocked_users = load_set(BLOCK_FILE)
 whitelist_users = load_set(WHITE_FILE)
@@ -151,7 +156,6 @@ async def forward_to_admin(update: Update, context: CallbackContext):
         if msg.text == "Hi" and chat_id not in whitelist_users:
             update_user_status(chat_id, to_block=False)
             await send_temp_message(update, context, "Success!")
-            # Do not notify admin
             return
         
         if chat_id not in whitelist_users:
