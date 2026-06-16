@@ -3,7 +3,9 @@ name = "txt"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "ebooklib>=0.20",
-    "markdown>=3.10.2",
-    "pillow>=12.2.0",
+    "ebooklib==0.20",
+    "markdown==3.10.2",
+    "pillow==12.2.0",
 ]
+[tool.setuptools]
+py-modules = ["txt", "txt_to_epub"]

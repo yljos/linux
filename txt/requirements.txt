@@ -1,0 +1,3 @@
+ebooklib==0.20
+markdown==3.10.2
+pillow==12.2.0
