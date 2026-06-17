@@ -37,7 +37,7 @@ from core_singbox import fetch_and_process_singbox
 
 # ================= Module Switches =================
 ENABLE_CLASH = True
-ENABLE_SINGBOX = True
+ENABLE_SINGBOX = False
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
