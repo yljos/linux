@@ -1,18 +1,18 @@
-import requests
 import os
 import time
 import subprocess
 import ctypes
 from dotenv import load_dotenv
+from curl_cffi import requests # Using open source curl_cffi to bypass Cloudflare
 
-# 配置信息
+# Configuration
 SERVICE_NAME = "Mihomo"
 save_path = r"c:\mihomo\config.yaml"
 time_log_path = r"c:\mihomo\updatetime"
 
 
 def is_admin():
-    """检查是否具有管理员权限"""
+    """Check for administrator privileges"""
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
@@ -20,7 +20,7 @@ def is_admin():
 
 
 def get_last_update_time():
-    """读取上次更新时间"""
+    """Read the last update time"""
     try:
         if os.path.exists(time_log_path):
             with open(time_log_path, "r") as f:
@@ -33,7 +33,7 @@ def get_last_update_time():
 
 
 def save_update_time():
-    """保存当前更新时间"""
+    """Save the current update time"""
     try:
         os.makedirs(os.path.dirname(time_log_path), exist_ok=True)
         with open(time_log_path, "w") as f:
@@ -43,7 +43,7 @@ def save_update_time():
 
 
 def should_update():
-    """判断是否需要更新"""
+    """Determine if an update is needed"""
     last_time = get_last_update_time()
     current_time = time.time()
     hours_passed = (current_time - last_time) / 3600
@@ -51,20 +51,20 @@ def should_update():
     if last_time == 0:
         return True
 
-    return hours_passed >= 1  # 每小时检查一次更新
+    return hours_passed >= 1  # Check once per hour
 
 
 def restart_service():
-    """重启 Mihomo 服务"""
+    """Restart the Mihomo service"""
     print(f"正在尝试重启服务: {SERVICE_NAME} ...")
     try:
-        # 1. 停止服务
+        # 1. Stop service
         subprocess.run(["net", "stop", SERVICE_NAME], check=False, shell=True)
 
-        # 等待2秒确保端口释放
+        # Wait 2 seconds to ensure port is released
         time.sleep(2)
 
-        # 2. 启动服务
+        # 2. Start service
         subprocess.run(["net", "start", SERVICE_NAME], check=True, shell=True)
 
         print(f"[成功] 服务 {SERVICE_NAME} 重启成功，新配置已生效。")
@@ -77,22 +77,14 @@ def restart_service():
 
 
 if __name__ == "__main__":
-    # 启动时检查管理员权限
-    if not is_admin():
-        print("【警告】脚本未以管理员身份运行！")
-        print("自动下载可以完成，但**无法自动重启服务**。")
-        print(
-            "请确保在 nssm 中服务登录身份为 Local System (本地系统)，或以管理员运行脚本。"
-        )
-        print("-" * 50)
 
     print(f"自动更新脚本已启动 (目标服务: {SERVICE_NAME})...")
 
-    # 捕获停止信号
+    # Catch termination signals
     try:
         while True:
             if should_update():
-                # 每次执行更新前，动态加载并覆盖环境变量
+                # Dynamically load env vars before each execution
                 load_dotenv(override=True)
                 url = os.getenv("URL")
                 user_agent = os.getenv("USER_AGENT", "clash_pc")
@@ -107,7 +99,8 @@ if __name__ == "__main__":
                     os.makedirs(os.path.dirname(save_path), exist_ok=True)
                     print(f"开始下载配置... (User-Agent: {headers['User-Agent']})")
 
-                    response = requests.get(url, headers=headers, timeout=(10, 30))
+                    # Bypass Bot Fight Mode by impersonating Chrome
+                    response = requests.get(url, headers=headers, timeout=(10, 30), impersonate="chrome")
                     response.raise_for_status()
                     response.encoding = "utf-8"
 
@@ -122,8 +115,6 @@ if __name__ == "__main__":
 
                         if is_admin():
                             restart_service()
-                        else:
-                            print("跳过服务重启（权限不足），请手动重启 Mihomo 服务。")
 
                     else:
                         print(
