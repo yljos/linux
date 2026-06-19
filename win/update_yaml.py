@@ -54,8 +54,11 @@ def perform_update():
         response.encoding = "utf-8"
 
         if "proxies:" in response.text:
-            with open(save_path, "wb") as f:
+            # Atomic write: write to temp file first, then replace
+            temp_path = save_path + ".tmp"
+            with open(temp_path, "wb") as f:
                 f.write(response.content)
+            os.replace(temp_path, save_path)
 
             print(f"Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -74,6 +77,13 @@ def perform_update():
         print("Request timeout.")
     except Exception as e:
         print(f"Unexpected error: {e}")
+        # Clean up temp file on unexpected error if it exists
+        temp_path = save_path + ".tmp"
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
     
     return False
 
@@ -99,7 +109,7 @@ if __name__ == "__main__":
                 last_update_time = time.time() 
 
             # Sleep 10 seconds to prevent high CPU usage and allow manual interrupts
-            time.sleep(10)
+            time.sleep(120)
 
     except KeyboardInterrupt:
         print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service manually stopped.")
