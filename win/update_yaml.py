@@ -49,7 +49,9 @@ def perform_update():
         print(f"Downloading config... (User-Agent: {headers['User-Agent']})")
 
         # Bypass Bot Fight Mode by impersonating Chrome
-        response = requests.get(url, headers=headers, timeout=(10, 30), impersonate="chrome")
+        response = requests.get(
+            url, headers=headers, timeout=(10, 30), impersonate="chrome"
+        )
         response.raise_for_status()
         response.encoding = "utf-8"
 
@@ -66,7 +68,9 @@ def perform_update():
                 restart_service()
             return True
         else:
-            print(f"Validation failed: No 'proxies:' found. - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(
+                f"Validation failed: No 'proxies:' found. - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
             return False
 
     except requests.exceptions.HTTPError as e:
@@ -84,7 +88,7 @@ def perform_update():
                 os.remove(temp_path)
             except OSError:
                 pass
-    
+
     return False
 
 
@@ -94,19 +98,19 @@ if __name__ == "__main__":
     # Execute update immediately upon script startup
     print("Executing initial update on startup...")
     perform_update()
-    
+
     # Initialize the timestamp after the first run
     last_update_time = time.time()
 
     try:
         while True:
             current_time = time.time()
-            
+
             # Check if UPDATE_INTERVAL has passed since the last update
             if current_time - last_update_time >= UPDATE_INTERVAL:
                 perform_update()
                 # Reset timestamp regardless of success to avoid spamming the server
-                last_update_time = time.time() 
+                last_update_time = time.time()
 
             # Sleep 10 seconds to prevent high CPU usage and allow manual interrupts
             time.sleep(120)
@@ -114,4 +118,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service manually stopped.")
     except Exception as e:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}")
+        print(
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}"
+        )
