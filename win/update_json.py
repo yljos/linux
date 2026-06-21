@@ -1,165 +1,137 @@
-import requests
 import os
 import time
-import json
 import subprocess
 import ctypes
-import sys
+import json
 from dotenv import load_dotenv
+from curl_cffi import requests
 
-# 配置信息
-# [修改] 你的服务名称 (必须与 Windows 服务列表中显示的一致)
+# Configuration
 SERVICE_NAME = "Sing-box"
-
 save_path = r"c:\sing-box\config.json"
-time_log_path = r"c:\sing-box\updatetime"
+UPDATE_INTERVAL = 3600  # 1 hour in seconds
 
 
 def is_admin():
-    """检查是否具有管理员权限"""
+    """Check for administrator privileges"""
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
 
 
-def get_last_update_time():
-    """读取上次更新时间"""
-    try:
-        if os.path.exists(time_log_path):
-            with open(time_log_path, "r") as f:
-                content = f.read().strip()
-                if content:
-                    return float(content)
-    except Exception:
-        pass
-    return 0
-
-
-def save_update_time():
-    """保存当前更新时间"""
-    try:
-        os.makedirs(os.path.dirname(time_log_path), exist_ok=True)
-        with open(time_log_path, "w") as f:
-            f.write(str(time.time()))
-    except Exception as e:
-        print(f"保存时间戳失败: {e}")
-
-
-def should_update():
-    """判断是否需要更新"""
-    last_time = get_last_update_time()
-    current_time = time.time()
-    hours_passed = (current_time - last_time) / 3600
-
-    if last_time == 0:
-        return True
-
-    # 这里设置为 12 小时检查一次，你可以根据需要修改
-    return hours_passed >= 1
-
-
 def restart_service():
-    """重启 Sing-box 服务"""
-    print(f"正在尝试重启服务: {SERVICE_NAME} ...")
+    """Restart the Sing-box service"""
+    print(f"Attempting to restart service: {SERVICE_NAME} ...")
     try:
-        # 1. 停止服务
-        # check=False 允许命令失败(例如服务本身就没在运行)，不抛出异常继续执行
         subprocess.run(["net", "stop", SERVICE_NAME], check=False, shell=True)
-
-        # 等待2秒确保端口释放
         time.sleep(2)
-
-        # 2. 启动服务
-        # check=True 如果启动失败(配置错误等)，会抛出异常
         subprocess.run(["net", "start", SERVICE_NAME], check=True, shell=True)
-
-        print(f"[成功] 服务 {SERVICE_NAME} 重启成功，新配置已生效。")
-
+        print(f"[Success] Service {SERVICE_NAME} restarted.")
     except subprocess.CalledProcessError as e:
-        print(f"[失败] 服务启动失败: {e}")
-        print("请检查配置文件(config.json)是否有语法错误。")
+        print(f"[Failed] Service startup failed: {e}")
     except Exception as e:
-        print(f"重启服务时发生未知错误: {e}")
+        print(f"Unknown error during service restart: {e}")
+
+
+def perform_update():
+    """Execute the update process"""
+    load_dotenv(override=True)
+    url = os.getenv("URL")
+    user_agent = os.getenv("USER_AGENT", "sing-box_pc")
+    headers = {"User-Agent": user_agent}
+
+    if not url:
+        print("Error: URL not found in .env, skipping this update.")
+        return False
+
+    try:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        print(f"Downloading config... (User-Agent: {headers['User-Agent']})")
+
+        # Bypass Bot Fight Mode by impersonating Chrome
+        response = requests.get(
+            url, headers=headers, timeout=(10, 30), impersonate="chrome"
+        )
+        response.raise_for_status()
+        response.encoding = "utf-8"
+
+        try:
+            config_data = response.json()
+
+            if "outbounds" in config_data:
+                # Atomic write: write to temp file first, then replace
+                temp_path = save_path + ".tmp"
+                with open(temp_path, "wb") as f:
+                    f.write(response.content)
+                os.replace(temp_path, save_path)
+
+                print(f"Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+                if is_admin():
+                    restart_service()
+                else:
+                    print("Skipping service restart (insufficient privileges).")
+                return True
+            else:
+                print(f"Validation failed: JSON missing 'outbounds' - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                return False
+
+        except json.JSONDecodeError:
+            print(f"Validation failed: Invalid JSON - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            return False
+
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP Error: {e}")
+    except requests.exceptions.ConnectionError:
+        print("Connection failed.")
+    except requests.exceptions.Timeout:
+        print("Request timeout.")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        # Clean up temp file on unexpected error if it exists
+        temp_path = save_path + ".tmp"
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+
+    return False
 
 
 if __name__ == "__main__":
-    # 启动时检查管理员权限
+    print(f"Auto-update script started (Target: {SERVICE_NAME})...")
+
     if not is_admin():
-        print("【警告】脚本未以管理员身份运行！")
-        print("自动下载可以完成，但**无法自动重启服务**。")
-        print("请右键点击脚本或终端，选择「以管理员身份运行」。")
+        print("[Warning] Script is not running as administrator!")
+        print("Auto-download will work, but **auto-restart will fail**.")
+        print("Please right-click and 'Run as administrator'.")
         print("-" * 50)
 
-    print(f"自动更新脚本已启动 (目标服务: {SERVICE_NAME})...")
+    # Execute update immediately upon script startup
+    print("Executing initial update on startup...")
+    perform_update()
 
-    # [新增] 外层包裹 try...except 以捕获停止信号
+    # Initialize the timestamp after the first run
+    last_update_time = time.time()
+
     try:
         while True:
-            if should_update():
-                # 动态加载环境变量并覆盖
-                load_dotenv(override=True)
-                url = os.getenv("URL")
-                user_agent = os.getenv("USER_AGENT", "sing-box_pc")
-                headers = {"User-Agent": user_agent}
+            current_time = time.time()
 
-                if not url:
-                    print("错误: 未在环境变量中找到 URL，请检查 .env 文件。")
-                    time.sleep(10)
-                    continue
+            # Check if UPDATE_INTERVAL has passed since the last update
+            if current_time - last_update_time >= UPDATE_INTERVAL:
+                perform_update()
+                # Reset timestamp regardless of success to avoid spamming the server
+                last_update_time = time.time()
 
-                try:
-                    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-                    print(f"开始下载配置... (User-Agent: {headers['User-Agent']})")
+            # Sleep 120 seconds to prevent high CPU usage and allow manual interrupts
+            time.sleep(120)
 
-                    response = requests.get(url, headers=headers, timeout=(10, 30))
-                    response.raise_for_status()
-                    response.encoding = "utf-8"
-
-                    try:
-                        config_data = response.json()
-
-                        if "outbounds" in config_data:
-                            # 写入文件
-                            with open(save_path, "wb") as f:
-                                f.write(response.content)
-
-                            save_update_time()
-                            print(
-                                f"配置文件下载成功 - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-                            )
-
-                            # [恢复原样] 这里的逻辑保持你原来的
-                            if is_admin():
-                                restart_service()
-                            else:
-                                print(
-                                    "跳过服务重启（权限不足），请手动重启 Sing-box 服务。"
-                                )
-                        else:
-                            print(
-                                f"校验失败：JSON 缺少 'outbounds' 字段 - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-                            )
-
-                    except json.JSONDecodeError:
-                        print(
-                            f"校验失败：内容不是有效的 JSON - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-                        )
-
-                except requests.exceptions.HTTPError as e:
-                    print(f"HTTP 错误: {e}")
-                except requests.exceptions.ConnectionError:
-                    print("网络连接失败")
-                except Exception as e:
-                    print(f"发生意外错误: {e}")
-
-            # 每 10 秒检查一次
-            time.sleep(10)
-
-    # [新增] 专门捕获 NSSM 停止服务时发送的信号
     except KeyboardInterrupt:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 服务已手动停止。")
-
-    # [新增] 捕获其他未知致命错误
+        print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service manually stopped.")
     except Exception as e:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 发生致命错误导致停止: {e}")
+        print(
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}"
+        )
