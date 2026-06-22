@@ -129,6 +129,9 @@ def process_videos():
         if a_codec == "none":
             audio_args = ["-an"]
 
+        # Define temporary path for atomic replacement
+        temp_dst = dst.with_suffix(".tmp.mp4")
+
         command = (
             [
                 "ffmpeg",
@@ -146,7 +149,7 @@ def process_videos():
             ]
             + audio_args
             + [
-                str(dst),
+                str(temp_dst), # Output to temp file first
             ]
         )
 
@@ -163,8 +166,25 @@ def process_videos():
                 if "frame=" in line:
                     print(f"\r    {line.strip()}", end="")
             process.wait()
-            print(f"\n[✔] Done")
+
+            # Atomically replace if successful
+            if process.returncode == 0:
+                temp_dst.replace(dst)
+                
+                # Clean up original file if it's a different format
+                if src.suffix.lower() != ".mp4":
+                    src.unlink()
+                    print(f"\n[✔] Done (Deleted original {src.name})")
+                else:
+                    print(f"\n[✔] Done")
+            else:
+                if temp_dst.exists():
+                    temp_dst.unlink()
+                print(f"\n[!] Failed (ffmpeg exit code {process.returncode})")
+
         except Exception as e:
+            if temp_dst.exists():
+                temp_dst.unlink()
             print(f"\n[!] Error: {e}")
 
         if index < total - 1:
