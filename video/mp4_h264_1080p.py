@@ -12,7 +12,6 @@ SUFFIX = "_1080p"
 COOLDOWN_SECONDS = 60
 CPU_THREADS = 2  # Limit to 2 threads for ~50% CPU usage on i5-4570T
 
-
 def set_terminal_title(title):
     try:
         import platform
@@ -25,9 +24,8 @@ def set_terminal_title(title):
     except Exception:
         pass
 
-
 def get_video_audio_info(file_path):
-    """Get width, height, video codec, and audio codec using ffprobe"""
+    # Get width, height, video codec, and audio codec using ffprobe
     cmd = [
         "ffprobe",
         "-v",
@@ -57,7 +55,6 @@ def get_video_audio_info(file_path):
         return v_w, v_h, v_codec, a_codec
     except:
         return 0, 0, "unknown", "unknown"
-
 
 def process_videos():
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
@@ -149,8 +146,6 @@ def process_videos():
             ]
             + audio_args
             + [
-                "-movflags",
-                "+faststart",
                 str(dst),
             ]
         )
@@ -178,7 +173,6 @@ def process_videos():
             print("-" * 50)
 
     print("\n[*] All tasks finished.")
-
 
 if __name__ == "__main__":
     process_videos()
