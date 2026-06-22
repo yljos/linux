@@ -66,7 +66,9 @@ def perform_update():
                     f.write(response.content)
                 os.replace(temp_path, save_path)
 
-                print(f"Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                print(
+                    f"Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+                )
 
                 if is_admin():
                     restart_service()
@@ -74,11 +76,15 @@ def perform_update():
                     print("Skipping service restart (insufficient privileges).")
                 return True
             else:
-                print(f"Validation failed: JSON missing 'outbounds' - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                print(
+                    f"Validation failed: JSON missing 'outbounds' - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+                )
                 return False
 
         except json.JSONDecodeError:
-            print(f"Validation failed: Invalid JSON - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(
+                f"Validation failed: Invalid JSON - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
             return False
 
     except requests.exceptions.HTTPError as e:
