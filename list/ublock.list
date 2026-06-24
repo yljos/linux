@@ -9,6 +9,7 @@ bilibili.com##.bili-danmaku-x-vote.bili-danmaku-x-show
 ! 屏蔽引导弹幕
 bilibili.com##.bili-danmaku-x-guide-all.bili-danmaku-x-guide.bili-danmaku-x-show
 bilibili.com##.bpx-player-cmd-dm-wrap .bili-danmaku-x-guide-three:nth-of-type(1)
+bilibili.com##.bili-danmaku-x-show.bili-danmaku-x-guide
 
 ! 屏蔽评分弹幕
 bilibili.com##.bili-danmaku-x-score
