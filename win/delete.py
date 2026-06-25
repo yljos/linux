@@ -75,8 +75,8 @@ def main():
     subprocess.run(["rclone", "rmdirs", REMOTE_PATH, "--leave-root"])
 
     # Remove temporary delete list
-    if os.path.exists(DELETE_LIST_FILE):
-        os.remove(DELETE_LIST_FILE)
+    # if os.path.exists(DELETE_LIST_FILE):
+    #     os.remove(DELETE_LIST_FILE)
 
 if __name__ == "__main__":
     main()
