@@ -12,11 +12,9 @@ BLACKLIST_MP4 = {name.strip() for name in env_blacklist.split(",") if name.strip
 WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv", ".ts"}
 
 REMOTE_PATH = "pikpak:My Pack"
-TREE_OUTPUT_FILE = "mp4_tree.json"
-DELETE_LIST_FILE = "delete_list.txt"
 
 # 20MB threshold in bytes
-MIN_MP4_SIZE_BYTES = 20 * 1024 * 1024
+MIN_MP4_SIZE_BYTES = 50 * 1024 * 1024
 
 def main():
     # Fetch remote file tree
@@ -32,7 +30,6 @@ def main():
         return
 
     files_to_del = []
-    mp4_tree = []
 
     # Process JSON output
     for item in remote_files:
@@ -47,36 +44,24 @@ def main():
             continue
 
         if ext_lower == ".mp4":
-            mp4_tree.append(base_name)
-            
             # Apply blacklist and size logic
-            if any(b in base_name for b in BLACKLIST_MP4):
-                files_to_del.append(rel_path)
-            elif file_size < MIN_MP4_SIZE_BYTES:
+            if any(b in base_name for b in BLACKLIST_MP4) or file_size < MIN_MP4_SIZE_BYTES:
                 files_to_del.append(rel_path)
         else:
             files_to_del.append(rel_path)
 
-    # Save MP4 tree (names only)
-    mp4_tree.sort()
-    with open(TREE_OUTPUT_FILE, "w", encoding="utf-8") as f_out:
-        json.dump(mp4_tree, f_out, ensure_ascii=False, indent=4)
-
-    # Execute deletions
+    # Execute deletions via stdin (no temporary file)
     if files_to_del:
-        with open(DELETE_LIST_FILE, "w", encoding="utf-8") as f:
-            for p in files_to_del:
-                f.write(f"{p}\n")
-
-        # Delete natively via rclone remote
-        subprocess.run(["rclone", "delete", REMOTE_PATH, "--files-from", DELETE_LIST_FILE])
+        delete_payload = "\n".join(files_to_del)
+        subprocess.run(
+            ["rclone", "delete", REMOTE_PATH, "--files-from", "-"],
+            input=delete_payload,
+            text=True,
+            encoding="utf-8"
+        )
 
     # Native remote empty directory cleanup
     subprocess.run(["rclone", "rmdirs", REMOTE_PATH, "--leave-root"])
-
-    # Remove temporary delete list
-    if os.path.exists(DELETE_LIST_FILE):
-        os.remove(DELETE_LIST_FILE)
 
 if __name__ == "__main__":
     main()
