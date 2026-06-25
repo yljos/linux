@@ -16,11 +16,12 @@ REMOTE_PATH = "pikpak:My Pack"
 # 20MB threshold in bytes
 MIN_MP4_SIZE_BYTES = 50 * 1024 * 1024
 
+
 def main():
     # Fetch remote file tree
     cmd = ["rclone", "lsjson", REMOTE_PATH, "--recursive", "--files-only"]
     result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
-    
+
     if result.returncode != 0:
         return
 
@@ -36,7 +37,7 @@ def main():
         rel_path = item["Path"]
         name = item["Name"]
         file_size = item.get("Size", 0)
-        
+
         base_name, ext = os.path.splitext(name)
         ext_lower = ext.lower()
 
@@ -45,7 +46,10 @@ def main():
 
         if ext_lower == ".mp4":
             # Apply blacklist and size logic
-            if any(b in base_name for b in BLACKLIST_MP4) or file_size < MIN_MP4_SIZE_BYTES:
+            if (
+                any(b in base_name for b in BLACKLIST_MP4)
+                or file_size < MIN_MP4_SIZE_BYTES
+            ):
                 files_to_del.append(rel_path)
         else:
             files_to_del.append(rel_path)
@@ -57,11 +61,12 @@ def main():
             ["rclone", "delete", REMOTE_PATH, "--files-from", "-"],
             input=delete_payload,
             text=True,
-            encoding="utf-8"
+            encoding="utf-8",
         )
 
     # Native remote empty directory cleanup
     subprocess.run(["rclone", "rmdirs", REMOTE_PATH, "--leave-root"])
+
 
 if __name__ == "__main__":
     main()
