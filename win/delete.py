@@ -1,7 +1,6 @@
 import os
-import concurrent.futures
-import threading
 import json
+import subprocess
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -12,103 +11,72 @@ env_blacklist = os.getenv("BLACKLIST_MP4", "")
 BLACKLIST_MP4 = {name.strip() for name in env_blacklist.split(",") if name.strip()}
 WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv", ".ts"}
 
-MAX_WORKERS = 10  # Tuned for WebDAV
-ROOT_DIR = os.path.abspath(r"P:\My Pack")
+REMOTE_PATH = "pikpak:My Pack"
 TREE_OUTPUT_FILE = "mp4_tree.json"
-DELETED_OUTPUT_FILE = "deleted_files.json"
+DELETE_LIST_FILE = "delete_list.txt"
 
-print_lock = threading.Lock()
-
-
-def delete_file(path: str) -> str:
-    # [Phase 3: Network I/O]
-    try:
-        os.remove(path)
-        with print_lock:
-            print(f"[Deleted] {path}")
-        return path
-    except Exception as e:
-        with print_lock:
-            print(f"[Error] {path}: {e}")
-        return ""
-
+# 20MB threshold in bytes
+MIN_MP4_SIZE_BYTES = 20 * 1024 * 1024
 
 def main():
-    script_path = os.path.abspath(__file__)
+    # Fetch remote file tree
+    cmd = ["rclone", "lsjson", REMOTE_PATH, "--recursive", "--files-only"]
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
+    
+    if result.returncode != 0:
+        return
 
-    # --- PHASE 1: Network I/O (Directory Traversal ONLY) ---
-    print("Scanning network directory...")
-    raw_files = []
-    folders = []
+    try:
+        remote_files = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return
 
-    for root, dirs, files in os.walk(ROOT_DIR):
-        folders.append(root)
-        for f in files:
-            raw_files.append((root, f))
-
-    # --- PHASE 2: Local Processing ---
-    print("Processing data locally...")
     files_to_del = []
     mp4_tree = []
 
-    for root, f in raw_files:
-        path = os.path.join(root, f)
-        if path == script_path:
-            continue
-
-        name, ext = os.path.splitext(f)
+    # Process JSON output
+    for item in remote_files:
+        rel_path = item["Path"]
+        name = item["Name"]
+        file_size = item.get("Size", 0)
+        
+        base_name, ext = os.path.splitext(name)
         ext_lower = ext.lower()
 
         if ext_lower in WHITELIST_EXT:
             continue
 
         if ext_lower == ".mp4":
-            mp4_tree.append({"name": name, "path": path})
+            mp4_tree.append(base_name)
+            
+            # Apply blacklist and size logic
+            if any(b in base_name for b in BLACKLIST_MP4):
+                files_to_del.append(rel_path)
+            elif file_size < MIN_MP4_SIZE_BYTES:
+                files_to_del.append(rel_path)
         else:
-            files_to_del.append(path)
+            files_to_del.append(rel_path)
 
-    # Write the full tree first
-    mp4_tree.sort(key=lambda x: x["path"])
+    # Save MP4 tree (names only)
+    mp4_tree.sort()
     with open(TREE_OUTPUT_FILE, "w", encoding="utf-8") as f_out:
         json.dump(mp4_tree, f_out, ensure_ascii=False, indent=4)
-    print(f"Generated local MP4 tree: {TREE_OUTPUT_FILE} ({len(mp4_tree)} MP4 files)")
 
-    # Read and apply original blacklist logic
-    with open(TREE_OUTPUT_FILE, "r", encoding="utf-8") as f_in:
-        local_mp4_tree = json.load(f_in)
-
-    for item in local_mp4_tree:
-        if any(b in item["name"] for b in BLACKLIST_MP4):
-            files_to_del.append(item["path"])
-
-    # --- PHASE 3: Network I/O (Deletion Execution) ---
-    successfully_deleted = []
+    # Execute deletions
     if files_to_del:
-        print(f"Executing deletions over network ({len(files_to_del)} files)...")
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-            successfully_deleted = [p for p in pool.map(delete_file, files_to_del) if p]
+        with open(DELETE_LIST_FILE, "w", encoding="utf-8") as f:
+            for p in files_to_del:
+                f.write(f"{p}\n")
 
-        with open(DELETED_OUTPUT_FILE, "w", encoding="utf-8") as f_del:
-            json.dump(successfully_deleted, f_del, ensure_ascii=False, indent=4)
-        print(f"Generated deleted files log: {DELETED_OUTPUT_FILE}")
-    else:
-        print("No files to delete.")
+        # Delete natively via rclone remote
+        subprocess.run(["rclone", "delete", REMOTE_PATH, "--files-from", DELETE_LIST_FILE])
 
-    # Cleanup empty folders
-    deleted_folders = 0
-    for d in reversed(folders):
-        if d == ROOT_DIR:
-            continue
-        try:
-            os.rmdir(d)
-            deleted_folders += 1
-        except OSError:
-            pass
+    # Native remote empty directory cleanup
+    subprocess.run(["rclone", "rmdirs", REMOTE_PATH, "--leave-root"])
 
-    print(
-        f"Done! Files Deleted: {len(successfully_deleted)}/{len(files_to_del)} | Empty Folders: {deleted_folders}"
-    )
-
+    # Remove temporary delete list
+    if os.path.exists(DELETE_LIST_FILE):
+        os.remove(DELETE_LIST_FILE)
 
 if __name__ == "__main__":
     main()
