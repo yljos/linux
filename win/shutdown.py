@@ -16,8 +16,8 @@ def main():
             # Try to fetch remote signal
             response = requests.get(URL, timeout=5)
 
-            # Trigger shutdown if successful and content is "1"
-            if response.status_code == 200 and response.text.strip() == "1":
+            # Trigger shutdown if successful and content contains "W"
+            if response.status_code == 200 and "W" in response.text:
                 subprocess.run(["shutdown", "/s", "/f", "/t", "0"], check=True)
                 break  # Exit loop after successful shutdown command
 

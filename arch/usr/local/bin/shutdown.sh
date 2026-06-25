@@ -16,8 +16,8 @@ while true; do
 		continue
 	fi
 
-	# If content is 1 -> shutdown
-	if [ "$CONTENT" = "1" ]; then
+	# If content contains 'A', execute shutdown
+	if [[ "$CONTENT" == *"A"* ]]; then
 		sleep 60
 		systemctl poweroff # Comment out during testing
 		exit 0
