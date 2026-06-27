@@ -36,6 +36,7 @@ bilibili.com##.bpx-player-qoeFeedback
 ! 屏蔽广告拦截提示
 bilibili.com##.adblock-tips
 
+bilibili.com##.charge-btn-loaded.new-charge-btn.default-btn
 
 ! Outlook 屏蔽规则
 outlook.live.com##div[id^="MainModule"] div:last-child.GssDD
