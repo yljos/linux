@@ -152,17 +152,14 @@ proxy-groups:
       - US-fallback
       - HK-fallback
   - type: select
-    hidden: true
     name: TikTok
     proxies:
       - JP-fallback
   - type: select
-    hidden: true
     name: Twitter
     proxies:
       - US-fallback
   - type: select
-    hidden: true
     name: Youtube
     include-all-proxies: true
     filter: "(?i)^(?=.*(US))(?!.*(gemini)).*$"
@@ -172,7 +169,6 @@ proxy-groups:
       - SG-fallback
       - HK-fallback
   - type: select
-    hidden: true
     name: AD
     proxies:
       - REJECT-DROP
