@@ -20,6 +20,5 @@
         }
     },
     "terminal.integrated.defaultProfile.windows": "Git Bash", 
-    "git.path": "C:\\Program Files\\Git\\cmd\\git.exe", 
-    "vim.disableAnnoyingNeovimMessage": true
+    "git.path": "C:\\Program Files\\Git\\cmd\\git.exe"
 }
