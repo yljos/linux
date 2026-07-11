@@ -1,6 +1,6 @@
 import subprocess
-import urllib.request
 import os
+from curl_cffi import requests
 
 # Configuration
 UVX_PATH = r"C:\Users\huai\AppData\Local\Programs\Python\Python312\Scripts\uvx.exe"
@@ -8,12 +8,13 @@ MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
 EMAIL = "test@outlook.com"
 VERSION_URL = "http://10.0.0.21/version.txt"
-
 def get_version(url):
-    """Fetch the version string from a URL."""
+    """Fetch the version string from a URL with Firefox fingerprinting."""
     try:
-        with urllib.request.urlopen(url, timeout=5) as response:
-            return response.read().decode("utf-8").strip()
+        # Use curl_cffi to impersonate Firefox
+        response = requests.get(url, timeout=5, impersonate="firefox")
+        response.raise_for_status()
+        return response.text.strip()
     except Exception as e:
         print(f"Failed to fetch version: {e}")
         return None
