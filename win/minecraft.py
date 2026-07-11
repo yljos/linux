@@ -33,7 +33,7 @@ def launch_minecraft():
         "--work-dir", work_dir,
         "start",
         "-l", EMAIL,
-        version
+        "forge:"+version
     ]
 
     try:
