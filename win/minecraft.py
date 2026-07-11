@@ -8,6 +8,7 @@ MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
 EMAIL = "test@outlook.com"
 VERSION_URL = "http://10.0.0.21/version.txt"
+
 def get_version(url):
     """Fetch the version string from a URL with Firefox fingerprinting."""
     try:
@@ -20,12 +21,27 @@ def get_version(url):
         return None
 
 def launch_minecraft():
-    version = get_version(VERSION_URL)
-    if not version:
+    version_data = get_version(VERSION_URL)
+    if not version_data:
         return
 
-    # Update work_dir to follow the version number
-    work_dir = os.path.join(BASE_WORK_DIR, version)
+    # Parse loader and version (e.g., "forge,1.12.2" or "fabric,1.12.2" or "vanilla,1.12.2")
+    if "," in version_data:
+        loader, mc_version = version_data.split(",", 1)
+        loader = loader.strip().lower()
+        mc_version = mc_version.strip()
+    else:
+        # Default to vanilla if no comma is found
+        loader, mc_version = "vanilla", version_data.strip()
+
+    # Share the same version directory (e.g., D:\1.12.2) for all loaders
+    work_dir = os.path.join(BASE_WORK_DIR, mc_version)
+
+    # Format the target version argument for portablemc
+    if loader in ["vanilla", "原版"]:
+        target_version = mc_version
+    else:
+        target_version = f"{loader}:{mc_version}"
 
     command = [
         UVX_PATH, "portablemc",
@@ -33,7 +49,7 @@ def launch_minecraft():
         "--work-dir", work_dir,
         "start",
         "-l", EMAIL,
-        "forge:"+version
+        target_version
     ]
 
     try:
