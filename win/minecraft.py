@@ -3,11 +3,11 @@ import os
 from curl_cffi import requests
 
 # Configuration
-UVX_PATH = r"C:\Users\huai\AppData\Local\Programs\Python\Python312\Scripts\uvx.exe"
+UVX_PATH = r"C:\Users\dayao\AppData\Local\Programs\Python\Python312\Scripts\uvx.exe"
 MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
-EMAIL = "test@outlook.com"
-VERSION_URL = "http://10.0.0.21/version.txt"
+EMAIL = "dayao"
+VERSION_URL = "https://www.com/version.txt"
 
 def get_version(url):
     """Fetch the version string from a URL with Firefox fingerprinting."""
