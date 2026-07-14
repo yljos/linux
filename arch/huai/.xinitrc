@@ -13,6 +13,6 @@ pidof -q dunst || dunst &
     sleep 2  # Wait for dwm and network to be fully ready
     pidof -q firefox || firefox &    
 ) &
-
+xset s off -dpms
 # 3. Instantly start the window manager
 exec dbus-run-session dwm
