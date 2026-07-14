@@ -147,6 +147,7 @@ proxy-groups:
   - type: select
     name: Microsoft
     proxies:
+      - DIRECT
       - JP-fallback
       - SG-fallback
       - US-fallback
