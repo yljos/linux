@@ -3,6 +3,7 @@ import shutil
 import json
 import time
 import sys
+import os
 from pathlib import Path
 
 # --- Configuration ---
@@ -81,16 +82,15 @@ def get_video_audio_info(file_path):
         return 0, 0, "unknown", "unknown"
 
 
-def process_videos():
+def process_videos(root_dir):
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
         print("Error: FFmpeg or ffprobe not found in PATH.")
         return
 
-    root_dir = Path.cwd()
     set_terminal_title("H264 & 1080P Optimizer")
 
     targets = []
-    print(f"[*] Scanning: {root_dir}")
+    print(f"\n[*] Scanning for optimization targets: {root_dir}")
 
     for file_path in root_dir.rglob("*"):
         if not file_path.is_file() or file_path.suffix.lower() not in VIDEO_EXTENSIONS:
@@ -259,8 +259,100 @@ def process_videos():
             time.sleep(COOLDOWN_SECONDS)
             print("-" * 50)
 
-    print("\n[*] All tasks finished.")
+    print("\n[*] All optimization tasks finished.\n")
+
+
+def merge_sequential_videos(base_dir):
+    print(f"[*] Scanning for sequential files to merge in: {base_dir}")
+    
+    # Traverse all directories starting from the base directory
+    for root, dirs, files in os.walk(base_dir):
+        folder_name = os.path.basename(root)
+        inputs = []
+        last_num = 0
+
+        # Scan for files 1.mp4 to 10.mp4 in the current directory level
+        for i in range(1, 99):
+            file_lower = f"{i}.mp4"
+            file_upper = f"{i}.MP4"
+
+            if os.path.exists(os.path.join(root, file_lower)):
+                inputs.append(file_lower)
+                last_num = i
+            elif os.path.exists(os.path.join(root, file_upper)):
+                inputs.append(file_upper)
+                last_num = i
+            else:
+                break
+
+        # Skip if there are not enough files to merge in this directory
+        if len(inputs) < 2:
+            continue
+
+        # Define output file name
+        output = f"{folder_name}1-{last_num}.mp4"
+        output_path = os.path.join(root, output)
+        
+        if os.path.exists(output_path):
+            continue
+
+        print(f"\n[+] Merging {len(inputs)} files into {output} in {root}")
+        ts_files = []
+
+        # Step 1: Convert to TS
+        for i, video in enumerate(inputs):
+            ts_file = f"temp_{i}.ts"
+            ts_files.append(ts_file)
+            cmd_convert = [
+                "ffmpeg",
+                "-y",
+                "-v",
+                "error",
+                "-i",
+                video,
+                "-c",
+                "copy",
+                "-bsf:v",
+                "h264_mp4toannexb",
+                "-f",
+                "mpegts",
+                ts_file,
+            ]
+            subprocess.run(cmd_convert, cwd=root, check=True)
+
+        # Step 2: Merge TS with faststart optimization applied immediately
+        concat_string = "concat:" + "|".join(ts_files)
+        cmd_merge = [
+            "ffmpeg",
+            "-y",
+            "-v",
+            "error",
+            "-i",
+            concat_string,
+            "-c",
+            "copy",
+            "-bsf:a",
+            "aac_adtstoasc",
+            "-movflags", 
+            "+faststart",
+            output,
+        ]
+        subprocess.run(cmd_merge, cwd=root, check=True)
+
+        # Step 3: Cleanup
+        for ts in ts_files:
+            ts_path = os.path.join(root, ts)
+            if os.path.exists(ts_path):
+                os.remove(ts_path)
+                
+        print(f"[✔] Merged successfully: {output}")
 
 
 if __name__ == "__main__":
-    process_videos()
+    base_directory = Path.cwd()
+    
+    # Process/transcode first so merge step receives standardized files
+    process_videos(base_directory)
+    
+    # Merge sequential files after transcoding
+    merge_sequential_videos(base_directory)
