@@ -8,7 +8,6 @@ from pathlib import Path
 # --- Configuration ---
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".ts"}
 THRESHOLD = 1080
-SUFFIX = "_1080p"
 COOLDOWN_SECONDS = 60
 CPU_THREADS = 2  # Limit to 2 threads for ~50% CPU usage on i5-4570T
 
@@ -24,6 +23,29 @@ def set_terminal_title(title):
             sys.stdout.flush()
     except Exception:
         pass
+
+
+def is_faststart(filepath):
+    # Check if 'moov' atom appears before 'mdat' atom
+    try:
+        with open(filepath, "rb") as f:
+            while True:
+                header = f.read(8)
+                if len(header) < 8:
+                    break
+                size = int.from_bytes(header[:4], "big")
+                atom_type = header[4:8]
+
+                if atom_type == b"moov":
+                    return True
+                if atom_type == b"mdat":
+                    return False
+
+                # Skip to the next atom
+                f.seek(size - 8, 1)
+    except Exception:
+        pass
+    return False
 
 
 def get_video_audio_info(file_path):
@@ -43,7 +65,7 @@ def get_video_audio_info(file_path):
         data = json.loads(result.stdout)
 
         v_w, v_h, v_codec = 0, 0, "unknown"
-        a_codec = "none"  # Default if no audio stream exists
+        a_codec = "none"
 
         for stream in data.get("streams", []):
             s_type = stream.get("codec_type")
@@ -73,7 +95,9 @@ def process_videos():
     for file_path in root_dir.rglob("*"):
         if not file_path.is_file() or file_path.suffix.lower() not in VIDEO_EXTENSIONS:
             continue
-        if SUFFIX in file_path.stem:
+        
+        # Skip temporary files
+        if file_path.name.endswith(".tmp.mp4"):
             continue
 
         w, h, v_codec, a_codec = get_video_audio_info(file_path)
@@ -82,22 +106,39 @@ def process_videos():
         needs_downscale = short_side > THRESHOLD
         needs_v_transcode = v_codec != "h264"
         needs_a_transcode = a_codec != "aac" and a_codec != "none"
+        is_transcode = needs_downscale or needs_v_transcode or needs_a_transcode
 
-        if needs_downscale or needs_v_transcode or needs_a_transcode:
-            output_path = file_path.with_name(f"{file_path.stem}{SUFFIX}.mp4")
-            if not output_path.exists():
-                targets.append(
-                    (
-                        file_path,
-                        w,
-                        h,
-                        v_codec,
-                        a_codec,
-                        output_path,
-                        needs_downscale,
-                        needs_a_transcode,
-                    )
+        # In-place destination (always ends up as .mp4)
+        dst = file_path.with_suffix(".mp4")
+
+        if is_transcode:
+            targets.append(
+                (
+                    file_path,
+                    w,
+                    h,
+                    v_codec,
+                    a_codec,
+                    dst,
+                    True,
+                    needs_downscale,
+                    needs_a_transcode,
                 )
+            )
+        elif file_path.suffix.lower() == ".mp4" and not is_faststart(file_path):
+            targets.append(
+                (
+                    file_path,
+                    w,
+                    h,
+                    v_codec,
+                    a_codec,
+                    dst,
+                    False,
+                    False,
+                    False,
+                )
+            )
 
     total = len(targets)
     if total == 0:
@@ -113,48 +154,69 @@ def process_videos():
         v_codec,
         a_codec,
         dst,
+        is_transcode,
         downscale,
         transcode_audio,
     ) in enumerate(targets):
-        print(
-            f"[+] Task {index + 1}/{total} | {src.name} (Video: {w}x{h} {v_codec}, Audio: {a_codec})"
-        )
+        
+        task_desc = f"Video: {w}x{h} {v_codec}, Audio: {a_codec}"
+        if not is_transcode:
+            task_desc = "Faststart Optimization Only"
+            
+        print(f"[+] Task {index + 1}/{total} | {src.name} ({task_desc})")
         set_terminal_title(f"[{index+1}/{total}] {src.name}")
 
-        filters = ["format=nv12"]
-        if downscale:
-            s_filter = f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
-            filters.append(s_filter)
-
-        audio_args = (
-            ["-c:a", "aac", "-b:a", "128k"] if transcode_audio else ["-c:a", "copy"]
-        )
-        if a_codec == "none":
-            audio_args = ["-an"]
-
-        # Define temporary path for atomic replacement
+        # Temporary path for atomic replacement processing
         temp_dst = dst.with_suffix(".tmp.mp4")
 
-        command = (
-            [
+        if is_transcode:
+            filters = ["format=nv12"]
+            if downscale:
+                s_filter = f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
+                filters.append(s_filter)
+
+            audio_args = (
+                ["-c:a", "aac", "-b:a", "128k"] if transcode_audio else ["-c:a", "copy"]
+            )
+            if a_codec == "none":
+                audio_args = ["-an"]
+
+            command = (
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-threads",
+                    str(CPU_THREADS),
+                    "-i",
+                    str(src),
+                    "-vf",
+                    ",".join(filters),
+                    "-c:v",
+                    "h264_qsv",
+                    "-global_quality",
+                    "20",
+                ]
+                + audio_args
+                + [
+                    "-movflags",
+                    "+faststart",
+                    str(temp_dst),
+                ]
+            )
+        else:
+            command = [
                 "ffmpeg",
                 "-y",
-                "-threads",
-                str(CPU_THREADS),
+                "-v",
+                "error",
                 "-i",
                 str(src),
-                "-vf",
-                ",".join(filters),
-                "-c:v",
-                "h264_qsv",
-                "-global_quality",
-                "20",
+                "-c",
+                "copy",
+                "-movflags",
+                "+faststart",
+                str(temp_dst),
             ]
-            + audio_args
-            + [
-                str(temp_dst),  # Output to temp file first
-            ]
-        )
 
         try:
             process = subprocess.Popen(
@@ -170,16 +232,16 @@ def process_videos():
                     print(f"\r    {line.strip()}", end="")
             process.wait()
 
-            # Atomically replace if successful
             if process.returncode == 0:
+                # Atomically replace destination file
                 temp_dst.replace(dst)
 
-                # Clean up original file if it's a different format
-                if src.suffix.lower() != ".mp4":
+                # Cleanup original file if extension changed
+                if src != dst and src.exists():
                     src.unlink()
-                    print(f"\n[✔] Done (Deleted original {src.name})")
+                    print(f"\n[✔] Done (Replaced original {src.name})")
                 else:
-                    print(f"\n[✔] Done")
+                    print(f"\n[✔] Done (Replaced original Mp4)")
             else:
                 if temp_dst.exists():
                     temp_dst.unlink()
