@@ -33,7 +33,7 @@ pacman-key --populate archlinux
 if [ "$WM_ENV" = "dwl" ]; then
 	WM_PKGS="wlroots0.19 tllist fcft wayland-protocols wayland fuzzel mako foot"
 else
-	WM_PKGS="xorg-server xorg-xinit xorg-xsetroot alacritty rofi dunst picom numlockx"
+	WM_PKGS="xorg-xset xorg-server xorg-xinit xorg-xsetroot alacritty rofi dunst picom numlockx"
 fi
 
 pacstrap /mnt base base-devel iptables-nft linux-lts linux-lts-headers linux-firmware vim git less polkit \
