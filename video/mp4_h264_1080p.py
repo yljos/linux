@@ -90,7 +90,7 @@ def process_videos(root_dir):
     set_terminal_title("H264 & 1080P Optimizer")
 
     targets = []
-    print(f"\n[*] Scanning for optimization targets: {root_dir}")
+    print(f"\n[*] Scanning for optimization/transcoding targets: {root_dir}")
 
     for file_path in root_dir.rglob("*"):
         if not file_path.is_file() or file_path.suffix.lower() not in VIDEO_EXTENSIONS:
@@ -142,7 +142,7 @@ def process_videos(root_dir):
 
     total = len(targets)
     if total == 0:
-        print("[i] No files need optimization.")
+        print("[i] No files need optimization or transcoding.")
         return
 
     print(f"[i] Found {total} targets. Thread limit: {CPU_THREADS}\n" + "-" * 50)
@@ -259,11 +259,12 @@ def process_videos(root_dir):
             time.sleep(COOLDOWN_SECONDS)
             print("-" * 50)
 
-    print("\n[*] All optimization tasks finished.\n")
+    print("\n[*] All optimization/transcoding tasks finished.\n")
 
 
 def merge_sequential_videos(base_dir):
-    print(f"[*] Scanning for sequential files to merge in: {base_dir}")
+    print(f"\n[*] Scanning for sequential files to merge in: {base_dir}")
+    merged_count = 0
     
     # Traverse all directories starting from the base directory
     for root, dirs, files in os.walk(base_dir):
@@ -346,6 +347,12 @@ def merge_sequential_videos(base_dir):
                 os.remove(ts_path)
                 
         print(f"[✔] Merged successfully: {output}")
+        merged_count += 1
+
+    if merged_count == 0:
+        print("[i] No files need merging.")
+    else:
+        print(f"\n[*] All merging tasks finished. Total merged: {merged_count}")
 
 
 if __name__ == "__main__":
