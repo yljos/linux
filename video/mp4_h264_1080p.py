@@ -95,7 +95,7 @@ def process_videos():
     for file_path in root_dir.rglob("*"):
         if not file_path.is_file() or file_path.suffix.lower() not in VIDEO_EXTENSIONS:
             continue
-        
+
         # Skip temporary files
         if file_path.name.endswith(".tmp.mp4"):
             continue
@@ -158,11 +158,11 @@ def process_videos():
         downscale,
         transcode_audio,
     ) in enumerate(targets):
-        
+
         task_desc = f"Video: {w}x{h} {v_codec}, Audio: {a_codec}"
         if not is_transcode:
             task_desc = "Faststart Optimization Only"
-            
+
         print(f"[+] Task {index + 1}/{total} | {src.name} ({task_desc})")
         set_terminal_title(f"[{index+1}/{total}] {src.name}")
 
@@ -172,7 +172,9 @@ def process_videos():
         if is_transcode:
             filters = ["format=nv12"]
             if downscale:
-                s_filter = f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
+                s_filter = (
+                    f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
+                )
                 filters.append(s_filter)
 
             audio_args = (

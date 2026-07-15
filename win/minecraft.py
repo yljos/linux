@@ -9,6 +9,7 @@ BASE_WORK_DIR = r"D:"
 EMAIL = "dayao"
 VERSION_URL = "https://www.com/version.txt"
 
+
 def get_version(url):
     """Fetch the version string from a URL with Firefox fingerprinting."""
     try:
@@ -19,6 +20,7 @@ def get_version(url):
     except Exception as e:
         print(f"Failed to fetch version: {e}")
         return None
+
 
 def launch_minecraft():
     version_data = get_version(VERSION_URL)
@@ -44,12 +46,16 @@ def launch_minecraft():
         target_version = f"{loader}:{mc_version}"
 
     command = [
-        UVX_PATH, "portablemc",
-        "--main-dir", MAIN_DIR,
-        "--work-dir", work_dir,
+        UVX_PATH,
+        "portablemc",
+        "--main-dir",
+        MAIN_DIR,
+        "--work-dir",
+        work_dir,
         "start",
-        "-l", EMAIL,
-        target_version
+        "-l",
+        EMAIL,
+        target_version,
     ]
 
     try:
@@ -58,6 +64,7 @@ def launch_minecraft():
         print(f"Error occurred: {e}")
     except FileNotFoundError:
         print(f"Executable not found at: {UVX_PATH}")
+
 
 if __name__ == "__main__":
     launch_minecraft()

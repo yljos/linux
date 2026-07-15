@@ -6,15 +6,15 @@ base_dir = os.getcwd()
 
 for root, dirs, files in os.walk(base_dir):
     folder_name = os.path.basename(root)
-    
+
     inputs = []
     last_num = 0
-    
+
     # Scan for files 1.mp4 to 10.mp4 in the current directory level
     for i in range(1, 11):
         file_lower = f"{i}.mp4"
         file_upper = f"{i}.MP4"
-        
+
         if os.path.exists(os.path.join(root, file_lower)):
             inputs.append(file_lower)
             last_num = i
