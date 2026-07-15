@@ -173,7 +173,7 @@ proxy-groups:
     name: AD
     proxies:
       - REJECT-DROP
-      - PASS   
+      - PASS
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
