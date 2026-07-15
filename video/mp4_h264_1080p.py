@@ -265,7 +265,7 @@ def process_videos(root_dir):
 def merge_sequential_videos(base_dir):
     print(f"\n[*] Scanning for sequential files to merge in: {base_dir}")
     merged_count = 0
-    
+
     # Traverse all directories starting from the base directory
     for root, dirs, files in os.walk(base_dir):
         folder_name = os.path.basename(root)
@@ -293,7 +293,7 @@ def merge_sequential_videos(base_dir):
         # Define output file name
         output = f"{folder_name}1-{last_num}.mp4"
         output_path = os.path.join(root, output)
-        
+
         if os.path.exists(output_path):
             continue
 
@@ -334,7 +334,7 @@ def merge_sequential_videos(base_dir):
             "copy",
             "-bsf:a",
             "aac_adtstoasc",
-            "-movflags", 
+            "-movflags",
             "+faststart",
             output,
         ]
@@ -345,7 +345,7 @@ def merge_sequential_videos(base_dir):
             ts_path = os.path.join(root, ts)
             if os.path.exists(ts_path):
                 os.remove(ts_path)
-                
+
         print(f"[✔] Merged successfully: {output}")
         merged_count += 1
 
@@ -357,9 +357,9 @@ def merge_sequential_videos(base_dir):
 
 if __name__ == "__main__":
     base_directory = Path.cwd()
-    
+
     # Process/transcode first so merge step receives standardized files
     process_videos(base_directory)
-    
+
     # Merge sequential files after transcoding
     merge_sequential_videos(base_directory)
