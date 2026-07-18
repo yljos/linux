@@ -7,15 +7,12 @@ UVX_PATH = r"C:\Users\dayao\AppData\Local\Programs\Python\Python312\Scripts\uvx.
 MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
 EMAIL = "dayao"
-VERSION_URL = "https://www.127.0.0.1.com/version.txt"
+VERSION_URL = "https://www.127.0.0.1/version.txt"
 
-# Target server configuration (Leave None to disable auto-connect)
-SERVER_ADDR = "127.0.0.1"  # Example server address
-SERVER_PORT = "25565"           # Default Minecraft port
-
-# Target language configuration (Leave None to use default/previous language)
-# e.g., "zh_cn" for Simplified Chinese, "en_us" for English
-GAME_LANG = "zh_cn"             
+# Target server configuration
+SERVER_ADDR = "127.0.0.1"
+SERVER_PORT = "25565"
+GAME_LANG = "zh_cn"
 
 def get_version(url):
     """Fetch the version string from a URL with Firefox fingerprinting."""
@@ -28,11 +25,9 @@ def get_version(url):
         return None
 
 def set_game_language(work_dir, lang):
-    """Ensure the target language is set in options.txt before launching."""
+    """Ensure the target language is set in options.txt."""
     options_path = os.path.join(work_dir, "options.txt")
     lang_line = f"lang:{lang}\n"
-    
-    # Create work_dir if it doesn't exist yet
     os.makedirs(work_dir, exist_ok=True)
     
     if not os.path.exists(options_path):
@@ -40,7 +35,6 @@ def set_game_language(work_dir, lang):
             f.write(lang_line)
         return
 
-    # Read and update existing options.txt
     with open(options_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
@@ -69,9 +63,13 @@ def launch_minecraft():
     else:
         loader, mc_version = "vanilla", version_data.strip()
 
-    work_dir = os.path.join(BASE_WORK_DIR, mc_version)
+    # Dynamic work directory naming: {version}_{loader}
+    if loader in ["vanilla", "原版"]:
+        work_dir = os.path.join(BASE_WORK_DIR, mc_version)
+    else:
+        work_dir = os.path.join(BASE_WORK_DIR, f"{mc_version}_{loader}")
 
-    # Automatically configure language before starting
+    # Automatically configure language
     if GAME_LANG:
         set_game_language(work_dir, GAME_LANG)
 
@@ -80,7 +78,6 @@ def launch_minecraft():
     else:
         target_version = f"{loader}:{mc_version}"
 
-    # Build startup command
     command = [
         UVX_PATH, "portablemc",
         "--main-dir", MAIN_DIR,
@@ -89,7 +86,6 @@ def launch_minecraft():
         "-u", EMAIL
     ]
 
-    # Append server arguments if specified
     if SERVER_ADDR:
         command.extend(["-s", SERVER_ADDR])
         if SERVER_PORT:
