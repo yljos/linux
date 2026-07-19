@@ -1,5 +1,6 @@
 payload:
   - DOMAIN,www.libreoffice.org
+  - DOMAIN,files.minecraftforge.net
   - DOMAIN,b4.timschumi.net
   - DOMAIN,open-vsx.org
   - DOMAIN,static.redircdn.com
