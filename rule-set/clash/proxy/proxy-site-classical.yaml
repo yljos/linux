@@ -11,6 +11,7 @@ payload:
   - DOMAIN,b10.nextacdn.net
   - DOMAIN,prod.b5.thatcdn.com
   - DOMAIN-SUFFIX,ipify.org
+  - DOMAIN-SUFFIX,adoptium.net
   - DOMAIN-SUFFIX,mojie.app
   - DOMAIN-SUFFIX,bajie.la
   - DOMAIN-SUFFIX,patreon.com
