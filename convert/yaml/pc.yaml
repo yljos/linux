@@ -82,8 +82,8 @@ proxy-groups:
   - type: select
     name: M
     proxies:
-      - SG-fallback
       - JP-fallback
+      - SG-fallback
       - US-fallback
       - HK-fallback
   - type: select
