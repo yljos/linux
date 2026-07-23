@@ -1,6 +1,5 @@
 payload:
   - www.libreoffice.org
-  - files.minecraftforge.net
   - b4.timschumi.net
   - open-vsx.org
   - static.redircdn.com
@@ -10,6 +9,7 @@ payload:
   - mitce.net
   - b10.nextacdn.net
   - prod.b5.thatcdn.com
+  - +.minecraftforge.net
   - +.ipify.org
   - +.adoptium.net
   - +.mojie.app

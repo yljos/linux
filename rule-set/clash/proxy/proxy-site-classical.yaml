@@ -1,6 +1,5 @@
 payload:
   - DOMAIN,www.libreoffice.org
-  - DOMAIN,files.minecraftforge.net
   - DOMAIN,b4.timschumi.net
   - DOMAIN,open-vsx.org
   - DOMAIN,static.redircdn.com
@@ -10,6 +9,7 @@ payload:
   - DOMAIN,mitce.net
   - DOMAIN,b10.nextacdn.net
   - DOMAIN,prod.b5.thatcdn.com
+  - DOMAIN-SUFFIX,minecraftforge.net
   - DOMAIN-SUFFIX,ipify.org
   - DOMAIN-SUFFIX,adoptium.net
   - DOMAIN-SUFFIX,mojie.app

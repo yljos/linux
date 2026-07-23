@@ -4,7 +4,6 @@
     {
       "domain": [
         "www.libreoffice.org",
-        "files.minecraftforge.net",
         "b4.timschumi.net",
         "open-vsx.org",
         "static.redircdn.com",
@@ -16,6 +15,7 @@
         "prod.b5.thatcdn.com"
       ],
       "domain_suffix": [
+        "minecraftforge.net",
         "ipify.org",
         "adoptium.net",
         "mojie.app",
