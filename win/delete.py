@@ -14,7 +14,7 @@ WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv", ".ts"}
 REMOTE_PATH = "pikpak:My Pack"
 
 # 20MB threshold in bytes
-MIN_MP4_SIZE_BYTES = 50 * 1024 * 1024
+MIN_MP4_SIZE_BYTES = 20 * 1024 * 1024
 
 
 def main():
