@@ -7,9 +7,16 @@ payload:
   - DOMAIN,mini4k.io
   - DOMAIN,openvsx.eclipsecontent.org
   - DOMAIN,mitce.net
+  - DOMAIN,mitce.io
   - DOMAIN,b10.nextacdn.net
   - DOMAIN,prod.b5.thatcdn.com
+  - DOMAIN,w.anybound.vip
   - DOMAIN-SUFFIX,minecraftforge.net
+  - DOMAIN-SUFFIX,globalcdmnetworke.vip
+  - DOMAIN-SUFFIX,cloudsynctb.vip
+  - DOMAIN-SUFFIX,globenete.vip
+  - DOMAIN-SUFFIX,latensiorb.vip
+  - DOMAIN-SUFFIX,hyperdatastreanc.vip
   - DOMAIN-SUFFIX,ipify.org
   - DOMAIN-SUFFIX,adoptium.net
   - DOMAIN-SUFFIX,mojie.app
@@ -52,4 +59,3 @@ payload:
   - DOMAIN-SUFFIX,fabricmc.net
   - DOMAIN-SUFFIX,gradle.org
   - DOMAIN-SUFFIX,lscr.io
-  - DOMAIN-SUFFIX,mitce.net

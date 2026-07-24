@@ -11,11 +11,18 @@
         "mini4k.io",
         "openvsx.eclipsecontent.org",
         "mitce.net",
+        "mitce.io",
         "b10.nextacdn.net",
-        "prod.b5.thatcdn.com"
+        "prod.b5.thatcdn.com",
+        "w.anybound.vip"
       ],
       "domain_suffix": [
         "minecraftforge.net",
+        "globalcdmnetworke.vip",
+        "cloudsynctb.vip",
+        "globenete.vip",
+        "latensiorb.vip",
+        "hyperdatastreanc.vip",
         "ipify.org",
         "adoptium.net",
         "mojie.app",
@@ -57,8 +64,7 @@
         "radio-browser.info",
         "fabricmc.net",
         "gradle.org",
-        "lscr.io",
-        "mitce.net"
+        "lscr.io"
       ]
     }
   ]
