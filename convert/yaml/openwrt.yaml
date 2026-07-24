@@ -20,7 +20,7 @@ ntp:
   port: 123
   interval: 30
 sniffer:
-  enable: true
+  enable: false
   force-dns-mapping: true
   parse-pure-ip: true
   override-destination: true
