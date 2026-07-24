@@ -32,12 +32,10 @@ from utils import (
     inject_custom_clash_node,
     inject_custom_singbox_node,
 )
-from core_clash import fetch_yaml_text_clash, process_yaml_content_clash
-from core_singbox import fetch_and_process_singbox
 
 # ================= Module Switches =================
 ENABLE_CLASH = True
-ENABLE_SINGBOX = True
+ENABLE_SINGBOX = False
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
@@ -67,6 +65,9 @@ def process_source(source):
 
     # --- 1. Sing-box Dispatch Logic ---
     if ENABLE_SINGBOX:
+        # Import dynamically when ENABLE_SINGBOX is True
+        from core_singbox import fetch_and_process_singbox
+
         singbox_ua_map = {
             "SFA": "mtun",
             "sing-box_openwrt": "openwrt",
@@ -115,6 +116,9 @@ def process_source(source):
 
     # --- 2. Clash Dispatch Logic ---
     if ENABLE_CLASH:
+        # Import dynamically when ENABLE_CLASH is True
+        from core_clash import fetch_yaml_text_clash, process_yaml_content_clash
+
         clash_config_val = None
         if "ClashMetaForAndroid" in ua:
             clash_config_val = "mtun"
