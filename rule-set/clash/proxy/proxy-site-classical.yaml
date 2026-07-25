@@ -47,8 +47,6 @@ payload:
   - DOMAIN-SUFFIX,met.no
   - DOMAIN-SUFFIX,who.is
   - DOMAIN-SUFFIX,prismlauncher.org
-  - DOMAIN-SUFFIX,202309.xyz
-  - DOMAIN-SUFFIX,082500.xyz
   - DOMAIN-SUFFIX,radio-browser.info
   - DOMAIN-SUFFIX,fabricmc.net
   - DOMAIN-SUFFIX,gradle.org
