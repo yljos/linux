@@ -1,19 +1,85 @@
+import hashlib
+import hmac
+import io
 import json
 import logging
 import os
 import re
 import time
 from pathlib import Path
+from urllib.parse import unquote
+from typing import Any, Dict, List, Tuple
+
 import requests
 import yaml
+from flask import Flask, send_file, request, abort
 
+# ================= Logging =================
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%H:%M:%S"
+)
 logger = logging.getLogger(__name__)
 
-# ================= [Clash] 专用配置 =================
-CLASH_TEMPLATE_PC = Path("yaml/pc.yaml")
-CLASH_TEMPLATE_MTUN = Path("yaml/mtun.yaml")
-CLASH_TEMPLATE_OPENWRT = Path("yaml/openwrt.yaml")
-CLASH_TEMPLATE_M = Path("yaml/m.yaml")
+# ================= Auth & General Config =================
+ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
+BASE_DIR = Path(__file__).resolve().parent
+CACHE_DIR = BASE_DIR / "cache"
+CACHE_DIR.mkdir(exist_ok=True)
+CACHE_EXPIRE_SECONDS = 86400
+
+SOURCE_MAP = {
+    "mitce": BASE_DIR / "mitce",
+    "bajie": BASE_DIR / "bajie",
+}
+
+# ================= Custom Node Config =================
+CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
+TARGET_GROUPS = ["Google"]
+INJECT_TEMPLATES = ["m", "openwrt"]
+
+# ================= Keywords & Rename Maps =================
+RENAME_MAP = {
+    "香港": "HK",
+    "美国": "US",
+    "新加坡": "SG",
+    "日本": "JP",
+    "家宽": "ISP",
+}
+
+SHARED_KEYWORDS = [
+    "US",
+    "HK",
+    "SG",
+    "JP",
+    "Hong Kong",
+    "Singapore",
+    "Japan",
+    "United States",
+    "美国",
+    "香港",
+    "新加坡",
+    "日本",
+]
+
+SHARED_EXCLUDE_KEYWORDS = [
+    "官网",
+    "流量",
+    "倍率",
+    "剩余",
+    "Australia",
+    "到期",
+    "重置",
+    "HK2-HY2",
+    "HK3-HY2",
+    "HK4-HY2",
+    "HK5-HY2",
+]
+
+# ================= Clash Config =================
+CLASH_TEMPLATE_PC = BASE_DIR / "yaml/pc.yaml"
+CLASH_TEMPLATE_MTUN = BASE_DIR / "yaml/mtun.yaml"
+CLASH_TEMPLATE_OPENWRT = BASE_DIR / "yaml/openwrt.yaml"
+CLASH_TEMPLATE_M = BASE_DIR / "yaml/m.yaml"
 
 CLASH_USER_AGENT = "clash-verge"
 CLASH_INCLUDED_HEADERS = ["Subscription-Userinfo"]
@@ -24,13 +90,54 @@ CLASH_HY2_DOWN_M = "60 Mbps"
 CLASH_FINGERPRINT = "firefox"
 
 
-def is_valid_clash_yaml(text: str) -> bool:
-    if not text:
-        return False
-    return "proxies:" in text
+# ================= Utils =================
+def read_url_from_file(path: Path) -> str:
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            url = line.strip()
+            if url:
+                return url
+    raise ValueError(f"URL [None]: {path}")
 
 
-def save_headers_to_disk(source_name, headers, cache_dir):
+def clean_node_name(name: str) -> str:
+    if not name:
+        return name
+    for k, v in RENAME_MAP.items():
+        name = name.replace(k, v)
+    name = re.sub(r"[^\x00-\x7F]+", "", name)
+    name = re.sub(r"\s+", " ", name).strip()
+    return name
+
+
+def inject_custom_clash_node(
+    yaml_bytes: bytes, node_path: Path, target_groups: list
+) -> bytes:
+    if not node_path.exists():
+        return yaml_bytes
+    try:
+        with open(node_path, "r", encoding="utf-8") as f:
+            custom_data = yaml.safe_load(f)
+        if not custom_data:
+            return yaml_bytes
+
+        nodes = custom_data if isinstance(custom_data, list) else [custom_data]
+        config = yaml.safe_load(yaml_bytes)
+
+        for node in nodes:
+            if not isinstance(node, dict) or "name" not in node:
+                continue
+            config.setdefault("proxies", []).append(node)
+
+        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode(
+            "utf-8"
+        )
+    except Exception as e:
+        logger.error(f"[Clash] Custom node injection failed: {e}")
+        return yaml_bytes
+
+
+def save_headers_to_disk(source_name: str, headers: dict, cache_dir: Path) -> dict:
     try:
         filtered = {
             k: v
@@ -44,11 +151,11 @@ def save_headers_to_disk(source_name, headers, cache_dir):
             json.dump(filtered, f, ensure_ascii=False, indent=2)
         return filtered
     except Exception as e:
-        logger.error(f"save Headers Error: {e}")
+        logger.error(f"Save headers error: {e}")
         return {}
 
 
-def load_headers_from_disk(source_name, cache_dir):
+def load_headers_from_disk(source_name: str, cache_dir: Path) -> dict:
     file_path = cache_dir / f"{source_name}.headers.json"
     if not file_path.exists():
         return {}
@@ -56,9 +163,52 @@ def load_headers_from_disk(source_name, cache_dir):
         return json.load(f)
 
 
-def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expire):
-    yaml_cache_file = cache_dir / f"{source_name}.yaml"
+# ================= Parsers =================
+def is_valid_clash_yaml(text: str) -> bool:
+    return bool(text and "proxies:" in text)
 
+
+def filter_node_names_clash(
+    proxies: List[Any], shared_kw: List[str], shared_ex_kw: List[str]
+) -> Tuple[List[str], List[str]]:
+    all_names = [
+        str(p.get("name"))
+        for p in proxies
+        if isinstance(p, dict) and isinstance(p.get("name"), str)
+    ]
+    valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
+    valid_ex_kw = [str(ex).lower() for ex in shared_ex_kw if isinstance(ex, str)]
+
+    filtered = [
+        n
+        for n in all_names
+        if any(kw in n.lower() for kw in valid_kw)
+        and not any(ex in n.lower() for ex in valid_ex_kw)
+    ]
+    return filtered, all_names
+
+
+def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: str):
+    if not isinstance(proxy, dict):
+        return
+    p_type = proxy.get("type")
+    up_pref, down_pref = str(up_pref or "100"), str(down_pref or "100")
+
+    if p_type == "hysteria2":
+        up_v = up_pref if "bps" in up_pref.lower() else f"{up_pref} Mbps"
+        down_v = down_pref if "bps" in down_pref.lower() else f"{down_pref} Mbps"
+        proxy.update({"up": up_v, "down": down_v, "skip-cert-verify": False})
+    elif p_type == "vless":
+        proxy.update({"skip-cert-verify": False, "packet-encoding": "xudp"})
+        if "client-fingerprint" in proxy:
+            proxy["client-fingerprint"] = CLASH_FINGERPRINT
+
+
+# ================= Core Clash Logic =================
+def fetch_yaml_text_clash(
+    url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int
+):
+    yaml_cache_file = cache_dir / f"{source_name}.yaml"
     if not force_refresh and yaml_cache_file.exists():
         try:
             mtime = os.path.getmtime(yaml_cache_file)
@@ -67,7 +217,9 @@ def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expi
                 with open(yaml_cache_file, "r", encoding="utf-8") as f:
                     return f.read(), load_headers_from_disk(source_name, cache_dir)
         except Exception as e:
-            logger.warning(f"读取缓存属性失败，将尝试网络请求: {e}")
+            logger.warning(
+                f"Failed to read cache attributes, attempting network request: {e}"
+            )
 
     if force_refresh:
         logger.info(f"[{source_name}] [Clash] [Received u]")
@@ -97,49 +249,13 @@ def fetch_yaml_text_clash(url, source_name, force_refresh, cache_dir, cache_expi
     raise RuntimeError(f"[{source_name}] [Error]")
 
 
-def filter_node_names_clash(proxies, shared_kw, shared_ex_kw):
-    all_names = [
-        str(p.get("name"))  # 显式声明为 str，消除编辑器的类型警告
-        for p in proxies
-        if isinstance(p, dict) and isinstance(p.get("name"), str)
-    ]
-
-    valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
-    valid_ex_kw = [str(ex).lower() for ex in shared_ex_kw if isinstance(ex, str)]
-
-    filtered = [
-        n
-        for n in all_names
-        if any(kw in n.lower() for kw in valid_kw)
-        and not any(ex in n.lower() for ex in valid_ex_kw)
-    ]
-
-    return filtered, all_names
-
-
-def process_proxy_config_clash(proxy, up_pref, down_pref):
-    if not isinstance(proxy, dict):
-        return
-    p_type = proxy.get("type")
-    up_pref, down_pref = str(up_pref or "100"), str(down_pref or "100")
-
-    if p_type == "hysteria2":
-        up_v = up_pref if "bps" in up_pref.lower() else f"{up_pref} Mbps"
-        down_v = down_pref if "bps" in down_pref.lower() else f"{down_pref} Mbps"
-        proxy.update({"up": up_v, "down": down_v, "skip-cert-verify": False})
-    elif p_type == "vless":
-        proxy.update({"skip-cert-verify": False, "packet-encoding": "xudp"})
-        if "client-fingerprint" in proxy:
-            proxy["client-fingerprint"] = CLASH_FINGERPRINT
-
-
 def process_yaml_content_clash(
     yaml_text: str,
     template_path: Path,
     up_pref: str,
     down_pref: str,
-    shared_kw,
-    shared_ex_kw,
+    shared_kw: list,
+    shared_ex_kw: list,
     clean_node_fn,
 ):
     try:
@@ -183,19 +299,14 @@ def process_yaml_content_clash(
                     existing_proxies = group.get("proxies", [])
                     pattern = group.pop("filter")
                     group.pop("include-all-proxies", None)
-
                     try:
                         matcher = re.compile(pattern, re.IGNORECASE)
                         matched_names = [n for n in all_node_names if matcher.search(n)]
-
-                        combined = existing_proxies + [
+                        group["proxies"] = existing_proxies + [
                             n for n in matched_names if n not in existing_proxies
                         ]
-                        group["proxies"] = combined
-
                     except Exception as e:
-                        logger.error(f"分组 {group.get('name')} 正则错误: {e}")
-
+                        logger.error(f"Group {group.get('name')} regex error: {e}")
                     if group.get("proxies"):
                         temp_groups.append(group)
                 else:
@@ -225,5 +336,98 @@ def process_yaml_content_clash(
         )
         return output.encode("utf-8")
     except Exception as e:
-        logger.error(f"解析YAML内容失败: {e}")
+        logger.error(f"Failed to parse YAML content: {e}")
         raise
+
+
+# ================= Flask App & Routes =================
+app = Flask(__name__)
+
+
+@app.before_request
+def restrict_paths():
+    if request.path not in {"/mitce", "/bajie"}:
+        abort(404)
+    key = request.args.get("key")
+    if not key:
+        abort(404)
+    digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    if not hmac.compare_digest(digest, ACCESS_KEY_SHA256):
+        abort(404)
+
+
+@app.route("/<source>")
+def process_source(source):
+    path = SOURCE_MAP.get(source)
+    if not path:
+        abort(404)
+
+    ua = request.headers.get("User-Agent", "")
+    is_force_refresh = "u" in request.args
+
+    clash_config_val = None
+    if "ClashMetaForAndroid" in ua:
+        clash_config_val = "mtun"
+    elif "clash_pc" in ua:
+        clash_config_val = "pc"
+    elif "clash_openwrt" in ua:
+        clash_config_val = "openwrt"
+    elif "clash_m" in ua:
+        clash_config_val = "m"
+
+    if clash_config_val:
+        config_map = {
+            "m": (CLASH_TEMPLATE_M, CLASH_HY2_UP_M, CLASH_HY2_DOWN_M),
+            "mtun": (CLASH_TEMPLATE_MTUN, CLASH_HY2_UP_M, CLASH_HY2_DOWN_M),
+            "pc": (CLASH_TEMPLATE_PC, CLASH_HY2_UP, CLASH_HY2_DOWN),
+            "openwrt": (CLASH_TEMPLATE_OPENWRT, CLASH_HY2_UP, CLASH_HY2_DOWN),
+        }
+        template_path, up, down = config_map[clash_config_val]
+        logger.info(
+            f"[Clash] | [Template: {clash_config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
+        )
+
+        try:
+            url = read_url_from_file(path)
+            yaml_text, headers_data = fetch_yaml_text_clash(
+                unquote(url),
+                source,
+                is_force_refresh,
+                CACHE_DIR,
+                CACHE_EXPIRE_SECONDS,
+            )
+            output_bytes = process_yaml_content_clash(
+                yaml_text,
+                template_path,
+                up,
+                down,
+                SHARED_KEYWORDS,
+                SHARED_EXCLUDE_KEYWORDS,
+                clean_node_name,
+            )
+
+            if clash_config_val in INJECT_TEMPLATES:
+                output_bytes = inject_custom_clash_node(
+                    output_bytes, CUSTOM_CLASH_NODE, TARGET_GROUPS
+                )
+
+            response = send_file(
+                io.BytesIO(output_bytes),
+                mimetype="text/yaml",
+                as_attachment=True,
+                download_name="config.yaml",
+            )
+            if headers_data:
+                for h, v in headers_data.items():
+                    if h.lower() in {ih.lower() for ih in CLASH_INCLUDED_HEADERS}:
+                        response.headers[h] = v
+            return response
+        except Exception as e:
+            logger.error(f"Clash [Error]: {e}")
+            return str(e), 500
+
+    abort(404)
+
+
+if __name__ == "__main__":
+    app.run(port=5000, host="0.0.0.0")
