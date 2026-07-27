@@ -1,0 +1,4 @@
+VERSION_URL=https://www..com/version.txt
+
+SERVER_ADDR=mc..com
+SERVER_PORT=25565
