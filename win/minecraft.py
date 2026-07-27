@@ -1,23 +1,74 @@
 import subprocess
 import os
+import sys
 from curl_cffi import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configuration
-UVX_PATH = r"C:\Users\dayao\AppData\Local\Programs\Python\Python312\Scripts\uvx.exe"
 MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
 EMAIL = "dayao"
-VERSION_URL = "https://www.127.0.0.1/version.txt"
+UPDATE_URL = "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/win/minecraft.py"
 
-# Target server configuration
-SERVER_ADDR = "127.0.0.1"
-SERVER_PORT = "25565"
+# Strict environment variables loading
+VERSION_URL = os.environ["VERSION_URL"]
+SERVER_ADDR = os.environ["SERVER_ADDR"]
+SERVER_PORT = os.environ["SERVER_PORT"]
 GAME_LANG = "zh_cn"
+
+# Proxy configuration
+UPDATE_PROXIES = {
+    "http": "socks5://127.0.0.1:12138",
+    "https": "socks5://127.0.0.1:12138"
+}
+
+def update_self():
+    """Fetch the latest script from the server and restart if updated."""
+    try:
+        # Attempt direct connection first with 5s timeout
+        response = requests.get(
+            UPDATE_URL, 
+            timeout=5, 
+            impersonate="firefox"
+        )
+    except Exception as e:
+        print(f"Direct update failed ({e}), attempting with proxy...")
+        try:
+            # Fallback to SOCKS5 proxy
+            response = requests.get(
+                UPDATE_URL, 
+                timeout=5, 
+                impersonate="firefox", 
+                proxies=UPDATE_PROXIES
+            )
+        except Exception as proxy_e:
+            print(f"Proxy update failed: {proxy_e}")
+            return
+
+    try:
+        response.raise_for_status()
+        new_code = response.text
+
+        with open(__file__, "r", encoding="utf-8") as f:
+            current_code = f.read()
+
+        # Update and restart if the code has changed
+        if new_code != current_code and new_code.strip():
+            with open(__file__, "w", encoding="utf-8") as f:
+                f.write(new_code)
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+    except Exception as e:
+        print(f"Failed to process update: {e}")
 
 def get_version(url):
     """Fetch the version string from a URL with Firefox fingerprinting."""
     try:
-        response = requests.get(url, timeout=5, impersonate="firefox")
+        # Pass empty proxies to override and ignore malformed system/env proxies
+        proxies = {"http": "", "https": ""}
+        response = requests.get(url, timeout=5, impersonate="firefox", proxies=proxies)
         response.raise_for_status()
         return response.text.strip()
     except Exception as e:
@@ -79,7 +130,7 @@ def launch_minecraft():
         target_version = f"{loader}:{mc_version}"
 
     command = [
-        UVX_PATH, "portablemc",
+        "uvx", "portablemc",
         "--main-dir", MAIN_DIR,
         "--work-dir", work_dir,
         "start",
@@ -98,7 +149,8 @@ def launch_minecraft():
     except subprocess.CalledProcessError as e:
         print(f"Error occurred: {e}")
     except FileNotFoundError:
-        print(f"Executable not found at: {UVX_PATH}")
+        print("Executable not found: uvx")
 
 if __name__ == "__main__":
+    update_self()
     launch_minecraft()
