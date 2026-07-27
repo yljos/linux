@@ -105,7 +105,6 @@ proxy-groups:
       - M
   - type: select
     name: Google
-    include-all-proxies: true
     proxies:
       - US
       - JP
