@@ -78,13 +78,13 @@ dns:
     rule-set:speedtest-site: https://cloudflare-dns.com/dns-query#M
 proxies: []
 proxy-groups:
-  - type: select
+  - type: fallback
     name: M
     proxies:
-      - SG-fallback
-      - JP-fallback
-      - US-fallback
-      - HK-fallback
+      - SG
+      - JP
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30      
   - type: select
     name: Default
     proxies:
@@ -95,70 +95,69 @@ proxy-groups:
     name: Google
     proxies:
       - GCP-outbound    
-      - US-fallback
-      - JP-fallback
-      - SG-fallback
-      - HK-fallback
+      - US
+      - JP
+      - SG
   - type: select
     name: Relay
     proxies:
-      - JP-fallback
-      - SG-fallback
-      - US-fallback
-      - HK-fallback
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: OpenAi
     proxies:
-      - JP-fallback
-      - SG-fallback
-      - US-fallback
-      - HK-fallback
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: Telegram
     proxies:
-      - JP-fallback
-      - SG-fallback
-      - US-fallback
-      - HK-fallback
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: Steam
     proxies:
       - DIRECT
-      - JP-fallback
-      - SG-fallback
-      - US-fallback
-      - HK-fallback
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: PikPak
     proxies:
-      - SG-fallback
-      - JP-fallback
-      - US-fallback
-      - HK-fallback
+      - SG
+      - JP
+      - US
+      - HK
   - type: select
     name: GitHub
     proxies:
-      - JP-fallback
-      - SG-fallback
-      - US-fallback
-      - HK-fallback
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: Microsoft
     proxies:
-      - JP-fallback
-      - SG-fallback
-      - US-fallback
-      - HK-fallback
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     hidden: true
     name: TikTok
     proxies:
-      - JP-fallback
+      - JP
   - type: select
     hidden: true
     name: Twitter
     proxies:
-      - US-fallback
+      - US
   - type: select
     hidden: true
     name: AD
@@ -173,8 +172,8 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: HK-TCP-url-test
-    filter: "(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"
+    name: HK
+    filter: "(?i).*HK.*"
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -183,8 +182,8 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: JP-TCP-url-test
-    filter: "(?i)^(?=.*(JP))(?!.*(UDP|HY2)).*$"
+    name: JP
+    filter: "(?i).*JP.*"
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -193,8 +192,8 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: SG-TCP-url-test
-    filter: "(?i)^(?=.*(SG))(?!.*(UDP|HY2)).*$"
+    name: SG
+    filter: "(?i).*SG.*"
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -203,88 +202,8 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: US-TCP-url-test
-    filter: "(?i)^(?=.*(US))(?!.*(UDP|HY2)).*$"
-  - type: url-test
-    url: https://www.gstatic.com/generate_204
-    interval: 30
-    tolerance: 300
-    timeout: 3000
-    max-failed-times: 3
-    include-all-proxies: true
-    hidden: true
-    name: HK-UDP-url-test
-    filter: "(?i)^(?=.*(HK))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
-  - type: url-test
-    url: https://www.gstatic.com/generate_204
-    interval: 30
-    tolerance: 300
-    timeout: 3000
-    max-failed-times: 3
-    include-all-proxies: true
-    hidden: true
-    name: JP-UDP-url-test
-    filter: "(?i)^(?=.*(JP))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
-  - type: url-test
-    url: https://www.gstatic.com/generate_204
-    interval: 30
-    tolerance: 300
-    timeout: 3000
-    max-failed-times: 3
-    include-all-proxies: true
-    hidden: true
-    name: SG-UDP-url-test
-    filter: "(?i)^(?=.*(SG))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
-  - type: url-test
-    url: https://www.gstatic.com/generate_204
-    interval: 30
-    tolerance: 300
-    timeout: 3000
-    max-failed-times: 3
-    include-all-proxies: true
-    hidden: true
-    name: US-UDP-url-test
-    filter: "(?i)^(?=.*(US))(?=.*(-UDP|-HY2))(?!.*(小众)).*$"
-  - type: fallback
-    url: "https://www.gstatic.com/generate_204"
-    interval: 30
-    timeout: 3000
-    max-failed-times: 3
-    name: SG-fallback
-    hidden: true
-    proxies:
-      - SG-TCP-url-test
-      - SG-UDP-url-test
-  - type: fallback
-    url: "https://www.gstatic.com/generate_204"
-    interval: 30
-    timeout: 3000
-    max-failed-times: 3
-    name: JP-fallback
-    hidden: true
-    proxies:
-      - JP-TCP-url-test
-      - JP-UDP-url-test
-  - type: fallback
-    url: "https://www.gstatic.com/generate_204"
-    interval: 30
-    timeout: 3000
-    max-failed-times: 3
-    name: US-fallback
-    hidden: true
-    proxies:
-      - US-TCP-url-test
-      - US-UDP-url-test
-  - type: fallback
-    url: "https://www.gstatic.com/generate_204"
-    interval: 30
-    timeout: 3000
-    max-failed-times: 3
-    name: HK-fallback
-    hidden: true
-    proxies:
-      - HK-TCP-url-test
-      - HK-UDP-url-test
+    name: US
+    filter: "(?i).*US.*"     
 rule-providers:
   adguard-site:
     proxy: M

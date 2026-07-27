@@ -90,13 +90,13 @@ dns:
     rule-set:speedtest-site: https://cloudflare-dns.com/dns-query#M
 proxies: []
 proxy-groups:
-  - type: select
+  - type: fallback
     name: M
     proxies:
-      - SG-url-test
-      - JP-url-test
-      - US-url-test
-      - HK-url-test
+      - SG
+      - JP
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
   - type: select
     name: Default
     proxies:
@@ -107,53 +107,53 @@ proxy-groups:
     name: Google
     include-all-proxies: true
     proxies:
-      - US-url-test
-      - JP-url-test
-      - SG-url-test
-      - HK-url-test
+      - US
+      - JP
+      - SG
+      - HK
   - type: select
     name: OpenAi
     proxies:
-      - JP-url-test
-      - SG-url-test
-      - US-url-test
-      - HK-url-test
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: Telegram
     proxies:
-      - JP-url-test
-      - SG-url-test
-      - US-url-test
-      - HK-url-test
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: PikPak
     proxies:
-      - SG-url-test
-      - JP-url-test
-      - US-url-test
-      - HK-url-test
+      - SG
+      - JP
+      - US
+      - HK
   - type: select
     name: GitHub
     proxies:
-      - JP-url-test
-      - SG-url-test
-      - US-url-test
-      - HK-url-test
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: Microsoft
     proxies:
-      - JP-url-test
-      - SG-url-test
-      - US-url-test
-      - HK-url-test
+      - JP
+      - SG
+      - US
+      - HK
   - type: select
     name: TikTok
     proxies:
-      - JP-url-test
+      - JP
   - type: select
     name: Twitter
     proxies:
-      - US-url-test
+      - US
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -162,7 +162,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: HK-url-test
+    name: HK
     filter: "(?i).*HK.*"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -172,7 +172,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: JP-url-test
+    name: JP
     filter: "(?i).*JP.*"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -182,7 +182,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: SG-url-test
+    name: SG
     filter: "(?i).*SG.*"
   - type: url-test
     url: https://www.gstatic.com/generate_204
@@ -192,7 +192,7 @@ proxy-groups:
     max-failed-times: 3
     include-all-proxies: true
     hidden: true
-    name: US-url-test
+    name: US
     filter: "(?i).*US.*"
 rule-providers:
   adguard-site:
