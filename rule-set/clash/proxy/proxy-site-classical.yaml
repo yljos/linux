@@ -1,13 +1,19 @@
 payload:
   - DOMAIN,www.libreoffice.org
   - DOMAIN,s100-e1.globalcdmnetworka.vip
+  - DOMAIN,s100-e1.globalcdmnetworkb.vip
   - DOMAIN,s100-e1.globalcdmnetworkc.vip
   - DOMAIN,s100-e1.globalcdmnetworkd.vip
+  - DOMAIN,s100-e1.globalcdmnetworke.vip
   - DOMAIN,s100-e1.hyperdatastreana.vip
   - DOMAIN,w.anybound.vip
   - DOMAIN,sss111-e1.pipecdn.vip
   - DOMAIN,s100-e1.webproxya.vip
+  - DOMAIN,s100-e1.cloudsyncta.vip
+  - DOMAIN,s100-e1.cloudsynctb.vip
+  - DOMAIN,s100-e1.cloudsynctc.vip
   - DOMAIN,s100-e1.cloudsynctd.vip
+  - DOMAIN,s100-e1.cloudsyncte.vip
   - DOMAIN,s100-e1.dataphasora.vip
   - DOMAIN,s100-e1.dataphasorb.vip
   - DOMAIN,s100-e1.dataphasorc.vip
@@ -19,6 +25,16 @@ payload:
   - DOMAIN,s100-e1.netvortexd.vip
   - DOMAIN,s100-e1.netvortexe.vip
   - DOMAIN,s100-e1.streampluxb.vip
+  - DOMAIN,s100-e1.globeneta.vip
+  - DOMAIN,s100-e1.globenetb.vip
+  - DOMAIN,s100-e1.globenetc.vip
+  - DOMAIN,s100-e1.globenetd.vip
+  - DOMAIN,s100-e1.globenete.vip
+  - DOMAIN,s100-e1.latensiora.vip
+  - DOMAIN,s100-e1.latensiorb.vip
+  - DOMAIN,s100-e1.latensiorc.vip
+  - DOMAIN,s100-e1.latensiord.vip
+  - DOMAIN,s100-e1.latensiore.vip
   - DOMAIN,b4.timschumi.net
   - DOMAIN,open-vsx.org
   - DOMAIN,static.redircdn.com

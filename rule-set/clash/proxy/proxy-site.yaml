@@ -1,13 +1,19 @@
 payload:
   - www.libreoffice.org
   - s100-e1.globalcdmnetworka.vip
+  - s100-e1.globalcdmnetworkb.vip
   - s100-e1.globalcdmnetworkc.vip
   - s100-e1.globalcdmnetworkd.vip
+  - s100-e1.globalcdmnetworke.vip
   - s100-e1.hyperdatastreana.vip
   - w.anybound.vip
   - sss111-e1.pipecdn.vip
   - s100-e1.webproxya.vip
+  - s100-e1.cloudsyncta.vip
+  - s100-e1.cloudsynctb.vip
+  - s100-e1.cloudsynctc.vip
   - s100-e1.cloudsynctd.vip
+  - s100-e1.cloudsyncte.vip
   - s100-e1.dataphasora.vip
   - s100-e1.dataphasorb.vip
   - s100-e1.dataphasorc.vip
@@ -19,6 +25,16 @@ payload:
   - s100-e1.netvortexd.vip
   - s100-e1.netvortexe.vip
   - s100-e1.streampluxb.vip
+  - s100-e1.globeneta.vip
+  - s100-e1.globenetb.vip
+  - s100-e1.globenetc.vip
+  - s100-e1.globenetd.vip
+  - s100-e1.globenete.vip
+  - s100-e1.latensiora.vip
+  - s100-e1.latensiorb.vip
+  - s100-e1.latensiorc.vip
+  - s100-e1.latensiord.vip
+  - s100-e1.latensiore.vip
   - b4.timschumi.net
   - open-vsx.org
   - static.redircdn.com
