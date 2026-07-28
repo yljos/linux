@@ -93,6 +93,7 @@
       {"rule_set": "microsoft-site", "outbound": "Microsoft"},
       {"rule_set": "gfw-site", "outbound": "M"},
       {"rule_set": "cn-site", "outbound": "D"},
+      {"action": "resolve", "server": "dns_proxy", "strategy": "ipv4_only"},
       {"rule_set": "direct-ip", "outbound": "D"},
       {"rule_set": "local-ip", "outbound": "D"},
       {"rule_set": "github-ip", "outbound": "GitHub"},
