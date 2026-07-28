@@ -1,6 +1,5 @@
 {
   "log": {"disabled": false, "level": "error", "timestamp": true},
-  "ntp": {"enabled": true, "server": "ntp.aliyun.com", "server_port": 123, "interval": "30m"},
   "dns": {
     "servers": [
       {"tag": "dns_resolver", "type": "udp", "server": "223.5.5.5", "server_port": 53, "detour": "D"},
@@ -22,7 +21,7 @@
     "final": "dns_proxy",
     "strategy": "ipv4_only"
   },
-  "inbounds": [{"type": "tproxy", "tag": "tproxy-in", "listen": "::", "listen_port": 7893}],
+  "inbounds": [{"type": "tproxy", "tag": "tproxy-in", "listen": "0.0.0.0", "listen_port": 7893}],
   "outbounds": [
     {"tag": "D", "type": "direct", "domain_resolver": "dns_direct"},
     {"tag": "R", "type": "block"},
@@ -38,10 +37,10 @@
     {"tag": "GitHub", "type": "selector", "outbounds": ["JP", "US", "SG", "HK"], "default": "JP"},
     {"tag": "Microsoft", "type": "selector", "outbounds": ["JP", "US", "SG", "HK", "D"], "default": "JP"},
     {"tag": "Twitter", "type": "selector", "outbounds": ["US"], "default": "US"},
-    {"tag": "HK", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*HK.*$"]}]},
-    {"tag": "SG", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*SG.*$"]}]},
-    {"tag": "JP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*JP.*$"]}]},
-    {"tag": "US", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "120s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*US.*$"]}]}
+    {"tag": "HK", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*HK.*$"]}]},
+    {"tag": "SG", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*SG.*$"]}]},
+    {"tag": "JP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*JP.*$"]}]},
+    {"tag": "US", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*US.*$"]}]}
   ],
   "route": {
     "rules": [
