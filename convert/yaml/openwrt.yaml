@@ -270,14 +270,14 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/cn/cn-site.mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cn.mrs
   cn-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/cn/cn-ip.mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cn.mrs
   docker-site:
     proxy: M
     interval: 86400
@@ -312,7 +312,7 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/gfw/gfw-site.mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/gfw.mrs
   github-site:
     proxy: M
     interval: 86400
@@ -431,14 +431,14 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/telegram/telegram-site.mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/telegram.mrs
   telegram-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/telegram/telegram-ip.mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/telegram.mrs
   tiktok-site:
     proxy: M
     interval: 86400
