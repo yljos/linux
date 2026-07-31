@@ -243,20 +243,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/ad/ad-ip.mrs
-  alibaba-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/alibaba/alibaba-site.mrs
-  alibaba-ip:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/alibaba/alibaba-ip.mrs
   apkpure-site:
     proxy: M
     interval: 86400
@@ -568,7 +554,6 @@ rules:
   - DOMAIN-KEYWORD,googleapis,Google
   - RULE-SET,direct-site,DIRECT
   - RULE-SET,pikpak-site,PikPak
-  - RULE-SET,alibaba-site,DIRECT
   - RULE-SET,jd-site,DIRECT
   - RULE-SET,tencent-site,DIRECT
   - RULE-SET,proxy-site,M
@@ -605,7 +590,6 @@ rules:
   - RULE-SET,github-ip,GitHub
   - RULE-SET,cloudflare-ip,M
   - RULE-SET,pikpak-ip,PikPak
-  - RULE-SET,alibaba-ip,DIRECT
   - RULE-SET,telegram-ip,Telegram
   - RULE-SET,twitter-ip,Twitter
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(RULE-SET,google-ip)),Youtube
