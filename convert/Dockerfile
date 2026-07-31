@@ -13,12 +13,6 @@ ENV UV_COMPILE_BYTECODE=1
 # Use copy mode instead of symlinks for container portability
 ENV UV_LINK_MODE=copy
 
-# Install build dependencies for PyYAML C extension
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    gcc \
-    libyaml-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy dependency files (Ensure uv.lock exists locally)
 COPY pyproject.toml uv.lock ./
 
@@ -32,11 +26,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM docker.io/python:3.12-slim
 
 WORKDIR /app
-
-# Install runtime dependency for PyYAML C extension
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    libyaml-0-2 \
-    && rm -rf /var/lib/apt/lists/*
 
 # Copy the pre-built virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
