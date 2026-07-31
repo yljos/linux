@@ -13,12 +13,6 @@ profile:
 external-controller: 10.0.0.1:9090
 external-ui: ui
 external-ui-url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/dist_openwrt.zip
-ntp:
-  enable: true
-  write-to-system: false
-  server: ntp.aliyun.com
-  port: 123
-  interval: 30
 sniffer:
   enable: false
   force-dns-mapping: true
@@ -37,6 +31,12 @@ sniffer:
   skip-domain:
     - Mijia Cloud
     - dlg.io.mi.com
+hosts:
+  "nas": 10.0.0.21
+  "ax6s": 10.0.0.2
+  "arch": 10.0.0.25
+  "vyos": 10.0.0.1
+  "win": 10.0.0.15     
 dns:
   enable: true
   prefer-h3: false
