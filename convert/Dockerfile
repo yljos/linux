@@ -14,7 +14,7 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
 # Install build dependencies for PyYAML C extension
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     gcc \
     libyaml-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -34,7 +34,7 @@ FROM docker.io/python:3.12-slim
 WORKDIR /app
 
 # Install runtime dependency for PyYAML C extension
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     libyaml-0-2 \
     && rm -rf /var/lib/apt/lists/*
 
