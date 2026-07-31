@@ -424,6 +424,16 @@ def process_source(source):
                         response.headers[h] = v
             return response
         except Exception as e:
+            # Handle network/fetch failures smoothly
+            if str(e) == f"[{source}] Error":
+                logger.warning(f"[{source}] Fetch failed, returning NO_NODES")
+                return send_file(
+                    io.BytesIO(b"NO_NODES"),
+                    mimetype="text/yaml",
+                    as_attachment=True,
+                    download_name="config.yaml",
+                )
+                
             logger.error(f"Error: {e}")
             return str(e), 500
 
