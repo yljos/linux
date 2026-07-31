@@ -79,7 +79,7 @@ SHARED_EXCLUDE_KEYWORDS = [
     "HK5-HY2",
 ]
 
-# ================= Clash Config =================
+# ================= Config =================
 CLASH_TEMPLATE_PC = BASE_DIR / "yaml/pc.yaml"
 CLASH_TEMPLATE_MTUN = BASE_DIR / "yaml/mtun.yaml"
 CLASH_TEMPLATE_OPENWRT = BASE_DIR / "yaml/openwrt.yaml"
@@ -137,7 +137,7 @@ def inject_custom_clash_node(
             "utf-8"
         )
     except Exception as e:
-        logger.error(f"[Clash] Custom node injection failed: {e}")
+        logger.error(f"Node injection failed: {e}")
         return yaml_bytes
 
 
@@ -208,7 +208,7 @@ def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: s
             proxy["client-fingerprint"] = CLASH_FINGERPRINT
 
 
-# ================= Core Clash Logic =================
+# ================= Core Logic =================
 def fetch_yaml_text_clash(
     url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int
 ):
@@ -217,16 +217,14 @@ def fetch_yaml_text_clash(
         try:
             mtime = os.path.getmtime(yaml_cache_file)
             if time.time() - mtime < cache_expire:
-                logger.info(f"[{source_name}] [Clash] [Loaded cache]")
+                logger.info(f"[{source_name}] Cache loaded")
                 with open(yaml_cache_file, "r", encoding="utf-8") as f:
                     return f.read(), load_headers_from_disk(source_name, cache_dir)
         except Exception as e:
-            logger.warning(
-                f"Failed to read cache attributes, attempting network request: {e}"
-            )
+            logger.warning(f"Cache attributes read failed: {e}")
 
     if force_refresh:
-        logger.info(f"[{source_name}] [Clash] [Received u]")
+        logger.info(f"[{source_name}] Force refresh requested")
 
     try:
         headers = {"User-Agent": CLASH_USER_AGENT}
@@ -238,19 +236,19 @@ def fetch_yaml_text_clash(
             save_headers_to_disk(source_name, response.headers, cache_dir)
             with open(yaml_cache_file, "w", encoding="utf-8") as f:
                 f.write(text_content)
-            logger.info(f"[{source_name}] [Clash Updated Successfully]")
+            logger.info(f"[{source_name}] Updated successfully")
             return text_content, response.headers
         else:
-            logger.warning(f"[{source_name}] [Clash] [Fetch Error] [Fallback To Cache]")
+            logger.warning(f"[{source_name}] Fetch error, fallback to cache")
     except Exception as e:
-        logger.error(f"[{source_name}] [Clash] [Updated Error]: {e}")
+        logger.error(f"[{source_name}] Update error: {e}")
 
     if yaml_cache_file.exists():
-        logger.info(f"[{source_name}] [Clash] [Loaded cache] [Fallback]")
+        logger.info(f"[{source_name}] Cache loaded (fallback)")
         with open(yaml_cache_file, "r", encoding="utf-8") as f:
             return f.read(), load_headers_from_disk(source_name, cache_dir)
 
-    raise RuntimeError(f"[{source_name}] [Error]")
+    raise RuntimeError(f"[{source_name}] Error")
 
 
 def process_yaml_content_clash(
@@ -283,7 +281,7 @@ def process_yaml_content_clash(
                 final_proxies.append(p)
 
         if not final_proxies and proxies_orig:
-            logger.warning("[Node None] [Fallback To All Nodes]")
+            logger.warning("Node empty, fallback to all")
             for p in proxies_orig:
                 if isinstance(p, dict):
                     p["name"] = clean_node_fn(p.get("name", ""))
@@ -388,9 +386,7 @@ def process_source(source):
             "openwrt": (CLASH_TEMPLATE_OPENWRT, CLASH_HY2_UP, CLASH_HY2_DOWN),
         }
         template_path, up, down = config_map[clash_config_val]
-        logger.info(
-            f"[Clash] | [Template: {clash_config_val}] | [Force: {is_force_refresh}] | [UA: {ua}]"
-        )
+        logger.info(f"[{source}] Tpl:{clash_config_val} Force:{is_force_refresh} UA:{ua}")
 
         try:
             url = read_url_from_file(path)
@@ -428,7 +424,7 @@ def process_source(source):
                         response.headers[h] = v
             return response
         except Exception as e:
-            logger.error(f"Clash [Error]: {e}")
+            logger.error(f"Error: {e}")
             return str(e), 500
 
     abort(404)
