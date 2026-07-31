@@ -12,6 +12,10 @@ from typing import Any, Dict, List, Tuple
 
 import requests
 import yaml
+try:
+    from yaml import CSafeLoader as Loader, CSafeDumper as Dumper
+except ImportError:
+    from yaml import SafeLoader as Loader, SafeDumper as Dumper
 from flask import Flask, send_file, request, abort
 
 # ================= Logging =================
@@ -117,19 +121,19 @@ def inject_custom_clash_node(
         return yaml_bytes
     try:
         with open(node_path, "r", encoding="utf-8") as f:
-            custom_data = yaml.safe_load(f)
+            custom_data = yaml.load(f, Loader=Loader)
         if not custom_data:
             return yaml_bytes
 
         nodes = custom_data if isinstance(custom_data, list) else [custom_data]
-        config = yaml.safe_load(yaml_bytes)
+        config = yaml.load(yaml_bytes, Loader=Loader)
 
         for node in nodes:
             if not isinstance(node, dict) or "name" not in node:
                 continue
             config.setdefault("proxies", []).append(node)
 
-        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode(
+        return yaml.dump(config, Dumper=Dumper, allow_unicode=True, sort_keys=False).encode(
             "utf-8"
         )
     except Exception as e:
@@ -259,12 +263,12 @@ def process_yaml_content_clash(
     clean_node_fn,
 ):
     try:
-        input_data = yaml.safe_load(yaml_text)
+        input_data = yaml.load(yaml_text, Loader=Loader)
         if not isinstance(input_data, dict):
             raise ValueError("[Invalid YAML Format]")
 
         with open(template_path, "r", encoding="utf-8") as f:
-            template_data = yaml.safe_load(f)
+            template_data = yaml.load(f, Loader=Loader)
 
         proxies_orig = input_data.get("proxies", [])
         filtered_names, _ = filter_node_names_clash(
@@ -329,6 +333,7 @@ def process_yaml_content_clash(
 
         output = yaml.dump(
             template_data,
+            Dumper=Dumper,
             allow_unicode=True,
             sort_keys=False,
             default_flow_style=False,

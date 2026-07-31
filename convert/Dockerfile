@@ -8,10 +8,16 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-# Optimization: precompile bytecode for better runtime performance [cite: 2026-02-11]
+# Optimization: precompile bytecode for better runtime performance
 ENV UV_COMPILE_BYTECODE=1
 # Use copy mode instead of symlinks for container portability
 ENV UV_LINK_MODE=copy
+
+# Install build dependencies for PyYAML C extension
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libyaml-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency files (Ensure uv.lock exists locally)
 COPY pyproject.toml uv.lock ./
@@ -27,7 +33,12 @@ FROM docker.io/python:3.12-slim
 
 WORKDIR /app
 
-# Copy the pre-built virtual environment from builder [cite: 1]
+# Install runtime dependency for PyYAML C extension
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libyaml-0-2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the pre-built virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
 # Copy application source code
@@ -39,4 +50,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 
 # Start the application
-CMD ["python", "app.py"]
+CMD ["python", "clash.py"]
