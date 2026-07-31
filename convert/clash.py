@@ -280,8 +280,9 @@ def process_yaml_content_clash(
                 process_proxy_config_clash(p, up_pref, down_pref)
                 final_proxies.append(p)
 
+        # Overwrite file with literal string if no nodes matched
         if not final_proxies:
-            raise ValueError("NO_NODES")
+            return b"NO_NODES"
 
         final_proxies.append({"name": "dns-out", "type": "dns"})
         template_data["proxies"] = final_proxies
@@ -334,8 +335,7 @@ def process_yaml_content_clash(
         )
         return output.encode("utf-8")
     except Exception as e:
-        if str(e) != "NO_NODES":
-            logger.error(f"Failed to parse YAML content: {e}")
+        logger.error(f"Failed to parse YAML content: {e}")
         raise
 
 
@@ -403,10 +403,14 @@ def process_source(source):
                 clean_node_name,
             )
 
-            if clash_config_val in INJECT_TEMPLATES:
+            # Prevent YAML exception when output_bytes is literal NO_NODES
+            if output_bytes != b"NO_NODES" and clash_config_val in INJECT_TEMPLATES:
                 output_bytes = inject_custom_clash_node(
                     output_bytes, CUSTOM_CLASH_NODE, TARGET_GROUPS
                 )
+
+            if output_bytes == b"NO_NODES":
+                logger.warning(f"[{source}] Node empty, generating NO_NODES file")
 
             response = send_file(
                 io.BytesIO(output_bytes),
@@ -420,9 +424,6 @@ def process_source(source):
                         response.headers[h] = v
             return response
         except Exception as e:
-            if str(e) == "NO_NODES":
-                logger.warning(f"[{source}] Node empty, returning 404")
-                abort(404)
             logger.error(f"Error: {e}")
             return str(e), 500
 
