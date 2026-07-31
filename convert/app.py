@@ -35,7 +35,7 @@ from utils import (
 
 # ================= Module Switches =================
 ENABLE_CLASH = True
-ENABLE_SINGBOX = False
+ENABLE_SINGBOX = True
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)

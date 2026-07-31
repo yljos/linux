@@ -243,13 +243,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/ad/ad-ip.mrs
-  apkpure-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/apkpure.mrs
   codeberg-site:
     proxy: M
     interval: 86400
@@ -327,13 +320,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/github.mrs
-  github-ip:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/github/github-ip.mrs
   google-site:
     proxy: M
     interval: 86400
@@ -383,13 +369,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/javdb.mrs
-  jd-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/jd.mrs
   local-ip:
     proxy: M
     interval: 86400
@@ -411,13 +390,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs
-  openwrt-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openwrt.mrs
   pikpak-site:
     proxy: M
     interval: 86400
@@ -439,13 +411,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/proxy/proxy-site.mrs
-  reddit-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/reddit.mrs
   speedtest-site:
     proxy: M
     interval: 86400
@@ -502,13 +467,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs
-  wikimedia-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/wikimedia.mrs
   wechat-ip:
     proxy: M
     interval: 86400
@@ -554,14 +512,12 @@ rules:
   - DOMAIN-KEYWORD,googleapis,Google
   - RULE-SET,direct-site,DIRECT
   - RULE-SET,pikpak-site,PikPak
-  - RULE-SET,jd-site,DIRECT
   - RULE-SET,tencent-site,DIRECT
   - RULE-SET,proxy-site,M
   - RULE-SET,github-site,GitHub
   - RULE-SET,codeberg-site,GitHub
   - RULE-SET,docker-site,M
   - RULE-SET,archlinux-site,M
-  - RULE-SET,openwrt-site,M
   - RULE-SET,mozilla-site,M
   - RULE-SET,microsoft-site,Microsoft
   - RULE-SET,openai-site,OpenAi
@@ -573,12 +529,9 @@ rules:
   - RULE-SET,tmdb-site,M
   - RULE-SET,telegram-site,Telegram
   - RULE-SET,twitter-site,Twitter
-  - RULE-SET,reddit-site,M
   - RULE-SET,adguard-site,M
   - RULE-SET,speedtest-site,M
-  - RULE-SET,wikimedia-site,M
   - RULE-SET,javdb-site,M
-  - RULE-SET,apkpure-site,M
   - RULE-SET,f-droid-site,M
   - RULE-SET,steam-site-classical,Steam
   - RULE-SET,gfw-site,M
