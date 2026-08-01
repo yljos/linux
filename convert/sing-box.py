@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import os
@@ -5,8 +6,8 @@ import re
 import time
 from pathlib import Path
 from typing import Any, Dict, Union
+from urllib.parse import urlparse, parse_qs, unquote
 import requests
-import yaml
 from flask import Response, jsonify
 
 logger = logging.getLogger(__name__)
@@ -18,88 +19,169 @@ SB_TEMPLATE_MAP = {
     "m": "json/m.json",
 }
 
-def process_shadowsocks_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
-    node = base_node.copy()
-    node.update({"type": "shadowsocks", "server_port": int(proxy["port"]), "method": proxy.get("cipher"), "password": proxy.get("password")})
-    if "plugin" in proxy and proxy["plugin"] == "obfs":
-        opts = proxy.get("plugin-opts", {})
-        node.update({"plugin": "obfs-local", "plugin_opts": f"obfs={opts.get('mode', 'http')};obfs-host={opts.get('host', '')}"})
-    return node
+def safe_b64decode(s: str) -> str:
+    """兼容 urlsafe 和标准 base64 的安全解码函数"""
+    s = s.strip()
+    s += "=" * ((4 - len(s) % 4) % 4)
+    try:
+        return base64.urlsafe_b64decode(s).decode("utf-8")
+    except Exception:
+        return base64.b64decode(s).decode("utf-8")
 
-def process_vless_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
-    node = base_node.copy()
-    node.update({"type": "vless", "server_port": int(proxy["port"]), "uuid": proxy.get("uuid"), "flow": proxy.get("flow", "")})
-    if "packet-encoding" in proxy: node["packet_encoding"] = proxy["packet-encoding"]
-    net = proxy.get("network", "tcp")
+# ================= URI Parsers =================
+def parse_ss(uri: str) -> dict:
+    uri, name = uri.split("#", 1) if "#" in uri else (uri, "SS Node")
+    name = unquote(name)
+    uri = uri[5:] # 剥离 ss://
+    
+    if "@" in uri:
+        user_part, host_part = uri.split("@", 1)
+        user_info = safe_b64decode(user_part)
+        method, pwd = user_info.split(":", 1)
+        host, port = host_part.split(":", 1)
+    else:
+        decoded = safe_b64decode(uri)
+        user_info, host_part = decoded.split("@", 1)
+        method, pwd = user_info.split(":", 1)
+        host, port = host_part.split(":", 1)
+        
+    return {
+        "type": "shadowsocks",
+        "tag": name,
+        "server": host,
+        "server_port": int(port),
+        "method": method,
+        "password": pwd
+    }
+
+def parse_vless(uri: str) -> dict:
+    parsed = urlparse(uri)
+    name = unquote(parsed.fragment) if parsed.fragment else "VLESS Node"
+    qs = parse_qs(parsed.query)
+    node = {
+        "type": "vless",
+        "tag": name,
+        "server": parsed.hostname,
+        "server_port": parsed.port or 443,
+        "uuid": parsed.username,
+    }
+    
+    if "flow" in qs and qs["flow"][0]: 
+        node["flow"] = qs["flow"][0]
+        
+    net = qs.get("type", ["tcp"])[0]
     if net == "ws":
-        ws = proxy.get("ws-opts", {})
-        node["transport"] = {"type": "ws", "path": ws.get("path", "/")}
-        if "headers" in ws and "Host" in ws["headers"]: node["transport"]["headers"] = {"Host": ws["headers"]["Host"]}
+        node["transport"] = {"type": "ws", "path": qs.get("path", ["/"])[0]}
+        if "host" in qs: node["transport"]["headers"] = {"Host": qs["host"][0]}
     elif net == "grpc":
-        node["transport"] = {"type": "grpc", "service_name": proxy.get("grpc-opts", {}).get("grpc-service-name", "")}
-    if proxy.get("tls") or proxy.get("reality-opts"):
-        tls = {"enabled": True, "insecure": proxy.get("skip-cert-verify", False), "server_name": proxy.get("servername", ""), "utls": {"enabled": True, "fingerprint": "firefox"}}
-        if "reality-opts" in proxy:
-            ro = proxy.get("reality-opts", {})
-            tls["reality"] = {"enabled": True, "public_key": ro.get("public-key"), "short_id": ro.get("short-id")}
-            if not tls["server_name"]: tls["server_name"] = proxy.get("sni", "")
+        node["transport"] = {"type": "grpc", "service_name": qs.get("serviceName", [""])[0]}
+        
+    security = qs.get("security", ["none"])[0]
+    if security in ["tls", "reality"]:
+        tls = {
+            "enabled": True,
+            "server_name": qs.get("sni", [""])[0],
+            "utls": {"enabled": True, "fingerprint": qs.get("fp", ["firefox"])[0]}
+        }
+        if security == "reality":
+            tls["reality"] = {
+                "enabled": True,
+                "public_key": qs.get("pbk", [""])[0],
+                "short_id": qs.get("sid", [""])[0]
+            }
         node["tls"] = tls
+        
     return node
 
-def process_hysteria2_sb(proxy: Dict[str, Any], base_node: Dict[str, Any]) -> Dict[str, Any]:
-    node = base_node.copy()
-    node.update({"type": "hysteria2", "password": proxy.get("password"), "up_mbps": 50, "down_mbps": 200})
-    if "ports" in proxy: node["server_ports"] = str(proxy["ports"]).replace("-", ":")
-    elif "port" in proxy:
-        pv = str(proxy["port"])
-        if "-" in pv: node["server_ports"] = pv.replace("-", ":")
-        else: node["server_port"] = int(proxy["port"])
-    if "obfs" in proxy: node["obfs"] = {"type": "salamander", "password": proxy.get("obfs-password", "")}
-    node["tls"] = {"enabled": True, "insecure": proxy.get("skip-cert-verify", False), "server_name": proxy.get("sni", "")}
+def parse_hy2(uri: str) -> dict:
+    parsed = urlparse(uri)
+    name = unquote(parsed.fragment) if parsed.fragment else "HY2 Node"
+    qs = parse_qs(parsed.query)
+    
+    node = {
+        "type": "hysteria2",
+        "tag": name,
+        "server": parsed.hostname,
+        "password": parsed.username,
+        "up_mbps": 50,
+        "down_mbps": 200,
+        "tls": {
+            "enabled": True,
+            "insecure": qs.get("insecure", ["0"])[0] == "1",
+            "server_name": qs.get("sni", [""])[0]
+        }
+    }
+    
+    # 绕开 urlparse 对包含 "-" 端口的报错处理
+    netloc = parsed.netloc
+    host_port = netloc.split("@")[-1]
+    if ":" in host_port:
+        host, port_str = host_port.split(":", 1)
+        if "-" in port_str: node["server_ports"] = port_str.replace("-", ":")
+        else: node["server_port"] = int(port_str)
+    else: 
+        node["server_port"] = 443
+
+    if "obfs" in qs:
+        node["obfs"] = {"type": qs["obfs"][0], "password": qs.get("obfs-password", [""])[0]}
+        
     return node
 
-def clash_to_singbox(proxy: Dict[str, Any]) -> Union[Dict[str, Any], None]:
-    ptype = proxy.get("type", "").lower()
-    base = {"tag": proxy.get("name"), "server": proxy.get("server")}
-    if ptype == "ss": return process_shadowsocks_sb(proxy, base)
-    if ptype == "vless": return process_vless_sb(proxy, base)
-    if ptype == "hysteria2": return process_hysteria2_sb(proxy, base)
+def uri_to_singbox(uri: str) -> Union[Dict[str, Any], None]:
+    try:
+        if uri.startswith("ss://"): return parse_ss(uri)
+        elif uri.startswith("vless://"): return parse_vless(uri)
+        elif uri.startswith("hysteria2://") or uri.startswith("hy2://"): return parse_hy2(uri)
+    except Exception as e:
+        logger.warning(f"Failed to parse URI: {e}")
     return None
 
+# ================= Main Processor =================
 def fetch_and_process_singbox(source: str, config_param: str, force_refresh: bool, url: str, cache_dir: Path, cache_expire: int, shared_kw: list, shared_ex_kw: list, clean_node_fn):
-    cache_file = cache_dir / f"{source}.yaml"
+    # 将后缀由 .yaml 修改为 .txt 用作 URI 列表缓存
+    cache_file = cache_dir / f"{source}_uris.txt"
     used_cache = False
+    
     if not force_refresh and cache_file.exists():
         try:
             if time.time() - os.path.getmtime(cache_file) < cache_expire:
-                with open(cache_file, "r", encoding="utf-8") as f: yaml_content = f.read()
+                with open(cache_file, "r", encoding="utf-8") as f: decoded_text = f.read()
                 used_cache = True
         except Exception: pass
         
     if not used_cache:
         try:
-            res = requests.get(url, headers={"User-Agent": "clash-verge"}, timeout=10)
+            # 放弃伪装 Clash，直接使用真实浏览器 UA 拉取 Base64 订阅
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0"}
+            res = requests.get(url, headers=headers, timeout=10)
             res.raise_for_status()
-            yaml_content = res.text.strip()
-            if "proxies:" not in yaml_content: raise ValueError("Invalid YAML")
-            with open(cache_file, "w", encoding="utf-8") as f: f.write(yaml_content)
+            
+            decoded_text = safe_b64decode(res.text)
+            
+            if not any(proto in decoded_text for proto in ["ss://", "vless://", "hysteria2://", "hy2://"]):
+                raise ValueError("No valid protocol URIs found in decoded text")
+                
+            with open(cache_file, "w", encoding="utf-8") as f: f.write(decoded_text)
         except Exception:
             if cache_file.exists():
-                with open(cache_file, "r", encoding="utf-8") as f: yaml_content = f.read()
+                with open(cache_file, "r", encoding="utf-8") as f: decoded_text = f.read()
             else: raise RuntimeError("Fetch Error")
             
-    clash_data = yaml.safe_load(yaml_content)
-    if not isinstance(clash_data, dict) or "proxies" not in clash_data: raise ValueError("Invalid Config")
-    
+    # 解析并组装节点
+    lines = [line.strip() for line in decoded_text.splitlines() if line.strip()]
     nodes = []
-    for proxy in clash_data["proxies"]:
+    
+    for uri in lines:
         try:
-            name = proxy.get("name", "")
-            if any(ex in name for ex in shared_ex_kw): continue
-            proxy["name"] = clean_node_fn(name)
-            sb_node = clash_to_singbox(proxy)
-            if sb_node: nodes.append(sb_node)
+            node = uri_to_singbox(uri)
+            if not node: continue
+            
+            original_name = node["tag"]
+            if any(ex in original_name for ex in shared_ex_kw): continue
+            node["tag"] = clean_node_fn(original_name)
+            nodes.append(node)
         except Exception: pass
+        
     if not nodes: raise ValueError("No nodes converted")
 
     with open(SB_TEMPLATE_MAP.get(config_param, SB_TEMPLATE_MAP["openwrt"]), "r", encoding="utf-8") as f: 
