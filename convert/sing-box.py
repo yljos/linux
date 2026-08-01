@@ -81,7 +81,7 @@ def parse_vless(uri: str) -> dict:
         tls = {
             "enabled": True,
             "server_name": qs.get("sni", [""])[0],
-            "utls": {"enabled": True, "fingerprint": qs.get("fp", ["firefox"])[0]}
+            "utls": {"enabled": True, "fingerprint": "firefox"}
         }
         if security == "reality":
             tls["reality"] = {

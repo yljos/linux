@@ -48,9 +48,11 @@ def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: s
     p_type = proxy.get("type")
     up_pref, down_pref = str(up_pref or "100"), str(down_pref or "100")
     if p_type == "hysteria2":
-        proxy.update({"up": up_pref if "bps" in up_pref.lower() else f"{up_pref} Mbps", "down": down_pref if "bps" in down_pref.lower() else f"{down_pref} Mbps", "skip-cert-verify": False})
+        proxy.update({"up": up_pref if "bps" in up_pref.lower() else f"{up_pref} Mbps", "down": down_pref if "bps" in down_pref.lower() else f"{down_pref} Mbps"})
+        proxy.pop("skip-cert-verify", None)
     elif p_type == "vless":
-        proxy.update({"skip-cert-verify": False, "packet-encoding": "xudp"})
+        proxy.update({"packet-encoding": "xudp"})
+        proxy.pop("skip-cert-verify", None)
         if "client-fingerprint" in proxy: proxy["client-fingerprint"] = CLASH_FINGERPRINT
 
 def fetch_yaml_text_clash(url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int):
