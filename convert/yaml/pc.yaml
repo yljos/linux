@@ -410,7 +410,6 @@ rules:
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,local-ip,DIRECT
   - RULE-SET,direct-ip,DIRECT
-  - RULE-SET,github-ip,GitHub
   - RULE-SET,cloudflare-ip,M
   - RULE-SET,pikpak-ip,PikPak
   - RULE-SET,telegram-ip,Telegram
