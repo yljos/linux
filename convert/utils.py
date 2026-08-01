@@ -80,7 +80,7 @@ def inject_custom_singbox_node(
                 ) in ["selector", "urltest"]:
                     cfg_outbound.setdefault("outbounds", []).append(node_tag)
 
-        return json.dumps(config, ensure_ascii=False, indent=2)
+        return json.dumps(config, ensure_ascii=False, separators=(",", ":"))
     except Exception as e:
         logger.error(f"[Sing-box] Custom node injection failed: {e}")
         return json_str
