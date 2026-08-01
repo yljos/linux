@@ -342,13 +342,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/javdb.mrs
-  local-ip:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/local/local-ip.mrs
   microsoft-site:
     proxy: M
     interval: 86400
@@ -509,7 +502,6 @@ rules:
   - RULE-SET,steam-site-classical,Steam
   - RULE-SET,gfw-site,M
   - RULE-SET,cn-site,DIRECT
-  - RULE-SET,local-ip,DIRECT
   - RULE-SET,direct-ip,DIRECT
   - RULE-SET,wechat-ip,DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-ip)),DIRECT
