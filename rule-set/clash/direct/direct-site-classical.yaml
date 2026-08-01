@@ -2,6 +2,8 @@ payload:
   - DOMAIN,ssh.202309.xyz
   - DOMAIN,www.whmstr.com
   - DOMAIN,www.schemastore.org
+  - DOMAIN-SUFFIX,sourcehut.org
+  - DOMAIN-SUFFIX,sr.ht
   - DOMAIN-SUFFIX,bukkit.org
   - DOMAIN-SUFFIX,speedtest.cn
   - DOMAIN-SUFFIX,wttr.in

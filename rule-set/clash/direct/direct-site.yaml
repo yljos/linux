@@ -2,6 +2,8 @@ payload:
   - ssh.202309.xyz
   - www.whmstr.com
   - www.schemastore.org
+  - +.sourcehut.org
+  - +.sr.ht
   - +.bukkit.org
   - +.speedtest.cn
   - +.wttr.in
