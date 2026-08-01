@@ -7,36 +7,11 @@ ipv6: false
 udp: true
 unified-delay: true
 tcp-concurrent: true
-profile:
-  store-selected: true
-  store-fake-ip: true
+profile: {store-selected: true, store-fake-ip: true}
 external-controller: 10.0.0.1:9090
 external-ui: ui
 external-ui-url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/dist_openwrt.zip
-sniffer:
-  enable: false
-  force-dns-mapping: true
-  parse-pure-ip: true
-  override-destination: true
-  sniff:
-    TLS:
-      ports:
-        - 443
-        - 8443
-    HTTP:
-      ports:
-        - 80
-        - 8080-8880
-      override-destination: true
-  skip-domain:
-    - Mijia Cloud
-    - dlg.io.mi.com
-hosts:
-  "nas": 10.0.0.21
-  "ax6s": 10.0.0.2
-  "arch": 10.0.0.25
-  "vyos": 10.0.0.1
-  "win": 10.0.0.15     
+hosts: {"nas": 10.0.0.21, "ax6s": 10.0.0.2, "arch": 10.0.0.25, "vyos": 10.0.0.1, "win": 10.0.0.15}
 dns:
   enable: true
   prefer-h3: false
@@ -48,13 +23,11 @@ dns:
   fake-ip-filter:
     - +.lan
     - +.local
-    - localhost.ptlogin2.qq.com
     - +.msftconnecttest.com
     - +.msftncsi.com
     - +.googleapis.com
     - +.googleapis.cn
     - rule-set:googlefcm-site
-    - rule-set:cloudflare-site
   use-hosts: true
   default-nameserver:
     - 223.5.5.5#DIRECT
@@ -68,7 +41,7 @@ dns:
     rule-set:microsoft-site: https://cloudflare-dns.com/dns-query#Microsoft
     rule-set:huawei-site: rcode://refused
     rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
-    rule-set:steam-site-classical: https://cloudflare-dns.com/dns-query#Steam
+    rule-set:steam-site: https://cloudflare-dns.com/dns-query#Steam
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:codeberg-site: https://cloudflare-dns.com/dns-query#GitHub
     rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
@@ -418,13 +391,13 @@ rule-providers:
     format: yaml
     behavior: classical
     url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/speedtest/speedtest-site-classical.yaml
-  steam-site-classical:
+  steam-site:
     proxy: M
     type: http
     interval: 86400
-    behavior: classical
-    format: yaml
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/steam/steam-site-classical.yaml
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/steam.mrs
   telegram-site:
     proxy: M
     interval: 86400
@@ -533,7 +506,7 @@ rules:
   - RULE-SET,speedtest-site,M
   - RULE-SET,javdb-site,M
   - RULE-SET,f-droid-site,M
-  - RULE-SET,steam-site-classical,Steam
+  - RULE-SET,steam-site,Steam
   - RULE-SET,gfw-site,M
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,local-ip,DIRECT
