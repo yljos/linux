@@ -17,6 +17,25 @@ CLASH_USER_AGENT = "clash-verge"
 CLASH_INCLUDED_HEADERS = ["Subscription-Userinfo"]
 CLASH_FINGERPRINT = "firefox"
 
+# Force flow style[cite: 1]
+class FlowDict(dict): pass
+
+def flow_representer(dumper, data):
+    return dumper.represent_mapping('tag:yaml.org,2002:map', data, flow_style=True)
+
+yaml.add_representer(FlowDict, flow_representer)
+
+# Recursively apply FlowDict only to dictionaries inside lists[cite: 1]
+def process_data(data):
+    if isinstance(data, dict):
+        return {k: process_data(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [
+            FlowDict({k: process_data(v) for k, v in i.items()}) if isinstance(i, dict) else process_data(i) 
+            for i in data
+        ]
+    return data
+
 def save_headers_to_disk(source_name: str, headers: dict, cache_dir: Path) -> dict:
     try:
         filtered = {k: v for k, v in headers.items() if k.lower() in {h.lower() for h in CLASH_INCLUDED_HEADERS}}
@@ -131,7 +150,9 @@ def process_yaml_content_clash(yaml_text: str, template_path: Path, up_pref: str
                 final_groups.append(group)
         template_data["proxy-groups"] = final_groups
         
-    return yaml.dump(template_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=4096).encode("utf-8")
+    # Dump formatted YAML using process_data[cite: 1]
+    processed_data = process_data(template_data)
+    return yaml.dump(processed_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
 
 def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
     if not node_path.exists(): return yaml_bytes
@@ -143,7 +164,10 @@ def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
         for node in nodes:
             if isinstance(node, dict) and "name" in node:
                 config.setdefault("proxies", []).append(node)
-        return yaml.safe_dump(config, allow_unicode=True, sort_keys=False).encode("utf-8")
+                
+        # Dump formatted YAML using process_data[cite: 1]
+        processed_data = process_data(config)
+        return yaml.dump(processed_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
     except Exception as e:
         logger.error(f"[Clash] Inject Error: {e}")
         return yaml_bytes
