@@ -17,7 +17,7 @@ CLASH_USER_AGENT = "clash-verge"
 CLASH_INCLUDED_HEADERS = ["Subscription-Userinfo"]
 CLASH_FINGERPRINT = "firefox"
 
-# Force flow style[cite: 1]
+# Force flow style
 class FlowDict(dict): pass
 
 def flow_representer(dumper, data):
@@ -25,7 +25,7 @@ def flow_representer(dumper, data):
 
 yaml.add_representer(FlowDict, flow_representer)
 
-# Recursively apply FlowDict only to dictionaries inside lists[cite: 1]
+# Recursively apply FlowDict only to dictionaries inside lists
 def process_data(data):
     if isinstance(data, dict):
         return {k: process_data(v) for k, v in data.items()}
@@ -150,7 +150,7 @@ def process_yaml_content_clash(yaml_text: str, template_path: Path, up_pref: str
                 final_groups.append(group)
         template_data["proxy-groups"] = final_groups
         
-    # Dump formatted YAML using process_data[cite: 1]
+    # Dump formatted YAML using process_data
     processed_data = process_data(template_data)
     return yaml.dump(processed_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
 
@@ -165,12 +165,49 @@ def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
             if isinstance(node, dict) and "name" in node:
                 config.setdefault("proxies", []).append(node)
                 
-        # Dump formatted YAML using process_data[cite: 1]
+        # Dump formatted YAML using process_data
         processed_data = process_data(config)
         return yaml.dump(processed_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
     except Exception as e:
         logger.error(f"[Clash] Inject Error: {e}")
         return yaml_bytes
+
+# ================= FINAL FORMATTING =================
+class FinalFlowDict(dict): pass
+class FinalFlowList(list): pass
+
+def final_flow_mapping_representer(dumper, data):
+    return dumper.represent_mapping('tag:yaml.org,2002:map', data, flow_style=True)
+
+def final_flow_sequence_representer(dumper, data):
+    return dumper.represent_sequence('tag:yaml.org,2002:seq', data, flow_style=True)
+
+yaml.add_representer(FinalFlowDict, final_flow_mapping_representer)
+yaml.add_representer(FinalFlowList, final_flow_sequence_representer)
+
+def final_format_data(data, level=0):
+    if isinstance(data, dict):
+        if level > 1 and all(not isinstance(v, (dict, list)) for v in data.values()):
+            return FinalFlowDict({k: final_format_data(v, level + 1) for k, v in data.items()})
+        return {k: final_format_data(v, level + 1) for k, v in data.items()}
+        
+    elif isinstance(data, list):
+        if len(data) == 0:
+            return FinalFlowList([])
+            
+        if all(isinstance(i, dict) for i in data):
+            return [FinalFlowDict({k: final_format_data(v, level + 1) for k, v in i.items()}) for i in data]
+            
+        if level <= 1:
+            return [final_format_data(i, level + 1) for i in data]
+            
+        if all(not isinstance(i, (dict, list)) for i in data):
+            return FinalFlowList([final_format_data(i, level + 1) for i in data])
+            
+        return [final_format_data(i, level + 1) for i in data]
+        
+    return data
+# ====================================================
 
 def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, shared_kw, shared_ex_kw, clean_fn, custom_node_path, target_groups, inject_templates, base_dir):
     clash_config_val = None
@@ -194,6 +231,11 @@ def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, s
         
         if clash_config_val in inject_templates:
             output_bytes = inject_custom_clash_node(output_bytes, custom_node_path)
+            
+        # Format the final YAML output
+        final_config = yaml.safe_load(output_bytes)
+        formatted_config = final_format_data(final_config)
+        output_bytes = yaml.dump(formatted_config, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
         
         response = send_file(io.BytesIO(output_bytes), mimetype="text/yaml", as_attachment=True, download_name="config.yaml")
         if headers_data:
