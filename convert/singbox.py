@@ -64,7 +64,6 @@ def process_vless_sb(
     if proxy.get("tls") or proxy.get("reality-opts"):
         tls = {
             "enabled": True,
-            "insecure": proxy.get("skip-cert-verify", False),
             "server_name": proxy.get("servername", ""),
         }
         if "reality-opts" in proxy:
@@ -88,17 +87,15 @@ def process_hysteria2_sb(
     node["type"] = "hysteria2"
     node["password"] = proxy.get("password")
 
-    # === 核心修复：抹平 Clash 与 Sing-box 的端口范围符号差异 ===
+    # Core fix: Align port range symbols between Clash and Sing-box
     if "ports" in proxy:
         node["server_ports"] = str(proxy["ports"]).replace("-", ":")
     elif "port" in proxy:
         port_val = str(proxy["port"])
         if "-" in port_val:
-            # 有些机场会把范围写在 port 字段里
             node["server_ports"] = port_val.replace("-", ":")
         else:
             node["server_port"] = int(proxy["port"])
-    # ==========================================================
 
     node["up_mbps"] = 50
     node["down_mbps"] = 200
@@ -109,7 +106,6 @@ def process_hysteria2_sb(
         }
     tls = {
         "enabled": True,
-        "insecure": proxy.get("skip-cert-verify", False),
         "server_name": proxy.get("sni", ""),
     }
     node["tls"] = tls
@@ -224,7 +220,7 @@ def fetch_and_process_singbox(
         tag_upper = tag.upper() if tag else ""
         if not any(region.upper() in tag_upper for region in shared_kw):
             return False
-        # 修复：排除词匹配统一转为大写比较，避免漏网之鱼
+        # Fix: exclude keywords matching converted to uppercase uniformly
         if any(exclude.upper() in tag_upper for exclude in shared_ex_kw):
             return False
         return True
@@ -243,10 +239,10 @@ def fetch_and_process_singbox(
         if o.get("type") not in ["urltest", "selector", "direct", "block", "dns"]
     ]
 
-    # 核心修复区域：重构策略组与正则匹配的合并逻辑
+    # Core fix area: Refactor policy group and regex matching merge logic
     for outbound in filtered_outbounds:
         if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
-            # 安全弹出 filter 并提取正则
+            # Safely pop filter and extract regex
             filters = outbound.pop("filter", [])
             regex_list = [
                 reg
@@ -260,7 +256,7 @@ def fetch_and_process_singbox(
                 original_outbounds.remove("{all}")
 
             if not regex_list:
-                # 即使没有正则，也要保留原本配置好的策略组（如 ["JP-TCP"]）
+                # Even without regex, keep the originally configured policy groups
                 if original_outbounds:
                     outbound["outbounds"] = list(dict.fromkeys(original_outbounds))
                     temp_outbounds.append(outbound)
@@ -271,7 +267,7 @@ def fetch_and_process_singbox(
                 compiled = re.compile(pattern, re.IGNORECASE)
                 matched_tags = [tag for tag in all_node_tags if compiled.search(tag)]
 
-                # 无论是否匹配到新节点，都与原有的策略组合并
+                # Merge with existing policy groups regardless of new node matches
                 merged_outbounds = list(
                     dict.fromkeys(original_outbounds + matched_tags)
                 )
@@ -280,7 +276,7 @@ def fetch_and_process_singbox(
                     temp_outbounds.append(outbound)
             except re.error as e:
                 logger.error(f"无效的正则表达式: {e}")
-                # 正则报错时回退：只保留静态写的节点
+                # Fallback on regex error: only keep statically written nodes
                 if original_outbounds:
                     outbound["outbounds"] = list(dict.fromkeys(original_outbounds))
                     temp_outbounds.append(outbound)
@@ -295,7 +291,7 @@ def fetch_and_process_singbox(
             original_refs = outbound["outbounds"]
             cleaned_refs = [tag for tag in original_refs if tag in surviving_tags]
             outbound["outbounds"] = cleaned_refs
-            # 如果清理后 outbounds 为空，直接遗弃该节点，保持配置干净
+            # If outbounds is empty after cleaning, discard node to keep config clean
             if not cleaned_refs:
                 continue
         final_outbounds.append(outbound)
