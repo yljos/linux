@@ -12,12 +12,6 @@ profile:
   store-fake-ip: true
 external-controller: 127.0.0.1:9090
 external-ui: ui
-ntp:
-  enable: true
-  write-to-system: false
-  server: ntp.aliyun.com
-  port: 123
-  interval: 30
 sniffer:
   enable: true
   force-dns-mapping: true
@@ -65,8 +59,6 @@ dns:
     - +.msftncsi.com
     - +.googleapis.com
     - +.googleapis.cn
-    - rule-set:googlefcm-site
-    - rule-set:cloudflare-site
   use-hosts: true
   default-nameserver:
     - 223.5.5.5#DIRECT
@@ -79,13 +71,9 @@ dns:
   nameserver-policy:
     rule-set:microsoft-site: https://cloudflare-dns.com/dns-query#Microsoft
     rule-set:huawei-site: rcode://refused
-    rule-set:openai-site: https://cloudflare-dns.com/dns-query#OpenAi
     rule-set:github-site: https://cloudflare-dns.com/dns-query#GitHub
-    rule-set:telegram-site: https://cloudflare-dns.com/dns-query#Telegram
-    rule-set:twitter-site: https://cloudflare-dns.com/dns-query#Twitter
     rule-set:tiktok-site: https://cloudflare-dns.com/dns-query#TikTok
     rule-set:youtube-site: https://dns.google/dns-query#Google
-    rule-set:googlefcm-site: https://dns.google/dns-query#Google
     rule-set:google-site: https://dns.google/dns-query#Google
     rule-set:speedtest-site: https://cloudflare-dns.com/dns-query#M
 proxies: []
@@ -111,20 +99,6 @@ proxy-groups:
       - SG
       - HK
   - type: select
-    name: OpenAi
-    proxies:
-      - JP
-      - SG
-      - US
-      - HK
-  - type: select
-    name: Telegram
-    proxies:
-      - JP
-      - SG
-      - US
-      - HK
-  - type: select
     name: PikPak
     proxies:
       - SG
@@ -145,14 +119,6 @@ proxy-groups:
       - SG
       - US
       - HK
-  - type: select
-    name: TikTok
-    proxies:
-      - JP
-  - type: select
-    name: Twitter
-    proxies:
-      - US
   - type: url-test
     url: https://www.gstatic.com/generate_204
     interval: 30
@@ -194,34 +160,6 @@ proxy-groups:
     name: US
     filter: "(?i).*US.*"
 rule-providers:
-  adguard-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs
-  alibaba-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/alibaba/alibaba-site.mrs
-  alibaba-ip:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/alibaba/alibaba-ip.mrs
-  apkpure-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/apkpure.mrs
   cloudflare-site:
     proxy: M
     interval: 86400
@@ -242,14 +180,14 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/cn/cn-site.mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cn.mrs
   cn-ip:
     proxy: M
     interval: 86400
     type: http
     format: mrs
     behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/cn/cn-ip.mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cn.mrs
   direct-site:
     proxy: M
     interval: 86400
@@ -284,7 +222,7 @@ rule-providers:
     type: http
     format: mrs
     behavior: domain
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/gfw/gfw-site.mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/gfw.mrs
   github-site:
     proxy: M
     interval: 86400
@@ -292,13 +230,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/github.mrs
-  github-ip:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/github/github-ip.mrs
   google-site:
     proxy: M
     interval: 86400
@@ -313,13 +244,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/google.mrs
-  googlefcm-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/googlefcm.mrs
   huawei-direct-site:
     proxy: M
     interval: 86400
@@ -341,13 +265,6 @@ rule-providers:
     format: mrs
     behavior: ipcidr
     url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/huawei/huawei-ip.mrs
-  jd-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/jd.mrs
   microsoft-site:
     proxy: M
     interval: 86400
@@ -355,13 +272,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/microsoft.mrs
-  openai-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs
   pikpak-site:
     proxy: M
     interval: 86400
@@ -390,20 +300,6 @@ rule-providers:
     format: yaml
     behavior: classical
     url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/speedtest/speedtest-site-classical.yaml
-  telegram-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/telegram/telegram-site.mrs
-  telegram-ip:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/telegram/telegram-ip.mrs
   tiktok-site:
     proxy: M
     interval: 86400
@@ -411,20 +307,6 @@ rule-providers:
     format: mrs
     behavior: domain
     url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tiktok.mrs
-  twitter-site:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: domain
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/twitter.mrs
-  twitter-ip:
-    proxy: M
-    interval: 86400
-    type: http
-    format: mrs
-    behavior: ipcidr
-    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs
   wechat-ip:
     proxy: M
     interval: 86400
@@ -466,34 +348,22 @@ rules:
   - DOMAIN-KEYWORD,googleapis,Google
   - RULE-SET,direct-site,DIRECT
   - RULE-SET,pikpak-site,PikPak
-  - RULE-SET,alibaba-site,DIRECT
-  - RULE-SET,jd-site,DIRECT
   - RULE-SET,tencent-site,DIRECT
-  - RULE-SET,googlefcm-site,DIRECT
   - RULE-SET,proxy-site,M
   - RULE-SET,github-site,GitHub
   - RULE-SET,mozilla-site,M
   - RULE-SET,microsoft-site,Microsoft
-  - RULE-SET,openai-site,OpenAi
   - RULE-SET,youtube-site,Google
   - RULE-SET,google-site,Google
-  - RULE-SET,tiktok-site,TikTok
-  - RULE-SET,telegram-site,Telegram
-  - RULE-SET,twitter-site,Twitter
-  - RULE-SET,adguard-site,M
+  - RULE-SET,tiktok-site,JP
   - RULE-SET,speedtest-site,M
-  - RULE-SET,apkpure-site,M
   - RULE-SET,f-droid-site,M
   - RULE-SET,gfw-site,M
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,direct-ip,DIRECT
   - RULE-SET,wechat-ip,DIRECT
-  - RULE-SET,github-ip,GitHub
   - RULE-SET,cloudflare-ip,M
   - RULE-SET,pikpak-ip,PikPak
-  - RULE-SET,alibaba-ip,DIRECT
-  - RULE-SET,telegram-ip,Telegram
-  - RULE-SET,twitter-ip,Twitter
   - RULE-SET,google-ip,Google
   - RULE-SET,cn-ip,DIRECT
   - MATCH,Default
