@@ -13,7 +13,6 @@
       {"domain": ["ntp.aliyun.com"], "strategy": "ipv4_only", "server": "dns_direct"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "strategy": "ipv4_only", "server": "dns_microsoft"},
       {"domain_keyword": "googleapis", "strategy": "ipv4_only", "server": "dns_google"},
-      {"rule_set": "googlefcm-site", "strategy": "ipv4_only", "server": "dns_google"},
       {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"},
       {"query_type": ["A", "AAAA"], "action": "route", "server": "dns_fakeip", "disable_cache": true}
     ],
