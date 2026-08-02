@@ -2,11 +2,11 @@
   "log": {"level": "error", "timestamp": true},
   "dns": {
     "servers": [
-      {"type": "udp", "tag": "dns_resolver", "detour": "D","server": "223.5.5.5", "server_port": 53 },
-      {"type": "https", "tag": "dns_proxy", "detour": "M","server": "cloudflare-dns.com", "server_port": 443, "domain_resolver": "dns_resolver" },
-      {"type": "https", "tag": "dns_google", "detour": "Google","server": "dns.google", "server_port": 443, "domain_resolver": "dns_resolver" },
-      {"type": "https", "tag": "dns_microsoft","detour": "Microsoft","server": "cloudflare-dns.com", "server_port": 443, "domain_resolver": "dns_resolver" },
-      {"type": "https", "tag": "dns_direct",  "detour": "D","server": "dns.alidns.com", "server_port": 443, "domain_resolver": "dns_resolver"},
+      {"type": "udp", "tag": "dns_resolver", "detour": "D", "server": "223.5.5.5", "server_port": 53},
+      {"type": "https", "tag": "dns_proxy", "detour": "M", "domain_resolver": "dns_resolver", "server": "cloudflare-dns.com", "server_port": 443},
+      {"type": "https", "tag": "dns_google", "detour": "Google", "domain_resolver": "dns_resolver", "server": "dns.google", "server_port": 443},
+      {"type": "https", "tag": "dns_microsoft", "detour": "Microsoft", "domain_resolver": "dns_resolver", "server": "cloudflare-dns.com", "server_port": 443},
+      {"type": "https", "tag": "dns_direct", "detour": "D", "domain_resolver": "dns_resolver", "server": "dns.alidns.com", "server_port": 443},
       {"type": "fakeip", "tag": "dns_fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"}
     ],
     "rules": [
