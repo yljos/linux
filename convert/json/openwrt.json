@@ -1,5 +1,5 @@
 {
-  "log": {"disabled": false, "level": "error", "timestamp": true},
+  "log": {"level": "error", "timestamp": true},
   "dns": {
     "servers": [
       {"tag": "dns_resolver", "type": "udp", "server": "223.5.5.5", "server_port": 53, "detour": "D"},
@@ -10,13 +10,13 @@
       {"tag": "dns_fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"}
     ],
     "rules": [
-      {"domain": ["ntp.aliyun.com"], "strategy": "ipv4_only", "server": "dns_direct"},
+      {"domain": "ntp.aliyun.com", "strategy": "ipv4_only", "server": "dns_direct"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "strategy": "ipv4_only", "server": "dns_microsoft"},
       {"domain_keyword": "googleapis", "strategy": "ipv4_only", "server": "dns_google"},
       {"rule_set": "googlefcm-site", "strategy": "ipv4_only", "server": "dns_google"},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"},
-      {"query_type": ["A", "AAAA"], "action": "route", "server": "dns_fakeip", "disable_cache": true}
+      {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
     ],
     "final": "dns_proxy",
     "strategy": "ipv4_only"
@@ -47,17 +47,17 @@
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
       {"port": 53, "action": "hijack-dns"},
       {"protocol": "dns", "action": "hijack-dns"},
-      {"type": "logical", "mode": "and", "rules": [{"network": ["udp"]}, {"port": [443]}], "action": "reject", "no_drop": true},
+      {"type": "logical", "mode": "and", "rules": [{"network": "udp"}, {"port": 443}], "action": "reject", "no_drop": true},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "ad-ip", "action": "reject"},
       {"rule_set": "huawei-site", "action": "reject"},
       {"rule_set": "huawei-ip", "action": "reject"},
       {"domain": ["cdn.jsdmirror.com", "ntp.aliyun.com"], "outbound": "D"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "outbound": "Microsoft"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.7/32"]}, {"domain_keyword": "googleapis"}], "outbound": "Youtube"},
+      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": "10.0.0.7/32"}, {"domain_keyword": "googleapis"}], "outbound": "Youtube"},
       {"domain_keyword": "googleapis", "outbound": "Google"},
       {"rule_set": "direct-site", "outbound": "D"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.21/32"]}, {"rule_set": ["cloudflare-site"]}], "outbound": "D"},
+      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": "10.0.0.21/32"}, {"rule_set": "cloudflare-site"}], "outbound": "D"},
       {"rule_set": "cloudflare-site", "outbound": "M"},
       {"rule_set": "proxy-site", "outbound": "M"},
       {"rule_set": "openai-site", "outbound": "OpenAi"},
@@ -71,7 +71,7 @@
       {"rule_set": "docker-site", "outbound": "M"},
       {"rule_set": "archlinux-site", "outbound": "M"},
       {"rule_set": "steam-site", "outbound": "Steam"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.7/32"]}, {"rule_set": ["youtube-site"]}], "outbound": "Youtube"},
+      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": "10.0.0.7/32"}, {"rule_set": "youtube-site"}], "outbound": "Youtube"},
       {"rule_set": "youtube-site", "outbound": "Google"},
       {"rule_set": "tiktok-site", "outbound": "JP"},
       {"rule_set": "github-site", "outbound": "GitHub"},
@@ -79,7 +79,7 @@
       {"rule_set": "googlefcm-site", "outbound": "D"},
       {"rule_set": "telegram-site", "outbound": "Telegram"},
       {"rule_set": "twitter-site", "outbound": "Twitter"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.7/32"]}, {"rule_set": ["google-site"]}], "outbound": "Youtube"},
+      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": "10.0.0.7/32"}, {"rule_set": "google-site"}], "outbound": "Youtube"},
       {"rule_set": "google-site", "outbound": "Google"},
       {"rule_set": "tencent-site", "outbound": "D"},
       {"rule_set": "microsoft-site", "outbound": "Microsoft"},
@@ -88,12 +88,12 @@
       {"action": "resolve", "server": "dns_proxy", "strategy": "ipv4_only"},
       {"rule_set": "direct-ip", "outbound": "D"},
       {"rule_set": "wechat-ip", "outbound": "D"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.21/32"]}, {"rule_set": ["cloudflare-ip"]}], "outbound": "D"},
+      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": "10.0.0.21/32"}, {"rule_set": "cloudflare-ip"}], "outbound": "D"},
       {"rule_set": "cloudflare-ip", "outbound": "M"},
       {"rule_set": "pikpak-ip", "outbound": "PikPak"},
       {"rule_set": "twitter-ip", "outbound": "Twitter"},
       {"rule_set": "telegram-ip", "outbound": "Telegram"},
-      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": ["10.0.0.7/32"]}, {"rule_set": ["google-ip"]}], "outbound": "Youtube"},
+      {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": "10.0.0.7/32"}, {"rule_set": "google-ip"}], "outbound": "Youtube"},
       {"rule_set": "google-ip", "outbound": "Google"},
       {"rule_set": "cn-ip", "outbound": "D"}
     ],
