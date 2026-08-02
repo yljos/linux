@@ -30,10 +30,10 @@
     {"tag": "Steam", "type": "selector", "outbounds": ["D", "JP", "US", "SG", "HK"], "default": "HK"},
     {"tag": "GitHub", "type": "selector", "outbounds": ["JP", "US", "SG", "HK"], "default": "JP"},
     {"tag": "Microsoft", "type": "selector", "outbounds": ["JP", "US", "SG", "HK", "D"], "default": "JP"},
-    {"tag": "HK", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "60s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*HK.*$"]}]},
-    {"tag": "SG", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "60s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*SG.*$"]}]},
-    {"tag": "JP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "60s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*JP.*$"]}]},
-    {"tag": "US", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "60s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*US.*$"]}]}
+    {"tag": "HK", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*HK.*$"]}]},
+    {"tag": "SG", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*SG.*$"]}]},
+    {"tag": "JP", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*JP.*$"]}]},
+    {"tag": "US", "type": "urltest", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*US.*$"]}]}
   ],
   "route": {
     "rules": [
