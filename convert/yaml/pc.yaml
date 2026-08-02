@@ -74,11 +74,11 @@ proxy-groups:
     hidden: true
     name: Steam
     proxies:
+      - HK
       - DIRECT
       - JP
       - SG
       - US
-      - HK
   - type: select
     hidden: true
     name: GitHub
