@@ -107,7 +107,6 @@ def parse_hy2(uri: str) -> dict:
         "down_mbps": 200,
         "tls": {
             "enabled": True,
-            "insecure": qs.get("insecure", ["0"])[0] == "1",
             "server_name": qs.get("sni", [""])[0]
         }
     }
