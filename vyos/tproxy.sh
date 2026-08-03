@@ -15,6 +15,16 @@ if [ "$EUID" -ne 0 ]; then
 	exit 1
 fi
 
+# Clean up function
+if [ "$1" = "-s" ]; then
+	echo "Removing mihomo TProxy rules..."
+	while ip rule del fwmark $PROXY_FWMARK lookup $TABLE_ID 2>/dev/null; do :; done
+	ip route flush table $TABLE_ID 2>/dev/null
+	nft delete table ip mihomo 2>/dev/null
+	echo "Cleaned up!"
+	exit 0
+fi
+
 echo "Configuring mihomo TProxy on VyOS..."
 
 # --- 2. Policy Routing ---
