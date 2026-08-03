@@ -7,10 +7,7 @@ from dotenv import load_dotenv
 from curl_cffi import requests
 
 # Configuration
-SERVICE_NAME = "Sing-box"
-save_path = r"c:\sing-box\config.json"
 UPDATE_INTERVAL = 3600  # 1 hour in seconds
-
 
 def is_admin():
     """Check for administrator privileges"""
@@ -19,82 +16,89 @@ def is_admin():
     except:
         return False
 
-
-def restart_service():
-    """Restart the Sing-box service"""
-    print(f"Attempting to restart service: {SERVICE_NAME} ...")
+def restart_service(service_name):
+    """Restart the specified service"""
+    print(f"Attempting to restart service: {service_name} ...")
     try:
-        subprocess.run(["net", "stop", SERVICE_NAME], check=False, shell=True)
+        subprocess.run(["net", "stop", service_name], check=False, shell=True)
         time.sleep(2)
-        subprocess.run(["net", "start", SERVICE_NAME], check=True, shell=True)
-        print(f"[Success] Service {SERVICE_NAME} restarted.")
+        subprocess.run(["net", "start", service_name], check=True, shell=True)
+        print(f"[Success] Service {service_name} restarted.")
     except subprocess.CalledProcessError as e:
         print(f"[Failed] Service startup failed: {e}")
     except Exception as e:
         print(f"Unknown error during service restart: {e}")
 
-
 def perform_update():
-    """Execute the update process"""
+    """Execute the update process based on User-Agent"""
     load_dotenv(override=True)
     url = os.getenv("URL")
-    user_agent = os.getenv("USER_AGENT", "sing-box_pc")
+    
+    # Default to clash_pc if USER_AGENT is not set
+    user_agent = os.getenv("USER_AGENT", "clash_pc")
     headers = {"User-Agent": user_agent}
 
     if not url:
         print("Error: URL not found in .env, skipping this update.")
         return False
 
+    # Mutually exclusive logic based on USER_AGENT
+    if "sing-box" in user_agent.lower():
+        service_name = "Sing-box"
+        save_path = r"c:\sing-box\config.json"
+        check_key = "outbounds"
+        is_json = True
+    else:
+        service_name = "Mihomo"
+        save_path = r"c:\mihomo\config.yaml"
+        check_key = "proxies:"
+        is_json = False
+
     try:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        print(f"Downloading config... (User-Agent: {headers['User-Agent']})")
+        print(f"[{service_name}] Downloading config... (User-Agent: {headers['User-Agent']})")
 
         # Bypass Bot Fight Mode by impersonating Chrome
         response = requests.get(
-            url, headers=headers, timeout=(10, 30), impersonate="chrome"
+            url, headers=headers, timeout=(10, 30), impersonate="firefox"
         )
         response.raise_for_status()
         response.encoding = "utf-8"
 
-        try:
-            config_data = response.json()
+        is_valid = False
+        if is_json:
+            try:
+                config_data = response.json()
+                if check_key in config_data:
+                    is_valid = True
+            except json.JSONDecodeError:
+                pass
+        else:
+            if check_key in response.text:
+                is_valid = True
 
-            if "outbounds" in config_data:
-                # Atomic write: write to temp file first, then replace
-                temp_path = save_path + ".tmp"
-                with open(temp_path, "wb") as f:
-                    f.write(response.content)
-                os.replace(temp_path, save_path)
+        if is_valid:
+            # Atomic write
+            temp_path = save_path + ".tmp"
+            with open(temp_path, "wb") as f:
+                f.write(response.content)
+            os.replace(temp_path, save_path)
 
-                print(
-                    f"Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-                )
-
-                if is_admin():
-                    restart_service()
-                else:
-                    print("Skipping service restart (insufficient privileges).")
-                return True
+            print(f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            if is_admin():
+                restart_service(service_name)
             else:
-                print(
-                    f"Validation failed: JSON missing 'outbounds' - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-                )
-                return False
-
-        except json.JSONDecodeError:
-            print(
-                f"Validation failed: Invalid JSON - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-            )
+                print(f"[{service_name}] Skipping service restart (insufficient privileges).")
+            return True
+        else:
+            print(f"[{service_name}] Validation failed: Missing '{check_key}' - {time.strftime('%Y-%m-%d %H:%M:%S')}")
             return False
 
-    except requests.exceptions.HTTPError as e:
-        print(f"HTTP Error: {e}")
-    except requests.exceptions.ConnectionError:
-        print("Connection failed.")
-    except requests.exceptions.Timeout:
-        print("Request timeout.")
+    except requests.exceptions.RequestException as e:
+        print(f"[{service_name}] Request Error: {e}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"[{service_name}] Unexpected error: {e}")
         # Clean up temp file on unexpected error if it exists
         temp_path = save_path + ".tmp"
         if os.path.exists(temp_path):
@@ -105,9 +109,8 @@ def perform_update():
 
     return False
 
-
 if __name__ == "__main__":
-    print(f"Auto-update script started (Target: {SERVICE_NAME})...")
+    print("Auto-update script started...")
 
     if not is_admin():
         print("[Warning] Script is not running as administrator!")
@@ -116,20 +119,15 @@ if __name__ == "__main__":
         print("-" * 50)
 
     # Execute update immediately upon script startup
-    print("Executing initial update on startup...")
     perform_update()
-
-    # Initialize the timestamp after the first run
     last_update_time = time.time()
 
     try:
         while True:
             current_time = time.time()
 
-            # Check if UPDATE_INTERVAL has passed since the last update
             if current_time - last_update_time >= UPDATE_INTERVAL:
                 perform_update()
-                # Reset timestamp regardless of success to avoid spamming the server
                 last_update_time = time.time()
 
             # Sleep 120 seconds to prevent high CPU usage and allow manual interrupts
@@ -138,6 +136,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service manually stopped.")
     except Exception as e:
-        print(
-            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}"
-        )
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}")
