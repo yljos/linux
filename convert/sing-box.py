@@ -21,7 +21,7 @@ SB_TEMPLATE_MAP = {
 
 
 def safe_b64decode(s: str) -> str:
-    """兼容 urlsafe 和标准 base64 的安全解码函数"""
+    # Compatible with urlsafe and standard base64 decoding
     s = s.strip()
     s += "=" * ((4 - len(s) % 4) % 4)
     try:
@@ -34,7 +34,7 @@ def safe_b64decode(s: str) -> str:
 def parse_ss(uri: str) -> dict:
     uri, name = uri.split("#", 1) if "#" in uri else (uri, "SS Node")
     name = unquote(name)
-    uri = uri[5:]  # 剥离 ss://
+    uri = uri[5:]  # Strip ss://
 
     if "@" in uri:
         user_part, host_part = uri.split("@", 1)
@@ -176,7 +176,7 @@ def fetch_and_process_singbox(
     shared_ex_kw: list,
     clean_node_fn,
 ):
-    # 将后缀由 .yaml 修改为 .txt 用作 URI 列表缓存
+    # Use .txt suffix for URI list cache
     cache_file = cache_dir / f"{source}_uris.txt"
     used_cache = False
 
@@ -184,21 +184,24 @@ def fetch_and_process_singbox(
         try:
             if time.time() - os.path.getmtime(cache_file) < cache_expire:
                 with open(cache_file, "r", encoding="utf-8") as f:
-                    decoded_text = f.read()
+                    # Read base64 content and decode
+                    raw_b64 = f.read()
+                    decoded_text = safe_b64decode(raw_b64)
                 used_cache = True
         except Exception:
             pass
 
     if not used_cache:
         try:
-            # 放弃伪装 Clash，直接使用真实浏览器 UA 拉取 Base64 订阅
+            # Use real browser UA to fetch base64 subscription
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0"
             }
             res = requests.get(url, headers=headers, timeout=10)
             res.raise_for_status()
 
-            decoded_text = safe_b64decode(res.text)
+            raw_b64 = res.text.strip()
+            decoded_text = safe_b64decode(raw_b64)
 
             if not any(
                 proto in decoded_text
@@ -206,16 +209,18 @@ def fetch_and_process_singbox(
             ):
                 raise ValueError("No valid protocol URIs found in decoded text")
 
+            # Save raw base64 content to cache
             with open(cache_file, "w", encoding="utf-8") as f:
-                f.write(decoded_text)
+                f.write(raw_b64)
         except Exception:
             if cache_file.exists():
                 with open(cache_file, "r", encoding="utf-8") as f:
-                    decoded_text = f.read()
+                    # Fallback to cache and decode
+                    decoded_text = safe_b64decode(f.read())
             else:
                 raise RuntimeError("Fetch Error")
 
-    # 解析并组装节点
+    # Parse and assemble nodes
     lines = [line.strip() for line in decoded_text.splitlines() if line.strip()]
     nodes = []
 
