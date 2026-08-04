@@ -277,43 +277,6 @@ def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
         logger.error(f"[Clash] Inject Error: {e}")
         return yaml_bytes
 
-# ================= FINAL FORMATTING =================
-class FinalFlowDict(dict): pass
-class FinalFlowList(list): pass
-
-def final_flow_mapping_representer(dumper, data):
-    return dumper.represent_mapping('tag:yaml.org,2002:map', data, flow_style=True)
-
-def final_flow_sequence_representer(dumper, data):
-    return dumper.represent_sequence('tag:yaml.org,2002:seq', data, flow_style=True)
-
-yaml.add_representer(FinalFlowDict, final_flow_mapping_representer)
-yaml.add_representer(FinalFlowList, final_flow_sequence_representer)
-
-def final_format_data(data, level=0):
-    if isinstance(data, dict):
-        if level > 1 and all(not isinstance(v, (dict, list)) for v in data.values()):
-            return FinalFlowDict({k: final_format_data(v, level + 1) for k, v in data.items()})
-        return {k: final_format_data(v, level + 1) for k, v in data.items()}
-        
-    elif isinstance(data, list):
-        if len(data) == 0:
-            return FinalFlowList([])
-            
-        if all(isinstance(i, dict) for i in data):
-            return [FinalFlowDict({k: final_format_data(v, level + 1) for k, v in i.items()}) for i in data]
-            
-        if level <= 1:
-            return [final_format_data(i, level + 1) for i in data]
-            
-        if all(not isinstance(i, (dict, list)) for i in data):
-            return FinalFlowList([final_format_data(i, level + 1) for i in data])
-            
-        return [final_format_data(i, level + 1) for i in data]
-        
-    return data
-# ====================================================
-
 def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, shared_kw, shared_ex_kw, clean_fn, custom_node_path, target_groups, inject_templates, base_dir):
     clash_config_val = None
     if "ClashMetaForAndroid" in ua: clash_config_val = "mtun"
@@ -337,13 +300,10 @@ def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, s
         if clash_config_val in inject_templates:
             output_bytes = inject_custom_clash_node(output_bytes, custom_node_path)
             
-        final_config = yaml.safe_load(output_bytes)
-        formatted_config = final_format_data(final_config)
-        output_bytes = yaml.dump(formatted_config, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
-        
         response = send_file(io.BytesIO(output_bytes), mimetype="text/yaml", as_attachment=True, download_name="config.yaml")
         
-        response.headers["Subscription-Userinfo"] = "upload=0; download=715112054784; total=1072668082176; expire=1893456000"
+        # upload: 666 GB, download: 999 GB, total: 999 GB, expire: 2030-01-01 00:00:00
+        response.headers["Subscription-Userinfo"] = "upload=715112054784; download=1072668082176; total=1072668082176; expire=1893456000"
         
         return response
     except Exception as e:
