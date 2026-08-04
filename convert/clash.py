@@ -17,25 +17,6 @@ logger = logging.getLogger(__name__)
 CLASH_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0"
 CLASH_FINGERPRINT = "firefox"
 
-# Force flow style
-class FlowDict(dict): pass
-
-def flow_representer(dumper, data):
-    return dumper.represent_mapping('tag:yaml.org,2002:map', data, flow_style=True)
-
-yaml.add_representer(FlowDict, flow_representer)
-
-# Recursively apply FlowDict only to dictionaries inside lists
-def process_data(data):
-    if isinstance(data, dict):
-        return {k: process_data(v) for k, v in data.items()}
-    elif isinstance(data, list):
-        return [
-            FlowDict({k: process_data(v) for k, v in i.items()}) if isinstance(i, dict) else process_data(i) 
-            for i in data
-        ]
-    return data
-
 def filter_node_names_clash(proxies: List[Any], shared_kw: List[str], shared_ex_kw: List[str]) -> Tuple[List[str], List[str]]:
     all_names = [str(p.get("name")) for p in proxies if isinstance(p, dict) and isinstance(p.get("name"), str)]
     valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
@@ -257,8 +238,8 @@ def process_yaml_content_clash(uri_text: str, template_path: Path, up_pref: str,
                 final_groups.append(group)
         template_data["proxy-groups"] = final_groups
         
-    processed_data = process_data(template_data)
-    return yaml.dump(processed_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
+    # Simply dump the dictionary to YAML natively
+    return yaml.dump(template_data, allow_unicode=True, sort_keys=False, default_flow_style=False).encode("utf-8")
 
 def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
     if not node_path.exists(): return yaml_bytes
@@ -271,8 +252,8 @@ def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
             if isinstance(node, dict) and "name" in node:
                 config.setdefault("proxies", []).append(node)
                 
-        processed_data = process_data(config)
-        return yaml.dump(processed_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
+        # Simply dump the dictionary to YAML natively
+        return yaml.dump(config, allow_unicode=True, sort_keys=False, default_flow_style=False).encode("utf-8")
     except Exception as e:
         logger.error(f"[Clash] Inject Error: {e}")
         return yaml_bytes
