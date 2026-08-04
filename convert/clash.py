@@ -183,15 +183,13 @@ def fetch_uris_text(url: str, source_name: str, force_refresh: bool, cache_dir: 
             return decode_base64_content(f.read())
     raise RuntimeError("Fetch and cache failed")
 
-def process_yaml_content_clash(uri_text: str, template_path: Path, up_pref: str, down_pref: str, shared_kw: list, shared_ex_kw: list, clean_node_fn):
-    # Force parse as URIs
+def process_yaml_content_clash(uri_text: str, template_path: Path, up_pref: str, down_pref: str, shared_kw: list, shared_ex_kw: list, clean_node_fn, custom_node_path: Path, clash_config_val: str, inject_templates: list):
     input_data = parse_uris_to_proxies(uri_text)
         
     if not isinstance(input_data, dict) or not input_data.get("proxies"):
         preview = uri_text[:100].replace("\n", " ") if uri_text else "Empty content"
         raise ValueError(f"No valid proxies found. Decoded content preview: {preview}")
     
-    with open(template_path, "r", encoding="utf-8") as f: template_data = yaml.safe_load(f)
     proxies_orig = input_data.get("proxies", [])
     filtered_names, _ = filter_node_names_clash(proxies_orig, shared_kw, shared_ex_kw)
     
@@ -209,54 +207,42 @@ def process_yaml_content_clash(uri_text: str, template_path: Path, up_pref: str,
                 process_proxy_config_clash(p, up_pref, down_pref)
         final_proxies = proxies_orig
         
-    final_proxies.append({"name": "dns-out", "type": "dns"})
-    template_data["proxies"] = final_proxies
-    
-    if "proxy-groups" in template_data:
-        all_node_names = [p["name"] for p in final_proxies]
-        temp_groups = []
-        for group in template_data["proxy-groups"]:
-            if "filter" in group:
-                existing = group.get("proxies", [])
-                pattern = group.pop("filter")
-                group.pop("include-all-proxies", None)
-                try:
-                    matcher = re.compile(pattern, re.IGNORECASE)
-                    matched = [n for n in all_node_names if matcher.search(n)]
-                    group["proxies"] = existing + [n for n in matched if n not in existing]
-                except Exception: pass
-                if group.get("proxies"): temp_groups.append(group)
-            else: temp_groups.append(group)
-            
-        final_groups = []
-        surviving = {g["name"] for g in temp_groups if "name" in g}
-        valid_targets = set(all_node_names) | surviving | {"DIRECT", "REJECT", "PASS", "REJECT-DROP", "GCP-outbound"}
-        for group in temp_groups:
-            refs = [r for r in group.get("proxies", []) if r in valid_targets]
-            if refs:
-                group["proxies"] = refs
-                final_groups.append(group)
-        template_data["proxy-groups"] = final_groups
-        
-    # Simply dump the dictionary to YAML natively
-    return yaml.dump(template_data, allow_unicode=True, sort_keys=False, default_flow_style=False).encode("utf-8")
+    # Inject custom nodes
+    if clash_config_val in inject_templates and custom_node_path.exists():
+        try:
+            with open(custom_node_path, "r", encoding="utf-8") as f: custom_data = yaml.safe_load(f)
+            if custom_data:
+                nodes = custom_data if isinstance(custom_data, list) else [custom_data]
+                for node in nodes:
+                    if isinstance(node, dict) and "name" in node:
+                        final_proxies.append(node)
+        except Exception as e:
+            logger.error(f"[Clash] Inject Error: {e}")
 
-def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
-    if not node_path.exists(): return yaml_bytes
-    try:
-        with open(node_path, "r", encoding="utf-8") as f: custom_data = yaml.safe_load(f)
-        if not custom_data: return yaml_bytes
-        nodes = custom_data if isinstance(custom_data, list) else [custom_data]
-        config = yaml.safe_load(yaml_bytes)
-        for node in nodes:
-            if isinstance(node, dict) and "name" in node:
-                config.setdefault("proxies", []).append(node)
-                
-        # Simply dump the dictionary to YAML natively
-        return yaml.dump(config, allow_unicode=True, sort_keys=False, default_flow_style=False).encode("utf-8")
-    except Exception as e:
-        logger.error(f"[Clash] Inject Error: {e}")
-        return yaml_bytes
+    final_proxies.append({"name": "dns-out", "type": "dns"})
+    
+    # Dump the proxy list to YAML string
+    proxy_list_str = yaml.dump(final_proxies, allow_unicode=True, sort_keys=False, default_flow_style=False)
+    
+    # Indent all proxies by 2 spaces to align correctly with "proxies:"
+    indented_proxies = "\n".join("  " + line for line in proxy_list_str.splitlines())
+    
+    # Read the template text
+    with open(template_path, "r", encoding="utf-8") as f:
+        template_text = f.read()
+        
+    # Regex to match "proxies:" or "proxies: []" preserving the template structure
+    pattern = re.compile(r'^proxies:\s*(?:\[\])?\s*$', re.MULTILINE)
+    
+    if pattern.search(template_text):
+        # Insert the indented proxy list after "proxies:"
+        replacement = "proxies:\n" + indented_proxies
+        output_text = pattern.sub(replacement, template_text, count=1)
+    else:
+        # Append to the end if "proxies:" does not exist in the template
+        output_text = template_text + "\n\nproxies:\n" + indented_proxies
+        
+    return output_text.encode("utf-8")
 
 def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, shared_kw, shared_ex_kw, clean_fn, custom_node_path, target_groups, inject_templates, base_dir):
     clash_config_val = None
@@ -276,14 +262,15 @@ def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, s
 
     try:
         uri_text = fetch_uris_text(unquote(url), source, is_force_refresh, cache_dir, cache_expire)
-        output_bytes = process_yaml_content_clash(uri_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn)
         
-        if clash_config_val in inject_templates:
-            output_bytes = inject_custom_clash_node(output_bytes, custom_node_path)
-            
+        output_bytes = process_yaml_content_clash(
+            uri_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn,
+            custom_node_path, clash_config_val, inject_templates
+        )
+        
         response = send_file(io.BytesIO(output_bytes), mimetype="text/yaml", as_attachment=True, download_name="config.yaml")
         
-        # upload: 666 GB, download: 999 GB, total: 999 GB, expire: 2030-01-01 00:00:00
+        # upload: 666 GB, download: 999 GB, total: 999 GB (1072668082176 bytes), expire: 2030-01-01 00:00:00
         response.headers["Subscription-Userinfo"] = "upload=715112054784; download=1072668082176; total=1072668082176; expire=1893456000"
         
         return response
