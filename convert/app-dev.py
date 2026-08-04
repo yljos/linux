@@ -27,7 +27,7 @@ SHARED_KEYWORDS = ["US", "HK", "SG", "JP", "Hong Kong", "Singapore", "Japan", "U
 SHARED_EXCLUDE_KEYWORDS = ["官网", "流量", "倍率", "剩余", "Australia", "到期", "重置", "HK2-HY2", "HK3-HY2", "HK4-HY2", "HK5-HY2"]
 
 ENABLE_CLASH = True
-ENABLE_SINGBOX = True
+ENABLE_SINGBOX = False
 
 app = Flask(__name__)
 
