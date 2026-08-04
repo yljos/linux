@@ -292,7 +292,7 @@ yaml.add_representer(FinalFlowList, final_flow_sequence_representer)
 
 def final_format_data(data, level=0):
     if isinstance(data, dict):
-        if level > 1 and all(not isinstance(v, (dict, list)) for v in data.values()):
+        if level > 0 and all(not isinstance(v, (dict, list)) for v in data.values()):
             return FinalFlowDict({k: final_format_data(v, level + 1) for k, v in data.items()})
         return {k: final_format_data(v, level + 1) for k, v in data.items()}
         
