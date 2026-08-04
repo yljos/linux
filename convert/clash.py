@@ -1,3 +1,4 @@
+import base64
 import io
 import logging
 import os
@@ -6,15 +7,14 @@ import time
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
-from urllib.parse import unquote
+from urllib.parse import urlparse, parse_qs, unquote
 import requests
 import yaml
 from flask import send_file, abort
 
 logger = logging.getLogger(__name__)
 
-CLASH_USER_AGENT = "clash-verge"
-CLASH_INCLUDED_HEADERS = ["Subscription-Userinfo"]
+CLASH_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0"
 CLASH_FINGERPRINT = "firefox"
 
 # Force flow style
@@ -36,25 +36,6 @@ def process_data(data):
         ]
     return data
 
-def save_headers_to_disk(source_name: str, headers: dict, cache_dir: Path) -> dict:
-    try:
-        filtered = {k: v for k, v in headers.items() if k.lower() in {h.lower() for h in CLASH_INCLUDED_HEADERS}}
-        if not filtered: return {}
-        with open(cache_dir / f"{source_name}.headers.json", "w", encoding="utf-8") as f:
-            json.dump(filtered, f, ensure_ascii=False, separators=(",", ":"))
-        return filtered
-    except Exception as e:
-        logger.error(f"Save headers error: {e}")
-        return {}
-
-def load_headers_from_disk(source_name: str, cache_dir: Path) -> dict:
-    p = cache_dir / f"{source_name}.headers.json"
-    if not p.exists(): return {}
-    with open(p, "r", encoding="utf-8") as f: return json.load(f)
-
-def is_valid_clash_yaml(text: str) -> bool:
-    return bool(text and "proxies:" in text)
-
 def filter_node_names_clash(proxies: List[Any], shared_kw: List[str], shared_ex_kw: List[str]) -> Tuple[List[str], List[str]]:
     all_names = [str(p.get("name")) for p in proxies if isinstance(p, dict) and isinstance(p.get("name"), str)]
     valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
@@ -74,34 +55,156 @@ def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: s
         proxy.pop("skip-cert-verify", None)
         if "client-fingerprint" in proxy: proxy["client-fingerprint"] = CLASH_FINGERPRINT
 
+def parse_uris_to_proxies(text: str) -> dict:
+    proxies = []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line: continue
+        
+        try:
+            if line.startswith("vless://"):
+                parsed = urlparse(line)
+                uuid, server_port = parsed.netloc.split("@")
+                server, port = server_port.split(":")
+                qs = parse_qs(parsed.query)
+                name = unquote(parsed.fragment) if parsed.fragment else f"vless-{server}"
+                
+                proxy = {
+                    "name": name,
+                    "type": "vless",
+                    "server": server,
+                    "port": int(port),
+                    "uuid": uuid,
+                    "udp": True,
+                    "tls": qs.get("security", [""])[0] in ("tls", "reality")
+                }
+                
+                if proxy["tls"]:
+                    proxy["servername"] = qs.get("sni", [server])[0]
+                    if "fp" in qs: proxy["client-fingerprint"] = qs["fp"][0]
+                    if qs.get("security", [""])[0] == "reality":
+                        proxy["reality-opts"] = {"public-key": qs.get("pbk", [""])[0]}
+                        if "sid" in qs: proxy["reality-opts"]["short-id"] = qs["sid"][0]
+
+                network = qs.get("type", ["tcp"])[0]
+                proxy["network"] = network
+                
+                if network == "ws":
+                    proxy["ws-opts"] = {
+                        "path": qs.get("path", ["/"])[0],
+                        "headers": {"Host": qs.get("host", [server])[0]}
+                    }
+                elif network == "grpc":
+                    proxy["grpc-opts"] = {
+                        "grpc-service-name": qs.get("serviceName", [""])[0]
+                    }
+                proxies.append(proxy)
+                
+            elif line.startswith("vmess://"):
+                b64_str = line[8:]
+                b64_str += "=" * ((4 - len(b64_str) % 4) % 4)
+                v_json = json.loads(base64.b64decode(b64_str).decode("utf-8"))
+                proxy = {
+                    "name": unquote(v_json.get("ps", f"vmess-{v_json.get('add')}")),
+                    "type": "vmess",
+                    "server": v_json.get("add"),
+                    "port": int(v_json.get("port")),
+                    "uuid": v_json.get("id"),
+                    "alterId": int(v_json.get("aid", 0)),
+                    "cipher": v_json.get("scy", "auto"),
+                    "udp": True,
+                }
+                if v_json.get("tls") == "tls":
+                    proxy["tls"] = True
+                    if v_json.get("sni"): proxy["servername"] = v_json.get("sni")
+                    if v_json.get("fp"): proxy["client-fingerprint"] = v_json.get("fp")
+                    
+                network = v_json.get("net", "tcp")
+                proxy["network"] = network
+                
+                if network == "ws":
+                    proxy["ws-opts"] = {
+                        "path": v_json.get("path", "/"),
+                        "headers": {"Host": v_json.get("host", v_json.get("add"))}
+                    }
+                elif network == "grpc":
+                    proxy["grpc-opts"] = {
+                        "grpc-service-name": v_json.get("path", "")
+                    }
+                proxies.append(proxy)
+                
+            elif line.startswith("trojan://") or line.startswith("hysteria2://"):
+                parsed = urlparse(line)
+                password, server_port = parsed.netloc.split("@")
+                server, port = server_port.split(":")
+                qs = parse_qs(parsed.query)
+                name = unquote(parsed.fragment) if parsed.fragment else f"proxy-{server}"
+                p_type = "trojan" if line.startswith("trojan") else "hysteria2"
+                
+                proxy = {
+                    "name": name,
+                    "type": p_type,
+                    "server": server,
+                    "port": int(port),
+                    "password": password,
+                    "udp": True,
+                }
+                if "sni" in qs: proxy["sni"] = qs["sni"][0]
+                proxies.append(proxy)
+                
+        except Exception as e:
+            logger.warning(f"Parse Error for node {line[:30]}...: {e}")
+            
+    return {"proxies": proxies}
+
 def fetch_yaml_text_clash(url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int):
-    cache_file = cache_dir / f"{source_name}.yaml"
+    cache_file = cache_dir / f"{source_name}_uris.txt"
+    
+    def decode_base64_content(b64_str: str) -> str:
+        b64_str = re.sub(r'\s+', '', b64_str)
+        b64_str = b64_str.replace("-", "+").replace("_", "/")
+        padding = len(b64_str) % 4
+        if padding != 0:
+            b64_str += "=" * (4 - padding)
+        decoded_bytes = base64.b64decode(b64_str)
+        return decoded_bytes.decode("utf-8", errors="ignore").lstrip("\ufeff").replace("\r\n", "\n")
+
     if not force_refresh and cache_file.exists():
         try:
             if time.time() - os.path.getmtime(cache_file) < cache_expire:
                 with open(cache_file, "r", encoding="utf-8") as f:
-                    return f.read(), load_headers_from_disk(source_name, cache_dir)
+                    return decode_base64_content(f.read())
         except Exception: pass
     
     try:
         res = requests.get(url, headers={"User-Agent": CLASH_USER_AGENT}, timeout=15)
         res.raise_for_status()
-        text_content = res.text.lstrip("\ufeff").replace("\r\n", "\n")
-        if is_valid_clash_yaml(text_content):
-            save_headers_to_disk(source_name, res.headers, cache_dir)
-            with open(cache_file, "w", encoding="utf-8") as f: f.write(text_content)
-            return text_content, res.headers
+        
+        raw_b64 = res.text.strip()
+        with open(cache_file, "w", encoding="utf-8") as f: 
+            f.write(raw_b64)
+            
+        return decode_base64_content(raw_b64)
     except Exception as e:
         logger.error(f"Fetch Error: {e}")
         
     if cache_file.exists():
         with open(cache_file, "r", encoding="utf-8") as f:
-            return f.read(), load_headers_from_disk(source_name, cache_dir)
+            return decode_base64_content(f.read())
     raise RuntimeError("Fetch and cache failed")
 
 def process_yaml_content_clash(yaml_text: str, template_path: Path, up_pref: str, down_pref: str, shared_kw: list, shared_ex_kw: list, clean_node_fn):
-    input_data = yaml.safe_load(yaml_text)
-    if not isinstance(input_data, dict): raise ValueError("Invalid YAML")
+    # 尝试按YAML解析，如果失败或者解析出来没有proxies键（说明全是URI），则调用URI解析器
+    try:
+        input_data = yaml.safe_load(yaml_text)
+        if not isinstance(input_data, dict) or "proxies" not in input_data:
+            input_data = parse_uris_to_proxies(yaml_text)
+    except Exception:
+        input_data = parse_uris_to_proxies(yaml_text)
+        
+    if not isinstance(input_data, dict) or not input_data.get("proxies"):
+        preview = yaml_text[:100].replace("\n", " ") if yaml_text else "Empty content"
+        raise ValueError(f"No valid proxies found. Decoded content preview: {preview}")
     
     with open(template_path, "r", encoding="utf-8") as f: template_data = yaml.safe_load(f)
     proxies_orig = input_data.get("proxies", [])
@@ -150,7 +253,6 @@ def process_yaml_content_clash(yaml_text: str, template_path: Path, up_pref: str
                 final_groups.append(group)
         template_data["proxy-groups"] = final_groups
         
-    # Dump formatted YAML using process_data
     processed_data = process_data(template_data)
     return yaml.dump(processed_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
 
@@ -165,7 +267,6 @@ def inject_custom_clash_node(yaml_bytes: bytes, node_path: Path) -> bytes:
             if isinstance(node, dict) and "name" in node:
                 config.setdefault("proxies", []).append(node)
                 
-        # Dump formatted YAML using process_data
         processed_data = process_data(config)
         return yaml.dump(processed_data, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
     except Exception as e:
@@ -226,21 +327,20 @@ def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, s
     template_path, up, down = config_map[clash_config_val]
 
     try:
-        yaml_text, headers_data = fetch_yaml_text_clash(unquote(url), source, is_force_refresh, cache_dir, cache_expire)
+        yaml_text = fetch_yaml_text_clash(unquote(url), source, is_force_refresh, cache_dir, cache_expire)
         output_bytes = process_yaml_content_clash(yaml_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn)
         
         if clash_config_val in inject_templates:
             output_bytes = inject_custom_clash_node(output_bytes, custom_node_path)
             
-        # Format the final YAML output
         final_config = yaml.safe_load(output_bytes)
         formatted_config = final_format_data(final_config)
         output_bytes = yaml.dump(formatted_config, allow_unicode=True, sort_keys=False, default_flow_style=False, width=float("inf")).encode("utf-8")
         
         response = send_file(io.BytesIO(output_bytes), mimetype="text/yaml", as_attachment=True, download_name="config.yaml")
-        if headers_data:
-            for h, v in headers_data.items():
-                if h.lower() in {ih.lower() for ih in CLASH_INCLUDED_HEADERS}: response.headers[h] = v
+        
+        response.headers["Subscription-Userinfo"] = "upload=0; download=1099511627776; total=10995116277760; expire=2147483647"
+        
         return response
     except Exception as e:
         logger.error(f"Clash Error: {e}")
