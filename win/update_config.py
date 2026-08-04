@@ -9,12 +9,14 @@ from curl_cffi import requests
 # Configuration
 UPDATE_INTERVAL = 3600  # 1 hour in seconds
 
+
 def is_admin():
     """Check for administrator privileges"""
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
+
 
 def restart_service(service_name):
     """Restart the specified service"""
@@ -29,11 +31,12 @@ def restart_service(service_name):
     except Exception as e:
         print(f"Unknown error during service restart: {e}")
 
+
 def perform_update():
     """Execute the update process based on User-Agent"""
     load_dotenv(override=True)
     url = os.getenv("URL")
-    
+
     # Default to clash_pc if USER_AGENT is not set
     user_agent = os.getenv("USER_AGENT", "clash_pc")
     headers = {"User-Agent": user_agent}
@@ -56,7 +59,9 @@ def perform_update():
 
     try:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        print(f"[{service_name}] Downloading config... (User-Agent: {headers['User-Agent']})")
+        print(
+            f"[{service_name}] Downloading config... (User-Agent: {headers['User-Agent']})"
+        )
 
         # Bypass Bot Fight Mode by impersonating Chrome
         response = requests.get(
@@ -84,15 +89,21 @@ def perform_update():
                 f.write(response.content)
             os.replace(temp_path, save_path)
 
-            print(f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
-            
+            print(
+                f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+
             if is_admin():
                 restart_service(service_name)
             else:
-                print(f"[{service_name}] Skipping service restart (insufficient privileges).")
+                print(
+                    f"[{service_name}] Skipping service restart (insufficient privileges)."
+                )
             return True
         else:
-            print(f"[{service_name}] Validation failed: Missing '{check_key}' - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(
+                f"[{service_name}] Validation failed: Missing '{check_key}' - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
             return False
 
     except requests.exceptions.RequestException as e:
@@ -108,6 +119,7 @@ def perform_update():
                 pass
 
     return False
+
 
 if __name__ == "__main__":
     print("Auto-update script started...")
@@ -136,4 +148,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service manually stopped.")
     except Exception as e:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}")
+        print(
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}"
+        )

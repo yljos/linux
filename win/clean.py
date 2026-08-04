@@ -51,7 +51,10 @@ def main():
         # Apply whitelist, blacklist, and size logic
         if ext_lower not in WHITELIST_EXT:
             if ext_lower == ".mp4":
-                if any(b in base_name for b in BLACKLIST_MP4) or file_size < MIN_MP4_SIZE_BYTES:
+                if (
+                    any(b in base_name for b in BLACKLIST_MP4)
+                    or file_size < MIN_MP4_SIZE_BYTES
+                ):
                     files_to_del.add(rel_path)
                     keep_file = False
             else:

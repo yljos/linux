@@ -110,7 +110,7 @@ def parse_hy2(uri: str) -> dict:
     host_port = netloc.split("@")[-1]
     server_port = None
     server_ports = None
-    
+
     if ":" in host_port:
         host, port_str = host_port.split(":", 1)
         if "-" in port_str:

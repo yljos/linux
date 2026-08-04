@@ -11,7 +11,9 @@ load_dotenv()
 MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
 EMAIL = "dayao"
-UPDATE_URL = "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/win/minecraft.py"
+UPDATE_URL = (
+    "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/win/minecraft.py"
+)
 
 # Strict environment variables loading
 VERSION_URL = os.environ["VERSION_URL"]
@@ -22,27 +24,21 @@ GAME_LANG = "zh_cn"
 # Proxy configuration
 UPDATE_PROXIES = {
     "http": "socks5://127.0.0.1:12138",
-    "https": "socks5://127.0.0.1:12138"
+    "https": "socks5://127.0.0.1:12138",
 }
+
 
 def update_self():
     """Fetch the latest script from the server and restart if updated."""
     try:
         # Attempt direct connection first with 5s timeout
-        response = requests.get(
-            UPDATE_URL, 
-            timeout=5, 
-            impersonate="firefox"
-        )
+        response = requests.get(UPDATE_URL, timeout=5, impersonate="firefox")
     except Exception as e:
         print(f"Direct update failed ({e}), attempting with proxy...")
         try:
             # Fallback to SOCKS5 proxy
             response = requests.get(
-                UPDATE_URL, 
-                timeout=5, 
-                impersonate="firefox", 
-                proxies=UPDATE_PROXIES
+                UPDATE_URL, timeout=5, impersonate="firefox", proxies=UPDATE_PROXIES
             )
         except Exception as proxy_e:
             print(f"Proxy update failed: {proxy_e}")
@@ -63,6 +59,7 @@ def update_self():
     except Exception as e:
         print(f"Failed to process update: {e}")
 
+
 def get_version(url):
     """Fetch the version string from a URL with Firefox fingerprinting."""
     try:
@@ -75,12 +72,13 @@ def get_version(url):
         print(f"Failed to fetch version: {e}")
         return None
 
+
 def set_game_language(work_dir, lang):
     """Ensure the target language is set in options.txt."""
     options_path = os.path.join(work_dir, "options.txt")
     lang_line = f"lang:{lang}\n"
     os.makedirs(work_dir, exist_ok=True)
-    
+
     if not os.path.exists(options_path):
         with open(options_path, "w", encoding="utf-8") as f:
             f.write(lang_line)
@@ -101,6 +99,7 @@ def set_game_language(work_dir, lang):
 
     with open(options_path, "w", encoding="utf-8") as f:
         f.writelines(lines)
+
 
 def launch_minecraft():
     version_data = get_version(VERSION_URL)
@@ -130,11 +129,15 @@ def launch_minecraft():
         target_version = f"{loader}:{mc_version}"
 
     command = [
-        "uvx", "portablemc",
-        "--main-dir", MAIN_DIR,
-        "--work-dir", work_dir,
+        "uvx",
+        "portablemc",
+        "--main-dir",
+        MAIN_DIR,
+        "--work-dir",
+        work_dir,
         "start",
-        "-u", EMAIL
+        "-u",
+        EMAIL,
     ]
 
     if SERVER_ADDR:
@@ -150,6 +153,7 @@ def launch_minecraft():
         print(f"Error occurred: {e}")
     except FileNotFoundError:
         print("Executable not found: uvx")
+
 
 if __name__ == "__main__":
     update_self()
