@@ -2,9 +2,20 @@ import os
 import json
 import subprocess
 import re
+from dotenv import load_dotenv
 
-# Target remote path
+# Load environment variables
+load_dotenv()
+
+# Configuration
+env_blacklist = os.getenv("BLACKLIST_MP4", "")
+BLACKLIST_MP4 = {name.strip() for name in env_blacklist.split(",") if name.strip()}
+WHITELIST_EXT = {".mkv", ".avi", ".mov", ".wmv", ".ts"}
+
 REMOTE_PATH = "pikpak:My Pack"
+
+# 20MB threshold in bytes
+MIN_MP4_SIZE_BYTES = 20 * 1024 * 1024
 
 # Regex to match suffix like "(1)", " (2)", etc., at the end of the filename stem
 SUFFIX_RE = re.compile(r"\s*\(\d+\)$")
@@ -23,47 +34,51 @@ def main():
     except json.JSONDecodeError:
         return
 
-    # Dictionary to group files
-    # Format: {(size, normalized_name): [list_of_paths]}
+    files_to_del = set()
     file_groups = {}
 
-    # Process files to group them by exact size and normalized name
+    # Process files
     for item in remote_files:
         rel_path = item["Path"]
         name = item["Name"]
         file_size = item.get("Size", 0)
 
-        # Split extension and stem
-        stem, ext = os.path.splitext(name)
+        base_name, ext = os.path.splitext(name)
+        ext_lower = ext.lower()
 
-        # Remove suffix like (1) or (2) from the stem to get the normalized base name
-        norm_stem = SUFFIX_RE.sub("", stem)
-        norm_name = norm_stem + ext.lower()
+        keep_file = True
 
-        # Group key: exact size + normalized file name
-        group_key = (file_size, norm_name)
+        # Apply whitelist, blacklist, and size logic
+        if ext_lower not in WHITELIST_EXT:
+            if ext_lower == ".mp4":
+                if any(b in base_name for b in BLACKLIST_MP4) or file_size < MIN_MP4_SIZE_BYTES:
+                    files_to_del.add(rel_path)
+                    keep_file = False
+            else:
+                files_to_del.add(rel_path)
+                keep_file = False
 
-        if group_key not in file_groups:
-            file_groups[group_key] = []
-        file_groups[group_key].append(rel_path)
+        # Group valid files for duplicate detection
+        if keep_file:
+            norm_stem = SUFFIX_RE.sub("", base_name)
+            norm_name = norm_stem + ext_lower
+            group_key = (file_size, norm_name)
 
-    files_to_del = []
+            if group_key not in file_groups:
+                file_groups[group_key] = []
+            file_groups[group_key].append(rel_path)
 
-    # Find duplicates within the groups
+    # Process duplicates
     for group_key, paths in file_groups.items():
         if len(paths) > 1:
-            # Sort paths by the length of the filename
-            # The original file without "(1)" will have a shorter name length
+            # Sort paths by filename length to keep the shortest (original)
             paths.sort(key=lambda p: len(os.path.basename(p)))
+            for p in paths[1:]:
+                files_to_del.add(p)
 
-            # Keep the first one (shortest name, original), mark the rest for deletion
-            files_to_del.extend(paths[1:])
-
-    # Execute deletions via stdin
+    # Execute deletions via stdin (no temporary file)
     if files_to_del:
-        files_to_del = list(set(files_to_del))
         delete_payload = "\n".join(files_to_del)
-
         subprocess.run(
             ["rclone", "delete", REMOTE_PATH, "--files-from", "-"],
             input=delete_payload,
