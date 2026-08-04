@@ -10,6 +10,8 @@ payload:
   - mitce.io
   - b10.nextacdn.net
   - prod.b5.thatcdn.com
+  - +.curseforge.com
+  - +.forgecdn.net
   - +.minecraftforge.net
   - +.ipify.org
   - +.adoptium.net

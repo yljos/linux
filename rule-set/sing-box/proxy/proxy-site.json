@@ -16,6 +16,8 @@
         "prod.b5.thatcdn.com"
       ],
       "domain_suffix": [
+        "curseforge.com",
+        "forgecdn.net",
         "minecraftforge.net",
         "ipify.org",
         "adoptium.net",

@@ -10,6 +10,8 @@ payload:
   - DOMAIN,mitce.io
   - DOMAIN,b10.nextacdn.net
   - DOMAIN,prod.b5.thatcdn.com
+  - DOMAIN-SUFFIX,curseforge.com
+  - DOMAIN-SUFFIX,forgecdn.net
   - DOMAIN-SUFFIX,minecraftforge.net
   - DOMAIN-SUFFIX,ipify.org
   - DOMAIN-SUFFIX,adoptium.net
