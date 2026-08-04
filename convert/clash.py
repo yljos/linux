@@ -150,6 +150,11 @@ def parse_uris_to_proxies(text: str) -> dict:
                     "udp": True,
                 }
                 if "sni" in qs: proxy["sni"] = qs["sni"][0]
+                
+                if p_type == "hysteria2":
+                    if "obfs" in qs: proxy["obfs"] = qs["obfs"][0]
+                    if "obfs-password" in qs: proxy["obfs-password"] = qs["obfs-password"][0]
+                    
                 proxies.append(proxy)
                 
         except Exception as e:
@@ -157,9 +162,11 @@ def parse_uris_to_proxies(text: str) -> dict:
             
     return {"proxies": proxies}
 
-def fetch_yaml_text_clash(url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int):
+def fetch_uris_text(url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int):
+    # Cache raw base64 content
     cache_file = cache_dir / f"{source_name}_uris.txt"
     
+    # Helper to decode base64
     def decode_base64_content(b64_str: str) -> str:
         b64_str = re.sub(r'\s+', '', b64_str)
         b64_str = b64_str.replace("-", "+").replace("_", "/")
@@ -181,6 +188,8 @@ def fetch_yaml_text_clash(url: str, source_name: str, force_refresh: bool, cache
         res.raise_for_status()
         
         raw_b64 = res.text.strip()
+        
+        # Save raw base64 to disk
         with open(cache_file, "w", encoding="utf-8") as f: 
             f.write(raw_b64)
             
@@ -193,17 +202,12 @@ def fetch_yaml_text_clash(url: str, source_name: str, force_refresh: bool, cache
             return decode_base64_content(f.read())
     raise RuntimeError("Fetch and cache failed")
 
-def process_yaml_content_clash(yaml_text: str, template_path: Path, up_pref: str, down_pref: str, shared_kw: list, shared_ex_kw: list, clean_node_fn):
-    # 尝试按YAML解析，如果失败或者解析出来没有proxies键（说明全是URI），则调用URI解析器
-    try:
-        input_data = yaml.safe_load(yaml_text)
-        if not isinstance(input_data, dict) or "proxies" not in input_data:
-            input_data = parse_uris_to_proxies(yaml_text)
-    except Exception:
-        input_data = parse_uris_to_proxies(yaml_text)
+def process_yaml_content_clash(uri_text: str, template_path: Path, up_pref: str, down_pref: str, shared_kw: list, shared_ex_kw: list, clean_node_fn):
+    # Force parse as URIs
+    input_data = parse_uris_to_proxies(uri_text)
         
     if not isinstance(input_data, dict) or not input_data.get("proxies"):
-        preview = yaml_text[:100].replace("\n", " ") if yaml_text else "Empty content"
+        preview = uri_text[:100].replace("\n", " ") if uri_text else "Empty content"
         raise ValueError(f"No valid proxies found. Decoded content preview: {preview}")
     
     with open(template_path, "r", encoding="utf-8") as f: template_data = yaml.safe_load(f)
@@ -327,8 +331,8 @@ def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, s
     template_path, up, down = config_map[clash_config_val]
 
     try:
-        yaml_text = fetch_yaml_text_clash(unquote(url), source, is_force_refresh, cache_dir, cache_expire)
-        output_bytes = process_yaml_content_clash(yaml_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn)
+        uri_text = fetch_uris_text(unquote(url), source, is_force_refresh, cache_dir, cache_expire)
+        output_bytes = process_yaml_content_clash(uri_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn)
         
         if clash_config_val in inject_templates:
             output_bytes = inject_custom_clash_node(output_bytes, custom_node_path)
