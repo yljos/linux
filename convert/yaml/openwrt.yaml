@@ -89,6 +89,7 @@ rule-providers:
   tencent-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tencent.mrs"}
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
+  - DST-PORT,853,REJECT
   - DST-PORT,53,dns-out
   - RULE-SET,ad-site,AD
   - RULE-SET,ad-ip,AD
