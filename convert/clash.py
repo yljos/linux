@@ -343,7 +343,7 @@ def handle_request(source, url, ua, is_force_refresh, cache_dir, cache_expire, s
         
         response = send_file(io.BytesIO(output_bytes), mimetype="text/yaml", as_attachment=True, download_name="config.yaml")
         
-        response.headers["Subscription-Userinfo"] = "upload=0; download=1099511627776; total=10995116277760; expire=2147483647"
+        response.headers["Subscription-Userinfo"] = "upload=0; download=715112054784; total=107373108658176; expire=1893456000"
         
         return response
     except Exception as e:
