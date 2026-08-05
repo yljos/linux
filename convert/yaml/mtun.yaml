@@ -7,7 +7,7 @@ ipv6: false
 udp: true
 unified-delay: true
 tcp-concurrent: true
-profile: {  store-selected: false,  store-fake-ip: true}
+profile: {store-selected: false, store-fake-ip: true}
 external-controller: 127.0.0.1:9090
 external-ui: ui
 tun:
@@ -30,7 +30,7 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
-  fake-ip-filter: [ localhost.ptlogin2.qq.com, +.msftconnecttest.com, +.msftncsi.com, +.googleapis.com, +.googleapis.cn]
+  fake-ip-filter: [localhost.ptlogin2.qq.com, +.msftconnecttest.com, +.msftncsi.com, +.googleapis.com, +.googleapis.cn]
   use-hosts: true
   default-nameserver: [223.5.5.5#DIRECT]
   proxy-server-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
