@@ -124,7 +124,7 @@ rules:
   - RULE-SET,speedtest-site,M
   - RULE-SET,javdb-site,M
   - RULE-SET,f-droid-site,M
-  - RULE-SET,steam-site-classical,Steam
+  - RULE-SET,steam-site,Steam
   - RULE-SET,gfw-site,M
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,direct-ip,DIRECT
