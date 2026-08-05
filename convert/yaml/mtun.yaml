@@ -92,8 +92,6 @@ rules:
   - RULE-SET,youtube-site,Google
   - RULE-SET,google-site,Google
   - RULE-SET,tiktok-site,JP
-  - RULE-SET,speedtest-site,M
-  - RULE-SET,f-droid-site,M
   - RULE-SET,gfw-site,M
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,direct-ip,DIRECT
