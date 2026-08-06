@@ -55,8 +55,7 @@ proxy-groups:
   - {type: select, name: Microsoft, proxies: [DIRECT, JP, SG, US, HK]}
   - {type: select, name: TikTok, proxies: [JP]}
   - {type: select, name: Twitter, proxies: [US]}
-  - {type: select, name: Youtube, include-all-proxies: true, filter: "(?i)^(?=.*(US))(?!.*(gemini)).*$", proxies: [US, JP, SG, HK]}
-  - {type: select, name: AD, proxies: [REJECT-DROP, PASS]}
+  - {type: select, name: Youtube, hidden: true,include-all-proxies: true, filter: "(?i)^(?=.*(US))(?!.*(gemini)).*$", proxies: [US, JP, SG, HK]}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: HK, filter: "(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: JP, filter: "(?i).*JP.*"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: SG, filter: "(?i).*SG.*"}
@@ -102,15 +101,13 @@ rule-providers:
   tencent-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tencent.mrs"}
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
-  - DST-PORT,853,REJECT
   - DST-PORT,53,dns-out
-  - RULE-SET,ad-site,AD
-  - RULE-SET,ad-ip,AD
+  - RULE-SET,ad-site,REJECT-DROP
+  - RULE-SET,ad-ip,REJECT-DROP
   - RULE-SET,huawei-site,REJECT-DROP
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,googlefcm-site,DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
-  - RULE-SET,cloudflare-site,M
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
   - DOMAIN-KEYWORD,msftncsi.com,Microsoft
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(DOMAIN-KEYWORD,googleapis)),Youtube
@@ -119,6 +116,7 @@ rules:
   - RULE-SET,pikpak-site,PikPak
   - RULE-SET,tencent-site,DIRECT
   - RULE-SET,proxy-site,M
+  - RULE-SET,cloudflare-site,M
   - RULE-SET,github-site,GitHub
   - RULE-SET,codeberg-site,GitHub
   - RULE-SET,docker-site,M
