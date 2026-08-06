@@ -53,6 +53,7 @@
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "ad-ip", "action": "reject"},
       {"rule_set": "mobile", "outbound": "D"},
+      {"action": "sniff", "timeout": "300ms"},
       {"domain": ["cdn.jsdmirror.com", "ntp.aliyun.com"], "outbound": "D"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "outbound": "Microsoft"},
       {"domain_keyword": "googleapis", "outbound": "Google"},
@@ -95,8 +96,8 @@
       {"rule_set": "cn-ip", "outbound": "D"}
     ],
     "rule_set": [
-      {"tag": "ad-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/linux@main/rule-set/sing-box/ad/ad-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "ad-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/linux@main/rule-set/sing-box/ad/ad-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "ad-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ads-all.srs", "download_detour": "D", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "ad-ip", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/ad.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "adguard-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/adguard.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "alibaba-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/linux@main/rule-set/sing-box/alibaba/alibaba-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"tag": "alibaba-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/yljos/linux@main/rule-set/sing-box/alibaba/alibaba-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
