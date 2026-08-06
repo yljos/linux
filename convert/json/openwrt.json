@@ -98,8 +98,8 @@
       {"rule_set": "cn-ip", "outbound": "D"}
     ],
     "rule_set": [
-      {"type": "remote", "tag": "ad-site", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@sing-box/ad/ad-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"type": "remote", "tag": "ad-ip", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@sing-box/ad/ad-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "ad-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ads-all.srs", "download_detour": "D", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "ad-ip", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/ad.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"type": "remote", "tag": "adguard-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/adguard.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"type": "remote", "tag": "archlinux-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/archlinux.srs", "download_detour": "D", "update_interval": "12h0m0s"},
       {"type": "remote", "tag": "cn-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs", "download_detour": "D", "update_interval": "12h0m0s"},
