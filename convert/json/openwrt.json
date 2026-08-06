@@ -48,6 +48,7 @@
       {"port": 53, "action": "hijack-dns"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": "udp"}, {"port": 443}], "action": "reject", "no_drop": true},
+      {"action": "sniff", "timeout": "300ms"},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "ad-ip", "action": "reject"},
       {"rule_set": "huawei-site", "action": "reject"},
