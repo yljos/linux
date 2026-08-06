@@ -10,6 +10,20 @@ tcp-concurrent: true
 profile: {store-selected: false, store-fake-ip: true}
 external-controller: 127.0.0.1:9090
 external-ui: ui
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  override-destination: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+  skip-domain: [Mijia Cloud]
 tun:
   enable: true
   device: clash

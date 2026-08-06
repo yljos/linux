@@ -20,8 +20,7 @@ sniffer:
       ports: [443, 8443]
     QUIC:
       ports: [443, 8443]
-  skip-domain:
-    - Mijia Cloud
+  skip-domain: [Mijia Cloud]
 profile: {store-selected: true, store-fake-ip: true}
 external-controller: 10.0.0.1:9090
 external-ui: ui
