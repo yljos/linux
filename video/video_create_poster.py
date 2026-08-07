@@ -73,7 +73,7 @@ def main():
                     "ffmpeg",
                     "-y",
                     "-i", video_path,
-                    "-ss", "00:00:07",
+                    "-ss", "00:00:02",
                     "-vframes", "1",
                     "-q:v", "2",
                     output_file,
