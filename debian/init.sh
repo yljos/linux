@@ -10,8 +10,12 @@ sudo apt install --no-install-recommends \
     git vim ca-certificates rsync nfs-common \
     fonts-noto-cjk fonts-hack gpg \
     freerdp2-x11 x11-xserver-utils arp-scan mpv \
-    pipewire wireplumber pipewire-pulse pipewire-alsa efibootmgr
+    pipewire wireplumber pipewire-pulse pipewire-alsa efibootmgr shfmt \
+    wakeonlan
 
 # Update font cache
 fc-cache -fv
+
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
 
