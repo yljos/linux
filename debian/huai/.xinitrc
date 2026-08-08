@@ -5,7 +5,7 @@ numlockx &
 pidof -q picom || picom -b
 pidof -q dunst || dunst &
 
-[[ -f /home/huai/.config/wallpaper.sh ]] && /bin/bash /home/huai/.config/wallpaper.sh
+# [[ -f /home/huai/.config/wallpaper.sh ]] && /bin/bash /home/huai/.config/wallpaper.sh
 [[ -f /home/huai/.config/status.sh ]] && /bin/bash /home/huai/.config/status.sh &
 
 # 2. Place time-consuming or GUI autostarts in a background subshell to avoid blocking dwm

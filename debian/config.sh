@@ -20,4 +20,6 @@ systemctl enable --now shutdown >/dev/null 2>&1
 
 tee /etc/krb5.conf </dev/null
 
+sudo timedatectl set-timezone UTC
+
 
