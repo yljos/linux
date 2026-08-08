@@ -20,7 +20,7 @@ ExecStart=/usr/bin/podman run \
   -e WEBDAV_CONFIG=/config.yaml \
   -p 6065:6065 \
   --log-driver=journald \
-  -v /data/webdav:/srv:Z \
+  -v /data/www/webdav:/srv:Z \
   -v /data/appdata/webdav/config.yaml:/config.yaml:Z \
   docker.io/hacdias/webdav:latest
 
