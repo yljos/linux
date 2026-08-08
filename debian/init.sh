@@ -10,7 +10,7 @@ sudo apt install --no-install-recommends \
     git vim ca-certificates rsync nfs-common \
     fonts-noto-cjk fonts-hack gpg \
     freerdp2-x11 x11-xserver-utils arp-scan mpv \
-    pipewire wireplumber pipewire-pulse pipewire-alsa
+    pipewire wireplumber pipewire-pulse pipewire-alsa efibootmgr
 
 # Update font cache
 fc-cache -fv
