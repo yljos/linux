@@ -17,7 +17,6 @@ find /home/huai/.ssh /home/huai/.gnupg -type f -exec chmod 600 {} + 2>/dev/null
 systemctl daemon-reload
 systemctl enable --now shutdown >/dev/null 2>&1
 # systemctl enable --now pcscd.socket
-# systemctl --user enable --now pipewire wireplumber pipewire-pulse
 
 tee /etc/krb5.conf </dev/null
 

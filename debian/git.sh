@@ -7,5 +7,5 @@ git config --global user.name "yljos"
 git config --global user.email "git@sakuraos.com"
 
 systemctl --user daemon-reload
-systemctl --user enable --now pipewire wireplumber ssh-agent >/dev/null 2>&1
+systemctl --user enable --now pipewire wireplumber pipewire-pulse
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
