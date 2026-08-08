@@ -11,7 +11,7 @@ sudo apt install --no-install-recommends \
     fonts-noto-cjk fonts-hack gpg \
     freerdp2-x11 x11-xserver-utils arp-scan mpv \
     pipewire wireplumber pipewire-pulse pipewire-alsa efibootmgr shfmt \
-    wakeonlan
+    wakeonlan curl -y
 
 # Update font cache
 fc-cache -fv
