@@ -1,4 +1,4 @@
-
+usermod -aG sudo huai
 # Copy kernel and initrd with version
 cp /boot/vmlinuz-6.1.0-52-amd64 /boot/efi/EFI/debian/
 cp /boot/initrd.img-6.1.0-52-amd64 /boot/efi/EFI/debian/
