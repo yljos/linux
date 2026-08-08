@@ -5,7 +5,11 @@ sudo apt update
 sudo apt install --no-install-recommends xserver-xorg-core xserver-xorg-input-all xserver-xorg-video-all xinit build-essential libx11-dev libxft-dev libxinerama-dev git vim ca-certificates
 
 # Install open-source Noto CJK fonts
-sudo apt install fonts-noto-cjk
+sudo apt install fonts-noto-cjk fonts-hack
 
 # Update font cache
 fc-cache -fv
+
+# freerdp(debian12)
+sudo apt install freerdp2-x11
+
