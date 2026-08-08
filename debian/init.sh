@@ -16,6 +16,5 @@ sudo apt install --no-install-recommends \
 # Update font cache
 fc-cache -fv
 
-curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 
