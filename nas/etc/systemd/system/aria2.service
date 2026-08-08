@@ -19,10 +19,10 @@ ExecStart=/usr/bin/podman run \
   --log-driver=journald \
   --label "io.containers.autoupdate=registry" \
   --label PODMAN_SYSTEMD_UNIT=%n \
-  -e RPC_SECRET=YourSecureToken123 \
+  -e RPC_SECRET=123123 \
   -e RPC_PORT=6800 \
-  -v /data/appdata/aria2-pro:/config:Z \
-  -v /data/www/Downloads:/Downloads:z \
+  -v /data/appdata/aria2:/config:Z \
+  -v /data/www/Downloads:/downloads:z \
   docker.io/p3terx/aria2-pro:latest
 
 ExecStop=/usr/bin/podman stop -t 10 aria2
