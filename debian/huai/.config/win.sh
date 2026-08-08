@@ -16,13 +16,4 @@ if ! sudo arp-scan "$IP" | grep -qi "$MAC"; then
 		((count++))
 	done
 fi
-
-# Read password from file
-read -r PASS <"$PASS_FILE"
-
-# Prioritize Wayland, fallback to X11 directly
-if [ -n "$WAYLAND_DISPLAY" ]; then
-	wlfreerdp3 /v:"$IP" /u:huai /p:"$PASS" /cert:ignore /sound /w:1916 /h:1056 >/dev/null 2>&1 &
-else
-	xfreerdp /v:"$IP" /u:huai /p:"123" /cert:ignore /sound /w:1916 /h:1056 >/dev/null 2>&1 &
-fi
+xfreerdp /v:"$IP" /u:huai /p:"123" /cert:ignore /sound /w:1916 /h:1056 >/dev/null 2>&1 &
