@@ -9,7 +9,7 @@ from pathlib import Path
 
 # --- Configuration ---
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".ts"}
-THRESHOLD =1080 
+THRESHOLD = 720
 COOLDOWN_SECONDS = 60
 CPU_THREADS = 2  # Limit to 2 threads for ~50% CPU usage on i5-4570T
 
@@ -88,7 +88,7 @@ def process_videos(root_dir):
         print("Error: FFmpeg or ffprobe not found in PATH.")
         return
 
-    set_terminal_title("H264 & 1080P Optimizer")
+    set_terminal_title("H264 & 720P Optimizer")
 
     targets = []
     print(f"\n[*] Scanning for optimization/transcoding targets: {root_dir}")
