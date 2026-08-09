@@ -2,6 +2,32 @@ import os
 import subprocess
 import platform
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def generate_poster(video_path, output_file, startup_info):
+    """Worker function to generate a single poster"""
+    # 关键修改：-ss "00:00:02" 必须放在 -i 前面，利用快速输入寻址大幅降低网络 I/O
+    command = [
+        "ffmpeg",
+        "-y",
+        "-ss", "00:00:02",
+        "-i", video_path,
+        "-vframes", "1",
+        "-q:v", "2",
+        output_file,
+    ]
+
+    try:
+        subprocess.run(
+            command, 
+            check=True, 
+            startupinfo=startup_info, 
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL
+        )
+        return True, output_file
+    except subprocess.CalledProcessError:
+        return False, video_path
 
 def main():
     is_windows = platform.system().lower() == "windows"
@@ -50,6 +76,10 @@ def main():
         startup_info = subprocess.STARTUPINFO()
         startup_info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+    print(f"\n[*] Scanning for missing posters in {src_dir} ...")
+    
+    tasks = []
+    # 快速扫描阶段：仅在本地构建任务列表，不调用 ffmpeg
     for root, dirs, files in os.walk(src_dir):
         for file in files:
             if file.lower().endswith((".mp4", ".ts", ".mkv", ".avi", ".mov", ".flv", ".wmv", ".webm")):
@@ -66,24 +96,42 @@ def main():
                 output_file = os.path.join(target_root, f"{os.path.splitext(file)[0]}-poster.jpg")
 
                 # Skip if poster already exists
-                if os.path.exists(output_file):
-                    continue
+                if not os.path.exists(output_file):
+                    tasks.append((video_path, output_file))
 
-                command = [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_path,
-                    "-ss", "00:00:02",
-                    "-vframes", "1",
-                    "-q:v", "2",
-                    output_file,
-                ]
+    total_tasks = len(tasks)
+    if total_tasks == 0:
+        print("[i] All posters are already generated.")
+        return
 
-                try:
-                    subprocess.run(command, check=True, startupinfo=startup_info, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    print(f"Generated: {output_file}")
-                except subprocess.CalledProcessError:
-                    print(f"Failed: {video_path}")
+    print(f"[*] Found {total_tasks} missing posters. Starting concurrent generation...")
+
+    # 并发执行阶段：使用 10-15 个线程压榨网络空闲时间
+    completed = 0
+    failed_list = []
+    with ThreadPoolExecutor(max_workers=15) as executor:
+        futures = {
+            executor.submit(generate_poster, v_path, o_path, startup_info): (v_path, o_path) 
+            for v_path, o_path in tasks
+        }
+        
+        for future in as_completed(futures):
+            completed += 1
+            success, result_path = future.result()
+            
+            # 实时进度覆盖刷新
+            print(f"\r    -> Generating ({completed}/{total_tasks}): {os.path.basename(result_path)[:40].ljust(40)}", end="")
+            
+            if not success:
+                failed_list.append(result_path)
+
+    print("\n" + "-" * 50)
+    print(f"[✔] Poster generation finished. Successfully generated: {total_tasks - len(failed_list)}")
+    
+    if failed_list:
+        print(f"[!] Failed to generate posters for {len(failed_list)} files.")
+        for f in failed_list:
+            print(f"    - {f}")
 
 if __name__ == "__main__":
     main()

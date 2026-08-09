@@ -6,10 +6,11 @@ import sys
 import os
 import re
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- Configuration ---
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".ts"}
-THRESHOLD =1080 
+THRESHOLD = 1080
 COOLDOWN_SECONDS = 60
 CPU_THREADS = 2  # Limit to 2 threads for ~50% CPU usage on i5-4570T
 
@@ -88,65 +89,68 @@ def process_videos(root_dir):
         print("Error: FFmpeg or ffprobe not found in PATH.")
         return
 
-    set_terminal_title("H264 & 1080P Optimizer")
+    set_terminal_title("H264 & 720P Optimizer")
+
+    print(f"\n[*] Scanning file list in: {root_dir}")
+    # Phase 1: Local file list matching without network I/O
+    files_to_probe = [
+        f for f in root_dir.rglob("*")
+        if f.is_file() 
+        and f.suffix.lower() in VIDEO_EXTENSIONS 
+        and not f.name.endswith(".tmp.mp4")
+    ]
+    
+    total_files = len(files_to_probe)
+    if total_files == 0:
+        print("[i] No files need optimization or transcoding.")
+        return
 
     targets = []
-    print(f"\n[*] Scanning for optimization/transcoding targets: {root_dir}")
+    print(f"[*] Found {total_files} potential files. Starting concurrent probing...")
 
-    for file_path in root_dir.rglob("*"):
-        if not file_path.is_file() or file_path.suffix.lower() not in VIDEO_EXTENSIONS:
-            continue
-
-        # Skip temporary files
-        if file_path.name.endswith(".tmp.mp4"):
-            continue
-
+    # Wrapper for threaded probing to include faststart check over network I/O
+    def probe_task(file_path):
         w, h, v_codec, a_codec = get_video_audio_info(file_path)
         short_side = min(w, h)
-
+        
         needs_downscale = short_side > THRESHOLD
         needs_v_transcode = v_codec != "h264"
         needs_a_transcode = a_codec != "aac" and a_codec != "none"
         is_transcode = needs_downscale or needs_v_transcode or needs_a_transcode
+        
+        needs_faststart = False
+        if not is_transcode and file_path.suffix.lower() == ".mp4":
+            needs_faststart = not is_faststart(file_path)
+            
+        return file_path, w, h, v_codec, a_codec, is_transcode, needs_downscale, needs_a_transcode, needs_faststart
 
-        # In-place destination (always ends up as .mp4)
-        dst = file_path.with_suffix(".mp4")
+    # Phase 2: Concurrent network I/O
+    with ThreadPoolExecutor(max_workers=15) as executor:
+        futures = {executor.submit(probe_task, f): f for f in files_to_probe}
+        
+        completed = 0
+        for future in as_completed(futures):
+            completed += 1
+            file_path, w, h, v_codec, a_codec, is_transcode, needs_downscale, needs_a_transcode, needs_faststart = future.result()
+            
+            # Real-time progress
+            print(f"\r    -> Probing ({completed}/{total_files}): {file_path.name[:40].ljust(40)}", end="")
+            
+            dst = file_path.with_suffix(".mp4")
+            
+            if is_transcode:
+                targets.append((file_path, w, h, v_codec, a_codec, dst, True, needs_downscale, needs_a_transcode))
+            elif needs_faststart:
+                targets.append((file_path, w, h, v_codec, a_codec, dst, False, False, False))
 
-        if is_transcode:
-            targets.append(
-                (
-                    file_path,
-                    w,
-                    h,
-                    v_codec,
-                    a_codec,
-                    dst,
-                    True,
-                    needs_downscale,
-                    needs_a_transcode,
-                )
-            )
-        elif file_path.suffix.lower() == ".mp4" and not is_faststart(file_path):
-            targets.append(
-                (
-                    file_path,
-                    w,
-                    h,
-                    v_codec,
-                    a_codec,
-                    dst,
-                    False,
-                    False,
-                    False,
-                )
-            )
-
-    total = len(targets)
-    if total == 0:
-        print("[i] No files need optimization or transcoding.")
+    print("\n" + "-" * 50)
+    
+    total_targets = len(targets)
+    if total_targets == 0:
+        print("[i] All files are already optimized.")
         return
-
-    print(f"[i] Found {total} targets. Thread limit: {CPU_THREADS}\n" + "-" * 50)
+        
+    print(f"[i] Filtered {total_targets} targets for execution. Thread limit: {CPU_THREADS}\n" + "-" * 50)
 
     for index, (
         src,
@@ -164,8 +168,8 @@ def process_videos(root_dir):
         if not is_transcode:
             task_desc = "Faststart Optimization Only"
 
-        print(f"[+] Task {index + 1}/{total} | {src.name} ({task_desc})")
-        set_terminal_title(f"[{index+1}/{total}] {src.name}")
+        print(f"[+] Task {index + 1}/{total_targets} | {src.name} ({task_desc})")
+        set_terminal_title(f"[{index+1}/{total_targets}] {src.name}")
 
         # Temporary path for atomic replacement processing
         temp_dst = dst.with_suffix(".tmp.mp4")
@@ -255,7 +259,7 @@ def process_videos(root_dir):
                 temp_dst.unlink()
             print(f"\n[!] Error: {e}")
 
-        if index < total - 1:
+        if index < total_targets - 1:
             if is_transcode:
                 print(f"[i] Cooldown: {COOLDOWN_SECONDS}s...")
                 time.sleep(COOLDOWN_SECONDS)
