@@ -319,8 +319,8 @@ def merge_sequential_videos(base_dir):
         min_num = valid_chain[0]['start']
         max_num = valid_chain[-1]['end']
         
-        # Define output file name
-        output = f"{folder_name}{min_num}-{max_num}.mp4"
+        # Define output file name with underscore
+        output = f"{folder_name}_{min_num}-{max_num}.mp4"
         output_path = os.path.join(root, output)
         
         if os.path.exists(output_path):
