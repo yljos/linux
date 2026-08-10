@@ -80,3 +80,13 @@ user_pref("browser.profiles.enabled", true);
 user_pref("permissions.default.shortcuts", 2);
 user_pref("browser.backspace_action", 2);            // Disable backspace for back navigation
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true); // Set true ONLY if userChrome.css is used
+
+// Disable DRM completely
+user_pref("media.eme.enabled", false);
+
+// Disable Widevine CDM
+user_pref("media.gmp-widevinecdm.enabled", false);
+user_pref("media.gmp-widevinecdm.visible", false);
+
+// Disable DRM UI prompt
+user_pref("browser.eme.ui.enabled", false);
