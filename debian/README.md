@@ -14,3 +14,5 @@ apt purge grub-common grub-efi-amd64 grub-efi-amd64-bin grub-efi-amd64-signed gr
 apt autoremove --purge -y
 
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+timedatectl set-timezone UTC
