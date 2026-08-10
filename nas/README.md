@@ -55,3 +55,10 @@ smbpasswd -a huai
 smbpasswd -e huai
 ```
 
+# Copy kernel and initrd with version
+cp /boot/vmlinuz-6.1.0-52-amd64 /boot/efi/EFI/nas/
+cp /boot/initrd.img-6.1.0-52-amd64 /boot/efi/EFI/nas/
+
+
+# Create NVRAM boot entry using versioned filenames
+efibootmgr -c -d /dev/mmcblk0 -p 1 -L "Nas EFISTUB" -l '\EFI\nas\vmlinuz-6.1.0-52-amd64' -u "root=UUID=$(blkid -s UUID -o value /dev/mmcblk0p2) ro quiet initrd=\EFI\nas\initrd.img-6.1.0-52-amd64"
