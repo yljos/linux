@@ -13,6 +13,8 @@ sudo apt install --no-install-recommends \
     pipewire wireplumber pipewire-pulse pipewire-alsa efibootmgr shfmt \
     wakeonlan curl -y
 
+# sudo apt install fcitx5 fcitx5-rime im-config fcitx5-frontend-gtk2 fcitx5-frontend-gtk3 fcitx5-frontend-qt5 -y
+
 # Update font cache
 fc-cache -fv
 
