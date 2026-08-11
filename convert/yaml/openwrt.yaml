@@ -25,7 +25,7 @@ profile: {store-selected: true, store-fake-ip: true}
 external-controller: 10.0.0.1:9090
 external-ui: ui
 external-ui-url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/dist_openwrt.zip
-hosts: {nas: 10.0.0.21, ax6s: 10.0.0.2, arch: 10.0.0.25, vyos: 10.0.0.1, win: 10.0.0.15}
+hosts: {nas: 10.0.0.21, ax6s: 10.0.0.2, debian: 10.0.0.25, vyos: 10.0.0.1, win: 10.0.0.15, mi8: 10.0.0.8, xiaoai: 10.0.0.18, tv: 10.0.0.7, pixel: 10.0.0.6}
 dns:
   enable: true
   prefer-h3: false
@@ -55,7 +55,7 @@ proxy-groups:
   - {type: select, name: Microsoft, proxies: [DIRECT, JP, SG, US, HK]}
   - {type: select, name: TikTok, proxies: [JP]}
   - {type: select, name: Twitter, proxies: [US]}
-  - {type: select, name: Youtube, hidden: true,include-all-proxies: true, filter: "(?i)^(?=.*(US))(?!.*(gemini)).*$", proxies: [US, JP, SG, HK]}
+  - {type: select, name: Youtube, hidden: true, include-all-proxies: true, filter: "(?i)^(?=.*(US))(?!.*(gemini)).*$", proxies: [US, JP, SG, HK]}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: HK, filter: "(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: JP, filter: "(?i).*JP.*"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: SG, filter: "(?i).*SG.*"}
