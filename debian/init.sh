@@ -18,5 +18,14 @@ sudo apt install --no-install-recommends \
 # Update font cache
 fc-cache -fv
 
+# Install extrepo prerequisite
+sudo apt update
+sudo apt install extrepo -y
 
+# Enable LibreWolf repository
+sudo extrepo enable librewolf
+
+# Install LibreWolf
+sudo apt update
+sudo apt install librewolf -y
 
