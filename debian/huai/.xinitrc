@@ -14,5 +14,9 @@ pidof -q dunst || dunst &
     pidof -q firefox || firefox &    
 ) &
 xset s off
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+fcitx5 -d &
 # 3. Instantly start the window manager
 exec dbus-run-session dwm
