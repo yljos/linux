@@ -3,9 +3,11 @@
 
 export GPG_TTY=$(tty)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
-# Auto-start ssh-agent if not running
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)" > /dev/null
+# ssh-agent
+export SSH_AUTH_SOCK="/run/user/$UID/ssh-agent.socket"
+if ! pgrep -u "$USER" ssh-agent >/dev/null; then
+    rm -f "$SSH_AUTH_SOCK"
+    eval "$(ssh-agent -s -a "$SSH_AUTH_SOCK")" >/dev/null
 fi
 
 export LANG=en_US.UTF-8
