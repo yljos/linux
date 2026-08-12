@@ -11,7 +11,7 @@ sudo apt install --no-install-recommends \
     fonts-noto-cjk fonts-hack gpg \
     freerdp2-x11 x11-xserver-utils arp-scan mpv \
     pipewire wireplumber pipewire-pulse pipewire-alsa efibootmgr shfmt \
-    wakeonlan curl -y
+    wakeonlan curl scdaemon pcscd -y
 
 # sudo apt install fcitx5 fcitx5-rime im-config fcitx5-frontend-gtk2 fcitx5-frontend-gtk3 fcitx5-frontend-qt5 -y
 
