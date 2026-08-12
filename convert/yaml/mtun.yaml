@@ -53,7 +53,7 @@ dns:
   nameserver-policy: {"rule-set:microsoft-site": "https://cloudflare-dns.com/dns-query#Microsoft", "rule-set:huawei-site": "rcode://refused", "rule-set:github-site": "https://cloudflare-dns.com/dns-query#GitHub", "rule-set:tiktok-site": "https://cloudflare-dns.com/dns-query#TikTok", "rule-set:youtube-site": "https://dns.google/dns-query#Google", "rule-set:google-site": "https://dns.google/dns-query#Google"}
 proxies: []
 proxy-groups:
-  - {type: fallback, name: M, proxies: [SG, JP], url: "https://www.gstatic.com/generate_204", interval: 30}
+  - {type: select, name: M, proxies: [JP, SG, US, HK]}
   - {type: select, name: Default, proxies: [REJECT, DIRECT, M]}
   - {type: select, name: Google, proxies: [US, JP, SG, HK]}
   - {type: select, name: PikPak, proxies: [SG, JP, US, HK]}
