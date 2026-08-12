@@ -2,7 +2,6 @@
 [[ $- != *i* ]] && return
 
 export GPG_TTY=$(tty)
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 # Auto-start ssh-agent if not running
 if [ -z "$SSH_AUTH_SOCK" ]; then
