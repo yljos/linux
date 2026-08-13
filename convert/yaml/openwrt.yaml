@@ -50,7 +50,7 @@ proxy-groups:
   - {type: select, name: OpenAi, proxies: [JP, SG, US, HK]}
   - {type: select, name: Telegram, proxies: [JP, SG, US, HK]}
   - {type: select, name: Steam, proxies: [DIRECT, JP, SG, US, HK]}
-  - {type: select, name: PikPak, proxies: [SG, JP, US, HK]}
+  - {type: select, name: PikPak, proxies: [SG_load-balance,SG, JP, US, HK]}
   - {type: select, name: GitHub, proxies: [JP, SG, US, HK]}
   - {type: select, name: Microsoft, proxies: [DIRECT, JP, SG, US, HK]}
   - {type: select, name: TikTok, proxies: [JP]}
@@ -60,6 +60,8 @@ proxy-groups:
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: JP, filter: "(?i).*JP.*"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: SG, filter: "(?i).*SG.*"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 1000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: US, filter: "(?i).*US.*"}
+  - {type: load-balance, url: "https://www.gstatic.com/generate_204", interval: 30, timeout: 1000, max-failed-times: 3, include-all-proxies: true, strategy: round-robin, hidden: true, name: SG_load-balance, filter: "(?i).*SG.*"}
+
 rule-providers:
   archlinux-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/archlinux.mrs"}
   adguard-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/adguard.mrs"}
