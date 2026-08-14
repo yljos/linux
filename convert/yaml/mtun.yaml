@@ -69,21 +69,21 @@ rule-providers:
   cn-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cn.mrs"}
   cn-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cn.mrs"}
   direct-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/rule-set/clash/direct/direct-site.mrs"}
-  direct-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/direct/direct-ip.mrs"}
+  direct-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/direct/direct-ip.mrs"}
   mozilla-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/mozilla.mrs"}
   gfw-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/gfw.mrs"}
   github-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/github.mrs"}
   google-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/google.mrs"}
   google-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/google.mrs"}
-  huawei-direct-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/huawei/huawei-direct-site.mrs"}
-  huawei-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/huawei/huawei-site.mrs"}
-  huawei-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/huawei/huawei-ip.mrs"}
+  huawei-direct-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/huawei/huawei-direct-site.mrs"}
+  huawei-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/huawei/huawei-site.mrs"}
+  huawei-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/huawei/huawei-ip.mrs"}
   microsoft-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/microsoft.mrs"}
-  pikpak-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/pikpak/pikpak-site.mrs"}
-  pikpak-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/pikpak/pikpak-ip.mrs"}
-  proxy-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/proxy/proxy-site.mrs"}
+  pikpak-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/pikpak/pikpak-site.mrs"}
+  pikpak-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/pikpak/pikpak-ip.mrs"}
+  proxy-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/proxy/proxy-site.mrs"}
   tiktok-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tiktok.mrs"}
-  wechat-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/wechat/wechat-ip.mrs"}
+  wechat-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/wechat/wechat-ip.mrs"}
   youtube-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/youtube.mrs"}
   tencent-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tencent.mrs"}
 rules:

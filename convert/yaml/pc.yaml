@@ -59,15 +59,15 @@ rule-providers:
   cloudflare-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cloudflare.mrs"}
   cn-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cn.mrs"}
   cn-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cn.mrs"}
-  direct-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/direct/direct-site.mrs"}
-  direct-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/direct/direct-ip.mrs"}
+  direct-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/direct/direct-site.mrs"}
+  direct-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/direct/direct-ip.mrs"}
   mozilla-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/mozilla.mrs"}
   gfw-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/gfw.mrs"}
   github-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/github.mrs"}
   google-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/google.mrs"}
   google-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/google.mrs"}
   microsoft-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/microsoft.mrs"}
-  proxy-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/yljos/rule-set/refs/heads/clash/proxy/proxy-site.mrs"}
+  proxy-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/proxy/proxy-site.mrs"}
   speedtest-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/speedtest.mrs"}
   steam-site: {proxy: M, type: http, interval: 86400, behavior: domain, format: mrs, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/steam.mrs"}
   tiktok-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tiktok.mrs"}
