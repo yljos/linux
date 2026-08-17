@@ -142,7 +142,7 @@ def set_game_language(work_dir, lang):
         f.writelines(lines)
 
 
-def install_mods(work_dir):
+def install_mods(work_dir, mc_version, loader):
     """Download and install mods from Modrinth API."""
     mods_dir = os.path.join(work_dir, "mods")
     os.makedirs(mods_dir, exist_ok=True)
@@ -158,9 +158,13 @@ def install_mods(work_dir):
             # Extract project ID
             project_id = mod["url"].split("/")[-1]
             
-            # Fetch all versions for the project to ensure exact file match
+            # Fetch versions filtered by loader and game version to avoid pagination limits
             ver_url = f"https://api.modrinth.com/v2/project/{project_id}/version"
-            versions = requests.get(ver_url, impersonate="firefox").json()
+            params = {
+                "loaders": f'["{loader}"]',
+                "game_versions": f'["{mc_version}"]'
+            }
+            versions = requests.get(ver_url, params=params, impersonate="firefox").json()
             
             # Find the download URL for the target file
             dl_url = None
@@ -178,7 +182,6 @@ def install_mods(work_dir):
                 continue
                 
             print(f"Downloading {mod['name']}...")
-            # Increase timeout to 600 seconds (10 minutes) for large mod files
             dl_res = requests.get(dl_url, impersonate="firefox", timeout=600)
             dl_res.raise_for_status()
             with open(file_path, "wb") as f:
@@ -210,7 +213,7 @@ def launch_minecraft():
 
     # Install mods if not vanilla
     if loader not in ["vanilla", "原版"]:
-        install_mods(work_dir)
+        install_mods(work_dir, mc_version, loader)
 
     if loader in ["vanilla", "原版"]:
         target_version = mc_version
