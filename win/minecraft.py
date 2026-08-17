@@ -178,7 +178,8 @@ def install_mods(work_dir):
                 continue
                 
             print(f"Downloading {mod['name']}...")
-            dl_res = requests.get(dl_url, impersonate="firefox")
+            # Increase timeout to 600 seconds (10 minutes) for large mod files
+            dl_res = requests.get(dl_url, impersonate="firefox", timeout=600)
             dl_res.raise_for_status()
             with open(file_path, "wb") as f:
                 f.write(dl_res.content)
