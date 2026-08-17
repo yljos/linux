@@ -27,7 +27,7 @@ UPDATE_PROXIES = {
     "https": "socks5://127.0.0.1:12138",
 }
 
-# Mod list[cite: 3]
+# Mod list
 MODS_LIST = [
     {
         "filename": "entityculling-fabric-1.10.5-mc1.21.1.jar",
@@ -155,26 +155,31 @@ def install_mods(work_dir):
             continue
             
         try:
-            # Extract project ID from the provided url[cite: 3]
+            # Extract project ID
             project_id = mod["url"].split("/")[-1]
-            version = mod["version"]
             
-            # Fetch specific version details from Modrinth API
-            ver_url = f"https://api.modrinth.com/v2/project/{project_id}/version/{version}"
-            ver_res = requests.get(ver_url, impersonate="firefox").json()
+            # Fetch all versions for the project to ensure exact file match
+            ver_url = f"https://api.modrinth.com/v2/project/{project_id}/version"
+            versions = requests.get(ver_url, impersonate="firefox").json()
             
             # Find the download URL for the target file
             dl_url = None
-            for file_data in ver_res["files"]:
-                if file_data["filename"] == mod["filename"]:
-                    dl_url = file_data["url"]
-                    break
+            if isinstance(versions, list):
+                for ver in versions:
+                    for file_data in ver.get("files", []):
+                        if file_data.get("filename") == mod["filename"]:
+                            dl_url = file_data.get("url")
+                            break
+                    if dl_url:
+                        break
                     
             if not dl_url:
-                dl_url = ver_res["files"][0]["url"]
+                print(f"No compatible version found for {mod['name']}")
+                continue
                 
             print(f"Downloading {mod['name']}...")
             dl_res = requests.get(dl_url, impersonate="firefox")
+            dl_res.raise_for_status()
             with open(file_path, "wb") as f:
                 f.write(dl_res.content)
                 
