@@ -1,6 +1,7 @@
 import subprocess
 import os
 import sys
+import json
 from curl_cffi import requests
 from dotenv import load_dotenv
 
@@ -14,6 +15,7 @@ EMAIL = "dayao"
 UPDATE_URL = (
     "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft/minecraft.py"
 )
+JSON_BASE_URL = "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft"
 
 # Strict environment variables loading
 VERSION_URL = os.environ["VERSION_URL"]
@@ -27,63 +29,6 @@ UPDATE_PROXIES = {
     "https": "socks5://127.0.0.1:12138",
 }
 
-# Mod list
-MODS_LIST = [
-    {
-        "filename": "coroutil-fabric-1.21.1-1.3.8.jar",
-        "name": "CoroUtil",
-        "url": "https://modrinth.com/mod/rLLJ1OZM",
-        "version": "1.21.1-1.3.8"
-    },
-    {
-        "filename": "entityculling-fabric-1.10.5-mc1.21.1.jar",
-        "name": "EntityCulling",
-        "url": "https://modrinth.com/mod/NNAgCjsB",
-        "version": "1.10.5"
-    },
-    {
-        "filename": "fabric-api-0.116.15+1.21.1.jar",
-        "name": "Fabric API",
-        "url": "https://modrinth.com/mod/P7dR8mSH",
-        "version": "0.116.15+1.21.1"
-    },
-    {
-        "filename": "gravestones-1.4.2+1.21+A.jar",
-        "name": "Gravestones",
-        "url": "https://modrinth.com/mod/Heh3BbSv",
-        "version": "1.4.2"
-    },
-    {
-        "filename": "pneumonocore-1.3.1+1.21+A.jar",
-        "name": "PneumonoCore",
-        "url": "https://modrinth.com/mod/ZLKQjA7t",
-        "version": "1.3.1"
-    },
-    {
-        "filename": "sodium-fabric-0.8.13-beta.2+mc1.21.1.jar",
-        "name": "Sodium",
-        "url": "https://modrinth.com/mod/AANobbMI",
-        "version": "0.8.13-beta.2+mc1.21.1"
-    },
-    {
-        "filename": "aether-1.21.1-1.5.11-fabric.jar",
-        "name": "The Aether",
-        "url": "https://modrinth.com/mod/YhmgMVyu",
-        "version": "1.5.11"
-    },
-    {
-        "filename": "watut-fabric-1.21.0-1.2.7.jar",
-        "name": "What Are They Up To",
-        "url": "https://modrinth.com/mod/AtB5mHky",
-        "version": "1.21.0-1.2.7"
-    },
-    {
-        "filename": "owo-lib-0.13.0-alpha.15+1.21.jar",
-        "name": "oωo",
-        "url": "https://modrinth.com/mod/ccKDOlHs",
-        "version": "0.13.0-alpha.15+1.21"
-    }
-]
 
 def update_self():
     """Fetch the latest script from the server and restart if updated."""
@@ -155,12 +100,36 @@ def set_game_language(work_dir, lang):
 
 
 def install_mods(work_dir, mc_version, loader):
-    """Download and install mods from Modrinth API, and remove unlisted mods."""
+    """Fetch mod list from remote JSON with proxy fallback, download and install mods, and remove unlisted mods."""
+    
+    json_filename = f"{mc_version}_{loader}.json"
+    json_url = f"{JSON_BASE_URL}/{json_filename}"
+    
+    print(f"Fetching mod list from: {json_url}")
+    try:
+        response = requests.get(json_url, timeout=10, impersonate="firefox")
+    except Exception as e:
+        print(f"Direct fetch failed ({e}), attempting with proxy...")
+        try:
+            response = requests.get(
+                json_url, timeout=10, impersonate="firefox", proxies=UPDATE_PROXIES
+            )
+        except Exception as proxy_e:
+            print(f"Proxy fetch failed: {proxy_e}")
+            return
+
+    try:
+        response.raise_for_status()
+        mods_list = response.json()
+    except Exception as e:
+        print(f"Failed to process mod list from {json_url}: {e}")
+        return
+
     mods_dir = os.path.join(work_dir, "mods")
     os.makedirs(mods_dir, exist_ok=True)
 
     # Remove unlisted mods
-    listed_filenames = {mod["filename"] for mod in MODS_LIST}
+    listed_filenames = {mod["filename"] for mod in mods_list}
     for existing_file in os.listdir(mods_dir):
         if existing_file.endswith(".jar") and existing_file not in listed_filenames:
             try:
@@ -169,7 +138,7 @@ def install_mods(work_dir, mc_version, loader):
             except Exception as e:
                 print(f"Failed to remove {existing_file}: {e}")
 
-    for mod in MODS_LIST:
+    for mod in mods_list:
         file_path = os.path.join(mods_dir, mod["filename"])
         
         # Skip if file already exists
