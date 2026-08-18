@@ -155,9 +155,19 @@ def set_game_language(work_dir, lang):
 
 
 def install_mods(work_dir, mc_version, loader):
-    """Download and install mods from Modrinth API."""
+    """Download and install mods from Modrinth API, and remove unlisted mods."""
     mods_dir = os.path.join(work_dir, "mods")
     os.makedirs(mods_dir, exist_ok=True)
+
+    # Remove unlisted mods
+    listed_filenames = {mod["filename"] for mod in MODS_LIST}
+    for existing_file in os.listdir(mods_dir):
+        if existing_file.endswith(".jar") and existing_file not in listed_filenames:
+            try:
+                os.remove(os.path.join(mods_dir, existing_file))
+                print(f"Removed unlisted mod: {existing_file}")
+            except Exception as e:
+                print(f"Failed to remove {existing_file}: {e}")
 
     for mod in MODS_LIST:
         file_path = os.path.join(mods_dir, mod["filename"])
@@ -170,7 +180,7 @@ def install_mods(work_dir, mc_version, loader):
             # Extract project ID
             project_id = mod["url"].split("/")[-1]
             
-            # Fetch versions filtered by loader and game version to avoid pagination limits
+            # Fetch versions filtered by loader and game version
             ver_url = f"https://api.modrinth.com/v2/project/{project_id}/version"
             params = {
                 "loaders": f'["{loader}"]',
