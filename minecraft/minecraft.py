@@ -12,7 +12,7 @@ MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
 EMAIL = "dayao"
 UPDATE_URL = (
-    "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/win/minecraft.py"
+    "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft/minecraft.py"
 )
 
 # Strict environment variables loading
