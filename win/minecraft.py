@@ -30,6 +30,12 @@ UPDATE_PROXIES = {
 # Mod list
 MODS_LIST = [
     {
+        "filename": "coroutil-fabric-1.21.1-1.3.8.jar",
+        "name": "CoroUtil",
+        "url": "https://modrinth.com/mod/rLLJ1OZM",
+        "version": "1.21.1-1.3.8"
+    },
+    {
         "filename": "entityculling-fabric-1.10.5-mc1.21.1.jar",
         "name": "EntityCulling",
         "url": "https://modrinth.com/mod/NNAgCjsB",
@@ -64,6 +70,12 @@ MODS_LIST = [
         "name": "The Aether",
         "url": "https://modrinth.com/mod/YhmgMVyu",
         "version": "1.5.11"
+    },
+    {
+        "filename": "watut-fabric-1.21.0-1.2.7.jar",
+        "name": "What Are They Up To",
+        "url": "https://modrinth.com/mod/AtB5mHky",
+        "version": "1.21.0-1.2.7"
     },
     {
         "filename": "owo-lib-0.13.0-alpha.15+1.21.jar",
