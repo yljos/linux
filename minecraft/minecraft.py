@@ -146,28 +146,42 @@ def install_mods(work_dir, mc_version, loader):
             continue
             
         try:
-            # Extract project ID
             project_id = mod["url"].split("/")[-1]
-            
-            # Fetch versions filtered by loader and game version
-            ver_url = f"https://api.modrinth.com/v2/project/{project_id}/version"
-            params = {
-                "loaders": f'["{loader}"]',
-                "game_versions": f'["{mc_version}"]'
-            }
-            versions = requests.get(ver_url, params=params, impersonate="firefox").json()
-            
-            # Find the download URL for the target file
             dl_url = None
-            if isinstance(versions, list):
-                for ver in versions:
-                    for file_data in ver.get("files", []):
-                        if file_data.get("filename") == mod["filename"]:
-                            dl_url = file_data.get("url")
-                            break
-                    if dl_url:
+
+            # Platform routing based on URL
+            if "curseforge.com" in mod["url"]:
+                # Fetch from CurseForge via api.curse.tools proxy
+                ver_url = f"https://api.curse.tools/v1/cf/mods/{project_id}/files"
+                cf_res = requests.get(ver_url, impersonate="firefox", timeout=15)
+                cf_res.raise_for_status()
+                
+                for file_data in cf_res.json().get("data", []):
+                    if file_data.get("fileName") == mod["filename"]:
+                        dl_url = file_data.get("downloadUrl")
+                        # Fallback for CDN construction if downloadUrl is null
+                        if not dl_url:
+                            fid = str(file_data.get("id"))
+                            dl_url = f"https://edge.forgecdn.net/files/{fid[:4]}/{fid[4:]}/{mod['filename']}"
                         break
-                    
+            else:
+                # Fetch versions filtered by loader and game version (Modrinth)
+                ver_url = f"https://api.modrinth.com/v2/project/{project_id}/version"
+                params = {
+                    "loaders": f'["{loader}"]',
+                    "game_versions": f'["{mc_version}"]'
+                }
+                versions = requests.get(ver_url, params=params, impersonate="firefox").json()
+                
+                if isinstance(versions, list):
+                    for ver in versions:
+                        for file_data in ver.get("files", []):
+                            if file_data.get("filename") == mod["filename"]:
+                                dl_url = file_data.get("url")
+                                break
+                        if dl_url:
+                            break
+                            
             if not dl_url:
                 print(f"No compatible version found for {mod['name']}")
                 continue
@@ -202,7 +216,6 @@ def launch_minecraft():
     if GAME_LANG:
         set_game_language(work_dir, GAME_LANG)
 
-    # Install mods if not vanilla
     if loader not in ["vanilla", "原版"]:
         install_mods(work_dir, mc_version, loader)
 
