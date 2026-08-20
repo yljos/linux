@@ -1,6 +1,26 @@
 [
     {
         "authors": [
+            "Alexthe666",
+            "Raptorfarian"
+        ],
+        "filename": "iceandfire-1.9.1-1.12.2.jar",
+        "name": "Ice and Fire",
+        "url": "https://www.curseforge.com/projects/264231",
+        "version": "1.9.1"
+    },
+    {
+        "authors": [
+            "iLexiconn",
+            "gegy1000"
+        ],
+        "filename": "llibrary-1.7.20-1.12.2.jar",
+        "name": "LLibrary",
+        "url": "https://www.curseforge.com/projects/243298",
+        "version": "1.7.20-1.12.2"
+    },
+    {
+        "authors": [
             "Seraph_JACK"
         ],
         "filename": "simplelogin-1.2.4-beta+build127.jar",
@@ -8,5 +28,4 @@
         "url": "https://www.curseforge.com/projects/312664",
         "version": "1.2.4-beta+build127"
     }
-
 ]
