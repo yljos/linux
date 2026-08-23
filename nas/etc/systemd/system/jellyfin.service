@@ -21,7 +21,7 @@ ExecStart=/usr/bin/podman run \
   --label PODMAN_SYSTEMD_UNIT=%n \
   --device /dev/dri:/dev/dri \
   -v /data/appdata/jellyfin:/config:Z \
-  -v /data/media:/media:z \
+  -v /data/www/media:/media:z \
   docker.io/jellyfin/jellyfin:latest
 
 ExecStop=/usr/bin/podman stop -t 10 jellyfin
