@@ -11,6 +11,16 @@
     },
     {
         "authors": [
+            "techbrew",
+            "mysticdrew"
+        ],
+        "filename": "journeymap-forge-1.12.2-6.0.4.jar",
+        "name": "JourneyMap",
+        "url": "https://www.curseforge.com/projects/32274",
+        "version": "1.12.2-6.0.4"
+    },
+    {
+        "authors": [
             "iLexiconn",
             "gegy1000"
         ],
