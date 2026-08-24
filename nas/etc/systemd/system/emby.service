@@ -22,7 +22,7 @@ ExecStart=/usr/bin/podman run \
   --device /dev/dri:/dev/dri \
   -v /data/appdata/emby:/config:Z \
   -v /data/www/media:/media:z \
-  docker.io/emby/embyserver:latest
+  lscr.io/linuxserver/emby:latest
 
 ExecStop=/usr/bin/podman stop -t 10 emby
 
