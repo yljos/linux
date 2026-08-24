@@ -31,23 +31,27 @@ def clean_foldername_prefix(foldername):
         pass
     return foldername
 
-def clean_filename_prefix(filename):
+def clean_filename_prefix(filename, series_prefix=""):
     """
-    Recursively remove all nested/repeated prefixes 
-    (e.g., 'Ai_s01e01_', 'Mv_S01e05_', 'E01_', '01_')
+    Recursively remove all nested/repeated prefixes using either '_' or '-'
+    (e.g., 'Ai_s01e01_', '01-ai-', '01_Ai_', 'E01_')
     """
     original = filename
-    # Matches any prefix ending with sXXeYY_ OR matches E01_ / 01_
-    pattern = r'^(?:.*?s\d+e\d+_|[eE]?\d+_)'
+    safe_prefix = re.escape(series_prefix) if series_prefix else ""
     
-    # Loop to peel off multiple nested prefixes layer by layer
+    # Match sXXeYY patterns, the '01_prefix_' / '01-prefix-' patterns, and generic '01_' / 'E01_'
+    if safe_prefix:
+        pattern = rf'^(?:.*?s\d+e\d+[-_]+|\d+[-_]+{safe_prefix}[-_]+|[eE]?\d+[-_]+)'
+    else:
+        pattern = r'^(?:.*?s\d+e\d+[-_]+|[eE]?\d+[-_]+)'
+    
     while True:
+        # re.IGNORECASE will handle both 'Ai' and 'ai'
         cleaned = re.sub(pattern, '', filename, count=1, flags=re.IGNORECASE)
         if cleaned == filename:
             break
         filename = cleaned
         
-    # Keep original if stripping results in an empty stem
     if not Path(filename).stem:
         return original
         
@@ -75,7 +79,9 @@ def process_directory_recursively(current_dir, current_season=1):
     for folder_path in subdirs:
         old_name = folder_path.name
         name_without_prefix = clean_foldername_prefix(old_name)
-        new_name = f"S{folder_counter:02d}_{name_without_prefix}"
+        
+        # Format: 01_foldername
+        new_name = f"{folder_counter:02d}_{name_without_prefix}"
 
         if old_name != new_name:
             new_folder_path = folder_path.with_name(new_name)
@@ -86,7 +92,6 @@ def process_directory_recursively(current_dir, current_season=1):
             except OSError as e:
                 print(f"  [!] Folder rename failed '{old_name}': {e}")
 
-        # Recurse into subdirectories, passing down the folder_counter as the season number
         process_directory_recursively(folder_path, folder_counter)
         folder_counter += 1
 
@@ -96,14 +101,14 @@ def process_directory_recursively(current_dir, current_season=1):
     if not mp4_files:
         return
 
-    # Extract series prefix dynamically from the current folder name (e.g., 'S01_Ai' -> 'Ai')
     series_prefix = clean_foldername_prefix(current_dir.name)
 
     counter = 1
     for file_path in mp4_files:
         original_name = file_path.name
 
-        name_without_prefix = clean_filename_prefix(original_name)
+        # Pass series_prefix to accurately clean hybrid formats like '01-ai-' and '01_Ai_'
+        name_without_prefix = clean_filename_prefix(original_name, series_prefix)
         file_stem = Path(name_without_prefix).stem
         file_suffix = file_path.suffix
         
@@ -113,8 +118,8 @@ def process_directory_recursively(current_dir, current_season=1):
             print(f"  Skipping: Main filename is empty '{original_name}'")
             continue
 
-        # Combine new filename (e.g., Ai_s01e05_Title.mp4)
-        new_filename = f"{series_prefix}_s{current_season:02d}e{counter:02d}_{cleaned_stem}{file_suffix}"
+        # Format: 01_anything_title.mp4
+        new_filename = f"{counter:02d}_{series_prefix}_{cleaned_stem}{file_suffix}"
         new_file_path = file_path.with_name(new_filename)
 
         if file_path != new_file_path:
