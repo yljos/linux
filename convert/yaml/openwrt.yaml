@@ -24,7 +24,7 @@ sniffer:
 profile: {store-selected: true, store-fake-ip: true}
 external-controller: 10.0.0.1:9090
 external-ui: ui
-external-ui-url: https://raw.githubusercontent.com/yljos/rule-set/refs/heads/main/dist_openwrt.zip
+external-ui-url: https://www.sakuraos.com/dist_openwrt.zip
 hosts: {nas: 10.0.0.21, ax6s: 10.0.0.2, debian: 10.0.0.25, vyos: 10.0.0.1, win: 10.0.0.15, mi8: 10.0.0.8, xiaoai: 10.0.0.18, tv: 10.0.0.7, pixel: 10.0.0.6}
 dns:
   enable: true
