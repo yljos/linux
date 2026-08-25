@@ -1,22 +1,20 @@
-import base64
 import io
 import logging
 import os
 import re
 import time
-import json
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
-from urllib.parse import urlparse, parse_qs, unquote
+from urllib.parse import unquote
+
 import requests
 import yaml
 from flask import send_file, abort
 
 logger = logging.getLogger(__name__)
 
-CLASH_USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0"
-)
+# Update User-Agent to clash-verge for fetching YAML directly
+CLASH_USER_AGENT = "clash-verge"
 CLASH_FINGERPRINT = "firefox"
 
 
@@ -89,174 +87,43 @@ def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: s
             proxy["client-fingerprint"] = CLASH_FINGERPRINT
 
 
-def parse_uris_to_proxies(text: str) -> dict:
-    proxies = []
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-
-        try:
-            if line.startswith("vless://"):
-                parsed = urlparse(line)
-                uuid, server_port = parsed.netloc.split("@")
-                server, port = server_port.split(":")
-                qs = parse_qs(parsed.query)
-                name = (
-                    unquote(parsed.fragment) if parsed.fragment else f"vless-{server}"
-                )
-
-                proxy = {
-                    "name": name,
-                    "type": "vless",
-                    "server": server,
-                    "port": int(port),
-                    "uuid": uuid,
-                    "udp": True,
-                    "tls": qs.get("security", [""])[0] in ("tls", "reality"),
-                }
-
-                if proxy["tls"]:
-                    proxy["servername"] = qs.get("sni", [server])[0]
-                    if "fp" in qs:
-                        proxy["client-fingerprint"] = qs["fp"][0]
-                    if qs.get("security", [""])[0] == "reality":
-                        proxy["reality-opts"] = {"public-key": qs.get("pbk", [""])[0]}
-                        if "sid" in qs:
-                            proxy["reality-opts"]["short-id"] = qs["sid"][0]
-
-                network = qs.get("type", ["tcp"])[0]
-                proxy["network"] = network
-
-                if network == "ws":
-                    proxy["ws-opts"] = {
-                        "path": qs.get("path", ["/"])[0],
-                        "headers": {"Host": qs.get("host", [server])[0]},
-                    }
-                elif network == "grpc":
-                    proxy["grpc-opts"] = {
-                        "grpc-service-name": qs.get("serviceName", [""])[0]
-                    }
-                proxies.append(proxy)
-
-            elif line.startswith("vmess://"):
-                b64_str = line[8:]
-                b64_str += "=" * ((4 - len(b64_str) % 4) % 4)
-                v_json = json.loads(base64.b64decode(b64_str).decode("utf-8"))
-                proxy = {
-                    "name": unquote(v_json.get("ps", f"vmess-{v_json.get('add')}")),
-                    "type": "vmess",
-                    "server": v_json.get("add"),
-                    "port": int(v_json.get("port")),
-                    "uuid": v_json.get("id"),
-                    "alterId": int(v_json.get("aid", 0)),
-                    "cipher": v_json.get("scy", "auto"),
-                    "udp": True,
-                }
-                if v_json.get("tls") == "tls":
-                    proxy["tls"] = True
-                    if v_json.get("sni"):
-                        proxy["servername"] = v_json.get("sni")
-                    if v_json.get("fp"):
-                        proxy["client-fingerprint"] = v_json.get("fp")
-
-                network = v_json.get("net", "tcp")
-                proxy["network"] = network
-
-                if network == "ws":
-                    proxy["ws-opts"] = {
-                        "path": v_json.get("path", "/"),
-                        "headers": {"Host": v_json.get("host", v_json.get("add"))},
-                    }
-                elif network == "grpc":
-                    proxy["grpc-opts"] = {"grpc-service-name": v_json.get("path", "")}
-                proxies.append(proxy)
-
-            elif line.startswith("trojan://") or line.startswith("hysteria2://"):
-                parsed = urlparse(line)
-                password, server_port = parsed.netloc.split("@")
-                server, port = server_port.split(":")
-                qs = parse_qs(parsed.query)
-                name = (
-                    unquote(parsed.fragment) if parsed.fragment else f"proxy-{server}"
-                )
-                p_type = "trojan" if line.startswith("trojan") else "hysteria2"
-
-                proxy = {
-                    "name": name,
-                    "type": p_type,
-                    "server": server,
-                    "port": int(port),
-                    "password": password,
-                    "udp": True,
-                }
-                if "sni" in qs:
-                    proxy["sni"] = qs["sni"][0]
-
-                if p_type == "hysteria2":
-                    if "obfs" in qs:
-                        proxy["obfs"] = qs["obfs"][0]
-                    if "obfs-password" in qs:
-                        proxy["obfs-password"] = qs["obfs-password"][0]
-
-                proxies.append(proxy)
-
-        except Exception as e:
-            logger.warning(f"Parse Error for node {line[:30]}...: {e}")
-
-    return {"proxies": proxies}
-
-
-def fetch_uris_text(
+def fetch_remote_yaml(
     url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int
-):
-    # Cache raw base64 content
-    cache_file = cache_dir / f"{source_name}_uris.txt"
-
-    # Helper to decode base64
-    def decode_base64_content(b64_str: str) -> str:
-        b64_str = re.sub(r"\s+", "", b64_str)
-        b64_str = b64_str.replace("-", "+").replace("_", "/")
-        padding = len(b64_str) % 4
-        if padding != 0:
-            b64_str += "=" * (4 - padding)
-        decoded_bytes = base64.b64decode(b64_str)
-        return (
-            decoded_bytes.decode("utf-8", errors="ignore")
-            .lstrip("\ufeff")
-            .replace("\r\n", "\n")
-        )
+) -> str:
+    # Cache raw YAML content
+    cache_file = cache_dir / f"{source_name}.yaml"
 
     if not force_refresh and cache_file.exists():
         try:
             if time.time() - os.path.getmtime(cache_file) < cache_expire:
                 with open(cache_file, "r", encoding="utf-8") as f:
-                    return decode_base64_content(f.read())
+                    return f.read()
         except Exception:
             pass
 
     try:
+        # Fetch directly using clash-verge UA
         res = requests.get(url, headers={"User-Agent": CLASH_USER_AGENT}, timeout=15)
         res.raise_for_status()
 
-        raw_b64 = res.text.strip()
+        raw_yaml = res.text
 
-        # Save raw base64 to disk
+        # Save raw YAML to disk
         with open(cache_file, "w", encoding="utf-8") as f:
-            f.write(raw_b64)
+            f.write(raw_yaml)
 
-        return decode_base64_content(raw_b64)
+        return raw_yaml
     except Exception as e:
         logger.error(f"Fetch Error: {e}")
 
     if cache_file.exists():
         with open(cache_file, "r", encoding="utf-8") as f:
-            return decode_base64_content(f.read())
+            return f.read()
     raise RuntimeError("Fetch and cache failed")
 
 
 def process_yaml_content_clash(
-    uri_text: str,
+    remote_yaml_text: str,
     template_path: Path,
     up_pref: str,
     down_pref: str,
@@ -264,15 +131,19 @@ def process_yaml_content_clash(
     shared_ex_kw: list,
     clean_node_fn,
 ):
-    # Force parse as URIs
-    input_data = parse_uris_to_proxies(uri_text)
+    # Parse the remote YAML configuration directly
+    try:
+        input_data = yaml.safe_load(remote_yaml_text)
+    except yaml.YAMLError as e:
+        raise ValueError(f"Failed to parse remote YAML: {e}")
 
     if not isinstance(input_data, dict) or not input_data.get("proxies"):
-        preview = uri_text[:100].replace("\n", " ") if uri_text else "Empty content"
-        raise ValueError(f"No valid proxies found. Decoded content preview: {preview}")
+        preview = remote_yaml_text[:100].replace("\n", " ") if remote_yaml_text else "Empty content"
+        raise ValueError(f"No valid proxies found in remote YAML. Preview: {preview}")
 
     with open(template_path, "r", encoding="utf-8") as f:
         template_data = yaml.safe_load(f)
+        
     proxies_orig = input_data.get("proxies", [])
     filtered_names, _ = filter_node_names_clash(proxies_orig, shared_kw, shared_ex_kw)
 
@@ -456,11 +327,14 @@ def handle_request(
     template_path, up, down = config_map[clash_config_val]
 
     try:
-        uri_text = fetch_uris_text(
+        # Fetch remote YAML directly
+        remote_yaml_text = fetch_remote_yaml(
             unquote(url), source, is_force_refresh, cache_dir, cache_expire
         )
+        
+        # Process the configuration
         output_bytes = process_yaml_content_clash(
-            uri_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn
+            remote_yaml_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn
         )
 
         if clash_config_val in inject_templates:
