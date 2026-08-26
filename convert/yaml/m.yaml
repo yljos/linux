@@ -12,7 +12,7 @@ profile:
   store-fake-ip: true
 external-controller: 127.0.0.1:9090
 external-ui: ui
-external-ui-url: https://www.sakuraos.com/dist.zip
+external-ui-url: https://www.346211.xyz/dist.zip
 sniffer:
   enable: true
   force-dns-mapping: true

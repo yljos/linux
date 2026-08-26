@@ -24,7 +24,7 @@ sniffer:
 profile: {store-selected: true, store-fake-ip: true}
 external-controller: 10.0.0.1:9090
 external-ui: ui
-external-ui-url: https://www.sakuraos.com/dist_openwrt.zip
+external-ui-url: https://www.346211.xyz/dist_openwrt.zip
 hosts: {nas: 10.0.0.21, ax6s: 10.0.0.2, debian: 10.0.0.25, vyos: 10.0.0.1, win: 10.0.0.15, mi8: 10.0.0.8, xiaoai: 10.0.0.18, tv: 10.0.0.7, pixel: 10.0.0.6}
 dns:
   enable: true
@@ -73,22 +73,22 @@ rule-providers:
   cn-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cn.mrs"}
   cn-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cn.mrs"}
   docker-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/docker.mrs"}
-  direct-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/direct/direct-site.mrs"}
-  direct-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/direct/direct-ip.mrs"}
+  direct-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/direct/direct-site.mrs"}
+  direct-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.346211.xyz/direct/direct-ip.mrs"}
   mozilla-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/mozilla.mrs"}
   gfw-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/gfw.mrs"}
   github-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/github.mrs"}
   google-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/google.mrs"}
   google-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/google.mrs"}
   googlefcm-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/googlefcm.mrs"}
-  huawei-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/huawei/huawei-site.mrs"}
-  huawei-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/huawei/huawei-ip.mrs"}
+  huawei-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/huawei/huawei-site.mrs"}
+  huawei-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.346211.xyz/huawei/huawei-ip.mrs"}
   javdb-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/javdb.mrs"}
   microsoft-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/microsoft.mrs"}
   openai-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs"}
-  pikpak-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/pikpak/pikpak-site.mrs"}
-  pikpak-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/pikpak/pikpak-ip.mrs"}
-  proxy-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.sakuraos.com/proxy/proxy-site.mrs"}
+  pikpak-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/pikpak/pikpak-site.mrs"}
+  pikpak-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.346211.xyz/pikpak/pikpak-ip.mrs"}
+  proxy-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/proxy/proxy-site.mrs"}
   speedtest-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/speedtest.mrs"}
   steam-site: {proxy: M, type: http, interval: 86400, behavior: domain, format: mrs, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/steam.mrs"}
   telegram-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/telegram.mrs"}
@@ -97,7 +97,7 @@ rule-providers:
   tmdb-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tmdb.mrs"}
   twitter-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/twitter.mrs"}
   twitter-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs"}
-  wechat-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.sakuraos.com/wechat/wechat-ip.mrs"}
+  wechat-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.346211.xyz/wechat/wechat-ip.mrs"}
   youtube-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/youtube.mrs"}
   f-droid-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/f-droid.mrs"}
   tencent-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/tencent.mrs"}
