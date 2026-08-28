@@ -11,7 +11,7 @@ load_dotenv()
 # Configuration
 MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
-EMAIL = "dayao"
+EMAIL = os.environ["EMAIL"]
 UPDATE_URL = (
     "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft/minecraft.py"
 )
@@ -232,7 +232,7 @@ def launch_minecraft():
         "--work-dir",
         work_dir,
         "start",
-        "-u",
+        "-l",
         EMAIL,
     ]
 
