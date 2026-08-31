@@ -2,15 +2,21 @@ import subprocess
 import os
 import sys
 import json
+import platform
 from curl_cffi import requests
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Configuration
-MAIN_DIR = r"D:/Minecraft"
-BASE_WORK_DIR = r"D:"
+# Cross-platform configuration
+if platform.system() == "Windows":
+    MAIN_DIR = os.getenv("MC_MAIN_DIR", r"D:/Minecraft")
+    BASE_WORK_DIR = os.getenv("MC_WORK_DIR", r"D:")
+else:
+    MAIN_DIR = os.getenv("MC_MAIN_DIR", os.path.expanduser("~/Minecraft"))
+    BASE_WORK_DIR = os.getenv("MC_WORK_DIR", os.path.expanduser("~"))
+
 EMAIL = os.environ["EMAIL"]
 UPDATE_URL = (
     "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft/minecraft.py"
