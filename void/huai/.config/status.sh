@@ -43,7 +43,7 @@ update_cpu() {
 }
 
 update_mem() {
-	MEM_STATUS=$(awk '/^MemTotal:/ {t=$2/1024} /^MemAvailable:/ {a=$2/1024} END {printf "%d/%dMB", (t-a), t}' /proc/meminfo)
+	MEM_STATUS=$(awk '/^MemTotal:/ {t=$2/1024} /^MemAvailable:/ {a=$2/1024} END {printf "%05d/%05dMB", (t-a), t}' /proc/meminfo)
 }
 
 update_temp() {
