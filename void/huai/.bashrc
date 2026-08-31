@@ -4,7 +4,7 @@
 export GPG_TTY=$(tty)
 gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
 # ssh-agent
-export SSH_AUTH_SOCK="/run/user/$UID/ssh-agent.socket"
+export SSH_AUTH_SOCK="/tmp/ssh-agent-$USER.socket"
 if ! pgrep -u "$USER" ssh-agent >/dev/null; then
     rm -f "$SSH_AUTH_SOCK"
     eval "$(ssh-agent -s -a "$SSH_AUTH_SOCK")" >/dev/null
