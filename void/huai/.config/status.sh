@@ -23,14 +23,6 @@ CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
 UPDATE_INTERVAL_MEDIUM=5
 UPDATE_INTERVAL_LONG=60
 
-# --- Mode Auto-Detection ---
-# If stdout is a pipe (e.g., ./status.sh | dwl), use stdout. Otherwise, use dwm (xsetroot).
-if [[ -p /dev/stdout ]]; then
-	WM_MODE="stdout"
-else
-	WM_MODE="dwm"
-fi
-
 # =============================================================================
 # --- HIGH PERFORMANCE FUNCTIONS ---
 # =============================================================================
@@ -46,7 +38,8 @@ update_cpu() {
 
 	PREV_CPU=$curr_cpu
 	PREV_IDLE=$curr_idle
-	CPU_STATUS="$(printf "%02d%%" "$usage")"
+	# Format CPU usage to 3 digits
+	CPU_STATUS="$(printf "%3d%%" "$usage")"
 }
 
 update_mem() {
@@ -80,7 +73,11 @@ update_net() {
 
 	local rx_kb=$((RX_DIFF / 1024))
 	local tx_kb=$((TX_DIFF / 1024))
-	NET_STATUS_STR="${ICON_NET_DOWN}${rx_kb}K ${ICON_NET_UP}${tx_kb}K"
+	
+	# Format network rates to 7 characters (6 digits + K)
+	local rx_str=$(printf "%6dK" "$rx_kb")
+	local tx_str=$(printf "%6dK" "$tx_kb")
+	NET_STATUS_STR="${ICON_NET_DOWN}${rx_str} ${ICON_NET_UP}${tx_str}"
 }
 
 update_time() { TIME_STATUS=$(printf "%(%a %Y-%m-%d %H:%M)T" -1); }
@@ -97,11 +94,7 @@ print_status_bar() {
 	output="${output#"$SEPARATOR"}"
 	output="${output%"$SEPARATOR"}"
 
-	if [[ "$WM_MODE" == "dwm" ]]; then
-		xsetroot -name "$output" 2>/dev/null
-	else
-		printf "%s\n" "$output"
-	fi
+	xsetroot -name "$output" 2>/dev/null
 }
 
 # =============================================================================
