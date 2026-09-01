@@ -4,5 +4,7 @@
     
     # 延迟 1 秒启动，并将所有报错输出到日志
     [ -f /home/huai/.config/status.sh ] && /bin/bash /home/huai/.config/status.sh &
+    [ -f /home/huai/.config/shutdown.sh ] && /bin/bash /home/huai/.config/shutdown.sh &
+
 ) &
 exec dbus-run-session dwm
