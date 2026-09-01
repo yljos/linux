@@ -1,0 +1,31 @@
+[Unit]
+Description=Aria2 Pro Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+StandardOutput=null
+StandardError=null
+
+# Execute podman run for Aria2 Pro
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=aria2 \
+  -p 6800:6800 \
+  --log-driver=journald \
+  --label "io.containers.autoupdate=registry" \
+  --label PODMAN_SYSTEMD_UNIT=%n \
+  -e RPC_SECRET=123123 \
+  -e RPC_PORT=6800 \
+  -v /data/appdata/aria2:/config:Z \
+  -v /data/www/Downloads:/downloads:z \
+  docker.io/p3terx/aria2-pro:latest
+
+ExecStop=/usr/bin/podman stop -t 10 aria2
+
+[Install]
+WantedBy=multi-user.target

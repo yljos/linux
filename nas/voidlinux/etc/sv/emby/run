@@ -1,0 +1,11 @@
+#!/bin/sh
+exec 2>&1
+
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=emby \
+  -p 8096:8096 \
+  -v /data/appdata/emby:/config:Z \
+  -v /data/media:/media:z \
+  lscr.io/linuxserver/emby:latest
