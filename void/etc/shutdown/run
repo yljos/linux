@@ -1,0 +1,3 @@
+#!/bin/sh
+# Execute the remote shutdown monitor
+exec /home/huai/.config/shutdown.sh

@@ -19,7 +19,7 @@ while true; do
     # If content contains 'A', execute shutdown
     if [[ "$CONTENT" == *"A"* ]]; then
         sleep 60
-        sudo poweroff # Void Linux uses runit, replacing systemctl poweroff
+        poweroff # Void Linux uses runit, replacing systemctl poweroff
         exit 0
     fi
 
