@@ -57,8 +57,6 @@ SHARED_EXCLUDE_KEYWORDS = [
     "HK5-HY2",
 ]
 
-ENABLE_CLASH = True
-
 app = Flask(__name__)
 
 # Update User-Agent to clash-verge for fetching YAML directly
@@ -461,7 +459,7 @@ def process_source(source):
     except Exception as e:
         return str(e), 500
 
-    if ENABLE_CLASH and ("Clash" in ua or "clash" in ua):
+    if "Clash" in ua or "clash" in ua:
         return handle_request(
             source,
             url,
