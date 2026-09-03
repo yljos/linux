@@ -7,5 +7,5 @@ exec /usr/bin/podman run \
   --name=emby \
   -p 8096:8096 \
   -v /data/appdata/emby:/config:Z \
-  -v /data/media:/media:z \
+  -v /data/www/media:/media:z \
   lscr.io/linuxserver/emby:latest
