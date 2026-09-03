@@ -73,10 +73,10 @@ update_net() {
 
 	local rx_kb=$((RX_DIFF / 1024))
 	local tx_kb=$((TX_DIFF / 1024))
-	
+
 	# Format network rates to 7 characters (6 digits + K)
-	local rx_str=$(printf "%07dK" "$rx_kb")
-	local tx_str=$(printf "%07dK" "$tx_kb")
+	local rx_str=$(printf "%06dK" "$rx_kb")
+	local tx_str=$(printf "%06dK" "$tx_kb")
 	NET_STATUS_STR="${ICON_NET_DOWN}${rx_str} ${ICON_NET_UP}${tx_str}"
 }
 
