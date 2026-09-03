@@ -7,7 +7,6 @@
 import subprocess
 import os
 import sys
-import json
 import platform
 from curl_cffi import requests
 from dotenv import load_dotenv
@@ -42,23 +41,32 @@ UPDATE_PROXIES = {
 }
 
 
+def fetch_url(url, timeout=10, **kwargs):
+    """Fetch URL with direct connection, fallback to proxy."""
+    try:
+        return requests.get(url, timeout=timeout, impersonate="firefox", **kwargs)
+    except Exception as e:
+        print(f"Direct connection failed ({e}), using proxy...")
+        return requests.get(
+            url,
+            timeout=timeout + 5,
+            impersonate="firefox",
+            proxies=UPDATE_PROXIES,
+            **kwargs
+        )
+
+
 def update_self():
     """Fetch the latest script from the server and restart if updated."""
     try:
-        response = requests.get(UPDATE_URL, timeout=5, impersonate="firefox")
-    except Exception as e:
-        print(f"Direct update failed ({e}), attempting with proxy...")
-        try:
-            response = requests.get(
-                UPDATE_URL, timeout=5, impersonate="firefox", proxies=UPDATE_PROXIES
-            )
-        except Exception as proxy_e:
-            print(f"Proxy update failed: {proxy_e}")
-            return
-
-    try:
+        response = fetch_url(UPDATE_URL, timeout=5)
         response.raise_for_status()
         new_code = response.text
+
+        # Anti-bricking validation
+        if "def update_self():" not in new_code or "import " not in new_code:
+            print("Update payload invalid, aborting update.")
+            return
 
         with open(__file__, "r", encoding="utf-8") as f:
             current_code = f.read()
@@ -112,25 +120,13 @@ def set_game_language(work_dir, lang):
 
 
 def install_mods(work_dir, mc_version, loader):
-    """Fetch mod list from remote JSON with proxy fallback, download and install mods, and remove unlisted mods."""
-    
+    """Fetch mod list and install mods, remove unlisted ones."""
     json_filename = f"{mc_version}_{loader}.json"
     json_url = f"{JSON_BASE_URL}/{json_filename}"
     
     print(f"Fetching mod list from: {json_url}")
     try:
-        response = requests.get(json_url, timeout=10, impersonate="firefox")
-    except Exception as e:
-        print(f"Direct fetch failed ({e}), attempting with proxy...")
-        try:
-            response = requests.get(
-                json_url, timeout=10, impersonate="firefox", proxies=UPDATE_PROXIES
-            )
-        except Exception as proxy_e:
-            print(f"Proxy fetch failed: {proxy_e}")
-            return
-
-    try:
+        response = fetch_url(json_url, timeout=10)
         response.raise_for_status()
         mods_list = response.json()
     except Exception as e:
@@ -165,7 +161,7 @@ def install_mods(work_dir, mc_version, loader):
             if "curseforge.com" in mod["url"]:
                 # Fetch from CurseForge via api.curse.tools proxy
                 ver_url = f"https://api.curse.tools/v1/cf/mods/{project_id}/files"
-                cf_res = requests.get(ver_url, impersonate="firefox", timeout=15)
+                cf_res = fetch_url(ver_url, timeout=15)
                 cf_res.raise_for_status()
                 
                 for file_data in cf_res.json().get("data", []):
@@ -183,7 +179,9 @@ def install_mods(work_dir, mc_version, loader):
                     "loaders": f'["{loader}"]',
                     "game_versions": f'["{mc_version}"]'
                 }
-                versions = requests.get(ver_url, params=params, impersonate="firefox").json()
+                versions_res = fetch_url(ver_url, timeout=10, params=params)
+                versions_res.raise_for_status()
+                versions = versions_res.json()
                 
                 if isinstance(versions, list):
                     for ver in versions:
@@ -199,10 +197,14 @@ def install_mods(work_dir, mc_version, loader):
                 continue
                 
             print(f"Downloading {mod['name']}...")
-            dl_res = requests.get(dl_url, impersonate="firefox", timeout=600)
+            dl_res = fetch_url(dl_url, timeout=600)
             dl_res.raise_for_status()
-            with open(file_path, "wb") as f:
+            
+            # Write to .tmp first to prevent corruption, cross-platform atomic replace
+            tmp_path = file_path + ".tmp"
+            with open(tmp_path, "wb") as f:
                 f.write(dl_res.content)
+            os.replace(tmp_path, file_path)
                 
         except Exception as e:
             print(f"Error installing {mod['name']}: {e}")
@@ -255,12 +257,24 @@ def launch_minecraft():
 
     command.append(target_version)
 
-    try:
-        subprocess.run(command, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error occurred: {e}")
-    except FileNotFoundError:
-        print("Executable not found: uvx")
+    # Hand over process control to portablemc
+    print("Handing over to portablemc...")
+    sys.stdout.flush()
+
+    if platform.system() == "Windows":
+        # Windows lacks true execvp, fallback to subprocess
+        try:
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error occurred: {e}")
+        except FileNotFoundError:
+            print("Executable not found: uvx")
+    else:
+        # POSIX (Linux/macOS): True process replacement
+        try:
+            os.execvp("uvx", command)
+        except FileNotFoundError:
+            print("Executable not found: uvx")
 
 
 if __name__ == "__main__":
