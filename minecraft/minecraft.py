@@ -1,3 +1,9 @@
+# /// script
+# dependencies = [
+#   "curl-cffi",
+#   "python-dotenv"
+# ]
+# ///
 import subprocess
 import os
 import sys
