@@ -52,7 +52,7 @@ SHARED_EXCLUDE_KEYWORDS = [
 ]
 
 ENABLE_CLASH = True
-ENABLE_SINGBOX = False
+ENABLE_SINGBOX = True
 
 app = Flask(__name__)
 
