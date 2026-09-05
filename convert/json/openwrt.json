@@ -10,7 +10,6 @@
       {"type": "fakeip", "tag": "dns_fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"}
     ],
     "rules": [
-      {"action": "evaluate", "server": "dns_proxy"},
       {"domain": "ntp.aliyun.com", "server": "dns_direct", "strategy": "ipv4_only"},
       {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "server": "dns_microsoft", "strategy": "ipv4_only"},
       {"domain_keyword": "googleapis", "server": "dns_google", "strategy": "ipv4_only"},
