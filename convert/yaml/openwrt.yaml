@@ -34,7 +34,7 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
-  fake-ip-filter: [+.msftconnecttest.com, +.msftncsi.com, +.googleapis.com, +.googleapis.cn, "rule-set:googlefcm-site","rule-set:cloudflare"]
+  fake-ip-filter: [+.msftconnecttest.com, +.msftncsi.com, +.googleapis.com, +.googleapis.cn, "rule-set:googlefcm-site","rule-set:cloudflare-site"]
   use-hosts: true
   default-nameserver: [223.5.5.5#DIRECT]
   proxy-server-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
