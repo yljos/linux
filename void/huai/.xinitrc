@@ -13,4 +13,5 @@ if [ -z "$XDG_RUNTIME_DIR" ]; then
 fi
 pipewire &
 wireplumber &
+pipewire-pulse &
 exec dwm
