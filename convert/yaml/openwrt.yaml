@@ -34,7 +34,7 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
-  fake-ip-filter: [+.msftconnecttest.com, +.msftncsi.com, +.googleapis.com, +.googleapis.cn, "rule-set:googlefcm-site"]
+  fake-ip-filter: [+.msftconnecttest.com, +.msftncsi.com, +.googleapis.com, +.googleapis.cn, "rule-set:googlefcm-site","rule-set:cloudflare"]
   use-hosts: true
   default-nameserver: [223.5.5.5#DIRECT]
   proxy-server-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
@@ -109,7 +109,6 @@ rules:
   - RULE-SET,huawei-site,REJECT-DROP
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,googlefcm-site,DIRECT
-  - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
   - DOMAIN-KEYWORD,msftncsi.com,Microsoft
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(DOMAIN-KEYWORD,googleapis)),Youtube
@@ -143,7 +142,6 @@ rules:
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,direct-ip,DIRECT
   - RULE-SET,wechat-ip,DIRECT
-  - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-ip)),DIRECT
   - RULE-SET,cloudflare-ip,M
   - RULE-SET,pikpak-ip,PikPak
   - RULE-SET,telegram-ip,Telegram
