@@ -117,6 +117,7 @@ rules:
   - RULE-SET,pikpak-site,PikPak
   - RULE-SET,tencent-site,DIRECT
   - RULE-SET,proxy-site,M
+  - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
   - RULE-SET,cloudflare-site,M
   - RULE-SET,github-site,GitHub
   - RULE-SET,codeberg-site,GitHub
@@ -142,6 +143,7 @@ rules:
   - RULE-SET,cn-site,DIRECT
   - RULE-SET,direct-ip,DIRECT
   - RULE-SET,wechat-ip,DIRECT
+  - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-ip)),DIRECT
   - RULE-SET,cloudflare-ip,M
   - RULE-SET,pikpak-ip,PikPak
   - RULE-SET,telegram-ip,Telegram
