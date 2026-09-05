@@ -17,6 +17,7 @@
       {"rule_set": "googlefcm-site", "server": "dns_google", "ip_version": 4},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "cn-site", "server": "dns_direct", "ip_version": 4},
+      {"rule_set":"cloudflare-site","server":"dns_proxy","ip_version":4},
       {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
     ],
     "final": "dns_proxy"
