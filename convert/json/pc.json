@@ -1,5 +1,6 @@
 {
   "log": {"disabled": false, "level": "error", "timestamp": true},
+  "http_clients": [{"tag": "proxy-client", "detour": "D"}],
   "dns": {
     "servers": [
       {"tag": "dns_resolver", "type": "udp", "server": "223.5.5.5", "server_port": 53, "detour": "D"},
@@ -10,14 +11,13 @@
       {"tag": "dns_fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"}
     ],
     "rules": [
-      {"domain": ["ntp.aliyun.com"], "strategy": "ipv4_only", "server": "dns_direct"},
-      {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "strategy": "ipv4_only", "server": "dns_microsoft"},
-      {"domain_keyword": "googleapis", "strategy": "ipv4_only", "server": "dns_google"},
-      {"rule_set": "cn-site", "strategy": "ipv4_only", "server": "dns_direct"},
+      {"domain": ["ntp.aliyun.com"], "ip_version": 4, "server": "dns_direct"},
+      {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "ip_version": 4, "server": "dns_microsoft"},
+      {"domain_keyword": "googleapis", "ip_version": 4, "server": "dns_google"},
+      {"rule_set": "cn-site", "ip_version": 4, "server": "dns_direct"},
       {"query_type": ["A", "AAAA"], "action": "route", "server": "dns_fakeip", "disable_cache": true}
     ],
-    "final": "dns_proxy",
-    "strategy": "ipv4_only"
+    "final": "dns_proxy"
   },
   "inbounds": [{"type": "mixed", "tag": "mixed-in", "listen": "0.0.0.0", "listen_port": 12138}],
   "outbounds": [
@@ -57,33 +57,33 @@
       {"rule_set": "microsoft-site", "outbound": "Microsoft"},
       {"rule_set": "gfw-site", "outbound": "M"},
       {"rule_set": "cn-site", "outbound": "D"},
-      {"action": "resolve", "server": "dns_proxy", "strategy": "ipv4_only"},
+      {"action": "resolve", "server": "dns_proxy", "ip_version": 4},
       {"rule_set": "direct-ip", "outbound": "D"},
       {"rule_set": "cloudflare-ip", "outbound": "M"},
       {"rule_set": "google-ip", "outbound": "Google"},
       {"rule_set": "cn-ip", "outbound": "D"}
     ],
     "rule_set": [
-      {"tag": "cn-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "cn-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "cloudflare-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cloudflare.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "cloudflare-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cloudflare.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"type": "remote", "tag": "direct-site", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@sing-box/direct/direct-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"type": "remote", "tag": "direct-ip", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@sing-box/direct/direct-ip.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "gfw-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/gfw.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "github-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/github.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "google-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/google.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "google-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/google.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "microsoft-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/microsoft.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "mozilla-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/mozilla.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"type": "remote", "tag": "proxy-site", "url": "https://cdn.jsdmirror.com/gh/yljos/rule-set@sing-box/proxy/proxy-site.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"type": "remote", "tag": "speedtest-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/speedtest.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"type": "remote", "tag": "steam-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/steam.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "tiktok-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/tiktok.srs", "download_detour": "D", "update_interval": "12h0m0s"},
-      {"tag": "youtube-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/youtube.srs", "download_detour": "D", "update_interval": "12h0m0s"}
+      {"tag": "cn-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs", "update_interval": "12h0m0s"},
+      {"tag": "cn-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs", "update_interval": "12h0m0s"},
+      {"tag": "cloudflare-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cloudflare.srs", "update_interval": "12h0m0s"},
+      {"tag": "cloudflare-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cloudflare.srs", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "direct-site", "url": "https://rules.346211.xyz/direct/direct-site.srs", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "direct-ip", "url": "https://rules.346211.xyz/direct/direct-ip.srs", "update_interval": "12h0m0s"},
+      {"tag": "gfw-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/gfw.srs", "update_interval": "12h0m0s"},
+      {"tag": "github-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/github.srs", "update_interval": "12h0m0s"},
+      {"tag": "google-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/google.srs", "update_interval": "12h0m0s"},
+      {"tag": "google-ip", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/google.srs", "update_interval": "12h0m0s"},
+      {"tag": "microsoft-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/microsoft.srs", "update_interval": "12h0m0s"},
+      {"tag": "mozilla-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/mozilla.srs", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "proxy-site", "url": "https://rules.346211.xyz/proxy/proxy-site.srs", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "speedtest-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/speedtest.srs", "update_interval": "12h0m0s"},
+      {"type": "remote", "tag": "steam-site", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/steam.srs", "update_interval": "12h0m0s"},
+      {"tag": "tiktok-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/tiktok.srs", "update_interval": "12h0m0s"},
+      {"tag": "youtube-site", "type": "remote", "url": "https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/youtube.srs", "update_interval": "12h0m0s"}
     ],
     "final": "Default",
     "default_domain_resolver": {"server": "dns_direct", "rewrite_ttl": 10}
   },
-  "experimental": {"cache_file": {"enabled": true, "path": "cache.db", "store_rdrc": true, "rdrc_timeout": "168h0m0s"}, "clash_api": {"external_controller": "127.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://www.346211.xyz/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}}
+  "experimental": {"cache_file": {"enabled": true, "path": "cache.db", "store_dns": true}, "clash_api": {"external_controller": "127.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://www.346211.xyz/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}}
 }
