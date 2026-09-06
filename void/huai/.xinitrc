@@ -14,4 +14,5 @@ fi
 pipewire &
 wireplumber &
 pipewire-pulse &
+fcitx5 -d &
 exec dwm
