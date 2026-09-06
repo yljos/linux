@@ -34,7 +34,7 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
-  fake-ip-filter: [+.msftconnecttest.com, +.msftncsi.com, +.googleapis.com, +.googleapis.cn, "rule-set:googlefcm-site","rule-set:cloudflare-site"]
+  fake-ip-filter: [+.msftconnecttest.com, +.msftncsi.com, +.googleapis.com, +.googleapis.cn, "rule-set:googlefcm-site", "rule-set:cloudflare-site"]
   use-hosts: true
   default-nameserver: [223.5.5.5#DIRECT]
   proxy-server-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
@@ -50,9 +50,9 @@ proxy-groups:
   - {type: select, name: OpenAi, proxies: [JP, SG, US, HK]}
   - {type: select, name: Telegram, proxies: [JP, SG, US, HK]}
   - {type: select, name: Steam, proxies: [DIRECT, JP, SG, US, HK]}
-  - {type: select, name: PikPak, proxies: [SG_load-balance,SG, JP, US, HK]}
-  - {type: select, name: GitHub, proxies: [JP, SG, US, HK]}
-  - {type: select, name: Microsoft, proxies: [DIRECT, JP, SG, US, HK]}
+  - {type: select, name: PikPak, proxies: [SG_load-balance, SG, JP, HK]}
+  - {type: select, name: GitHub, proxies: [JP, SG, HK]}
+  - {type: select, name: Microsoft, proxies: [DIRECT, JP, SG, HK]}
   - {type: select, name: TikTok, proxies: [JP]}
   - {type: select, name: Twitter, proxies: [US]}
   - {type: select, name: Youtube, hidden: true, include-all-proxies: true, filter: "(?i)^(?=.*(US))(?!.*(gemini)).*$", proxies: [US, JP, SG, HK]}
