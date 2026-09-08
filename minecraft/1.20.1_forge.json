@@ -73,6 +73,15 @@
     },
     {
         "authors": [
+            "AlphaMode, bconlon, Blodhgarm, Burning Cactus, Drullkus, Hugo Payn, Jaryt, Oscar Payn, quek, Raptor, reetam, RENREN, sunsette"
+        ],
+        "filename": "aether-1.20.1-1.5.2-neoforge.jar",
+        "name": "The Aether",
+        "url": "https://www.curseforge.com/projects/255308",
+        "version": "1.20.1-1.5.2-neoforge"
+    },
+    {
+        "authors": [
             "xaero96"
         ],
         "filename": "xaerominimap-forge-1.20.1-26.4.2.jar",
