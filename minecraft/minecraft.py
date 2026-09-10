@@ -1,7 +1,7 @@
 # /// script
 # dependencies = [
-#   "curl-cffi",
-#   "python-dotenv"
+#     "curl-cffi",
+#     "python-dotenv"
 # ]
 # ///
 import subprocess
@@ -23,6 +23,9 @@ else:
     BASE_WORK_DIR = os.getenv("MC_WORK_DIR", os.path.expanduser("~"))
 
 EMAIL = os.environ["EMAIL"]
+# Switch to specify whether to use offline mode directly in the script (True for offline, False for online)
+OFFLINE_MODE = True
+
 UPDATE_URL = (
     "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft/minecraft.py"
 )
@@ -31,7 +34,6 @@ JSON_BASE_URL = "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/m
 # Strict environment variables loading
 VERSION_URL = os.environ["VERSION_URL"]
 SERVER_ADDR = os.environ["SERVER_ADDR"]
-SERVER_PORT = os.environ["SERVER_PORT"]
 GAME_LANG = "zh_cn"
 
 # Proxy configuration
@@ -246,14 +248,16 @@ def launch_minecraft():
         "--work-dir",
         work_dir,
         "start",
-        "-l",
-        EMAIL,
     ]
+
+    if OFFLINE_MODE:
+        offline_user = "dayao" if "dayao" in EMAIL else "34611"
+        command.extend(["-u", offline_user])
+    else:
+        command.extend(["-l", EMAIL])
 
     if SERVER_ADDR:
         command.extend(["-s", SERVER_ADDR])
-        if SERVER_PORT:
-            command.extend(["-p", SERVER_PORT])
 
     command.append(target_version)
 
@@ -262,7 +266,6 @@ def launch_minecraft():
     sys.stdout.flush()
 
     if platform.system() == "Windows":
-        # Windows lacks true execvp, fallback to subprocess
         try:
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError as e:
@@ -270,7 +273,6 @@ def launch_minecraft():
         except FileNotFoundError:
             print("Executable not found: uvx")
     else:
-        # POSIX (Linux/macOS): True process replacement
         try:
             os.execvp("uvx", command)
         except FileNotFoundError:
