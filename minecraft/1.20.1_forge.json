@@ -19,6 +19,15 @@
     },
     {
         "authors": [
+            "simibubi"
+        ],
+        "filename": "create-1.20.1-6.0.8.jar",
+        "name": "Create",
+        "url": "https://www.curseforge.com/projects/328085",
+        "version": "6.0.8"
+    },
+    {
+        "authors": [
             "embeddedt"
         ],
         "filename": "embeddium-0.3.31+mc1.20.1.jar",
@@ -79,15 +88,6 @@
         "name": "Simple Login",
         "url": "https://www.curseforge.com/projects/312664",
         "version": "1.0.1"
-    },
-    {
-        "authors": [
-            "AlphaMode, bconlon, Blodhgarm, Burning Cactus, Drullkus, Hugo Payn, Jaryt, Oscar Payn, quek, Raptor, reetam, RENREN, sunsette"
-        ],
-        "filename": "aether-1.20.1-1.5.2-neoforge.jar",
-        "name": "The Aether",
-        "url": "https://www.curseforge.com/projects/255308",
-        "version": "1.20.1-1.5.2-neoforge"
     },
     {
         "authors": [
