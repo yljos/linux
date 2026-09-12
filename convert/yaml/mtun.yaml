@@ -53,16 +53,18 @@ dns:
   nameserver-policy: {"rule-set:microsoft-site": "https://cloudflare-dns.com/dns-query#Microsoft", "rule-set:huawei-site": "rcode://refused", "rule-set:github-site": "https://cloudflare-dns.com/dns-query#GitHub", "rule-set:tiktok-site": "https://cloudflare-dns.com/dns-query#TikTok", "rule-set:youtube-site": "https://dns.google/dns-query#Google", "rule-set:google-site": "https://dns.google/dns-query#Google"}
 proxies: []
 proxy-groups:
-  - {type: select, name: M, proxies: [JP, SG, US, HK]}
+  - {type: fallback, name: M, proxies: [SG, JP, HK], url: "http://www.gstatic.com/generate_204", interval: 30}
   - {type: select, name: Default, proxies: [REJECT, DIRECT, M]}
   - {type: select, name: Google, proxies: [US, JP, SG, HK]}
-  - {type: select, name: PikPak, proxies: [SG, JP, US, HK]}
+  - {type: select, name: PikPak, proxies: [SG_load-balance, SG, HK]}
   - {type: select, name: GitHub, proxies: [JP, SG, US, HK]}
   - {type: select, name: Microsoft, proxies: [JP, SG, US, HK]}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: HK, filter: "(?i).*HK.*"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: JP, filter: "(?i).*JP.*"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: SG, filter: "(?i).*SG.*"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: US, filter: "(?i).*US.*"}
+  - {type: load-balance, url: "https://www.gstatic.com/generate_204", interval: 30, timeout: 3000, max-failed-times: 3, include-all-proxies: true, strategy: round-robin, hidden: true, name: SG_load-balance, filter: "(?i).*SG.*"}
+
 rule-providers:
   cloudflare-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cloudflare.mrs"}
   cloudflare-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/cloudflare.mrs"}
