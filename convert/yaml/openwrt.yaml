@@ -43,14 +43,14 @@ dns:
   nameserver-policy: {"rule-set:microsoft-site": "https://cloudflare-dns.com/dns-query#Microsoft", "rule-set:huawei-site": "rcode://refused", "rule-set:openai-site": "https://cloudflare-dns.com/dns-query#OpenAi", "rule-set:steam-site": "https://cloudflare-dns.com/dns-query#Steam", "rule-set:github-site": "https://cloudflare-dns.com/dns-query#GitHub", "rule-set:codeberg-site": "https://cloudflare-dns.com/dns-query#GitHub", "rule-set:telegram-site": "https://cloudflare-dns.com/dns-query#Telegram", "rule-set:twitter-site": "https://cloudflare-dns.com/dns-query#Twitter", "rule-set:tiktok-site": "https://cloudflare-dns.com/dns-query#TikTok", "rule-set:youtube-site": "https://dns.google/dns-query#Google", "rule-set:googlefcm-site": "https://dns.google/dns-query#Google", "rule-set:google-site": "https://dns.google/dns-query#Google", "rule-set:speedtest-site": "https://cloudflare-dns.com/dns-query#M"}
 proxies: []
 proxy-groups:
-  - {type: fallback, name: M, proxies: [SG, JP, HK], url: "http://www.gstatic.com/generate_204", interval: 30}
+  - {type: select, name: M, proxies: [JP, SG, HK]}
   - {type: select, name: Default, proxies: [REJECT, DIRECT, M]}
   - {type: select, name: Google, proxies: [GCP-outbound, US, JP, SG, HK]}
   - {type: fallback, name: Relay, include-all-proxies: true, filter: "(?i).*JP.*", url: "http://www.gstatic.com/generate_204", interval: 30}
   - {type: select, name: OpenAi, proxies: [JP, SG, US, HK]}
   - {type: select, name: Telegram, proxies: [JP, SG, US, HK]}
   - {type: select, name: Steam, proxies: [DIRECT, JP, SG, US, HK]}
-  - {type: select, name: PikPak, proxies: [SG_load-balance, SG, JP, HK]}
+  - {type: select, name: PikPak, proxies: [SG_load-balance, SG, HK]}
   - {type: select, name: GitHub, proxies: [JP, SG, HK]}
   - {type: select, name: Microsoft, proxies: [DIRECT, JP, SG, HK]}
   - {type: select, name: TikTok, proxies: [JP]}
