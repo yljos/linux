@@ -77,7 +77,7 @@ proxies: []
 proxy-groups:
   - {type: select, name: M, proxies: [JP, SG, US, HK]}
   - {type: select, name: Default, proxies: [REJECT, DIRECT, M]}
-  - {type: select, name: Google, proxies: [GCP-outbound, US, JP, SG, HK]}
+  - {type: select, name: Google, proxies: [US, JP, SG, HK]}
   - {type: fallback, name: Relay, include-all-proxies: true, filter: "(?i).*(SG|Singapore|JP|Japan|United States|US|Hong Kong|HK).*", url: "http://www.gstatic.com/generate_204", interval: 30}
   - {type: select, name: OpenAi, proxies: [JP, SG, US, HK]}
   - {type: select, name: Telegram, proxies: [JP, SG, US, HK]}
