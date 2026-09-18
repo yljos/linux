@@ -1265,5 +1265,12 @@ user_pref("network.predictor.enable-prefetch", false); // [FF48+] [DEFAULT: fals
 user_pref("_user.js.parrot", "SUCCESS: No no he's not dead, he's, he's restin'!");
 
 
+user_pref("media.av1.enabled", false); // Disable AV1.
+user_pref("media.mediasource.vp9.enabled", false); // Disable VP9.
+user_pref("media.mediasource.webm.enabled", false); // Disable WebM (VP8/VP9).
+user_pref("media.wmf.hevc.enabled", false); // Disable H.265 (Windows).
+user_pref("media.mediasource.hevc.enabled", false); // Disable H.265 (MediaSource).
+
+
 
 
