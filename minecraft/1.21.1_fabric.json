@@ -1,0 +1,56 @@
+[
+    {
+        "filename": "coroutil-fabric-1.21.1-1.3.8.jar",
+        "name": "CoroUtil",
+        "url": "https://modrinth.com/mod/rLLJ1OZM",
+        "version": "1.21.1-1.3.8"
+    },
+    {
+        "filename": "entityculling-fabric-1.10.5-mc1.21.1.jar",
+        "name": "EntityCulling",
+        "url": "https://modrinth.com/mod/NNAgCjsB",
+        "version": "1.10.5"
+    },
+    {
+        "filename": "fabric-api-0.116.15+1.21.1.jar",
+        "name": "Fabric API",
+        "url": "https://modrinth.com/mod/P7dR8mSH",
+        "version": "0.116.15+1.21.1"
+    },
+    {
+        "filename": "gravestones-1.4.2+1.21+A.jar",
+        "name": "Gravestones",
+        "url": "https://modrinth.com/mod/Heh3BbSv",
+        "version": "1.4.2"
+    },
+    {
+        "filename": "pneumonocore-1.3.1+1.21+A.jar",
+        "name": "PneumonoCore",
+        "url": "https://modrinth.com/mod/ZLKQjA7t",
+        "version": "1.3.1"
+    },
+    {
+        "filename": "sodium-fabric-0.8.13-beta.2+mc1.21.1.jar",
+        "name": "Sodium",
+        "url": "https://modrinth.com/mod/AANobbMI",
+        "version": "0.8.13-beta.2+mc1.21.1"
+    },
+    {
+        "filename": "aether-1.21.1-1.5.11-fabric.jar",
+        "name": "The Aether",
+        "url": "https://modrinth.com/mod/YhmgMVyu",
+        "version": "1.5.11"
+    },
+    {
+        "filename": "watut-fabric-1.21.0-1.2.7.jar",
+        "name": "What Are They Up To",
+        "url": "https://modrinth.com/mod/AtB5mHky",
+        "version": "1.21.0-1.2.7"
+    },
+    {
+        "filename": "owo-lib-0.13.0-alpha.15+1.21.jar",
+        "name": "oωo",
+        "url": "https://modrinth.com/mod/ccKDOlHs",
+        "version": "0.13.0-alpha.15+1.21"
+    }
+]

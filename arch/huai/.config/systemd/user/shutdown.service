@@ -1,0 +1,23 @@
+[Unit]
+Description=Remote Shutdown Monitor Service
+# 确保网络连通后再启动
+After=network.target
+
+[Service]
+Type=simple
+# 脚本的绝对路径，%h 代表你的 Home 目录 (/home/huai)
+ExecStart=/home/huai/.config/shutdown.sh
+
+# 关键：确保 notify-send 能找到你的桌面环境
+# 如果你是 dwm/x11 环境，通常 Systemd --user 能自动获取，
+# 但为了保险，可以显式传递 DISPLAY 变量（根据你的实际情况，一般是 :0）
+Environment=DISPLAY=:0
+
+# 守护进程策略：挂掉后自动重启
+Restart=always
+# 重启间隔，防止脚本出错时疯狂循环占用 CPU
+RestartSec=10
+
+[Install]
+# 跟随用户登录启动
+WantedBy=default.target

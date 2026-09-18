@@ -1,0 +1,25 @@
+[Unit]
+Description=Telegram Bot Service (Podman)
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+# No logs in systemd
+StandardOutput=null
+StandardError=null
+
+ExecStart=/usr/bin/podman run \
+  --name bot \
+  --replace \
+  --rm \
+  --init \
+  -p 5005:5005 \
+  --env-file /root/bot/.env \
+  --log-driver=journald \
+  -v /root/bot/data:/app/data:Z \
+  localhost/bot:latest
+
+[Install]
+WantedBy=multi-user.target

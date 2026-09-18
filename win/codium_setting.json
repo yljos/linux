@@ -1,0 +1,24 @@
+{
+    "update.enableWindowsBackgroundUpdates": false,
+    "update.showReleaseNotes": false,
+    "workbench.startupEditor": "none",
+    "git.openRepositoryInParentFolders": "always",
+    "git.autofetch": true,
+    "update.mode": "none",
+    "extensions.autoCheckUpdates": false,
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false,
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "diffEditor.renderSideBySide": false,
+    "security.workspace.trust.untrustedFiles": "open",
+    "terminal.integrated.profiles.windows": {
+        "Git Bash": {
+            "source": "Git Bash" 
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "Git Bash", 
+    "git.path": "C:\\Program Files\\Git\\cmd\\git.exe"
+}

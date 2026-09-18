@@ -1,0 +1,110 @@
+[
+    {
+        "authors": [
+            "Alexthe666"
+        ],
+        "filename": "citadel-2.6.3-1.20.1.jar",
+        "name": "Citadel",
+        "url": "https://www.curseforge.com/projects/331936",
+        "version": "2.6.3"
+    },
+    {
+        "authors": [
+            "Corosus"
+        ],
+        "filename": "coroutil-forge-1.20.1-1.3.7.jar",
+        "name": "CoroUtil",
+        "url": "https://www.curseforge.com/projects/237749",
+        "version": "1.20.1-1.3.7"
+    },
+    {
+        "authors": [
+            "simibubi"
+        ],
+        "filename": "create-1.20.1-6.0.8.jar",
+        "name": "Create",
+        "url": "https://www.curseforge.com/projects/328085",
+        "version": "6.0.8"
+    },
+    {
+        "authors": [
+            "embeddedt"
+        ],
+        "filename": "embeddium-0.3.31+mc1.20.1.jar",
+        "name": "Embeddium",
+        "url": "https://www.curseforge.com/projects/908741",
+        "version": "0.3.31+mc1.20.1"
+    },
+    {
+        "authors": [
+            "tr7zw"
+        ],
+        "filename": "entityculling-forge-1.10.5-mc1.20.1.jar",
+        "name": "EntityCulling",
+        "url": "https://modrinth.com/mod/NNAgCjsB",
+        "version": "1.10.5"
+    },
+    {
+        "authors": [
+            "malte0811"
+        ],
+        "filename": "ferritecore-6.0.1-forge.jar",
+        "name": "Ferrite Core",
+        "url": "https://www.curseforge.com/projects/429235",
+        "version": "6.0.1"
+    },
+    {
+        "authors": [
+            "Alexthe666, TheBv"
+        ],
+        "filename": "iceandfire-2.1.13-1.20.1-beta-5.jar",
+        "name": "Ice and Fire",
+        "url": "https://www.curseforge.com/projects/264231",
+        "version": "2.1.13-1.20.1"
+    },
+    {
+        "authors": [
+            "Snownee"
+        ],
+        "filename": "Jade-1.20.1-Forge-11.13.3.jar",
+        "name": "Jade",
+        "url": "https://www.curseforge.com/projects/324717",
+        "version": "11.13.3+forge"
+    },
+    {
+        "authors": [
+            "embeddedt"
+        ],
+        "filename": "modernfix-forge-5.27.83+mc1.20.1.jar",
+        "name": "ModernFix",
+        "url": "https://www.curseforge.com/projects/790626",
+        "version": "5.27.83+mc1.20.1"
+    },
+    {
+        "authors": [
+            "Seraph_JACK, Yesterday17"
+        ],
+        "filename": "SimpleLogin-1.20.1-1.0.2-all.jar",
+        "name": "Simple Login",
+        "url": "https://www.curseforge.com/projects/312664",
+        "version": "1.0.1"
+    },
+    {
+        "authors": [
+            "Corosus"
+        ],
+        "filename": "watut-forge-1.20.1-1.2.3.jar",
+        "name": "What Are They Up To",
+        "url": "https://www.curseforge.com/projects/945479",
+        "version": "1.20.1-1.2.3"
+    },
+    {
+        "authors": [
+            "xaero96"
+        ],
+        "filename": "xaerominimap-forge-1.20.1-26.5.0.jar",
+        "name": "Xaero's Minimap",
+        "url": "https://www.curseforge.com/projects/263420",
+        "version": "26.5.0"
+    }
+]

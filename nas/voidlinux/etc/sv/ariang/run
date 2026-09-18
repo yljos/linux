@@ -1,0 +1,7 @@
+#!/bin/sh
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=ariang \
+  -p 6880:6880 \
+  docker.io/p3terx/ariang:latest

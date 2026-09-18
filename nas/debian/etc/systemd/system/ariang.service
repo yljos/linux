@@ -1,0 +1,27 @@
+[Unit]
+Description=AriaNg Container
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+StandardOutput=null
+StandardError=null
+
+# Execute podman run for AriaNg
+ExecStart=/usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=ariang \
+  -p 6880:6880 \
+  --log-driver=journald \
+  --label "io.containers.autoupdate=registry" \
+  --label PODMAN_SYSTEMD_UNIT=%n \
+  docker.io/p3terx/ariang:latest
+
+ExecStop=/usr/bin/podman stop -t 10 ariang
+
+[Install]
+WantedBy=multi-user.target
