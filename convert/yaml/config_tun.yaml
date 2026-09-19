@@ -70,6 +70,7 @@ dns:
   nameserver: ["https://cloudflare-dns.com/dns-query#M"]
   direct-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
   nameserver-policy:
+    "login.me": "10.0.0.1"
     "rule-set:microsoft-site": "https://cloudflare-dns.com/dns-query#Microsoft"
     "rule-set:cloudflare-site": "https://cloudflare-dns.com/dns-query#M"
     "rule-set:openai-site": "https://cloudflare-dns.com/dns-query#OpenAi"
