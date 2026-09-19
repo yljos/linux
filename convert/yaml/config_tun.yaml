@@ -55,6 +55,7 @@ dns:
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
   fake-ip-filter:
+    - login.lan
     - localhost.ptlogin2.qq.com
     - "+.msftconnecttest.com"
     - "+.msftncsi.com"
