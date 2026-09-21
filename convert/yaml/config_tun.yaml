@@ -45,7 +45,6 @@ tun:
   auto-detect-interface: true
   auto-redirect: true
   strict-route: true
-  endpoint-independent-nat: true
 dns:
   enable: true
   prefer-h3: false
