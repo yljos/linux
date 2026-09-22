@@ -71,7 +71,7 @@ def perform_update():
     load_dotenv(override=True)
     url = os.getenv("URL")
 
-    user_agent = os.getenv("USER_AGENT", "clash_pc")
+    user_agent = os.getenv("USER_AGENT", "clash")
     headers = {"User-Agent": user_agent}
 
     if not url:
