@@ -2,12 +2,14 @@ import os
 import time
 import subprocess
 import ctypes
-import json
 from dotenv import load_dotenv
 from curl_cffi import requests
 
 # Configuration
 UPDATE_INTERVAL = 3600  # 1 hour in seconds
+MIHOMO_DIR = r"c:\clash"  # Runtime and config directory
+MIHOMO_CONFIG = os.path.join(MIHOMO_DIR, "config.yaml")
+MIHOMO_EXE = r"C:\Program Files\clash\mihomo-windows-amd64-v3.exe"  # Kernel executable path
 
 
 def is_admin():
@@ -32,12 +34,39 @@ def restart_service(service_name):
         print(f"Unknown error during service restart: {e}")
 
 
+def test_mihomo_config(config_path):
+    """Test the validity of the mihomo configuration file using mihomo itself"""
+    print("Testing downloaded configuration using mihomo...")
+    if not os.path.exists(MIHOMO_EXE):
+        print(f"[Warning] Cannot find {MIHOMO_EXE}. Skipping config validation via mihomo.")
+        return None
+
+    try:
+        # Run mihomo test: -d for runtime directory, -f for config file
+        result = subprocess.run(
+            [MIHOMO_EXE, "-t", "-d", MIHOMO_DIR, "-f", config_path],
+            capture_output=True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        
+        if result.returncode == 0 and ("configuration is valid" in result.stdout.lower() or "configuration file test successful" in result.stdout.lower() or "test successful" in result.stdout.lower()):
+             print("[Success] Configuration is valid.")
+             return True
+        else:
+             print(f"[Error] Configuration validation failed. Output:\n{result.stdout}\n{result.stderr}")
+             return False
+
+    except Exception as e:
+         print(f"[Error] Failed to execute mihomo test: {e}")
+         return None
+
+
 def perform_update():
     """Execute the update process"""
     load_dotenv(override=True)
     url = os.getenv("URL")
 
-    # Default to clash_pc if USER_AGENT is not set
     user_agent = os.getenv("USER_AGENT", "clash_pc")
     headers = {"User-Agent": user_agent}
 
@@ -46,65 +75,58 @@ def perform_update():
         return False
 
     service_name = "clash"
-    save_path = r"c:\clash\config.yaml"
+    save_path = MIHOMO_CONFIG
+    temp_path = save_path + ".tmp"
     check_key = "proxies:"
 
     try:
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        print(
-            f"[{service_name}] Downloading config... (User-Agent: {headers['User-Agent']})"
-        )
+        os.makedirs(MIHOMO_DIR, exist_ok=True)
+        print(f"[{service_name}] Downloading config... (User-Agent: {headers['User-Agent']})")
 
-        # Bypass Bot Fight Mode by impersonating Firefox
-        response = requests.get(
-            url, headers=headers, timeout=(10, 30), impersonate="firefox"
-        )
+        response = requests.get(url, headers=headers, timeout=(10, 30), impersonate="firefox")
         response.raise_for_status()
         response.encoding = "utf-8"
 
-        is_valid = False
-        if check_key in response.text:
-            is_valid = True
+        if check_key not in response.text:
+             print(f"[{service_name}] Validation failed: Missing '{check_key}' - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+             return False
 
-        if is_valid:
-            # Check if content is identical
-            need_restart = True
-            if os.path.exists(save_path):
-                with open(save_path, "rb") as f:
-                    if f.read() == response.content:
-                        need_restart = False
-                        print(f"[{service_name}] Config is identical to local, skipping restart.")
+        with open(temp_path, "wb") as f:
+            f.write(response.content)
 
-            # Atomic write
-            temp_path = save_path + ".tmp"
-            with open(temp_path, "wb") as f:
-                f.write(response.content)
-            os.replace(temp_path, save_path)
+        is_mihomo_valid = test_mihomo_config(temp_path)
+        
+        if is_mihomo_valid is False:
+             print(f"[{service_name}] Invalid configuration detected. Discarding update.")
+             os.remove(temp_path)
+             return False
 
-            print(
-                f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-            )
+        need_restart = True
+        if os.path.exists(save_path):
+            with open(save_path, "rb") as f:
+                if f.read() == response.content:
+                    need_restart = False
+                    print(f"[{service_name}] Config is identical to local, skipping restart.")
 
-            if need_restart:
-                if is_admin():
-                    restart_service(service_name)
-                else:
-                    print(
-                        f"[{service_name}] Skipping service restart (insufficient privileges)."
-                    )
-            return True
+        if need_restart or not os.path.exists(save_path):
+             os.replace(temp_path, save_path)
+             print(f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+             if need_restart:
+                 if is_admin():
+                     restart_service(service_name)
+                 else:
+                     print(f"[{service_name}] Skipping service restart (insufficient privileges).")
         else:
-            print(
-                f"[{service_name}] Validation failed: Missing '{check_key}' - {time.strftime('%Y-%m-%d %H:%M:%S')}"
-            )
-            return False
+             if os.path.exists(temp_path):
+                 os.remove(temp_path)
+
+        return True
 
     except requests.exceptions.RequestException as e:
         print(f"[{service_name}] Request Error: {e}")
     except Exception as e:
         print(f"[{service_name}] Unexpected error: {e}")
-        # Clean up temp file on unexpected error if it exists
-        temp_path = save_path + ".tmp"
         if os.path.exists(temp_path):
             try:
                 os.remove(temp_path)
@@ -119,11 +141,10 @@ if __name__ == "__main__":
 
     if not is_admin():
         print("[Warning] Script is not running as administrator!")
-        print("Auto-download will work, but **auto-restart will fail**.")
+        print("Auto-download will work if directory permits, but **auto-restart will fail**.")
         print("Please right-click and 'Run as administrator'.")
         print("-" * 50)
 
-    # Execute update immediately upon script startup
     perform_update()
     last_update_time = time.time()
 
@@ -135,12 +156,9 @@ if __name__ == "__main__":
                 perform_update()
                 last_update_time = time.time()
 
-            # Sleep 120 seconds to prevent high CPU usage and allow manual interrupts
             time.sleep(120)
 
     except KeyboardInterrupt:
         print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service manually stopped.")
     except Exception as e:
-        print(
-            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}"
-        )
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}")
