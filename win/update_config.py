@@ -50,7 +50,10 @@ def test_mihomo_config(config_path):
             creationflags=subprocess.CREATE_NO_WINDOW
         )
         
-        if result.returncode == 0 and ("configuration is valid" in result.stdout.lower() or "configuration file test successful" in result.stdout.lower() or "test successful" in result.stdout.lower()):
+        output_lower = result.stdout.lower()
+        if result.returncode == 0 and (
+           "test is successful" in output_lower
+        ):
              print("[Success] Configuration is valid.")
              return True
         else:
