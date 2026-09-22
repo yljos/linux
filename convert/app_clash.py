@@ -57,6 +57,9 @@ SHARED_EXCLUDE_KEYWORDS = [
     "HK5-HY2",
 ]
 
+# Server determines the actual source, ignore the path parameter
+ACTUAL_SOURCE = "bajie"
+
 app = Flask(__name__)
 
 # Update User-Agent to clash-verge for fetching YAML directly
@@ -409,7 +412,9 @@ def restrict_paths():
 
 @app.route("/<source>")
 def process_source(source):
-    path = SOURCE_MAP.get(source)
+    # Ignore the URL parameter (used for WAF) and use the server-determined source
+    actual_source = ACTUAL_SOURCE
+    path = SOURCE_MAP.get(actual_source)
     if not path:
         abort(404)
 
@@ -423,7 +428,7 @@ def process_source(source):
 
     if "Clash" in ua or "clash" in ua.lower():
         return handle_request(
-            source,
+            actual_source,
             url,
             ua,
             is_force_refresh,
