@@ -33,7 +33,7 @@ def restart_service(service_name):
 
 
 def perform_update():
-    """Execute the update process based on User-Agent"""
+    """Execute the update process"""
     load_dotenv(override=True)
     url = os.getenv("URL")
 
@@ -45,17 +45,9 @@ def perform_update():
         print("Error: URL not found in .env, skipping this update.")
         return False
 
-    # Mutually exclusive logic based on USER_AGENT
-    if "sing-box" in user_agent.lower():
-        service_name = "Sing-box"
-        save_path = r"c:\sing-box\config.json"
-        check_key = "outbounds"
-        is_json = True
-    else:
-        service_name = "clash"
-        save_path = r"c:\mihomo\config.yaml"
-        check_key = "proxies:"
-        is_json = False
+    service_name = "clash"
+    save_path = r"c:\clash\config.yaml"
+    check_key = "proxies:"
 
     try:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -71,16 +63,8 @@ def perform_update():
         response.encoding = "utf-8"
 
         is_valid = False
-        if is_json:
-            try:
-                config_data = response.json()
-                if check_key in config_data:
-                    is_valid = True
-            except json.JSONDecodeError:
-                pass
-        else:
-            if check_key in response.text:
-                is_valid = True
+        if check_key in response.text:
+            is_valid = True
 
         if is_valid:
             # Check if content is identical
