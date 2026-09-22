@@ -433,7 +433,7 @@ user_pref("security.pki.crlite_mode", 2); // [DEFAULT: 2 FF142+]
  * [SETTING] Privacy & Security>HTTPS-Only Mode (and manage exceptions)
  * [TEST] http://example.com [upgrade]
  * [TEST] http://httpforever.com/ | http://http.rip [no upgrade] ***/
-user_pref("dom.security.https_only_mode", true); // [FF76+]
+user_pref("dom.security.https_only_mode", false); // [FF76+]
    // user_pref("dom.security.https_only_mode_pbm", true); // [FF80+]
 /* 1245: enable HTTPS-Only mode for local resources [FF77+] ***/
    // user_pref("dom.security.https_only_mode.upgrade_local", true);
