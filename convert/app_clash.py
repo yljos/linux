@@ -23,7 +23,6 @@ CACHE_DIR = BASE_DIR / "cache"
 CACHE_DIR.mkdir(exist_ok=True)
 CACHE_EXPIRE_SECONDS = 86400
 
-SOURCE_MAP = {"mitce": BASE_DIR / "mitce", "bajie": BASE_DIR / "bajie"}
 CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
 TARGET_GROUPS = ["Google"]
 INJECT_TEMPLATES = ["tun"]
@@ -57,12 +56,11 @@ SHARED_EXCLUDE_KEYWORDS = [
     "HK5-HY2",
 ]
 
-# Server determines the actual source, ignore the path parameter
+# Set to any file name in the directory (e.g., "wukong", "shaseng")
 ACTUAL_SOURCE = "bajie"
 
 app = Flask(__name__)
 
-# Update User-Agent to clash-verge for fetching YAML directly
 CLASH_USER_AGENT = "clash-verge"
 CLASH_FINGERPRINT = "firefox"
 
@@ -86,7 +84,6 @@ def clean_node_name(name: str) -> str:
 
 
 # ================= Clash Processors =================
-# Force flow style
 class FlowDict(dict):
     pass
 
@@ -98,7 +95,6 @@ def flow_representer(dumper, data):
 yaml.add_representer(FlowDict, flow_representer)
 
 
-# Recursively apply FlowDict only to dictionaries inside lists
 def process_data(data):
     if isinstance(data, dict):
         return {k: process_data(v) for k, v in data.items()}
@@ -158,7 +154,6 @@ def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: s
 def fetch_remote_yaml(
     url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int
 ) -> str:
-    # Cache raw YAML content
     cache_file = cache_dir / f"{source_name}.yaml"
 
     if not force_refresh and cache_file.exists():
@@ -170,13 +165,11 @@ def fetch_remote_yaml(
             pass
 
     try:
-        # Fetch directly using clash-verge UA
         res = requests.get(url, headers={"User-Agent": CLASH_USER_AGENT}, timeout=15)
         res.raise_for_status()
 
         raw_yaml = res.text
 
-        # Save raw YAML to disk
         with open(cache_file, "w", encoding="utf-8") as f:
             f.write(raw_yaml)
 
@@ -199,7 +192,6 @@ def process_yaml_content_clash(
     shared_ex_kw: list,
     clean_node_fn,
 ):
-    # Parse the remote YAML configuration directly
     try:
         input_data = yaml.safe_load(remote_yaml_text)
     except yaml.YAMLError as e:
@@ -341,28 +333,24 @@ def handle_request(
 ):
     clash_config_val = None
     
-    # Match TUN clients
     if "clash_tun" in ua or "ClashMetaForAndroid" in ua:
         clash_config_val = "tun"
-    # Match standard clients (explicitly compatible with legacy UAs)
     elif any(k in ua for k in ["clash_pc", "clash_m", "clash_openwrt"]) or "clash" in ua.lower():
         clash_config_val = "standard"
     else:
         abort(404)
 
     config_map = {
-        "standard": (base_dir / "yaml/config.yaml", "50 Mbps", "200 Mbps"),
-        "tun": (base_dir / "yaml/config_tun.yaml", "30 Mbps", "60 Mbps"),
+        "standard": (base_dir / "yaml/config.yaml", "50 Mbps", "100 Mbps"),
+        "tun": (base_dir / "yaml/config_tun.yaml", "50 Mbps", "100 Mbps"),
     }
     template_path, up, down = config_map[clash_config_val]
 
     try:
-        # Fetch remote YAML directly
         remote_yaml_text = fetch_remote_yaml(
             unquote(url), source, is_force_refresh, cache_dir, cache_expire
         )
         
-        # Process the configuration
         output_bytes = process_yaml_content_clash(
             remote_yaml_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn
         )
@@ -400,6 +388,7 @@ def handle_request(
 # ================= Routing & Dispatch =================
 @app.before_request
 def restrict_paths():
+    # Only allow WAF whitelisted paths
     if request.path not in {"/mitce", "/bajie"}:
         abort(404)
     if not (key := request.args.get("key")):
@@ -412,10 +401,11 @@ def restrict_paths():
 
 @app.route("/<source>")
 def process_source(source):
-    # Ignore the URL parameter (used for WAF) and use the server-determined source
+    # Dynamically read from ACTUAL_SOURCE file instead of SOURCE_MAP
     actual_source = ACTUAL_SOURCE
-    path = SOURCE_MAP.get(actual_source)
-    if not path:
+    path = BASE_DIR / actual_source
+    
+    if not path.is_file():
         abort(404)
 
     ua = request.headers.get("User-Agent", "")
