@@ -8,6 +8,7 @@ from curl_cffi import requests
 # Configuration
 UPDATE_INTERVAL = 3600  # 1 hour in seconds
 MIHOMO_DIR = r"c:\clash"  # Runtime and config directory
+TMP_DIR = os.path.join(MIHOMO_DIR, "tmp")  # Temporary directory for downloads
 MIHOMO_CONFIG = os.path.join(MIHOMO_DIR, "config.yaml")
 MIHOMO_EXE = r"C:\Program Files\clash\mihomo-windows-amd64-v3.exe"  # Kernel executable path
 
@@ -79,11 +80,16 @@ def perform_update():
 
     service_name = "clash"
     save_path = MIHOMO_CONFIG
-    temp_path = save_path + ".tmp"
+    
+    # Place temp file in the dedicated tmp directory
+    temp_path = os.path.join(TMP_DIR, "config.yaml.tmp")
     check_key = "proxies:"
 
     try:
+        # Create both directories if they don't exist
         os.makedirs(MIHOMO_DIR, exist_ok=True)
+        os.makedirs(TMP_DIR, exist_ok=True)
+        
         print(f"[{service_name}] Downloading config... (User-Agent: {headers['User-Agent']})")
 
         response = requests.get(url, headers=headers, timeout=(10, 30), impersonate="firefox")
@@ -111,6 +117,7 @@ def perform_update():
                     need_restart = False
                     print(f"[{service_name}] Config is identical to local, skipping restart.")
 
+        # os.replace handles moving the file from \tmp\ to \clash\ and renaming it
         if need_restart or not os.path.exists(save_path):
              os.replace(temp_path, save_path)
              print(f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -121,6 +128,7 @@ def perform_update():
                  else:
                      print(f"[{service_name}] Skipping service restart (insufficient privileges).")
         else:
+             # Delete from tmp folder if no restart/replace needed
              if os.path.exists(temp_path):
                  os.remove(temp_path)
 
@@ -130,6 +138,7 @@ def perform_update():
         print(f"[{service_name}] Request Error: {e}")
     except Exception as e:
         print(f"[{service_name}] Unexpected error: {e}")
+        # Clean up temp file on unexpected error
         if os.path.exists(temp_path):
             try:
                 os.remove(temp_path)
