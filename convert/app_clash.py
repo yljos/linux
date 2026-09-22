@@ -57,7 +57,7 @@ SHARED_EXCLUDE_KEYWORDS = [
 ]
 
 # Set to any file name in the directory (e.g., "wukong", "shaseng")
-ACTUAL_SOURCE = "mitce"
+ACTUAL_SOURCE = "westdata"
 
 app = Flask(__name__)
 
