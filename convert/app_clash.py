@@ -153,33 +153,52 @@ def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: s
 
 def fetch_remote_yaml(
     url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int
-) -> str:
+) -> Tuple[str, str]:
     cache_file = cache_dir / f"{source_name}.yaml"
+    info_file = cache_dir / f"{source_name}.info"
 
+    # Check cache
     if not force_refresh and cache_file.exists():
         try:
             if time.time() - os.path.getmtime(cache_file) < cache_expire:
                 with open(cache_file, "r", encoding="utf-8") as f:
-                    return f.read()
+                    raw_yaml = f.read()
+                userinfo = ""
+                if info_file.exists():
+                    with open(info_file, "r", encoding="utf-8") as f:
+                        userinfo = f.read().strip()
+                return raw_yaml, userinfo
         except Exception:
             pass
 
+    # Fetch remote
     try:
         res = requests.get(url, headers={"User-Agent": CLASH_USER_AGENT}, timeout=15)
         res.raise_for_status()
 
         raw_yaml = res.text
+        userinfo = res.headers.get("Subscription-Userinfo", "")
 
+        # Update cache
         with open(cache_file, "w", encoding="utf-8") as f:
             f.write(raw_yaml)
+        if userinfo:
+            with open(info_file, "w", encoding="utf-8") as f:
+                f.write(userinfo)
 
-        return raw_yaml
+        return raw_yaml, userinfo
     except Exception as e:
         logger.error(f"Fetch Error: {e}")
 
+    # Fallback to cache if fetch fails
     if cache_file.exists():
         with open(cache_file, "r", encoding="utf-8") as f:
-            return f.read()
+            raw_yaml = f.read()
+        userinfo = ""
+        if info_file.exists():
+            with open(info_file, "r", encoding="utf-8") as f:
+                userinfo = f.read().strip()
+        return raw_yaml, userinfo
     raise RuntimeError("Fetch and cache failed")
 
 
@@ -347,7 +366,8 @@ def handle_request(
     template_path, up, down = config_map[clash_config_val]
 
     try:
-        remote_yaml_text = fetch_remote_yaml(
+        # Extract dynamic header from fetch_remote_yaml
+        remote_yaml_text, userinfo_header = fetch_remote_yaml(
             unquote(url), source, is_force_refresh, cache_dir, cache_expire
         )
         
@@ -375,9 +395,9 @@ def handle_request(
             download_name="config.yaml",
         )
 
-        response.headers["Subscription-Userinfo"] = (
-            "upload=0; download=715112054784; total=1072668082176; expire=1893456000"
-        )
+        # Set dynamic header if it exists
+        if userinfo_header:
+            response.headers["Subscription-Userinfo"] = userinfo_header
 
         return response
     except Exception as e:
