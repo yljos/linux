@@ -5,8 +5,6 @@ exec /usr/bin/podman run \
   --replace \
   --rm \
   --name=emby \
-  # -p 8096:8096 \
-  # -p 7359:7359/udp \
   --net=host \
   -v /data/appdata/emby:/config:Z \
   -v /data/media:/media:z \
