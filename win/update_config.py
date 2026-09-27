@@ -7,14 +7,17 @@ from curl_cffi import requests
 
 # Configuration
 UPDATE_INTERVAL = 3600  # 1 hour in seconds
-CLASH_DIR = r"C:\clash"
+
+# Clash Paths
+CLASH_CONFIG_DIR = r"C:\clash"
 CLASH_EXE = r"C:\Program Files\clash\mihomo-windows-amd64-v3.exe"
-SINGBOX_DIR = r"C:\sing-box"
-SINGBOX_EXE = os.path.join(SINGBOX_DIR, "sing-box.exe")
+
+# Sing-box Paths
+SINGBOX_CONFIG_DIR = r"C:\sing-box"
+SINGBOX_EXE = r"C:\Program Files\sing-box\sing-box.exe"
 
 
 def is_admin():
-    """Check for administrator privileges"""
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
@@ -22,7 +25,6 @@ def is_admin():
 
 
 def restart_service(service_name):
-    """Restart the specified service"""
     print(f"Attempting to restart service: {service_name} ...")
     try:
         subprocess.run(["net", "stop", service_name], check=False, shell=True)
@@ -36,16 +38,16 @@ def restart_service(service_name):
 
 
 def test_clash_config(config_path):
-    """Test the validity of the clash configuration file using clash itself"""
     print("Testing downloaded configuration using clash...")
     if not os.path.exists(CLASH_EXE):
         print(f"[Warning] Cannot find {CLASH_EXE}. Cannot validate.")
         return False
 
     try:
-        # Run clash test: -d for runtime directory, -f for config file
+        # Restrict working directory to the tmp folder
+        tmp_dir = os.path.dirname(config_path)
         result = subprocess.run(
-            [CLASH_EXE, "-t", "-d", CLASH_DIR, "-f", config_path],
+            [CLASH_EXE, "-t", "-d", tmp_dir, "-f", config_path],
             capture_output=True,
             text=True,
             creationflags=subprocess.CREATE_NO_WINDOW
@@ -64,16 +66,16 @@ def test_clash_config(config_path):
 
 
 def test_singbox_config(config_path):
-    """Test the validity of the sing-box configuration file using sing-box itself"""
     print("Testing downloaded configuration using sing-box...")
     if not os.path.exists(SINGBOX_EXE):
         print(f"[Warning] Cannot find {SINGBOX_EXE}. Cannot validate.")
         return False
 
     try:
-        # Run sing-box test: check -c for config file
+        # Restrict working directory to the tmp folder
+        tmp_dir = os.path.dirname(config_path)
         result = subprocess.run(
-            [SINGBOX_EXE, "check", "-c", config_path],
+            [SINGBOX_EXE, "check", "-D", tmp_dir, "-c", config_path],
             capture_output=True,
             text=True,
             creationflags=subprocess.CREATE_NO_WINDOW
@@ -91,7 +93,6 @@ def test_singbox_config(config_path):
 
 
 def perform_update():
-    """Execute the update process based on User-Agent"""
     load_dotenv(override=True)
     url = os.getenv("URL")
     user_agent = os.getenv("USER_AGENT", "clash")
@@ -102,12 +103,12 @@ def perform_update():
         return False
 
     if "sing-box" in user_agent.lower():
-        service_name = "sing-box"
-        save_path = os.path.join(SINGBOX_DIR, "config.json")
+        service_name = "Sing-box"
+        save_path = os.path.join(SINGBOX_CONFIG_DIR, "config.json")
         validator_func = test_singbox_config
     else:
         service_name = "clash"
-        save_path = os.path.join(CLASH_DIR, "config.yaml")
+        save_path = os.path.join(CLASH_CONFIG_DIR, "config.yaml")
         validator_func = test_clash_config
 
     tmp_dir = os.path.join(os.path.dirname(save_path), "tmp")
@@ -120,11 +121,9 @@ def perform_update():
         response = requests.get(url, headers=headers, timeout=(10, 30), impersonate="firefox")
         response.raise_for_status()
 
-        # Write to temporary file in tmp folder
         with open(temp_path, "wb") as f:
             f.write(response.content)
 
-        # Validate configuration
         if validator_func(temp_path):
             need_restart = True
             if os.path.exists(save_path):
@@ -133,7 +132,6 @@ def perform_update():
                         need_restart = False
                         print(f"[{service_name}] Config is identical to local, skipping restart.")
 
-            # Atomic replace
             os.replace(temp_path, save_path)
             print(f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -151,7 +149,6 @@ def perform_update():
     except Exception as e:
         print(f"[{service_name}] Unexpected error: {e}")
     finally:
-        # Clean up temp file
         if os.path.exists(temp_path):
             try:
                 os.remove(temp_path)
