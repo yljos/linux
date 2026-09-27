@@ -27,7 +27,7 @@ EMAIL = os.environ["EMAIL"]
 OFFLINE_MODE = True
 
 UPDATE_URL = (
-    "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft/minecraft.py"
+    "https://www.346211.xyz/minecraft.py"
 )
 JSON_BASE_URL = "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft"
 
