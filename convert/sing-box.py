@@ -8,13 +8,6 @@ from flask import Response, jsonify
 
 logger = logging.getLogger(__name__)
 
-SB_TEMPLATE_MAP = {
-    "openwrt": "json/openwrt.json",
-    "pc": "json/pc.json",
-    "mtun": "json/mtun.json",
-    "m": "json/m.json",
-}
-
 # ================= Protocol Converters =================
 def clash_to_singbox_node(c_node: dict) -> dict:
     if not isinstance(c_node, dict):
@@ -119,7 +112,6 @@ def clash_to_singbox_node(c_node: dict) -> dict:
 
 # ================= Main Processor =================
 def fetch_and_process_singbox(
-    config_param: str,
     yaml_path: Path,
     shared_kw: list,
     shared_ex_kw: list,
@@ -157,11 +149,8 @@ def fetch_and_process_singbox(
     if not nodes:
         raise ValueError("No valid nodes converted from local YAML")
 
-    with open(
-        SB_TEMPLATE_MAP.get(config_param, SB_TEMPLATE_MAP["openwrt"]),
-        "r",
-        encoding="utf-8",
-    ) as f:
+    # Load single config base template
+    with open("json/config.json", "r", encoding="utf-8") as f:
         base_config = json.load(f)
 
     outbounds = base_config.get("outbounds", [])
@@ -282,12 +271,10 @@ def handle_request(
     target_groups,
     inject_templates,
 ):
-    # Map SFA to "tun" to match app.py INJECT_TEMPLATES
     singbox_ua_map = {
         "SFA": "tun",
-        "sing-box_openwrt": "openwrt",
-        "sing-box_m": "m",
-        "sing-box_pc": "pc",
+        "sing-box_tun": "tun",
+        "sing-box": "default",
     }
     
     config_val = next((v for k, v in singbox_ua_map.items() if k in ua), None)
@@ -300,16 +287,23 @@ def handle_request(
         return jsonify({"error": f"Local YAML cache not found: {yaml_path}. Please fetch via Clash first."}), 404
 
     try:
-        # Load mtun.json template if config_val is tun
-        template_val = "mtun" if config_val == "tun" else config_val
-        
         json_str = fetch_and_process_singbox(
-            template_val,
             yaml_path,
             shared_kw,
             shared_ex_kw,
             clean_fn,
         )
+
+        # Inject tun inbound configuration
+        if config_val == "tun":
+            config_data = json.loads(json_str)
+            try:
+                with open("json/tun.json", "r", encoding="utf-8") as f:
+                    tun_inbound = json.load(f)
+                config_data.setdefault("inbounds", []).insert(0, tun_inbound)
+                json_str = json.dumps(config_data, ensure_ascii=False, separators=(",", ":"))
+            except Exception as e:
+                logger.error(f"Failed to inject tun inbound: {e}")
 
         if config_val in inject_templates:
             json_str = inject_custom_singbox_node(

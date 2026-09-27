@@ -17,18 +17,31 @@
       {"rule_set": "googlefcm-site", "server": "dns_google", "ip_version": 4},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "cn-site", "server": "dns_direct", "ip_version": 4},
-      {"rule_set":"cloudflare-site","server":"dns_proxy","ip_version":4},
+      {"rule_set": "cloudflare-site", "server": "dns_proxy", "ip_version": 4},
       {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
     ],
     "final": "dns_proxy"
   },
-  "inbounds": [{"type": "tproxy", "tag": "tproxy-in", "listen": "0.0.0.0", "listen_port": 7893}],
+  "inbounds": [
+    {
+      "type": "tproxy",
+      "tag": "tproxy-in",
+      "listen": "0.0.0.0",
+      "listen_port": 7893
+    },
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "0.0.0.0",
+      "listen_port": 12138
+    }
+  ],
   "outbounds": [
     {"type": "direct", "tag": "D", "domain_resolver": "dns_direct"},
     {"type": "block", "tag": "R"},
     {"type": "selector", "tag": "Default", "outbounds": ["M", "R", "D"], "default": "R"},
     {"type": "selector", "tag": "M", "outbounds": ["SG", "JP", "US", "HK"], "default": "JP"},
-    {"type": "selector", "tag": "Youtube", "outbounds": ["{all}"], "filter": [{"action": "match", "regex": ["(?i)^(?=.*(US))(?!.*(ss|gemini)).*$"]}], "default": "US4-HY2"},
+    {"type": "selector", "tag": "Youtube", "outbounds": ["{all}"], "filter": [{"action": "match", "regex": ["(?i)^(?=.*(US))(?!.*(ss|gemini)).*$"]}], "default": "US"},
     {"type": "selector", "tag": "Google", "outbounds": ["JP", "US", "SG", "GCP-outbound"], "default": "GCP-outbound"},
     {"type": "selector", "tag": "OpenAi", "outbounds": ["JP", "US", "SG", "HK"], "default": "JP"},
     {"type": "selector", "tag": "Relay", "outbounds": ["JP", "US", "SG", "HK"], "default": "JP"},
@@ -142,5 +155,8 @@
     "final": "Default",
     "default_domain_resolver": {"server": "dns_direct", "rewrite_ttl": 10}
   },
-  "experimental": {"cache_file": {"enabled": true, "path": "cache.db", "store_fakeip": true, "store_dns": true}, "clash_api": {"external_controller": "10.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://www.346211.xyz/dist_openwrt.zip", "external_ui_download_detour": "D", "default_mode": "rule"}}
+  "experimental": {
+    "cache_file": {"enabled": true, "path": "cache.db", "store_fakeip": true, "store_dns": true},
+    "clash_api": {"external_controller": "127.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://www.346211.xyz/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}
+  }
 }
