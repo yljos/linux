@@ -1,13 +1,9 @@
-import base64
 import json
 import logging
-import os
 import re
-import time
 from pathlib import Path
-from typing import Any, Dict, Union
-from urllib.parse import urlparse, parse_qs, unquote
-import requests
+
+import yaml
 from flask import Response, jsonify
 
 logger = logging.getLogger(__name__)
@@ -19,227 +15,130 @@ SB_TEMPLATE_MAP = {
     "m": "json/m.json",
 }
 
-
-def safe_b64decode(s: str) -> str:
-    # Compatible with urlsafe and standard base64 decoding
-    s = s.strip()
-    s += "=" * ((4 - len(s) % 4) % 4)
-    try:
-        return base64.urlsafe_b64decode(s).decode("utf-8")
-    except Exception:
-        return base64.b64decode(s).decode("utf-8")
-
-
-# ================= URI Parsers =================
-def parse_ss(uri: str) -> dict:
-    uri, name = uri.split("#", 1) if "#" in uri else (uri, "SS Node")
-    name = unquote(name)
-    uri = uri[5:]  # Strip ss://
-
-    if "@" in uri:
-        user_part, host_part = uri.split("@", 1)
-        user_info = safe_b64decode(user_part)
-        method, pwd = user_info.split(":", 1)
-        host, port = host_part.split(":", 1)
-    else:
-        decoded = safe_b64decode(uri)
-        user_info, host_part = decoded.split("@", 1)
-        method, pwd = user_info.split(":", 1)
-        host, port = host_part.split(":", 1)
-
-    return {
-        "type": "shadowsocks",
-        "tag": name,
-        "server": host,
-        "server_port": int(port),
-        "method": method,
-        "password": pwd,
+# ================= Protocol Converters =================
+def clash_to_singbox_node(c_node: dict) -> dict:
+    if not isinstance(c_node, dict):
+        return None
+        
+    c_type = c_node.get("type", "").lower()
+    sb_node = {
+        "tag": c_node.get("name", "Unknown"),
+        "server": c_node.get("server"),
+        "server_port": c_node.get("port", 443),
     }
-
-
-def parse_vless(uri: str) -> dict:
-    parsed = urlparse(uri)
-    name = unquote(parsed.fragment) if parsed.fragment else "VLESS Node"
-    qs = parse_qs(parsed.query)
-    node = {
-        "type": "vless",
-        "tag": name,
-        "server": parsed.hostname,
-        "server_port": parsed.port or 443,
-        "uuid": parsed.username,
-    }
-
-    if "flow" in qs and qs["flow"][0]:
-        node["flow"] = qs["flow"][0]
-
-    security = qs.get("security", ["none"])[0]
-    if security in ["tls", "reality"]:
-        tls = {
-            "enabled": True,
-            "server_name": qs.get("sni", [""])[0],
-            "utls": {"enabled": True, "fingerprint": "firefox"},
-        }
-        if security == "reality":
-            tls["reality"] = {
+    
+    if c_type == "vless":
+        sb_node["type"] = "vless"
+        sb_node["uuid"] = c_node.get("uuid")
+        if c_node.get("flow"):
+            sb_node["flow"] = c_node.get("flow")
+            
+        # TLS config mapping
+        if c_node.get("tls", False):
+            sb_node["tls"] = {
                 "enabled": True,
-                "public_key": qs.get("pbk", [""])[0],
-                "short_id": qs.get("sid", [""])[0],
+                "server_name": c_node.get("sni", c_node.get("servername", sb_node["server"])),
+                "insecure": c_node.get("skip-cert-verify", False)
             }
-        node["tls"] = tls
-    net = qs.get("type", ["tcp"])[0]
-    if net == "ws":
-        node["transport"] = {"type": "ws", "path": qs.get("path", ["/"])[0]}
-        if "host" in qs:
-            node["transport"]["headers"] = {"Host": qs["host"][0]}
-    elif net == "grpc":
-        node["transport"] = {
-            "type": "grpc",
-            "service_name": qs.get("serviceName", [""])[0],
+            # Reality opts mapping
+            ropts = c_node.get("reality-opts", {})
+            if ropts:
+                sb_node["tls"]["reality"] = {
+                    "enabled": True,
+                    "public_key": ropts.get("public-key", ""),
+                    "short_id": ropts.get("short-id", "")
+                }
+                
+        # Transport mapping
+        network = c_node.get("network", "tcp")
+        if network == "ws":
+            ws_opts = c_node.get("ws-opts", {})
+            sb_node["transport"] = {
+                "type": "ws",
+                "path": ws_opts.get("path", "/"),
+                "headers": ws_opts.get("headers", {})
+            }
+        elif network == "grpc":
+            grpc_opts = c_node.get("grpc-opts", {})
+            sb_node["transport"] = {
+                "type": "grpc",
+                "service_name": grpc_opts.get("grpc-service-name", "")
+            }
+            
+    elif c_type in ["hysteria2", "hy2"]:
+        sb_node["type"] = "hysteria2"
+        sb_node["password"] = str(c_node.get("password", ""))
+        sb_node["up_mbps"] = 50
+        sb_node["down_mbps"] = 200
+        
+        # Handle port range for hy2 (e.g., ports: 1000-2000)
+        if "ports" in c_node:
+            sb_node["server_ports"] = str(c_node["ports"]).replace("-", ":")
+            del sb_node["server_port"]
+            
+        sb_node["tls"] = {
+            "enabled": True,
+            "server_name": c_node.get("sni", sb_node["server"]),
+            "insecure": c_node.get("skip-cert-verify", False)
         }
-
-    return node
-
-
-def parse_hy2(uri: str) -> dict:
-    parsed = urlparse(uri)
-    name = unquote(parsed.fragment) if parsed.fragment else "HY2 Node"
-    qs = parse_qs(parsed.query)
-
-    # Bypass urlparse error handling for ports containing "-"
-    netloc = parsed.netloc
-    host_port = netloc.split("@")[-1]
-    server_port = None
-    server_ports = None
-
-    if ":" in host_port:
-        host, port_str = host_port.split(":", 1)
-        if "-" in port_str:
-            server_ports = port_str.replace("-", ":")
-        else:
-            server_port = int(port_str)
+        
+        if c_node.get("obfs"):
+            sb_node["obfs"] = {
+                "type": c_node.get("obfs"),
+                "password": c_node.get("obfs-password", "")
+            }
+            
+    elif c_type in ["ss", "shadowsocks"]:
+        sb_node["type"] = "shadowsocks"
+        sb_node["method"] = c_node.get("cipher")
+        sb_node["password"] = str(c_node.get("password", ""))
+        
     else:
-        server_port = 443
-
-    obfs = None
-    if "obfs" in qs:
-        obfs = {
-            "type": qs["obfs"][0],
-            "password": qs.get("obfs-password", [""])[0],
-        }
-
-    # Construct the dictionary in the exact requested order
-    node = {
-        "type": "hysteria2",
-        "tag": name,
-        "server": parsed.hostname,
-    }
-
-    if server_ports is not None:
-        node["server_ports"] = server_ports
-    else:
-        node["server_port"] = server_port
-
-    node["up_mbps"] = 50
-    node["down_mbps"] = 200
-
-    if obfs:
-        node["obfs"] = obfs
-
-    node["password"] = parsed.username
-    node["tls"] = {"enabled": True, "server_name": qs.get("sni", [""])[0]}
-
-    return node
-
-
-def uri_to_singbox(uri: str) -> Union[Dict[str, Any], None]:
-    try:
-        if uri.startswith("ss://"):
-            return parse_ss(uri)
-        elif uri.startswith("vless://"):
-            return parse_vless(uri)
-        elif uri.startswith("hysteria2://") or uri.startswith("hy2://"):
-            return parse_hy2(uri)
-    except Exception as e:
-        logger.warning(f"Failed to parse URI: {e}")
-    return None
+        # Skip unsupported protocols strictly
+        return None
+        
+    return sb_node
 
 
 # ================= Main Processor =================
 def fetch_and_process_singbox(
-    source: str,
     config_param: str,
-    force_refresh: bool,
-    url: str,
-    cache_dir: Path,
-    cache_expire: int,
+    yaml_path: str,
     shared_kw: list,
     shared_ex_kw: list,
     clean_node_fn,
 ):
-    # Use .txt suffix for URI list cache
-    cache_file = cache_dir / f"{source}_uris.txt"
-    used_cache = False
+    # Read local Clash YAML
+    try:
+        with open(yaml_path, "r", encoding="utf-8") as f:
+            yaml_data = yaml.safe_load(f)
+    except Exception as e:
+        raise RuntimeError(f"Read YAML Error: {e}")
+        
+    # Extract Clash proxies
+    raw_nodes = []
+    if isinstance(yaml_data, dict):
+        raw_nodes = yaml_data.get("proxies", [])
+    elif isinstance(yaml_data, list):
+        raw_nodes = yaml_data
 
-    if not force_refresh and cache_file.exists():
-        try:
-            if time.time() - os.path.getmtime(cache_file) < cache_expire:
-                with open(cache_file, "r", encoding="utf-8") as f:
-                    # Read base64 content and decode
-                    raw_b64 = f.read()
-                    decoded_text = safe_b64decode(raw_b64)
-                used_cache = True
-        except Exception:
-            pass
-
-    if not used_cache:
-        try:
-            # Use real browser UA to fetch base64 subscription
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0"
-            }
-            res = requests.get(url, headers=headers, timeout=10)
-            res.raise_for_status()
-
-            raw_b64 = res.text.strip()
-            decoded_text = safe_b64decode(raw_b64)
-
-            if not any(
-                proto in decoded_text
-                for proto in ["ss://", "vless://", "hysteria2://", "hy2://"]
-            ):
-                raise ValueError("No valid protocol URIs found in decoded text")
-
-            # Save raw base64 content to cache
-            with open(cache_file, "w", encoding="utf-8") as f:
-                f.write(raw_b64)
-        except Exception:
-            if cache_file.exists():
-                with open(cache_file, "r", encoding="utf-8") as f:
-                    # Fallback to cache and decode
-                    decoded_text = safe_b64decode(f.read())
-            else:
-                raise RuntimeError("Fetch Error")
-
-    # Parse and assemble nodes
-    lines = [line.strip() for line in decoded_text.splitlines() if line.strip()]
+    # Convert to Sing-box formats
     nodes = []
-
-    for uri in lines:
-        try:
-            node = uri_to_singbox(uri)
-            if not node:
-                continue
-
-            original_name = node["tag"]
-            if any(ex in original_name for ex in shared_ex_kw):
-                continue
-            node["tag"] = clean_node_fn(original_name)
-            nodes.append(node)
-        except Exception:
-            pass
+    for c_node in raw_nodes:
+        original_name = c_node.get("name", "")
+        if not original_name or any(ex in original_name for ex in shared_ex_kw):
+            continue
+            
+        # Perform exact protocol conversion
+        sb_node = clash_to_singbox_node(c_node)
+        if not sb_node:
+            continue
+            
+        sb_node["tag"] = clean_node_fn(original_name)
+        nodes.append(sb_node)
 
     if not nodes:
-        raise ValueError("No nodes converted")
+        raise ValueError("No valid nodes converted from local YAML")
 
     with open(
         SB_TEMPLATE_MAP.get(config_param, SB_TEMPLATE_MAP["openwrt"]),
@@ -261,11 +160,11 @@ def fetch_and_process_singbox(
         )
 
     filtered = [
-        o
-        for o in outbounds
+        o for o in outbounds
         if valid_tag(o.get("tag", ""))
         or o.get("type") in ["urltest", "selector", "direct", "block", "dns"]
     ]
+    
     temp_outbounds = []
     all_tags = [
         o.get("tag")
@@ -276,10 +175,8 @@ def fetch_and_process_singbox(
     for outbound in filtered:
         if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
             regex_list = [
-                reg
-                for f in outbound.pop("filter", [])
-                if isinstance(f, dict)
-                for reg in f.get("regex", [])
+                reg for f in outbound.pop("filter", [])
+                if isinstance(f, dict) for reg in f.get("regex", [])
             ]
             orig_out = outbound.get("outbounds", [])
             if "{all}" in orig_out:
@@ -331,21 +228,23 @@ def inject_custom_singbox_node(
     if not node_path.exists():
         return json_str
     try:
+        # Read custom Sing-box nodes
         with open(node_path, "r", encoding="utf-8") as f:
             custom_data = json.load(f)
         if not custom_data:
             return json_str
+            
         outbounds = custom_data if isinstance(custom_data, list) else [custom_data]
         config = json.loads(json_str)
+        
         for outbound in outbounds:
             if isinstance(outbound, dict) and "tag" in outbound:
                 node_tag = outbound["tag"]
                 config.setdefault("outbounds", []).append(outbound)
                 for cfg_outbound in config.get("outbounds", []):
-                    if cfg_outbound.get("tag") in target_groups and cfg_outbound.get(
-                        "type"
-                    ) in ["selector", "urltest"]:
+                    if cfg_outbound.get("tag") in target_groups and cfg_outbound.get("type") in ["selector", "urltest"]:
                         cfg_outbound.setdefault("outbounds", []).append(node_tag)
+                        
         return json.dumps(config, ensure_ascii=False, separators=(",", ":"))
     except Exception as e:
         logger.error(f"[Sing-box] Inject Error: {e}")
@@ -354,9 +253,9 @@ def inject_custom_singbox_node(
 
 def handle_request(
     source,
-    url,
+    yaml_path,
     ua,
-    is_force_refresh,
+    is_force_refresh, 
     cache_dir,
     cache_expire,
     shared_kw,
@@ -378,12 +277,8 @@ def handle_request(
 
     try:
         json_str = fetch_and_process_singbox(
-            source,
             config_val,
-            is_force_refresh,
-            url,
-            cache_dir,
-            cache_expire,
+            yaml_path,
             shared_kw,
             shared_ex_kw,
             clean_fn,
