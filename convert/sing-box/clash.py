@@ -17,8 +17,7 @@ logger = logging.getLogger(__name__)
 CLASH_USER_AGENT = "clash-verge"
 CLASH_FINGERPRINT = "firefox"
 
-
-# Force flow style
+# ================= Clash Processors =================
 class FlowDict(dict):
     pass
 
@@ -89,36 +88,53 @@ def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: s
 
 def fetch_remote_yaml(
     url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int
-) -> str:
-    # Cache raw YAML content
+) -> Tuple[str, str]:
+    # Cache raw YAML content and userinfo
     cache_file = cache_dir / f"{source_name}.yaml"
+    info_file = cache_dir / f"{source_name}.info"
 
+    # Check cache
     if not force_refresh and cache_file.exists():
         try:
             if time.time() - os.path.getmtime(cache_file) < cache_expire:
                 with open(cache_file, "r", encoding="utf-8") as f:
-                    return f.read()
+                    raw_yaml = f.read()
+                userinfo = ""
+                if info_file.exists():
+                    with open(info_file, "r", encoding="utf-8") as f:
+                        userinfo = f.read().strip()
+                return raw_yaml, userinfo
         except Exception:
             pass
 
+    # Fetch remote
     try:
-        # Fetch directly using clash-verge UA
         res = requests.get(url, headers={"User-Agent": CLASH_USER_AGENT}, timeout=15)
         res.raise_for_status()
 
         raw_yaml = res.text
+        userinfo = res.headers.get("Subscription-Userinfo", "")
 
-        # Save raw YAML to disk
+        # Update cache
         with open(cache_file, "w", encoding="utf-8") as f:
             f.write(raw_yaml)
+        if userinfo:
+            with open(info_file, "w", encoding="utf-8") as f:
+                f.write(userinfo)
 
-        return raw_yaml
+        return raw_yaml, userinfo
     except Exception as e:
         logger.error(f"Fetch Error: {e}")
 
+    # Fallback to cache if fetch fails
     if cache_file.exists():
         with open(cache_file, "r", encoding="utf-8") as f:
-            return f.read()
+            raw_yaml = f.read()
+        userinfo = ""
+        if info_file.exists():
+            with open(info_file, "r", encoding="utf-8") as f:
+                userinfo = f.read().strip()
+        return raw_yaml, userinfo
     raise RuntimeError("Fetch and cache failed")
 
 
@@ -161,43 +177,9 @@ def process_yaml_content_clash(
                 process_proxy_config_clash(p, up_pref, down_pref)
         final_proxies = proxies_orig
 
+    # Add dns-out directly
     final_proxies.append({"name": "dns-out", "type": "dns"})
     template_data["proxies"] = final_proxies
-
-    if "proxy-groups" in template_data:
-        all_node_names = [p["name"] for p in final_proxies]
-        temp_groups = []
-        for group in template_data["proxy-groups"]:
-            if "filter" in group:
-                existing = group.get("proxies", [])
-                pattern = group.pop("filter")
-                group.pop("include-all-proxies", None)
-                try:
-                    matcher = re.compile(pattern, re.IGNORECASE)
-                    matched = [n for n in all_node_names if matcher.search(n)]
-                    group["proxies"] = existing + [
-                        n for n in matched if n not in existing
-                    ]
-                except Exception:
-                    pass
-                if group.get("proxies"):
-                    temp_groups.append(group)
-            else:
-                temp_groups.append(group)
-
-        final_groups = []
-        surviving = {g["name"] for g in temp_groups if "name" in g}
-        valid_targets = (
-            set(all_node_names)
-            | surviving
-            | {"DIRECT", "REJECT", "PASS", "REJECT-DROP", "GCP-outbound"}
-        )
-        for group in temp_groups:
-            refs = [r for r in group.get("proxies", []) if r in valid_targets]
-            if refs:
-                group["proxies"] = refs
-                final_groups.append(group)
-        template_data["proxy-groups"] = final_groups
 
     processed_data = process_data(template_data)
     return yaml.dump(
@@ -290,7 +272,6 @@ def final_format_data(data, level=0):
 
 # ====================================================
 
-
 def handle_request(
     source,
     url,
@@ -307,32 +288,28 @@ def handle_request(
     base_dir,
 ):
     clash_config_val = None
-    if "ClashMetaForAndroid" in ua:
-        clash_config_val = "mtun"
-    elif "clash_pc" in ua:
-        clash_config_val = "pc"
-    elif "clash_openwrt" in ua:
-        clash_config_val = "openwrt"
-    elif "clash_m" in ua:
-        clash_config_val = "m"
+    
+    # Simplified routing map
+    if "clash_tun" in ua or "ClashMetaForAndroid" in ua:
+        clash_config_val = "tun"
+    elif any(k in ua for k in ["clash_pc", "clash_m", "clash_openwrt"]) or "clash" in ua.lower():
+        clash_config_val = "standard"
     else:
         abort(404)
 
     config_map = {
-        "m": (base_dir / "yaml/m.yaml", "30 Mbps", "60 Mbps"),
-        "mtun": (base_dir / "yaml/mtun.yaml", "30 Mbps", "60 Mbps"),
-        "pc": (base_dir / "yaml/pc.yaml", "50 Mbps", "200 Mbps"),
-        "openwrt": (base_dir / "yaml/openwrt.yaml", "50 Mbps", "200 Mbps"),
+        "standard": (base_dir / "yaml/config.yaml", "50 Mbps", "100 Mbps"),
+        "tun": (base_dir / "yaml/config_tun.yaml", "50 Mbps", "100 Mbps"),
     }
     template_path, up, down = config_map[clash_config_val]
 
     try:
-        # Fetch remote YAML directly
-        remote_yaml_text = fetch_remote_yaml(
+        # Extract dynamic header from fetch_remote_yaml
+        remote_yaml_text, userinfo_header = fetch_remote_yaml(
             unquote(url), source, is_force_refresh, cache_dir, cache_expire
         )
         
-        # Process the configuration
+        # Process the configuration without complex regex filtering
         output_bytes = process_yaml_content_clash(
             remote_yaml_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn
         )
@@ -357,9 +334,9 @@ def handle_request(
             download_name="config.yaml",
         )
 
-        response.headers["Subscription-Userinfo"] = (
-            "upload=0; download=715112054784; total=1072668082176; expire=1893456000"
-        )
+        # Set dynamic header if it exists
+        if userinfo_header:
+            response.headers["Subscription-Userinfo"] = userinfo_header
 
         return response
     except Exception as e:
