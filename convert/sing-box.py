@@ -71,10 +71,11 @@ def clash_to_singbox_node(c_node: dict) -> dict:
         sb_node["up_mbps"] = 50
         sb_node["down_mbps"] = 200
         
-        # Handle port range for hy2 (e.g., ports: 1000-2000)
+        # Handle port range for hy2
         if "ports" in c_node:
             sb_node["server_ports"] = str(c_node["ports"]).replace("-", ":")
-            del sb_node["server_port"]
+            if "server_port" in sb_node:
+                del sb_node["server_port"]
             
         sb_node["tls"] = {
             "enabled": True,
@@ -103,7 +104,7 @@ def clash_to_singbox_node(c_node: dict) -> dict:
 # ================= Main Processor =================
 def fetch_and_process_singbox(
     config_param: str,
-    yaml_path: str,
+    yaml_path: Path,
     shared_kw: list,
     shared_ex_kw: list,
     clean_node_fn,
@@ -253,7 +254,7 @@ def inject_custom_singbox_node(
 
 def handle_request(
     source,
-    yaml_path,
+    url,
     ua,
     is_force_refresh, 
     cache_dir,
@@ -265,19 +266,29 @@ def handle_request(
     target_groups,
     inject_templates,
 ):
+    # Map SFA to "tun" to match app.py INJECT_TEMPLATES
     singbox_ua_map = {
-        "SFA": "mtun",
+        "SFA": "tun",
         "sing-box_openwrt": "openwrt",
         "sing-box_m": "m",
         "sing-box_pc": "pc",
     }
+    
     config_val = next((v for k, v in singbox_ua_map.items() if k in ua), None)
     if not config_val:
         return jsonify({"error": "No matching Sing-box UA"}), 404
 
+    # Strictly read local cache file only
+    yaml_path = cache_dir / f"{source}.yaml"
+    if not yaml_path.exists():
+        return jsonify({"error": f"Local YAML cache not found: {yaml_path}. Please fetch via Clash first."}), 404
+
     try:
+        # Load mtun.json template if config_val is tun
+        template_val = "mtun" if config_val == "tun" else config_val
+        
         json_str = fetch_and_process_singbox(
-            config_val,
+            template_val,
             yaml_path,
             shared_kw,
             shared_ex_kw,
