@@ -1,10 +1,11 @@
 import hashlib
 import hmac
+import importlib
 import logging
 import re
-import importlib
 from pathlib import Path
-from flask import Flask, request, abort
+
+from flask import Flask, abort, request
 
 # ================= Config =================
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -16,39 +17,23 @@ CACHE_DIR = BASE_DIR / "cache"
 CACHE_DIR.mkdir(exist_ok=True)
 CACHE_EXPIRE_SECONDS = 86400
 
-SOURCE_MAP = {"mitce": BASE_DIR / "mitce", "bajie": BASE_DIR / "bajie"}
+ACTUAL_SOURCE = "westdata"
+
 CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
 CUSTOM_SINGBOX_NODE = BASE_DIR / "node.json"
 TARGET_GROUPS = ["Google"]
-INJECT_TEMPLATES = ["m", "openwrt"]
+
+# Inject nodes only for tun/mobile configs
+INJECT_TEMPLATES = ["tun"]
 
 RENAME_MAP = {"香港": "HK", "美国": "US", "新加坡": "SG", "日本": "JP", "家宽": "ISP"}
 SHARED_KEYWORDS = [
-    "US",
-    "HK",
-    "SG",
-    "JP",
-    "Hong Kong",
-    "Singapore",
-    "Japan",
-    "United States",
-    "美国",
-    "香港",
-    "新加坡",
-    "日本",
+    "US", "HK", "SG", "JP", "Hong Kong", "Singapore", "Japan", "United States",
+    "美国", "香港", "新加坡", "日本",
 ]
 SHARED_EXCLUDE_KEYWORDS = [
-    "官网",
-    "流量",
-    "倍率",
-    "剩余",
-    "Australia",
-    "到期",
-    "重置",
-    "HK2-HY2",
-    "HK3-HY2",
-    "HK4-HY2",
-    "HK5-HY2",
+    "官网", "流量", "倍率", "剩余", "Australia", "到期", "重置",
+    "HK2-HY2", "HK3-HY2", "HK4-HY2", "HK5-HY2",
 ]
 
 ENABLE_CLASH = True
@@ -78,6 +63,7 @@ def clean_node_name(name: str) -> str:
 # ================= Routing & Dispatch =================
 @app.before_request
 def restrict_paths():
+    # Only allow WAF whitelisted paths
     if request.path not in {"/mitce", "/bajie"}:
         abort(404)
     if not (key := request.args.get("key")):
@@ -88,10 +74,12 @@ def restrict_paths():
         abort(404)
 
 
-@app.route("/<source>")
-def process_source(source):
-    path = SOURCE_MAP.get(source)
-    if not path:
+@app.route("/<req_path>")
+def process_source(req_path):
+    actual_source = ACTUAL_SOURCE
+    path = BASE_DIR / actual_source
+    
+    if not path.is_file():
         abort(404)
 
     ua = request.headers.get("User-Agent", "")
@@ -105,7 +93,7 @@ def process_source(source):
     if ENABLE_SINGBOX and any(k in ua for k in ["SFA", "sing-box"]):
         sb_module = importlib.import_module("sing-box")
         return sb_module.handle_request(
-            source,
+            actual_source,
             url,
             ua,
             is_force_refresh,
@@ -119,11 +107,10 @@ def process_source(source):
             INJECT_TEMPLATES,
         )
 
-    if ENABLE_CLASH and ("Clash" in ua or "clash" in ua):
-        import clash
-
-        return clash.handle_request(
-            source,
+    if ENABLE_CLASH and ("Clash" in ua or "clash" in ua.lower()):
+        clash_module = importlib.import_module("clash")
+        return clash_module.handle_request(
+            actual_source,
             url,
             ua,
             is_force_refresh,
