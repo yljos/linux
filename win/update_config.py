@@ -37,17 +37,17 @@ def restart_service(service_name):
         print(f"Unknown error during service restart: {e}")
 
 
-def test_clash_config(config_path):
+def test_clash_config(tmp_config_path):
     print("Testing downloaded configuration using clash...")
     if not os.path.exists(CLASH_EXE):
         print(f"[Warning] Cannot find {CLASH_EXE}. Cannot validate.")
         return False
 
     try:
-        # Restrict working directory to the tmp folder
-        tmp_dir = os.path.dirname(config_path)
+        # Set runtime directory to tmp folder
+        tmp_dir = os.path.dirname(tmp_config_path)
         result = subprocess.run(
-            [CLASH_EXE, "-t", "-d", tmp_dir, "-f", config_path],
+            [CLASH_EXE, "-t", "-d", tmp_dir, "-f", tmp_config_path],
             capture_output=True,
             text=True,
             creationflags=subprocess.CREATE_NO_WINDOW
@@ -65,17 +65,17 @@ def test_clash_config(config_path):
         return False
 
 
-def test_singbox_config(config_path):
+def test_singbox_config(tmp_config_path):
     print("Testing downloaded configuration using sing-box...")
     if not os.path.exists(SINGBOX_EXE):
         print(f"[Warning] Cannot find {SINGBOX_EXE}. Cannot validate.")
         return False
 
     try:
-        # Restrict working directory to the tmp folder
-        tmp_dir = os.path.dirname(config_path)
+        # Set runtime directory to tmp folder
+        tmp_dir = os.path.dirname(tmp_config_path)
         result = subprocess.run(
-            [SINGBOX_EXE, "check", "-D", tmp_dir, "-c", config_path],
+            [SINGBOX_EXE, "check", "-D", tmp_dir, "-c", tmp_config_path],
             capture_output=True,
             text=True,
             creationflags=subprocess.CREATE_NO_WINDOW
@@ -103,16 +103,17 @@ def perform_update():
         return False
 
     if "sing-box" in user_agent.lower():
-        service_name = "Sing-box"
+        service_name = "sing-box"
         save_path = os.path.join(SINGBOX_CONFIG_DIR, "config.json")
+        tmp_dir = os.path.join(SINGBOX_CONFIG_DIR, "tmp")
+        temp_path = os.path.join(tmp_dir, "config.json")
         validator_func = test_singbox_config
     else:
         service_name = "clash"
         save_path = os.path.join(CLASH_CONFIG_DIR, "config.yaml")
+        tmp_dir = os.path.join(CLASH_CONFIG_DIR, "tmp")
+        temp_path = os.path.join(tmp_dir, "config.yaml")
         validator_func = test_clash_config
-
-    tmp_dir = os.path.join(os.path.dirname(save_path), "tmp")
-    temp_path = os.path.join(tmp_dir, os.path.basename(save_path))
 
     try:
         os.makedirs(tmp_dir, exist_ok=True)
