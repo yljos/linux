@@ -2,6 +2,7 @@ import os
 import time
 import subprocess
 import ctypes
+import shutil
 from dotenv import load_dotenv
 from curl_cffi import requests
 
@@ -44,7 +45,6 @@ def test_clash_config(tmp_config_path):
         return False
 
     try:
-        # Set runtime directory to tmp folder
         tmp_dir = os.path.dirname(tmp_config_path)
         result = subprocess.run(
             [CLASH_EXE, "-t", "-d", tmp_dir, "-f", tmp_config_path],
@@ -72,7 +72,6 @@ def test_singbox_config(tmp_config_path):
         return False
 
     try:
-        # Set runtime directory to tmp folder
         tmp_dir = os.path.dirname(tmp_config_path)
         result = subprocess.run(
             [SINGBOX_EXE, "check", "-D", tmp_dir, "-c", tmp_config_path],
@@ -103,7 +102,7 @@ def perform_update():
         return False
 
     if "sing-box" in user_agent.lower():
-        service_name = "sing-box"
+        service_name = "Sing-box"
         save_path = os.path.join(SINGBOX_CONFIG_DIR, "config.json")
         tmp_dir = os.path.join(SINGBOX_CONFIG_DIR, "tmp")
         temp_path = os.path.join(tmp_dir, "config.json")
@@ -150,9 +149,9 @@ def perform_update():
     except Exception as e:
         print(f"[{service_name}] Unexpected error: {e}")
     finally:
-        if os.path.exists(temp_path):
+        if os.path.exists(tmp_dir):
             try:
-                os.remove(temp_path)
+                shutil.rmtree(tmp_dir)
             except OSError:
                 pass
 
