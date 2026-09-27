@@ -88,7 +88,23 @@ def clash_to_singbox_node(c_node: dict) -> dict:
                 "type": c_node.get("obfs"),
                 "password": c_node.get("obfs-password", "")
             }
+    elif c_type == "trojan":
+        sb_node["type"] = "trojan"
+        sb_node["password"] = str(c_node.get("password", ""))
+        
+        tls = {"enabled": True}
+        if "sni" in c_node:
+            tls["server_name"] = c_node["sni"]
+        if c_node.get("skip-cert-verify"):
+            tls["insecure"] = True
             
+        sb_node["tls"] = tls
+        
+        if c_node.get("network") == "ws":
+            sb_node["transport"] = {
+                "type": "ws",
+                "path": c_node.get("ws-opts", {}).get("path", "/")
+            }            
     elif c_type in ["ss", "shadowsocks"]:
         sb_node["type"] = "shadowsocks"
         sb_node["method"] = c_node.get("cipher")
