@@ -69,7 +69,7 @@ proxies: []
 proxy-groups:
   - {type: select, name: M, proxies: [JP, SG, US, HK]}
   - {type: select, name: Default, proxies: [REJECT, DIRECT, M]}
-  - {type: select, name: Google, proxies: [US, JP, SG, HK]}
+  - {type: select, name: Google, proxies: [US, JP, SG, HK, GCP-outbound]}
   - {type: fallback, name: Relay, include-all-proxies: true, filter: "(?i).*(SG|Singapore|JP|Japan|United States|US|Hong Kong|HK).*", url: "http://www.gstatic.com/generate_204", interval: 30}
   - {type: select, name: OpenAi, proxies: [JP, SG, US, HK]}
   - {type: select, name: Telegram, proxies: [JP, SG, US, HK]}
@@ -139,10 +139,10 @@ rules:
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
   - DOMAIN-KEYWORD,msftncsi.com,Microsoft
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(DOMAIN-KEYWORD,googleapis)),Youtube
-  - AND,((SRC-IP-CIDR,10.0.0.246/32),(RULE-SET,cloudflare-site)),DIRECT
+  - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(RULE-SET,youtube-site)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(RULE-SET,google-site)),Youtube
-  - AND,((SRC-IP-CIDR,10.0.0.246/32),(RULE-SET,cloudflare-ip)),DIRECT
+  - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-ip)),DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(RULE-SET,google-ip)),Youtube
   - DOMAIN-KEYWORD,googleapis,Google
   - RULE-SET,direct-site,DIRECT
