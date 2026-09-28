@@ -1,4 +1,5 @@
 {
+  "$schema": "schema.json",
   "log": {"level": "error", "timestamp": true},
   "http_clients": [{"tag": "proxy-client", "detour": "D"}],
   "dns": {
