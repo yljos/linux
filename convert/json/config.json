@@ -52,10 +52,10 @@
     {"type": "selector", "tag": "GitHub", "outbounds": ["JP", "US", "SG", "HK"], "default": "JP"},
     {"type": "selector", "tag": "Microsoft", "outbounds": ["JP", "US", "SG", "HK", "D"], "default": "JP"},
     {"type": "selector", "tag": "Twitter", "outbounds": ["US"], "default": "US"},
-    {"type": "urltest", "tag": "HK", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*HK.*$"]}]},
-    {"type": "urltest", "tag": "SG", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*SG.*$"]}]},
-    {"type": "urltest", "tag": "JP", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*JP.*$"]}]},
-    {"type": "urltest", "tag": "US", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*US.*$"]}]}
+    {"type": "urltest", "tag": "HK", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*(HK|Hong Kong).*$"]}]},
+    {"type": "urltest", "tag": "SG", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*(SG|Singapore).*$"]}]},
+    {"type": "urltest", "tag": "JP", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*(JP|Japan).*$"]}]},
+    {"type": "urltest", "tag": "US", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*(US|United States).*$"]}]}
   ],
   "route": {
     "rules": [
