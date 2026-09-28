@@ -1,5 +1,4 @@
 mixed-port: 12138
-tproxy-port: 7893
 allow-lan: true
 bind-address: "*"
 find-process-mode: strict
@@ -14,12 +13,6 @@ profile:
 external-controller: 0.0.0.0:9090
 external-ui: ui
 external-ui-url: https://www.346211.xyz/dist.zip
-hosts:
-  nas: 10.0.0.246
-  ax6s: 10.0.0.2
-  debian: 10.0.0.205
-  openwrt: 10.0.0.1
-  win: 10.0.0.105
 sniffer:
   enable: true
   force-dns-mapping: true

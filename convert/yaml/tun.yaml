@@ -1,0 +1,11 @@
+tun:
+  enable: true
+  device: clash
+  stack: gvisor
+  dns-hijack: ["0.0.0.0:53"]
+  auto-route: true
+  udp-timeout: 60
+  mtu: 1500
+  auto-detect-interface: true
+  auto-redirect: true
+  strict-route: true
