@@ -25,12 +25,6 @@
   },
   "inbounds": [
     {
-      "type": "tproxy",
-      "tag": "tproxy-in",
-      "listen": "0.0.0.0",
-      "listen_port": 7893
-    },
-    {
       "type": "mixed",
       "tag": "mixed-in",
       "listen": "0.0.0.0",
