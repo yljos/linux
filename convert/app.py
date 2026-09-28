@@ -23,9 +23,6 @@ CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
 CUSTOM_SINGBOX_NODE = BASE_DIR / "node.json"
 TARGET_GROUPS = ["Google"]
 
-# Inject nodes only for tun/mobile configs
-INJECT_TEMPLATES = ["tun"]
-
 RENAME_MAP = {"香港": "HK", "美国": "US", "新加坡": "SG", "日本": "JP", "家宽": "ISP"}
 SHARED_KEYWORDS = [
     "US", "HK", "SG", "JP", "Hong Kong", "Singapore", "Japan", "United States",
@@ -76,8 +73,7 @@ def restrict_paths():
 
 @app.route("/<req_path>")
 def process_source(req_path):
-    actual_source = ACTUAL_SOURCE
-    path = BASE_DIR / actual_source
+    path = BASE_DIR / ACTUAL_SOURCE
     
     if not path.is_file():
         abort(404)
@@ -93,7 +89,7 @@ def process_source(req_path):
     if ENABLE_SINGBOX and any(k in ua for k in ["SFA", "sing-box"]):
         sb_module = importlib.import_module("sing-box")
         return sb_module.handle_request(
-            actual_source,
+            ACTUAL_SOURCE,
             url,
             ua,
             is_force_refresh,
@@ -104,13 +100,12 @@ def process_source(req_path):
             clean_node_name,
             CUSTOM_SINGBOX_NODE,
             TARGET_GROUPS,
-            INJECT_TEMPLATES,
         )
 
     if ENABLE_CLASH and ("Clash" in ua or "clash" in ua.lower()):
         clash_module = importlib.import_module("clash")
         return clash_module.handle_request(
-            actual_source,
+            ACTUAL_SOURCE,
             url,
             ua,
             is_force_refresh,
@@ -121,7 +116,6 @@ def process_source(req_path):
             clean_node_name,
             CUSTOM_CLASH_NODE,
             TARGET_GROUPS,
-            INJECT_TEMPLATES,
             BASE_DIR,
         )
 

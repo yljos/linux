@@ -3,7 +3,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 from urllib.parse import unquote
 
 import requests
@@ -42,6 +42,25 @@ def process_data(data):
             for i in data
         ]
     return data
+
+
+def filter_node_names_clash(
+    proxies: List[Any], shared_kw: List[str], shared_ex_kw: List[str]
+) -> Tuple[List[str], List[str]]:
+    all_names = [
+        str(p.get("name"))
+        for p in proxies
+        if isinstance(p, dict) and isinstance(p.get("name"), str)
+    ]
+    valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
+    valid_ex_kw = [str(ex).lower() for ex in shared_ex_kw if isinstance(ex, str)]
+    filtered = [
+        n
+        for n in all_names
+        if any(kw in n.lower() for kw in valid_kw)
+        and not any(ex in n.lower() for ex in valid_ex_kw)
+    ]
+    return filtered, all_names
 
 
 def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: str):
@@ -124,6 +143,8 @@ def process_yaml_content_clash(
     mixin_paths: list,
     up_pref: str,
     down_pref: str,
+    shared_kw: list,
+    shared_ex_kw: list,
     clean_node_fn,
 ):
     # Parse the remote YAML configuration directly
@@ -149,14 +170,22 @@ def process_yaml_content_clash(
                     template_data.update(m_data)
 
     proxies_orig = input_data.get("proxies", [])
+    filtered_names, _ = filter_node_names_clash(proxies_orig, shared_kw, shared_ex_kw)
+
     final_proxies = []
-    
-    # Inject all nodes without filtering
     for p in proxies_orig:
-        if isinstance(p, dict):
-            p["name"] = clean_node_fn(p.get("name", ""))
+        if isinstance(p, dict) and p.get("name") in filtered_names:
+            p["name"] = clean_node_fn(p["name"])
             process_proxy_config_clash(p, up_pref, down_pref)
             final_proxies.append(p)
+
+    # Fallback if no valid proxies left after filtering
+    if not final_proxies and proxies_orig:
+        for p in proxies_orig:
+            if isinstance(p, dict):
+                p["name"] = clean_node_fn(p.get("name", ""))
+                process_proxy_config_clash(p, up_pref, down_pref)
+            final_proxies = proxies_orig
 
     # Add dns-out directly
     final_proxies.append({"name": "dns-out", "type": "dns"})
@@ -260,13 +289,13 @@ def handle_request(
     is_force_refresh,
     cache_dir,
     cache_expire,
+    shared_kw,
+    shared_ex_kw,
     clean_fn,
     custom_node_path,
     target_groups,
-    inject_templates,
     base_dir,
 ):
-    clash_config_val = None
     mixin_paths = []
     
     # Base config is always config.yaml
@@ -274,13 +303,11 @@ def handle_request(
     
     # Determine routing and add specific mixin files
     if "clash_tun" in ua or "ClashMetaForAndroid" in ua:
-        clash_config_val = "tun"
         mixin_paths.append(base_dir / "yaml/tun.yaml")
     elif "clash_openwrt" in ua:
-        clash_config_val = "openwrt"
         mixin_paths.append(base_dir / "yaml/tproxy.yaml")
     elif any(k in ua for k in ["clash_pc", "clash_m"]) or "clash" in ua.lower():
-        clash_config_val = "standard"
+        pass # Only uses base config.yaml
     else:
         abort(404)
 
@@ -292,13 +319,13 @@ def handle_request(
             unquote(url), source, is_force_refresh, cache_dir, cache_expire
         )
         
-        # Process the configuration with mixins and all nodes injected
+        # Process the configuration with mixins and node filtering
         output_bytes = process_yaml_content_clash(
-            remote_yaml_text, template_path, mixin_paths, up, down, clean_fn
+            remote_yaml_text, template_path, mixin_paths, up, down, shared_kw, shared_ex_kw, clean_fn
         )
 
-        if clash_config_val in inject_templates:
-            output_bytes = inject_custom_clash_node(output_bytes, custom_node_path)
+        # Unconditionally inject custom local nodes for all configs
+        output_bytes = inject_custom_clash_node(output_bytes, custom_node_path)
 
         final_config = yaml.safe_load(output_bytes)
         formatted_config = final_format_data(final_config)

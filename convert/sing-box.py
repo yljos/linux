@@ -113,6 +113,8 @@ def clash_to_singbox_node(c_node: dict) -> dict:
 # ================= Main Processor =================
 def fetch_and_process_singbox(
     yaml_path: Path,
+    template_path: str,
+    mixin_paths: list,
     shared_kw: list,
     shared_ex_kw: list,
     clean_node_fn,
@@ -135,6 +137,7 @@ def fetch_and_process_singbox(
     nodes = []
     for c_node in raw_nodes:
         original_name = c_node.get("name", "")
+        # Remote node filtering logic is preserved here
         if not original_name or any(ex in original_name for ex in shared_ex_kw):
             continue
             
@@ -149,9 +152,18 @@ def fetch_and_process_singbox(
     if not nodes:
         raise ValueError("No valid nodes converted from local YAML")
 
-    # Load single config base template
-    with open("json/config.json", "r", encoding="utf-8") as f:
+    # Load base config
+    with open(template_path, "r", encoding="utf-8") as f:
         base_config = json.load(f)
+
+    # Merge mixin configurations
+    for m_path in mixin_paths:
+        path_obj = Path(m_path)
+        if path_obj.exists():
+            with open(path_obj, "r", encoding="utf-8") as f:
+                m_data = json.load(f)
+                if isinstance(m_data, dict):
+                    base_config.update(m_data)
 
     outbounds = base_config.get("outbounds", [])
     existing_tags = {o.get("tag") for o in outbounds}
@@ -269,17 +281,19 @@ def handle_request(
     clean_fn,
     custom_node_path,
     target_groups,
-    inject_templates,
 ):
-    singbox_ua_map = {
-        "SFA": "tun",
-        "sing-box_tun": "tun",
-        "sing-box": "default",
-    }
+    mixin_paths = []
+    template_path = "json/config.json"
     
-    config_val = next((v for k, v in singbox_ua_map.items() if k in ua), None)
-    if not config_val:
-        return jsonify({"error": "No matching Sing-box UA"}), 404
+    ua_lower = ua.lower()
+    
+    # Determine routing and add specific mixin files
+    if any(k in ua_lower for k in ["sfa", "sing-box_tun"]):
+        mixin_paths.append("json/tun.json")
+    elif "openwrt" in ua_lower:
+        mixin_paths.append("json/tproxy.json")
+    else:
+        pass # Standard, no mixins
 
     # Strictly read local cache file only
     yaml_path = cache_dir / f"{source}.yaml"
@@ -289,26 +303,17 @@ def handle_request(
     try:
         json_str = fetch_and_process_singbox(
             yaml_path,
+            template_path,
+            mixin_paths,
             shared_kw,
             shared_ex_kw,
             clean_fn,
         )
 
-        # Inject tun inbound configuration
-        if config_val == "tun":
-            config_data = json.loads(json_str)
-            try:
-                with open("json/tun.json", "r", encoding="utf-8") as f:
-                    tun_inbound = json.load(f)
-                config_data.setdefault("inbounds", []).insert(0, tun_inbound)
-                json_str = json.dumps(config_data, ensure_ascii=False, separators=(",", ":"))
-            except Exception as e:
-                logger.error(f"Failed to inject tun inbound: {e}")
-
-        if config_val in inject_templates:
-            json_str = inject_custom_singbox_node(
-                json_str, custom_node_path, target_groups
-            )
+        # Unconditionally inject custom local nodes
+        json_str = inject_custom_singbox_node(
+            json_str, custom_node_path, target_groups
+        )
 
         return Response(
             json_str,
