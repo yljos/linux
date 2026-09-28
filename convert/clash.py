@@ -1,10 +1,9 @@
 import io
 import logging
 import os
-import re
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 from urllib.parse import unquote
 
 import requests
@@ -43,25 +42,6 @@ def process_data(data):
             for i in data
         ]
     return data
-
-
-def filter_node_names_clash(
-    proxies: List[Any], shared_kw: List[str], shared_ex_kw: List[str]
-) -> Tuple[List[str], List[str]]:
-    all_names = [
-        str(p.get("name"))
-        for p in proxies
-        if isinstance(p, dict) and isinstance(p.get("name"), str)
-    ]
-    valid_kw = [str(kw).lower() for kw in shared_kw if isinstance(kw, str)]
-    valid_ex_kw = [str(ex).lower() for ex in shared_ex_kw if isinstance(ex, str)]
-    filtered = [
-        n
-        for n in all_names
-        if any(kw in n.lower() for kw in valid_kw)
-        and not any(ex in n.lower() for ex in valid_ex_kw)
-    ]
-    return filtered, all_names
 
 
 def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: str):
@@ -141,10 +121,9 @@ def fetch_remote_yaml(
 def process_yaml_content_clash(
     remote_yaml_text: str,
     template_path: Path,
+    mixin_paths: list,
     up_pref: str,
     down_pref: str,
-    shared_kw: list,
-    shared_ex_kw: list,
     clean_node_fn,
 ):
     # Parse the remote YAML configuration directly
@@ -157,25 +136,27 @@ def process_yaml_content_clash(
         preview = remote_yaml_text[:100].replace("\n", " ") if remote_yaml_text else "Empty content"
         raise ValueError(f"No valid proxies found in remote YAML. Preview: {preview}")
 
+    # Load base config.yaml
     with open(template_path, "r", encoding="utf-8") as f:
         template_data = yaml.safe_load(f)
         
-    proxies_orig = input_data.get("proxies", [])
-    filtered_names, _ = filter_node_names_clash(proxies_orig, shared_kw, shared_ex_kw)
+    # Merge mixin configurations
+    for m_path in mixin_paths:
+        if m_path.exists():
+            with open(m_path, "r", encoding="utf-8") as f:
+                m_data = yaml.safe_load(f)
+                if isinstance(m_data, dict):
+                    template_data.update(m_data)
 
+    proxies_orig = input_data.get("proxies", [])
     final_proxies = []
+    
+    # Inject all nodes without filtering
     for p in proxies_orig:
-        if isinstance(p, dict) and p.get("name") in filtered_names:
-            p["name"] = clean_node_fn(p["name"])
+        if isinstance(p, dict):
+            p["name"] = clean_node_fn(p.get("name", ""))
             process_proxy_config_clash(p, up_pref, down_pref)
             final_proxies.append(p)
-
-    if not final_proxies and proxies_orig:
-        for p in proxies_orig:
-            if isinstance(p, dict):
-                p["name"] = clean_node_fn(p.get("name", ""))
-                process_proxy_config_clash(p, up_pref, down_pref)
-        final_proxies = proxies_orig
 
     # Add dns-out directly
     final_proxies.append({"name": "dns-out", "type": "dns"})
@@ -279,8 +260,6 @@ def handle_request(
     is_force_refresh,
     cache_dir,
     cache_expire,
-    shared_kw,
-    shared_ex_kw,
     clean_fn,
     custom_node_path,
     target_groups,
@@ -288,20 +267,24 @@ def handle_request(
     base_dir,
 ):
     clash_config_val = None
+    mixin_paths = []
     
-    # Simplified routing map
+    # Base config is always config.yaml
+    template_path = base_dir / "yaml/config.yaml"
+    
+    # Determine routing and add specific mixin files
     if "clash_tun" in ua or "ClashMetaForAndroid" in ua:
         clash_config_val = "tun"
-    elif any(k in ua for k in ["clash_pc", "clash_m", "clash_openwrt"]) or "clash" in ua.lower():
+        mixin_paths.append(base_dir / "yaml/tun.yaml")
+    elif "clash_openwrt" in ua:
+        clash_config_val = "openwrt"
+        mixin_paths.append(base_dir / "yaml/tproxy.yaml")
+    elif any(k in ua for k in ["clash_pc", "clash_m"]) or "clash" in ua.lower():
         clash_config_val = "standard"
     else:
         abort(404)
 
-    config_map = {
-        "standard": (base_dir / "yaml/config.yaml", "50 Mbps", "100 Mbps"),
-        "tun": (base_dir / "yaml/config_tun.yaml", "50 Mbps", "100 Mbps"),
-    }
-    template_path, up, down = config_map[clash_config_val]
+    up, down = "50 Mbps", "100 Mbps"
 
     try:
         # Extract dynamic header from fetch_remote_yaml
@@ -309,9 +292,9 @@ def handle_request(
             unquote(url), source, is_force_refresh, cache_dir, cache_expire
         )
         
-        # Process the configuration without complex regex filtering
+        # Process the configuration with mixins and all nodes injected
         output_bytes = process_yaml_content_clash(
-            remote_yaml_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn
+            remote_yaml_text, template_path, mixin_paths, up, down, clean_fn
         )
 
         if clash_config_val in inject_templates:
