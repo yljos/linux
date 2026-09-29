@@ -9,4 +9,4 @@ exec /usr/bin/podman run \
   --net=host \
   -v /data/appdata/jellyfin:/config:Z \
   -v /data/media:/media:z \
-  lscr.io/linuxserver/jellyfin:latest
+  lscr.io/linuxserver/jellyfin:10.8.13
