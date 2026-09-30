@@ -4,6 +4,9 @@ import subprocess
 import re
 from dotenv import load_dotenv
 
+# Set SOCKS5 proxy for rclone
+os.environ["ALL_PROXY"] = "socks5://10.0.0.21:12138"
+
 # Load environment variables
 load_dotenv()
 
