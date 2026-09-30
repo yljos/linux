@@ -1,0 +1,10 @@
+#!/bin/sh
+exec 2>&1
+
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=clash\
+  --net=host \
+  -v /data/appdata/clash:/root/.config/mihomo:Z \
+  docker.io/metacubex/mihomo:latest
