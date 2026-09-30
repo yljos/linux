@@ -1,0 +1,12 @@
+#!/bin/sh
+exec 2>&1
+
+# Use sing-box instead of mihomo
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=sing-box \
+  --net=host \
+  -v /data/appdata/sing-box:/etc/sing-box:Z \
+  ghcr.io/sagernet/sing-box:latest \
+  run -c /etc/sing-box/config.json
