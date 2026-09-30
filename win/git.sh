@@ -6,8 +6,8 @@ git config --global commit.gpgsign true
 git config --global user.name "yljos"
 git config --global user.email "git@sakuraos.com"
 git config --global core.sshCommand "C:/Windows/System32/OpenSSH/ssh.exe"
-git config --global http.proxy socks5://127.0.0.1:12138
-git config --global https.proxy socks5://127.0.0.1:12138
+git config --global http.proxy socks5://10.0.0.21:12138
+git config --global https.proxy socks5://10.0.0.21:12138
 
 Get-Service ssh-agent | Set-Service -StartupType Automatic
 Start-Service ssh-agent
