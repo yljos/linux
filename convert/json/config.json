@@ -3,6 +3,7 @@
   "log": {"level": "error", "timestamp": true},
   "http_clients": [{"tag": "proxy-client", "detour": "D"}],
   "dns": {
+    "strategy": "ipv4_only",
     "servers": [
       {"type": "udp", "tag": "dns_resolver", "detour": "D", "server": "223.5.5.5", "server_port": 53},
       {"type": "https", "tag": "dns_proxy", "detour": "M", "domain_resolver": "dns_resolver", "server": "cloudflare-dns.com", "server_port": 443},
@@ -12,14 +13,14 @@
       {"type": "fakeip", "tag": "dns_fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"}
     ],
     "rules": [
-      {"domain": "ntp.aliyun.com", "server": "dns_direct", "ip_version": 4},
-      {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "server": "dns_microsoft", "ip_version": 4},
-      {"domain_keyword": "googleapis", "server": "dns_google", "ip_version": 4},
-      {"rule_set": "googlefcm-site", "server": "dns_google", "ip_version": 4},
+      {"domain": "ntp.aliyun.com", "server": "dns_direct"},
+      {"domain_keyword": ["msftconnecttest.com", "msftncsi.com"], "server": "dns_microsoft"},
+      {"domain_keyword": "googleapis", "server": "dns_google"},
+      {"rule_set": "googlefcm-site", "server": "dns_google"},
       {"rule_set": "ad-site", "action": "reject"},
-      {"rule_set": "cn-site", "server": "dns_direct", "ip_version": 4},
-      {"rule_set": "cloudflare-site", "server": "dns_proxy", "ip_version": 4},
-      {"query_type": ["A", "AAAA"], "server": "dns_fakeip", "disable_cache": true}
+      {"rule_set": "cn-site", "server": "dns_direct"},
+      {"rule_set": "cloudflare-site", "server": "dns_proxy"},
+      {"query_type": ["AAAA"], "action": "reject", "method": "default", "no_drop": true}
     ],
     "final": "dns_proxy"
   },
@@ -95,7 +96,7 @@
       {"rule_set": "microsoft-site", "outbound": "Microsoft"},
       {"rule_set": "gfw-site", "outbound": "M"},
       {"rule_set": "cn-site", "outbound": "D"},
-      {"action": "resolve", "server": "dns_proxy", "ip_version": 4},
+      {"action": "resolve", "server": "dns_proxy"},
       {"rule_set": "direct-ip", "outbound": "D"},
       {"rule_set": "wechat-ip", "outbound": "D"},
       {"type": "logical", "mode": "and", "rules": [{"source_ip_cidr": "10.0.0.21/32"}, {"rule_set": "cloudflare-ip"}], "outbound": "D"},
