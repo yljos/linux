@@ -9,8 +9,7 @@
       {"type": "https", "tag": "dns_proxy", "detour": "M", "domain_resolver": "dns_resolver", "server": "cloudflare-dns.com", "server_port": 443},
       {"type": "https", "tag": "dns_google", "detour": "Google", "domain_resolver": "dns_resolver", "server": "dns.google", "server_port": 443},
       {"type": "https", "tag": "dns_microsoft", "detour": "Microsoft", "domain_resolver": "dns_resolver", "server": "cloudflare-dns.com", "server_port": 443},
-      {"type": "https", "tag": "dns_direct", "detour": "D", "domain_resolver": "dns_resolver", "server": "dns.alidns.com", "server_port": 443},
-      {"type": "fakeip", "tag": "dns_fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"}
+      {"type": "https", "tag": "dns_direct", "detour": "D", "domain_resolver": "dns_resolver", "server": "dns.alidns.com", "server_port": 443}
     ],
     "rules": [
       {"domain": "ntp.aliyun.com", "server": "dns_direct"},
@@ -19,7 +18,6 @@
       {"rule_set": "googlefcm-site", "server": "dns_google"},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "cn-site", "server": "dns_direct"},
-      {"rule_set": "cloudflare-site", "server": "dns_proxy"},
       {"query_type": ["AAAA"], "action": "reject", "method": "default", "no_drop": true}
     ],
     "final": "dns_proxy"
@@ -55,8 +53,6 @@
   "route": {
     "rules": [
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
-      {"port": 53, "action": "hijack-dns"},
-      {"protocol": "dns", "action": "hijack-dns"},
       {"type": "logical", "mode": "and", "rules": [{"network": "udp"}, {"port": 443}], "action": "reject", "no_drop": true},
       {"action": "sniff", "timeout": "300ms"},
       {"rule_set": "ad-site", "action": "reject"},
