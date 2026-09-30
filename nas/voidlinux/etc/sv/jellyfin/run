@@ -1,0 +1,12 @@
+#!/bin/sh
+exec 2>&1
+
+# Run jellyfin instead of emby
+exec /usr/bin/podman run \
+  --replace \
+  --rm \
+  --name=jellyfin \
+  --net=host \
+  -v /data/appdata/jellyfin:/config:Z \
+  -v /data/media:/media:z \
+  lscr.io/linuxserver/jellyfin:10.8.13
