@@ -100,6 +100,7 @@ rule-providers:
   codeberg-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/codeberg.mrs"}
   docker-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/docker.mrs"}
   direct-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/direct-site.mrs"}
+  f-droid-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/f-droid-site.mrs"}
   direct-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.346211.xyz/direct-ip.mrs"}
   mozilla-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/mozilla.mrs"}
   gfw-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/gfw.mrs"}
@@ -149,6 +150,7 @@ rules:
   - RULE-SET,pikpak-site,PikPak
   - RULE-SET,tencent-site,DIRECT
   - RULE-SET,proxy-site,M
+  - RULE-SET,f-droid-site,M
   - RULE-SET,cloudflare-site,M
   - RULE-SET,github-site,GitHub
   - RULE-SET,codeberg-site,GitHub
