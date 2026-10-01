@@ -15,10 +15,18 @@
     "diffEditor.renderSideBySide": false,
     "security.workspace.trust.untrustedFiles": "open",
     "terminal.integrated.profiles.windows": {
-        "Git Bash": {
-            "source": "Git Bash" 
+        "MSYS2 UCRT64": {
+            "path": "C:\\msys64\\usr\\bin\\bash.exe",
+            "args": [
+                "--login",
+                "-i"
+            ],
+            "env": {
+                "MSYSTEM": "UCRT64",
+                "CHERE_INVOKING": "1"
+            }
         }
     },
-    "terminal.integrated.defaultProfile.windows": "Git Bash", 
-    "git.path": "C:\\Program Files\\Git\\cmd\\git.exe"
+    "terminal.integrated.defaultProfile.windows": "MSYS2 UCRT64",
+    "git.path": "C:\\msys64\\ucrt64\\bin\\git.exe"
 }
