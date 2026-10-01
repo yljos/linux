@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 CLASH_USER_AGENT = "clash-verge"
 CLASH_FINGERPRINT = "firefox"
 
+
 # ================= Clash Processors =================
 class FlowDict(dict):
     pass
@@ -154,13 +155,17 @@ def process_yaml_content_clash(
         raise ValueError(f"Failed to parse remote YAML: {e}")
 
     if not isinstance(input_data, dict) or not input_data.get("proxies"):
-        preview = remote_yaml_text[:100].replace("\n", " ") if remote_yaml_text else "Empty content"
+        preview = (
+            remote_yaml_text[:100].replace("\n", " ")
+            if remote_yaml_text
+            else "Empty content"
+        )
         raise ValueError(f"No valid proxies found in remote YAML. Preview: {preview}")
 
     # Load base config.yaml
     with open(template_path, "r", encoding="utf-8") as f:
         template_data = yaml.safe_load(f)
-        
+
     # Merge mixin configurations
     for m_path in mixin_paths:
         if m_path.exists():
@@ -282,6 +287,7 @@ def final_format_data(data, level=0):
 
 # ====================================================
 
+
 def handle_request(
     source,
     url,
@@ -297,17 +303,17 @@ def handle_request(
     base_dir,
 ):
     mixin_paths = []
-    
+
     # Base config is always config.yaml
     template_path = base_dir / "yaml/config.yaml"
-    
+
     # Determine routing and add specific mixin files
     if "clash_tun" in ua or "ClashMetaForAndroid" in ua:
         mixin_paths.append(base_dir / "yaml/tun.yaml")
     elif "clash_openwrt" in ua:
         mixin_paths.append(base_dir / "yaml/tproxy.yaml")
     elif any(k in ua for k in ["clash_pc", "clash_m"]) or "clash" in ua.lower():
-        pass # Only uses base config.yaml
+        pass  # Only uses base config.yaml
     else:
         abort(404)
 
@@ -318,10 +324,17 @@ def handle_request(
         remote_yaml_text, userinfo_header = fetch_remote_yaml(
             unquote(url), source, is_force_refresh, cache_dir, cache_expire
         )
-        
+
         # Process the configuration with mixins and node filtering
         output_bytes = process_yaml_content_clash(
-            remote_yaml_text, template_path, mixin_paths, up, down, shared_kw, shared_ex_kw, clean_fn
+            remote_yaml_text,
+            template_path,
+            mixin_paths,
+            up,
+            down,
+            shared_kw,
+            shared_ex_kw,
+            clean_fn,
         )
 
         # Unconditionally inject custom local nodes for all configs

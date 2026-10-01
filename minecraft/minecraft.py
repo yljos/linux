@@ -26,10 +26,10 @@ EMAIL = os.environ["EMAIL"]
 # Switch to specify whether to use offline mode directly in the script (True for offline, False for online)
 OFFLINE_MODE = True
 
-UPDATE_URL = (
-    "https://www.346211.xyz/minecraft.py"
+UPDATE_URL = "https://www.346211.xyz/minecraft.py"
+JSON_BASE_URL = (
+    "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft"
 )
-JSON_BASE_URL = "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft"
 
 # Strict environment variables loading
 VERSION_URL = os.environ["VERSION_URL"]
@@ -54,7 +54,7 @@ def fetch_url(url, timeout=10, **kwargs):
             timeout=timeout + 5,
             impersonate="firefox",
             proxies=UPDATE_PROXIES,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -125,7 +125,7 @@ def install_mods(work_dir, mc_version, loader):
     """Fetch mod list and install mods, remove unlisted ones."""
     json_filename = f"{mc_version}_{loader}.json"
     json_url = f"{JSON_BASE_URL}/{json_filename}"
-    
+
     print(f"Fetching mod list from: {json_url}")
     try:
         response = fetch_url(json_url, timeout=10)
@@ -150,11 +150,11 @@ def install_mods(work_dir, mc_version, loader):
 
     for mod in mods_list:
         file_path = os.path.join(mods_dir, mod["filename"])
-        
+
         # Skip if file already exists
         if os.path.exists(file_path):
             continue
-            
+
         try:
             project_id = mod["url"].split("/")[-1]
             dl_url = None
@@ -165,7 +165,7 @@ def install_mods(work_dir, mc_version, loader):
                 ver_url = f"https://api.curse.tools/v1/cf/mods/{project_id}/files"
                 cf_res = fetch_url(ver_url, timeout=15)
                 cf_res.raise_for_status()
-                
+
                 for file_data in cf_res.json().get("data", []):
                     if file_data.get("fileName") == mod["filename"]:
                         dl_url = file_data.get("downloadUrl")
@@ -179,12 +179,12 @@ def install_mods(work_dir, mc_version, loader):
                 ver_url = f"https://api.modrinth.com/v2/project/{project_id}/version"
                 params = {
                     "loaders": f'["{loader}"]',
-                    "game_versions": f'["{mc_version}"]'
+                    "game_versions": f'["{mc_version}"]',
                 }
                 versions_res = fetch_url(ver_url, timeout=10, params=params)
                 versions_res.raise_for_status()
                 versions = versions_res.json()
-                
+
                 if isinstance(versions, list):
                     for ver in versions:
                         for file_data in ver.get("files", []):
@@ -193,21 +193,21 @@ def install_mods(work_dir, mc_version, loader):
                                 break
                         if dl_url:
                             break
-                            
+
             if not dl_url:
                 print(f"No compatible version found for {mod['name']}")
                 continue
-                
+
             print(f"Downloading {mod['name']}...")
             dl_res = fetch_url(dl_url, timeout=600)
             dl_res.raise_for_status()
-            
+
             # Write to .tmp first to prevent corruption, cross-platform atomic replace
             tmp_path = file_path + ".tmp"
             with open(tmp_path, "wb") as f:
                 f.write(dl_res.content)
             os.replace(tmp_path, file_path)
-                
+
         except Exception as e:
             print(f"Error installing {mod['name']}: {e}")
 

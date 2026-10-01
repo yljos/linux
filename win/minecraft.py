@@ -11,9 +11,7 @@ load_dotenv()
 MAIN_DIR = r"D:/Minecraft"
 BASE_WORK_DIR = r"D:"
 EMAIL = "dayao"
-UPDATE_URL = (
-    "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft/minecraft.py"
-)
+UPDATE_URL = "https://raw.githubusercontent.com/yljos/linux/refs/heads/main/minecraft/minecraft.py"
 
 # Strict environment variables loading
 VERSION_URL = os.environ["VERSION_URL"]
@@ -33,57 +31,58 @@ MODS_LIST = [
         "filename": "coroutil-fabric-1.21.1-1.3.8.jar",
         "name": "CoroUtil",
         "url": "https://modrinth.com/mod/rLLJ1OZM",
-        "version": "1.21.1-1.3.8"
+        "version": "1.21.1-1.3.8",
     },
     {
         "filename": "entityculling-fabric-1.10.5-mc1.21.1.jar",
         "name": "EntityCulling",
         "url": "https://modrinth.com/mod/NNAgCjsB",
-        "version": "1.10.5"
+        "version": "1.10.5",
     },
     {
         "filename": "fabric-api-0.116.15+1.21.1.jar",
         "name": "Fabric API",
         "url": "https://modrinth.com/mod/P7dR8mSH",
-        "version": "0.116.15+1.21.1"
+        "version": "0.116.15+1.21.1",
     },
     {
         "filename": "gravestones-1.4.2+1.21+A.jar",
         "name": "Gravestones",
         "url": "https://modrinth.com/mod/Heh3BbSv",
-        "version": "1.4.2"
+        "version": "1.4.2",
     },
     {
         "filename": "pneumonocore-1.3.1+1.21+A.jar",
         "name": "PneumonoCore",
         "url": "https://modrinth.com/mod/ZLKQjA7t",
-        "version": "1.3.1"
+        "version": "1.3.1",
     },
     {
         "filename": "sodium-fabric-0.8.13-beta.2+mc1.21.1.jar",
         "name": "Sodium",
         "url": "https://modrinth.com/mod/AANobbMI",
-        "version": "0.8.13-beta.2+mc1.21.1"
+        "version": "0.8.13-beta.2+mc1.21.1",
     },
     {
         "filename": "aether-1.21.1-1.5.11-fabric.jar",
         "name": "The Aether",
         "url": "https://modrinth.com/mod/YhmgMVyu",
-        "version": "1.5.11"
+        "version": "1.5.11",
     },
     {
         "filename": "watut-fabric-1.21.0-1.2.7.jar",
         "name": "What Are They Up To",
         "url": "https://modrinth.com/mod/AtB5mHky",
-        "version": "1.21.0-1.2.7"
+        "version": "1.21.0-1.2.7",
     },
     {
         "filename": "owo-lib-0.13.0-alpha.15+1.21.jar",
         "name": "oωo",
         "url": "https://modrinth.com/mod/ccKDOlHs",
-        "version": "0.13.0-alpha.15+1.21"
-    }
+        "version": "0.13.0-alpha.15+1.21",
+    },
 ]
+
 
 def update_self():
     """Fetch the latest script from the server and restart if updated."""
@@ -171,23 +170,22 @@ def install_mods(work_dir, mc_version, loader):
 
     for mod in MODS_LIST:
         file_path = os.path.join(mods_dir, mod["filename"])
-        
+
         # Skip if file already exists
         if os.path.exists(file_path):
             continue
-            
+
         try:
             # Extract project ID
             project_id = mod["url"].split("/")[-1]
-            
+
             # Fetch versions filtered by loader and game version
             ver_url = f"https://api.modrinth.com/v2/project/{project_id}/version"
-            params = {
-                "loaders": f'["{loader}"]',
-                "game_versions": f'["{mc_version}"]'
-            }
-            versions = requests.get(ver_url, params=params, impersonate="firefox").json()
-            
+            params = {"loaders": f'["{loader}"]', "game_versions": f'["{mc_version}"]'}
+            versions = requests.get(
+                ver_url, params=params, impersonate="firefox"
+            ).json()
+
             # Find the download URL for the target file
             dl_url = None
             if isinstance(versions, list):
@@ -198,17 +196,17 @@ def install_mods(work_dir, mc_version, loader):
                             break
                     if dl_url:
                         break
-                    
+
             if not dl_url:
                 print(f"No compatible version found for {mod['name']}")
                 continue
-                
+
             print(f"Downloading {mod['name']}...")
             dl_res = requests.get(dl_url, impersonate="firefox", timeout=600)
             dl_res.raise_for_status()
             with open(file_path, "wb") as f:
                 f.write(dl_res.content)
-                
+
         except Exception as e:
             print(f"Error installing {mod['name']}: {e}")
 

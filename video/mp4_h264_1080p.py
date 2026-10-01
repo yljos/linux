@@ -94,12 +94,13 @@ def process_videos(root_dir):
     print(f"\n[*] Scanning file list in: {root_dir}")
     # Phase 1: Local file list matching without network I/O
     files_to_probe = [
-        f for f in root_dir.rglob("*")
-        if f.is_file() 
-        and f.suffix.lower() in VIDEO_EXTENSIONS 
+        f
+        for f in root_dir.rglob("*")
+        if f.is_file()
+        and f.suffix.lower() in VIDEO_EXTENSIONS
         and not f.name.endswith(".tmp.mp4")
     ]
-    
+
     total_files = len(files_to_probe)
     if total_files == 0:
         print("[i] No files need optimization or transcoding.")
@@ -112,45 +113,85 @@ def process_videos(root_dir):
     def probe_task(file_path):
         w, h, v_codec, a_codec = get_video_audio_info(file_path)
         short_side = min(w, h)
-        
+
         needs_downscale = short_side > THRESHOLD
         needs_v_transcode = v_codec != "h264"
         needs_a_transcode = a_codec != "aac" and a_codec != "none"
         is_transcode = needs_downscale or needs_v_transcode or needs_a_transcode
-        
+
         needs_faststart = False
         if not is_transcode and file_path.suffix.lower() == ".mp4":
             needs_faststart = not is_faststart(file_path)
-            
-        return file_path, w, h, v_codec, a_codec, is_transcode, needs_downscale, needs_a_transcode, needs_faststart
+
+        return (
+            file_path,
+            w,
+            h,
+            v_codec,
+            a_codec,
+            is_transcode,
+            needs_downscale,
+            needs_a_transcode,
+            needs_faststart,
+        )
 
     # Phase 2: Concurrent network I/O
     with ThreadPoolExecutor(max_workers=15) as executor:
         futures = {executor.submit(probe_task, f): f for f in files_to_probe}
-        
+
         completed = 0
         for future in as_completed(futures):
             completed += 1
-            file_path, w, h, v_codec, a_codec, is_transcode, needs_downscale, needs_a_transcode, needs_faststart = future.result()
-            
+            (
+                file_path,
+                w,
+                h,
+                v_codec,
+                a_codec,
+                is_transcode,
+                needs_downscale,
+                needs_a_transcode,
+                needs_faststart,
+            ) = future.result()
+
             # Real-time progress
-            print(f"\r    -> Probing ({completed}/{total_files}): {file_path.name[:40].ljust(40)}", end="")
-            
+            print(
+                f"\r    -> Probing ({completed}/{total_files}): {file_path.name[:40].ljust(40)}",
+                end="",
+            )
+
             dst = file_path.with_suffix(".mp4")
-            
+
             if is_transcode:
-                targets.append((file_path, w, h, v_codec, a_codec, dst, True, needs_downscale, needs_a_transcode))
+                targets.append(
+                    (
+                        file_path,
+                        w,
+                        h,
+                        v_codec,
+                        a_codec,
+                        dst,
+                        True,
+                        needs_downscale,
+                        needs_a_transcode,
+                    )
+                )
             elif needs_faststart:
-                targets.append((file_path, w, h, v_codec, a_codec, dst, False, False, False))
+                targets.append(
+                    (file_path, w, h, v_codec, a_codec, dst, False, False, False)
+                )
 
     print("\n" + "-" * 50)
-    
+
     total_targets = len(targets)
     if total_targets == 0:
         print("[i] All files are already optimized.")
         return
-        
-    print(f"[i] Filtered {total_targets} targets for execution. Thread limit: {CPU_THREADS}\n" + "-" * 50)
+
+    print(
+        f"[i] Filtered {total_targets} targets for execution. Thread limit: {CPU_THREADS}\n"
+        + "-" * 50
+    )
 
     for index, (
         src,
@@ -163,7 +204,6 @@ def process_videos(root_dir):
         downscale,
         transcode_audio,
     ) in enumerate(targets):
-
         task_desc = f"Video: {w}x{h} {v_codec}, Audio: {a_codec}"
         if not is_transcode:
             task_desc = "Faststart Optimization Only"
@@ -271,66 +311,64 @@ def process_videos(root_dir):
 def merge_sequential_videos(base_dir):
     print(f"\n[*] Scanning for sequential files to merge in: {base_dir}")
     merged_count = 0
-    
+
     # Traverse all directories starting from the base directory
     for root, dirs, files in os.walk(base_dir):
         folder_name = os.path.basename(root)
         seq_files = []
-        
+
         # Match files like "1.mp4", "1-9.mp4", "folder_1-9.mp4", "folder10.mp4"
-        pattern = re.compile(rf'^(?:{re.escape(folder_name)}[-_]?)?(\d+)(?:-(\d+))?\.mp4$', re.IGNORECASE)
-        
+        pattern = re.compile(
+            rf"^(?:{re.escape(folder_name)}[-_]?)?(\d+)(?:-(\d+))?\.mp4$", re.IGNORECASE
+        )
+
         for f in files:
             match = pattern.match(f)
             if match:
                 start_num = int(match.group(1))
                 end_num = int(match.group(2)) if match.group(2) else start_num
-                seq_files.append({
-                    'start': start_num,
-                    'end': end_num,
-                    'filename': f
-                })
-        
+                seq_files.append({"start": start_num, "end": end_num, "filename": f})
+
         if not seq_files:
             continue
-            
+
         # Sort by start ASC, end DESC (prefers longer pre-merged ranges like 1-9 over 1)
-        seq_files.sort(key=lambda x: (x['start'], -x['end']))
-        
+        seq_files.sort(key=lambda x: (x["start"], -x["end"]))
+
         valid_chain = []
         expected_next_start = None
-        
+
         # Build the continuous file chain
         for curr in seq_files:
             if expected_next_start is None:
                 valid_chain.append(curr)
-                expected_next_start = curr['end'] + 1
+                expected_next_start = curr["end"] + 1
             else:
-                if curr['start'] == expected_next_start:
+                if curr["start"] == expected_next_start:
                     valid_chain.append(curr)
-                    expected_next_start = curr['end'] + 1
-                elif curr['start'] < expected_next_start:
+                    expected_next_start = curr["end"] + 1
+                elif curr["start"] < expected_next_start:
                     # Ignore overlapping sequences (e.g., skip 1.mp4 if 1-9.mp4 is already active)
                     continue
                 else:
                     # Stop at the first gap
                     break
-                    
+
         # Require at least 2 files to merge
         if len(valid_chain) < 2:
             continue
-            
-        min_num = valid_chain[0]['start']
-        max_num = valid_chain[-1]['end']
-        
+
+        min_num = valid_chain[0]["start"]
+        max_num = valid_chain[-1]["end"]
+
         # Define output file name with underscore
         output = f"{folder_name}_{min_num}-{max_num}.mp4"
         output_path = os.path.join(root, output)
-        
+
         if os.path.exists(output_path):
             continue
 
-        inputs = [x['filename'] for x in valid_chain]
+        inputs = [x["filename"] for x in valid_chain]
         print(f"\n[+] Merging {len(inputs)} files into {output} in {root}")
         ts_files = []
 
@@ -368,7 +406,7 @@ def merge_sequential_videos(base_dir):
             "copy",
             "-bsf:a",
             "aac_adtstoasc",
-            "-movflags", 
+            "-movflags",
             "+faststart",
             output,
         ]
@@ -379,7 +417,7 @@ def merge_sequential_videos(base_dir):
             ts_path = os.path.join(root, ts)
             if os.path.exists(ts_path):
                 os.remove(ts_path)
-                
+
         print(f"[✔] Merged successfully: {output}")
         merged_count += 1
 
@@ -391,9 +429,9 @@ def merge_sequential_videos(base_dir):
 
 if __name__ == "__main__":
     base_directory = Path.cwd()
-    
+
     # Process/transcode first so merge step receives standardized files
     process_videos(base_directory)
-    
+
     # Merge sequential files after transcoding
     merge_sequential_videos(base_directory)

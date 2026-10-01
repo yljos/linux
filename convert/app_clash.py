@@ -217,12 +217,16 @@ def process_yaml_content_clash(
         raise ValueError(f"Failed to parse remote YAML: {e}")
 
     if not isinstance(input_data, dict) or not input_data.get("proxies"):
-        preview = remote_yaml_text[:100].replace("\n", " ") if remote_yaml_text else "Empty content"
+        preview = (
+            remote_yaml_text[:100].replace("\n", " ")
+            if remote_yaml_text
+            else "Empty content"
+        )
         raise ValueError(f"No valid proxies found in remote YAML. Preview: {preview}")
 
     with open(template_path, "r", encoding="utf-8") as f:
         template_data = yaml.safe_load(f)
-        
+
     proxies_orig = input_data.get("proxies", [])
     filtered_names, _ = filter_node_names_clash(proxies_orig, shared_kw, shared_ex_kw)
 
@@ -351,10 +355,13 @@ def handle_request(
     base_dir,
 ):
     clash_config_val = None
-    
+
     if "clash_tun" in ua or "ClashMetaForAndroid" in ua:
         clash_config_val = "tun"
-    elif any(k in ua for k in ["clash_pc", "clash_m", "clash_openwrt"]) or "clash" in ua.lower():
+    elif (
+        any(k in ua for k in ["clash_pc", "clash_m", "clash_openwrt"])
+        or "clash" in ua.lower()
+    ):
         clash_config_val = "standard"
     else:
         abort(404)
@@ -370,7 +377,7 @@ def handle_request(
         remote_yaml_text, userinfo_header = fetch_remote_yaml(
             unquote(url), source, is_force_refresh, cache_dir, cache_expire
         )
-        
+
         output_bytes = process_yaml_content_clash(
             remote_yaml_text, template_path, up, down, shared_kw, shared_ex_kw, clean_fn
         )
@@ -424,7 +431,7 @@ def process_source(source):
     # Dynamically read from ACTUAL_SOURCE file instead of SOURCE_MAP
     actual_source = ACTUAL_SOURCE
     path = BASE_DIR / actual_source
-    
+
     if not path.is_file():
         abort(404)
 

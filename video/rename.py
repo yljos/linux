@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 
+
 # --- Helper Functions ---
 def format_file_name(name):
     """
@@ -14,6 +15,7 @@ def format_file_name(name):
         return "_".join(capitalized_parts)
     else:
         return name.capitalize()
+
 
 def clean_foldername_prefix(foldername):
     """
@@ -31,6 +33,7 @@ def clean_foldername_prefix(foldername):
         pass
     return foldername
 
+
 def clean_filename_prefix(filename, series_prefix=""):
     """
     Recursively remove all nested/repeated prefixes using either '_' or '-'
@@ -38,24 +41,25 @@ def clean_filename_prefix(filename, series_prefix=""):
     """
     original = filename
     safe_prefix = re.escape(series_prefix) if series_prefix else ""
-    
+
     # Match sXXeYY patterns, the '01_prefix_' / '01-prefix-' patterns, and generic '01_' / 'E01_'
     if safe_prefix:
-        pattern = rf'^(?:.*?s\d+e\d+[-_]+|\d+[-_]+{safe_prefix}[-_]+|[eE]?\d+[-_]+)'
+        pattern = rf"^(?:.*?s\d+e\d+[-_]+|\d+[-_]+{safe_prefix}[-_]+|[eE]?\d+[-_]+)"
     else:
-        pattern = r'^(?:.*?s\d+e\d+[-_]+|[eE]?\d+[-_]+)'
-    
+        pattern = r"^(?:.*?s\d+e\d+[-_]+|[eE]?\d+[-_]+)"
+
     while True:
         # re.IGNORECASE will handle both 'Ai' and 'ai'
-        cleaned = re.sub(pattern, '', filename, count=1, flags=re.IGNORECASE)
+        cleaned = re.sub(pattern, "", filename, count=1, flags=re.IGNORECASE)
         if cleaned == filename:
             break
         filename = cleaned
-        
+
     if not Path(filename).stem:
         return original
-        
+
     return filename
+
 
 # --- Core Logic ---
 def process_directory_recursively(current_dir, current_season=1):
@@ -79,7 +83,7 @@ def process_directory_recursively(current_dir, current_season=1):
     for folder_path in subdirs:
         old_name = folder_path.name
         name_without_prefix = clean_foldername_prefix(old_name)
-        
+
         # Format: 01_foldername
         new_name = f"{folder_counter:02d}_{name_without_prefix}"
 
@@ -111,7 +115,7 @@ def process_directory_recursively(current_dir, current_season=1):
         name_without_prefix = clean_filename_prefix(original_name, series_prefix)
         file_stem = Path(name_without_prefix).stem
         file_suffix = file_path.suffix
-        
+
         cleaned_stem = format_file_name(file_stem)
 
         if not cleaned_stem:
@@ -132,6 +136,7 @@ def process_directory_recursively(current_dir, current_season=1):
             print(f"  [File] No change needed: '{original_name}'")
 
         counter += 1
+
 
 if __name__ == "__main__":
     root_path = Path.cwd()

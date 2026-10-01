@@ -8,30 +8,33 @@ from flask import Response, jsonify
 
 logger = logging.getLogger(__name__)
 
+
 # ================= Protocol Converters =================
 def clash_to_singbox_node(c_node: dict) -> dict:
     if not isinstance(c_node, dict):
         return None
-        
+
     c_type = c_node.get("type", "").lower()
     sb_node = {
         "tag": c_node.get("name", "Unknown"),
         "server": c_node.get("server"),
         "server_port": c_node.get("port", 443),
     }
-    
+
     if c_type == "vless":
         sb_node["type"] = "vless"
         sb_node["uuid"] = c_node.get("uuid")
         if c_node.get("flow"):
             sb_node["flow"] = c_node.get("flow")
-            
+
         # TLS config mapping
         if c_node.get("tls", False):
             sb_node["tls"] = {
                 "enabled": True,
-                "server_name": c_node.get("sni", c_node.get("servername", sb_node["server"])),
-                "insecure": c_node.get("skip-cert-verify", False)
+                "server_name": c_node.get(
+                    "sni", c_node.get("servername", sb_node["server"])
+                ),
+                "insecure": c_node.get("skip-cert-verify", False),
             }
             # Reality opts mapping
             ropts = c_node.get("reality-opts", {})
@@ -39,9 +42,9 @@ def clash_to_singbox_node(c_node: dict) -> dict:
                 sb_node["tls"]["reality"] = {
                     "enabled": True,
                     "public_key": ropts.get("public-key", ""),
-                    "short_id": ropts.get("short-id", "")
+                    "short_id": ropts.get("short-id", ""),
                 }
-                
+
         # Transport mapping
         network = c_node.get("network", "tcp")
         if network == "ws":
@@ -49,64 +52,64 @@ def clash_to_singbox_node(c_node: dict) -> dict:
             sb_node["transport"] = {
                 "type": "ws",
                 "path": ws_opts.get("path", "/"),
-                "headers": ws_opts.get("headers", {})
+                "headers": ws_opts.get("headers", {}),
             }
         elif network == "grpc":
             grpc_opts = c_node.get("grpc-opts", {})
             sb_node["transport"] = {
                 "type": "grpc",
-                "service_name": grpc_opts.get("grpc-service-name", "")
+                "service_name": grpc_opts.get("grpc-service-name", ""),
             }
-            
+
     elif c_type in ["hysteria2", "hy2"]:
         sb_node["type"] = "hysteria2"
         sb_node["password"] = str(c_node.get("password", ""))
         sb_node["up_mbps"] = 50
         sb_node["down_mbps"] = 200
-        
+
         # Handle port range for hy2
         if "ports" in c_node:
             sb_node["server_ports"] = str(c_node["ports"]).replace("-", ":")
             if "server_port" in sb_node:
                 del sb_node["server_port"]
-            
+
         sb_node["tls"] = {
             "enabled": True,
             "server_name": c_node.get("sni", sb_node["server"]),
-            "insecure": c_node.get("skip-cert-verify", False)
+            "insecure": c_node.get("skip-cert-verify", False),
         }
-        
+
         if c_node.get("obfs"):
             sb_node["obfs"] = {
                 "type": c_node.get("obfs"),
-                "password": c_node.get("obfs-password", "")
+                "password": c_node.get("obfs-password", ""),
             }
     elif c_type == "trojan":
         sb_node["type"] = "trojan"
         sb_node["password"] = str(c_node.get("password", ""))
-        
+
         tls = {"enabled": True}
         if "sni" in c_node:
             tls["server_name"] = c_node["sni"]
         if c_node.get("skip-cert-verify"):
             tls["insecure"] = True
-            
+
         sb_node["tls"] = tls
-        
+
         if c_node.get("network") == "ws":
             sb_node["transport"] = {
                 "type": "ws",
-                "path": c_node.get("ws-opts", {}).get("path", "/")
-            }            
+                "path": c_node.get("ws-opts", {}).get("path", "/"),
+            }
     elif c_type in ["ss", "shadowsocks"]:
         sb_node["type"] = "shadowsocks"
         sb_node["method"] = c_node.get("cipher")
         sb_node["password"] = str(c_node.get("password", ""))
-        
+
     else:
         # Skip unsupported protocols strictly
         return None
-        
+
     return sb_node
 
 
@@ -125,7 +128,7 @@ def fetch_and_process_singbox(
             yaml_data = yaml.safe_load(f)
     except Exception as e:
         raise RuntimeError(f"Read YAML Error: {e}")
-        
+
     # Extract Clash proxies
     raw_nodes = []
     if isinstance(yaml_data, dict):
@@ -140,12 +143,12 @@ def fetch_and_process_singbox(
         # Remote node filtering logic is preserved here
         if not original_name or any(ex in original_name for ex in shared_ex_kw):
             continue
-            
+
         # Perform exact protocol conversion
         sb_node = clash_to_singbox_node(c_node)
         if not sb_node:
             continue
-            
+
         sb_node["tag"] = clean_node_fn(original_name)
         nodes.append(sb_node)
 
@@ -178,11 +181,12 @@ def fetch_and_process_singbox(
         )
 
     filtered = [
-        o for o in outbounds
+        o
+        for o in outbounds
         if valid_tag(o.get("tag", ""))
         or o.get("type") in ["urltest", "selector", "direct", "block", "dns"]
     ]
-    
+
     temp_outbounds = []
     all_tags = [
         o.get("tag")
@@ -193,8 +197,10 @@ def fetch_and_process_singbox(
     for outbound in filtered:
         if outbound.get("type") in ["urltest", "selector"] and "filter" in outbound:
             regex_list = [
-                reg for f in outbound.pop("filter", [])
-                if isinstance(f, dict) for reg in f.get("regex", [])
+                reg
+                for f in outbound.pop("filter", [])
+                if isinstance(f, dict)
+                for reg in f.get("regex", [])
             ]
             orig_out = outbound.get("outbounds", [])
             if "{all}" in orig_out:
@@ -251,18 +257,20 @@ def inject_custom_singbox_node(
             custom_data = json.load(f)
         if not custom_data:
             return json_str
-            
+
         outbounds = custom_data if isinstance(custom_data, list) else [custom_data]
         config = json.loads(json_str)
-        
+
         for outbound in outbounds:
             if isinstance(outbound, dict) and "tag" in outbound:
                 node_tag = outbound["tag"]
                 config.setdefault("outbounds", []).append(outbound)
                 for cfg_outbound in config.get("outbounds", []):
-                    if cfg_outbound.get("tag") in target_groups and cfg_outbound.get("type") in ["selector", "urltest"]:
+                    if cfg_outbound.get("tag") in target_groups and cfg_outbound.get(
+                        "type"
+                    ) in ["selector", "urltest"]:
                         cfg_outbound.setdefault("outbounds", []).append(node_tag)
-                        
+
         return json.dumps(config, ensure_ascii=False, separators=(",", ":"))
     except Exception as e:
         logger.error(f"[Sing-box] Inject Error: {e}")
@@ -273,7 +281,7 @@ def handle_request(
     source,
     url,
     ua,
-    is_force_refresh, 
+    is_force_refresh,
     cache_dir,
     cache_expire,
     shared_kw,
@@ -284,21 +292,28 @@ def handle_request(
 ):
     mixin_paths = []
     template_path = "json/config.json"
-    
+
     ua_lower = ua.lower()
-    
+
     # Determine routing and add specific mixin files
     if any(k in ua_lower for k in ["sfa", "sing-box_tun"]):
         mixin_paths.append("json/tun.json")
     elif "openwrt" in ua_lower:
         mixin_paths.append("json/tproxy.json")
     else:
-        pass # Standard, no mixins
+        pass  # Standard, no mixins
 
     # Strictly read local cache file only
     yaml_path = cache_dir / f"{source}.yaml"
     if not yaml_path.exists():
-        return jsonify({"error": f"Local YAML cache not found: {yaml_path}. Please fetch via Clash first."}), 404
+        return (
+            jsonify(
+                {
+                    "error": f"Local YAML cache not found: {yaml_path}. Please fetch via Clash first."
+                }
+            ),
+            404,
+        )
 
     try:
         json_str = fetch_and_process_singbox(
@@ -311,9 +326,7 @@ def handle_request(
         )
 
         # Unconditionally inject custom local nodes
-        json_str = inject_custom_singbox_node(
-            json_str, custom_node_path, target_groups
-        )
+        json_str = inject_custom_singbox_node(json_str, custom_node_path, target_groups)
 
         return Response(
             json_str,

@@ -50,15 +50,17 @@ def test_clash_config(tmp_config_path):
             [CLASH_EXE, "-t", "-d", tmp_dir, "-f", tmp_config_path],
             capture_output=True,
             text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW
+            creationflags=subprocess.CREATE_NO_WINDOW,
         )
-        
+
         output_lower = result.stdout.lower()
         if result.returncode == 0 and "test is successful" in output_lower:
             print("[Success] Configuration is valid.")
             return True
         else:
-            print(f"[Error] Configuration validation failed. Output:\n{result.stdout}\n{result.stderr}")
+            print(
+                f"[Error] Configuration validation failed. Output:\n{result.stdout}\n{result.stderr}"
+            )
             return False
     except Exception as e:
         print(f"[Error] Failed to execute clash test: {e}")
@@ -77,14 +79,16 @@ def test_singbox_config(tmp_config_path):
             [SINGBOX_EXE, "check", "-D", tmp_dir, "-c", tmp_config_path],
             capture_output=True,
             text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW
+            creationflags=subprocess.CREATE_NO_WINDOW,
         )
-        
+
         if result.returncode == 0:
             print("[Success] Configuration is valid.")
             return True
         else:
-            print(f"[Error] Configuration validation failed. Output:\n{result.stderr or result.stdout}")
+            print(
+                f"[Error] Configuration validation failed. Output:\n{result.stderr or result.stdout}"
+            )
             return False
     except Exception as e:
         print(f"[Error] Failed to execute sing-box test: {e}")
@@ -116,9 +120,13 @@ def perform_update():
 
     try:
         os.makedirs(tmp_dir, exist_ok=True)
-        print(f"[{service_name}] Downloading config... (User-Agent: {headers['User-Agent']})")
+        print(
+            f"[{service_name}] Downloading config... (User-Agent: {headers['User-Agent']})"
+        )
 
-        response = requests.get(url, headers=headers, timeout=(10, 30), impersonate="firefox")
+        response = requests.get(
+            url, headers=headers, timeout=(10, 30), impersonate="firefox"
+        )
         response.raise_for_status()
 
         with open(temp_path, "wb") as f:
@@ -130,20 +138,28 @@ def perform_update():
                 with open(save_path, "rb") as f:
                     if f.read() == response.content:
                         need_restart = False
-                        print(f"[{service_name}] Config is identical to local, skipping restart.")
+                        print(
+                            f"[{service_name}] Config is identical to local, skipping restart."
+                        )
 
             os.replace(temp_path, save_path)
-            print(f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(
+                f"[{service_name}] Config updated successfully - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
 
             if need_restart:
                 if is_admin():
                     restart_service(service_name)
                 else:
-                    print(f"[{service_name}] Skipping service restart (insufficient privileges).")
+                    print(
+                        f"[{service_name}] Skipping service restart (insufficient privileges)."
+                    )
             return True
         else:
-            print(f"[{service_name}] Update aborted due to invalid configuration - {time.strftime('%Y-%m-%d %H:%M:%S')}")
-            
+            print(
+                f"[{service_name}] Update aborted due to invalid configuration - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+
     except requests.exceptions.RequestException as e:
         print(f"[{service_name}] Request Error: {e}")
     except Exception as e:
@@ -161,7 +177,10 @@ def perform_update():
 if __name__ == "__main__":
     print("Auto-update script started...")
     if not is_admin():
-        print("[Warning] Script is not running as administrator!\nAuto-download will work, but **auto-restart will fail**.\nPlease right-click and 'Run as administrator'.\n" + "-" * 50)
+        print(
+            "[Warning] Script is not running as administrator!\nAuto-download will work, but **auto-restart will fail**.\nPlease right-click and 'Run as administrator'.\n"
+            + "-" * 50
+        )
 
     perform_update()
     last_update_time = time.time()
@@ -175,4 +194,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service manually stopped.")
     except Exception as e:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}")
+        print(
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Service stopped due to error: {e}"
+        )

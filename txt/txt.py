@@ -62,9 +62,7 @@ def replace_line(line):
         return ""
 
     # Match Volume (卷)
-    m_volume = re.match(
-        r"^第\s*([0-9零一二三四五六七八九十百千万两]+)\s*卷\s*[、,，]?\s*(.*)$", cleaned
-    )
+    m_volume = re.match(r"^第\s*([0-9零一二三四五六七八九十百千万两]+)\s*卷\s*[、,，]?\s*(.*)$", cleaned)
     if m_volume:
         num = chinese_to_int(m_volume.group(1))
         title = m_volume.group(2).strip() if m_volume.group(2) else "未命名"
@@ -106,7 +104,6 @@ def process_file(file_path: Path):
         with open(file_path, "rt", encoding=encoding) as f_in, open(
             temp_file, "wt", encoding="utf-8"
         ) as f_out:
-
             empty_count = 0
             for line in f_in:
                 processed = replace_line(line)
