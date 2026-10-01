@@ -155,10 +155,7 @@ def process_videos(root_dir):
             ) = future.result()
 
             # Real-time progress
-            print(
-                f"\r    -> Probing ({completed}/{total_files}): {file_path.name[:40].ljust(40)}",
-                end="",
-            )
+            print(f"\r    -> Probing ({completed}/{total_files})...", end="")
 
             dst = file_path.with_suffix(".mp4")
 
@@ -232,16 +229,18 @@ def process_videos(root_dir):
                 [
                     "ffmpeg",
                     "-y",
+                    "-vaapi_device",
+                    "/dev/dri/renderD128",
                     "-threads",
                     str(CPU_THREADS),
                     "-i",
                     str(src),
                     "-vf",
-                    ",".join(filters),
+                    ",".join(filters) + ",hwupload",
                     "-c:v",
-                    "h264_qsv",
-                    "-global_quality",
-                    "20",
+                    "h264_vaapi",
+                    "-qp",
+                    "23",
                 ]
                 + audio_args
                 + [
