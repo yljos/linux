@@ -73,7 +73,7 @@
       {"rule_set": "tmdb-site", "outbound": "M"},
       {"rule_set": "speedtest-site", "outbound": "M"},
       {"rule_set": "codeberg-site", "outbound": "GitHub"},
-      {"rule_set": "fdroid-site", "outbound": "M"},
+      {"rule_set": "f-droid-site", "outbound": "M"},
       {"rule_set": "adguard-site", "outbound": "M"},
       {"rule_set": "docker-site", "outbound": "M"},
       {"rule_set": "archlinux-site", "outbound": "M"},
@@ -106,7 +106,7 @@
     ],
     "rule_set": [
       {
-        "tag": ["ad-site", "adguard-site", "archlinux-site", "cn-site", "codeberg-site", "cloudflare-site", "docker-site", "fdroid-site", "gfw-site", "github-site", "google-site", "googlefcm-site", "javdb-site", "microsoft-site", "mozilla-site", "openai-site", "speedtest-site", "steam-site", "tencent-site", "telegram-site", "tiktok-site", "tmdb-site", "twitter-site", "youtube-site", "direct-site", "huawei-site", "pikpak-site", "proxy-site", "ad-ip", "cn-ip", "cloudflare-ip", "google-ip", "telegram-ip", "twitter-ip", "direct-ip", "huawei-ip", "pikpak-ip", "wechat-ip"],
+        "tag": ["ad-site", "adguard-site", "archlinux-site", "cn-site", "codeberg-site", "cloudflare-site", "docker-site", "f-droid-site", "gfw-site", "github-site", "google-site", "googlefcm-site", "javdb-site", "microsoft-site", "mozilla-site", "openai-site", "speedtest-site", "steam-site", "tencent-site", "telegram-site", "tiktok-site", "tmdb-site", "twitter-site", "youtube-site", "direct-site", "huawei-site", "pikpak-site", "proxy-site", "ad-ip", "cn-ip", "cloudflare-ip", "google-ip", "telegram-ip", "twitter-ip", "direct-ip", "huawei-ip", "pikpak-ip", "wechat-ip"],
         "type": "remote",
         "url": "https://rules.346211.xyz/{tag}.srs",
         "update_interval": "12h0m0s"
