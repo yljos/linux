@@ -16,7 +16,8 @@ numlockx &
 
 # [[ -f /home/huai/.config/wallpaper.sh ]] && /bin/bash /home/huai/.config/wallpaper.sh
 (
-    sleep 1
+    sleep 2
+    export DISPLAY=${DISPLAY:-:0}
     [[ -f /home/huai/.config/status.sh ]] && /bin/bash /home/huai/.config/status.sh
 ) &
 # 4. Place time-consuming or GUI autostarts in a background subshell
