@@ -15,8 +15,10 @@ numlockx &
 # fcitx5 -d &
 
 # [[ -f /home/huai/.config/wallpaper.sh ]] && /bin/bash /home/huai/.config/wallpaper.sh
-[[ -f /home/huai/.config/status.sh ]] && /bin/bash /home/huai/.config/status.sh &
-
+(
+    sleep 1
+    [[ -f /home/huai/.config/status.sh ]] && /bin/bash /home/huai/.config/status.sh
+) &
 # 4. Place time-consuming or GUI autostarts in a background subshell
 (
     sleep 2  # Wait for dwm and network to be fully ready
