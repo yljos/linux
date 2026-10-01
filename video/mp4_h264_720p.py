@@ -134,7 +134,7 @@ def process_videos(root_dir):
             file_path, w, h, v_codec, a_codec, is_transcode, needs_downscale, needs_a_transcode, needs_faststart = future.result()
             
             # Real-time progress
-            print(f"\r    -> Probing ({completed}/{total_files}): {file_path.name[:40].ljust(40)}", end="")
+            print(f"\r    -> Probing ({completed}/{total_files})...", end="")
             
             dst = file_path.with_suffix(".mp4")
             
