@@ -16,6 +16,9 @@ def main():
 
     while True:
         try:
+            # Log every check attempt
+            print(f"[{datetime.datetime.now()}] Checking URL: {URL}")
+            
             # Try to fetch remote signal
             response = requests.get(URL, timeout=5)
 
@@ -26,7 +29,7 @@ def main():
                 break  # Exit loop after successful shutdown command
 
         except Exception as e:
-            # Log the error instead of silently passing
+            # Log the error
             print(f"[{datetime.datetime.now()}] Error: {e}")
 
         # Wait before the next check
