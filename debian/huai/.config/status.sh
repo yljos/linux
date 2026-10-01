@@ -17,7 +17,9 @@ ICON_NET_DOWN="D:"
 ICON_NET_UP="U:"
 SEPARATOR="|"
 
-INTERFACE="enp0s31f6"
+# Dynamically get the default network interface
+INTERFACE=$(ip route show default | awk '/default/ {print $5; exit}')
+
 CPU_TEMP_FILE="/sys/class/thermal/thermal_zone0/temp"
 
 UPDATE_INTERVAL_MEDIUM=5
