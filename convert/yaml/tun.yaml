@@ -1,3 +1,5 @@
+dns:
+  enhanced-mode: fake-ip
 tun:
   enable: true
   device: clash
