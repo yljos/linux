@@ -1,4 +1,43 @@
-/*****
+/******
+*    name: arkenfox user.js
+*    date: 14 August 2025
+* version: 140
+*    urls: https://github.com/arkenfox/user.js [repo]
+*        : https://arkenfox.github.io/gui/ [interactive]
+* license: MIT: https://github.com/arkenfox/user.js/blob/master/LICENSE.txt
+
+* README:
+
+  1. Consider using Tor Browser if it meets your needs or fits your threat model
+       * https://2019.www.torproject.org/about/torusers.html
+  2. Read the entire wiki
+       * https://github.com/arkenfox/user.js/wiki
+  3. If you skipped step 2, return to step 2
+  4. Make changes in a user-overrides.js
+       * There are often trade-offs and conflicts between security vs privacy vs anti-tracking
+         and these need to be balanced against functionality & convenience & breakage
+       * Some site breakage and unintended consequences will happen. Everyone's experience will differ
+         e.g. some user data is erased on exit (section 2800), change this to suit your needs
+       * While not 100% definitive, search for "[SETUP" tags
+  5. Some tag info
+       [SETUP-SECURITY] it's one item, read it
+            [SETUP-WEB] can cause some websites to break
+         [SETUP-CHROME] changes how Firefox itself behaves (i.e. not directly website related)
+  6. Override Recipes: https://github.com/arkenfox/user.js/issues/1080
+
+* RELEASES: https://github.com/arkenfox/user.js/releases
+
+  * Use the arkenfox release that matches your Firefox version
+    - DON'T wait for arkenfox to update Firefox, nothing major changes these days
+  * Each release
+    - run prefsCleaner to reset prefs made inactive, including deprecated (9999)
+  * ESR (Extended Support Release)
+    - It is recommended to not use the updater, or you will get a later version which may cause issues.
+      So you should manually append your overrides (and keep a copy), and manually update when you
+      change ESR releases (arkenfox is already past that release)
+    - If you decide to keep updating, then the onus is on you - also see section 9999
+
+* INDEX:
 
   0100: STARTUP
   0200: GEOLOCATION
@@ -30,10 +69,22 @@
 
 ******/
 
+/* START: internal custom pref to test for syntax errors
+ * [NOTE] Not all syntax errors cause parsing to abort i.e. reaching the last debug pref
+ * no longer necessarily means that all prefs have been applied. Check the console right
+ * after startup for any warnings/error messages related to non-applied prefs
+ * [1] https://blog.mozilla.org/nnethercote/2018/03/09/a-new-preferences-parser-for-firefox/ ***/
+user_pref("_user.js.parrot", "START: Oh yes, the Norwegian Blue... what's wrong with it?");
+
 /* 0000: disable about:config warning ***/
 user_pref("browser.aboutConfig.showWarning", false);
 
 /*** [SECTION 0100]: STARTUP ***/
+user_pref("_user.js.parrot", "0100 syntax error: the parrot's dead!");
+/* 0102: set startup page [SETUP-CHROME]
+ * 0=blank, 1=home, 2=last visited page, 3=resume previous session
+ * [NOTE] Session Restore is cleared with history (2811+), and not used in Private Browsing mode
+ * [SETTING] General>Startup>Restore previous session ***/
 user_pref("browser.startup.page", 1);
 /* 0103: set HOME+NEWWINDOW page
  * about:home=Firefox Home (default, see 0105), custom URLs..., Blank Page
@@ -52,12 +103,15 @@ user_pref("browser.newtabpage.activity-stream.showSponsoredCheckboxes", false); 
  * [NOTE] This does not block you from adding your own ***/
 user_pref("browser.newtabpage.activity-stream.default.sites", "");
 
-
+/*** [SECTION 0200]: GEOLOCATION ***/
+user_pref("_user.js.parrot", "0200 syntax error: the parrot's definitely deceased!");
 /* 0202: disable using the OS's geolocation service ***/
 user_pref("geo.provider.ms-windows-location", false); // [WINDOWS]
 user_pref("geo.provider.use_corelocation", false); // [MAC]
 user_pref("geo.provider.use_geoclue", false); // [FF102+] [LINUX]
 
+/*** [SECTION 0300]: QUIETER FOX ***/
+user_pref("_user.js.parrot", "0300 syntax error: the parrot's not pinin' for the fjords!");
 /** RECOMMENDATIONS ***/
 /* 0320: disable recommendation pane in about:addons (uses Google Analytics) ***/
 user_pref("extensions.getAddons.showPane", false); // [HIDDEN PREF]
@@ -102,6 +156,18 @@ user_pref("network.captive-portal-service.enabled", false); // [FF52+]
  * [1] https://bugzilla.mozilla.org/1460537 ***/
 user_pref("network.connectivity-service.enabled", false);
 
+/*** [SECTION 0400]: SAFE BROWSING (SB)
+   SB has taken many steps to preserve privacy. If required, a full url is never sent
+   to Google, only a part-hash of the prefix, hidden with noise of other real part-hashes.
+   Firefox takes measures such as stripping out identifying parameters and since SBv4 (FF57+)
+   doesn't even use cookies. (#Turn on browser.safebrowsing.debug to monitor this activity)
+
+   [1] https://feeding.cloud.geek.nz/posts/how-safe-browsing-works-in-firefox/
+   [2] https://wiki.mozilla.org/Security/Safe_Browsing
+   [3] https://support.mozilla.org/kb/how-does-phishing-and-malware-protection-work
+   [4] https://educatedguesswork.org/posts/safe-browsing-privacy/
+***/
+user_pref("_user.js.parrot", "0400 syntax error: the parrot's passed on!");
 /* 0401: disable SB (Safe Browsing)
  * [WARNING] Do this at your own risk! These are the master switches
  * [SETTING] Privacy & Security>Security>... Block dangerous and deceptive content ***/
@@ -128,6 +194,8 @@ user_pref("browser.safebrowsing.downloads.remote.enabled", false);
  * [1] https://bugzilla.mozilla.org/1226490 ***/
    // user_pref("browser.safebrowsing.allowOverride", false);
 
+/*** [SECTION 0600]: BLOCK IMPLICIT OUTBOUND [not explicitly asked for - e.g. clicked on] ***/
+user_pref("_user.js.parrot", "0600 syntax error: the parrot's no more!");
 /* 0601: disable link prefetching
  * [1] https://developer.mozilla.org/docs/Web/HTTP/Link_prefetching_FAQ ***/
 user_pref("network.prefetch-next", false);
@@ -147,6 +215,8 @@ user_pref("browser.places.speculativeConnect.enabled", false);
  * [1] https://www.bleepingcomputer.com/news/software/major-browsers-to-prevent-disabling-of-click-tracking-privacy-risk/ ***/
    // user_pref("browser.send_pings", false); // [DEFAULT: false]
 
+/*** [SECTION 0700]: DNS / DoH / PROXY / SOCKS ***/
+user_pref("_user.js.parrot", "0700 syntax error: the parrot's given up the ghost!");
 /* 0702: set the proxy server to do any DNS lookups when using SOCKS
  * e.g. in Tor, this stops your local DNS server from knowing your Tor destination
  * as a remote Tor node will handle the DNS request
@@ -182,7 +252,7 @@ user_pref("network.gio.supported-protocols", ""); // [HIDDEN PREF] [DEFAULT: ""]
  * [2] https://wiki.mozilla.org/Security/DOH-resolver-policy
  * [3] https://support.mozilla.org/kb/firefox-dns-over-https
  * [4] https://www.eff.org/deeplinks/2020/12/dns-doh-and-odoh-oh-my-year-review-2020 ***/
-   user_pref("network.trr.mode", 5);
+   // user_pref("network.trr.mode", 3);
 /* 0712: set DoH provider
  * The custom uri is the value shown when you "Choose provider>Custom>"
  * [NOTE] If you USE custom then "network.trr.uri" should be set the same
@@ -190,6 +260,8 @@ user_pref("network.gio.supported-protocols", ""); // [HIDDEN PREF] [DEFAULT: ""]
    // user_pref("network.trr.uri", "https://example.dns");
    // user_pref("network.trr.custom_uri", "https://example.dns");
 
+/*** [SECTION 0800]: LOCATION BAR / SEARCH BAR / SUGGESTIONS / HISTORY / FORMS ***/
+user_pref("_user.js.parrot", "0800 syntax error: the parrot's ceased to be!");
 /* 0801: disable location bar making speculative connections [FF56+]
  * [1] https://bugzilla.mozilla.org/1348275 ***/
 user_pref("browser.urlbar.speculativeConnect.enabled", false);
@@ -250,6 +322,10 @@ user_pref("browser.formfill.enable", false);
 user_pref("browser.search.separatePrivateDefault", true); // [FF70+]
 user_pref("browser.search.separatePrivateDefault.ui.enabled", true); // [FF71+]
 
+/*** [SECTION 0900]: PASSWORDS
+   [1] https://support.mozilla.org/kb/use-primary-password-protect-stored-logins-and-pas
+***/
+user_pref("_user.js.parrot", "0900 syntax error: the parrot's expired!");
 /* 0903: disable auto-filling username & password form fields
  * can leak in cross-site forms *and* be spoofed
  * [NOTE] Username & password is still available when you enter the field
@@ -274,6 +350,7 @@ user_pref("network.auth.subresource-http-auth-allow", 1);
    // user_pref("network.http.microsoft-entra-sso.enabled", false); // [DEFAULT: false]
 
 /*** [SECTION 1000]: DISK AVOIDANCE ***/
+user_pref("_user.js.parrot", "1000 syntax error: the parrot's gone to meet 'is maker!");
 /* 1001: disable disk cache
  * [NOTE] We also clear cache on exit (2811+)
  * [SETUP-CHROME] If you think disk cache helps perf, then feel free to override this ***/
@@ -302,6 +379,7 @@ user_pref("browser.shell.shortcutFavicons", false);
    [TEST] https://ja3er.com/
    [1] https://www.securityartwork.es/2017/02/02/tls-client-fingerprinting-with-bro/
 ***/
+user_pref("_user.js.parrot", "1200 syntax error: the parrot's a stiff!");
 /** SSL (Secure Sockets Layer) / TLS (Transport Layer Security) ***/
 /* 1201: require safe negotiation
  * Blocks connections to servers that don't support RFC 5746 [2] as they're potentially vulnerable to a
@@ -399,11 +477,13 @@ user_pref("browser.xul.error_pages.expert_bad_cert", true);
           scheme+host+port: https://example.com:8888
    [1] https://feeding.cloud.geek.nz/posts/tweaking-referrer-for-privacy-in-firefox/
 ***/
+user_pref("_user.js.parrot", "1600 syntax error: the parrot rests in peace!");
 /* 1602: control the amount of cross-origin information to send [FF52+]
  * 0=send full URI (default), 1=scheme+host+port+path, 2=scheme+host+port ***/
 user_pref("network.http.referer.XOriginTrimmingPolicy", 2);
 
 /*** [SECTION 1700]: CONTAINERS ***/
+user_pref("_user.js.parrot", "1700 syntax error: the parrot's bit the dust!");
 /* 1701: enable Container Tabs and its UI setting [FF50+]
  * [SETTING] General>Tabs>Enable Container Tabs
  * https://wiki.mozilla.org/Security/Contextual_Identity_Project/Containers ***/
@@ -421,6 +501,7 @@ user_pref("privacy.userContext.ui.enabled", true);
    // user_pref("browser.link.force_default_user_context_id_for_external_opens", true);
 
 /*** [SECTION 2000]: PLUGINS / MEDIA / WEBRTC ***/
+user_pref("_user.js.parrot", "2000 syntax error: the parrot's snuffed it!");
 /* 2002: force WebRTC inside the proxy [FF70+] ***/
 user_pref("media.peerconnection.ice.proxy_only_if_behind_proxy", true);
 /* 2003: force a single network interface for ICE candidates generation [FF42+]
@@ -437,10 +518,12 @@ user_pref("media.peerconnection.ice.default_address_only", true);
    // user_pref("media.gmp-provider.enabled", false);
 
 /*** [SECTION 2400]: DOM (DOCUMENT OBJECT MODEL) ***/
+user_pref("_user.js.parrot", "2400 syntax error: the parrot's kicked the bucket!");
 /* 2402: prevent scripts from moving and resizing open windows ***/
 user_pref("dom.disable_window_move_resize", true);
 
 /*** [SECTION 2600]: MISCELLANEOUS ***/
+user_pref("_user.js.parrot", "2600 syntax error: the parrot's run down the curtain!");
 /* 2603: remove temp files opened from non-PB windows with an external application
  * [1] https://bugzilla.mozilla.org/buglist.cgi?bug_id=302433,1738574 ***/
 user_pref("browser.download.start_downloads_in_tmp_dir", true); // [FF102+]
@@ -521,6 +604,7 @@ user_pref("extensions.postDownloadThirdPartyPrompt", false);
    // user_pref("extensions.webextensions.restrictedDomains", "");
 
 /*** [SECTION 2700]: ETP (ENHANCED TRACKING PROTECTION) ***/
+user_pref("_user.js.parrot", "2700 syntax error: the parrot's joined the bleedin' choir invisible!");
 /* 2701: enable ETP Strict Mode [FF86+]
  * ETP Strict Mode enables Total Cookie Protection (TCP)
  * [NOTE] Adding site exceptions disables all ETP protections for that site and increases the risk of
@@ -528,8 +612,7 @@ user_pref("extensions.postDownloadThirdPartyPrompt", false);
  * [1] https://blog.mozilla.org/security/2021/02/23/total-cookie-protection/
  * [SETTING] to add site exceptions: Urlbar>ETP Shield
  * [SETTING] to manage site exceptions: Options>Privacy & Security>Enhanced Tracking Protection>Manage Exceptions ***/
-// user_pref("browser.contentblocking.category", "strict"); // [HIDDEN PREF]
-user_pref("browser.contentblocking.category", "standard");
+user_pref("browser.contentblocking.category", "strict"); // [HIDDEN PREF]
 /* 2702: disable ETP web compat features [FF93+]
  * [SETUP-HARDEN] Includes skip lists, heuristics (SmartBlock) and automatic grants
  * Opener and redirect heuristics are granted for 30 days, see [3]
@@ -539,6 +622,7 @@ user_pref("browser.contentblocking.category", "standard");
    // user_pref("privacy.antitracking.enableWebcompat", false);
 
 /*** [SECTION 2800]: SHUTDOWN & SANITIZING ***/
+user_pref("_user.js.parrot", "2800 syntax error: the parrot's bleedin' demised!");
 /* 2810: enable Firefox to clear items on shutdown
  * [NOTE] In FF129+ clearing "siteSettings" on shutdown (2811+), or manually via site data (2820+) and
  * via history (2830), will no longer remove sanitize on shutdown "cookie and site data" site exceptions (2815)
@@ -551,7 +635,7 @@ user_pref("privacy.clearOnShutdown_v2.cache", true); // [DEFAULT: true]
 user_pref("privacy.clearOnShutdown_v2.historyFormDataAndDownloads", false); // [DEFAULT: true]
    // user_pref("privacy.clearOnShutdown_v2.siteSettings", false); // [DEFAULT: false]
 /* 2812: set/enforce clearOnShutdown items [FF136+] ***/
-user_pref("privacy.clearOnShutdown_v2.browsingHistoryAndDownloads", true); // [DEFAULT: true]
+user_pref("privacy.clearOnShutdown_v2.browsingHistoryAndDownloads", false); // [DEFAULT: true]
 user_pref("privacy.clearOnShutdown_v2.downloads", false); // [HIDDEN]
 user_pref("privacy.clearOnShutdown_v2.formdata", true);
 /* 2813: set Session Restore to clear on shutdown (if 2810 is true) [FF34+]
@@ -566,7 +650,7 @@ user_pref("privacy.clearOnShutdown_v2.formdata", true);
  * [WARNING] Be selective with what sites you "Allow", as they also disable partitioning (1767271)
  * [SETTING] to add site exceptions: Ctrl+I>Permissions>Cookies>Allow (when on the website in question)
  * [SETTING] to manage site exceptions: Options>Privacy & Security>Permissions>Settings ***/
-user_pref("privacy.clearOnShutdown_v2.cookiesAndStorage", true);
+user_pref("privacy.clearOnShutdown_v2.cookiesAndStorage", false);
 
 /** SANITIZE SITE DATA: IGNORES "ALLOW" SITE EXCEPTIONS ***/
 /* 2820: set manual "Clear Data" items [SETUP-CHROME] [FF128+]
@@ -622,6 +706,7 @@ user_pref("privacy.sanitize.timeSpan", 0);
       1978414: hardwareConcurrency: return 2 (existing RFPTarget)
       1977836: maxTouchPoints: return multi-touch as 5
 ***/
+user_pref("_user.js.parrot", "4000 syntax error: the parrot's bereft of life!");
 /* 4001: enable FPP in PB mode [FF114+]
  * [NOTE] In FF119+, FPP for all modes (7016) is enabled with ETP Strict (2701) ***/
    // user_pref("privacy.fingerprintingProtection.pbmode", true); // [DEFAULT: true]
@@ -910,7 +995,7 @@ user_pref("_user.js.parrot", "5500 syntax error: this is an ex-parrot!");
  * [SETUP-WEB] PR_CONNECT_RESET_ERROR
  * [TEST] https://ipleak.org/
  * [1] https://www.internetsociety.org/tag/ipv6-security/ (Myths 2,4,5,6) ***/
-   user_pref("network.dns.disableIPv6", true);
+   // user_pref("network.dns.disableIPv6", true);
 /* 5510: control when to send a cross-origin referer
  * 0=always (default), 1=only if base domains match, 2=only if hosts match
  * [NOTE] Will cause breakage: older modems/routers and some sites e.g banks, vimeo, icloud, instagram ***/
@@ -922,6 +1007,7 @@ user_pref("_user.js.parrot", "5500 syntax error: this is an ex-parrot!");
    // user_pref("network.trr.bootstrapAddr", "10.0.0.1"); // [HIDDEN PREF]
 
 /*** [SECTION 6000]: DON'T TOUCH ***/
+user_pref("_user.js.parrot", "6000 syntax error: the parrot's 'istory!");
 /* 6001: enforce Firefox blocklist
  * [WHY] It includes updates for "revoked certificates"
  * [1] https://blog.mozilla.org/security/2015/03/03/revoking-intermediate-certificates-introducing-onecrl/ ***/
@@ -965,6 +1051,7 @@ user_pref("extensions.quarantinedDomains.enabled", true); // [DEFAULT: true]
    // user_pref("privacy.cpd.sessions", "");
 
 /*** [SECTION 7000]: DON'T BOTHER ***/
+user_pref("_user.js.parrot", "7000 syntax error: the parrot's pushing up daisies!");
 /* 7001: disable APIs
  * Location-Aware Browsing, Full Screen
  * [WHY] The API state is easily fingerprintable.
@@ -1067,7 +1154,7 @@ user_pref("extensions.quarantinedDomains.enabled", true); // [DEFAULT: true]
  * [TEST] https://browserleaks.com/webrtc
  * [1] https://groups.google.com/g/discuss-webrtc/c/6stQXi72BEU/m/2FwZd24UAQAJ
  * [2] https://datatracker.ietf.org/doc/html/draft-ietf-mmusic-mdns-ice-candidates#section-3.1.1 ***/
-   user_pref("media.peerconnection.enabled", false);
+   // user_pref("media.peerconnection.enabled", false);
 /* 7021: enable GPC (Global Privacy Control) in non-PB windows
  * [WHY] Passive and active fingerprinting. Mostly redundant with Tracking Protection
  * in ETP Strict (2701) and sanitizing on close (2800s) ***/
@@ -1077,6 +1164,7 @@ user_pref("extensions.quarantinedDomains.enabled", true); // [DEFAULT: true]
    [WHY] They are insufficient to help anti-fingerprinting and do more harm than good
    [WARNING] DO NOT USE with RFP. RFP already covers these and they can interfere
 ***/
+user_pref("_user.js.parrot", "8000 syntax error: the parrot's crossed the Jordan");
 /* 8001: prefsCleaner: reset items useless for anti-fingerprinting ***/
    // user_pref("browser.display.use_document_fonts", "");
    // user_pref("browser.zoom.siteSpecific", "");
@@ -1122,6 +1210,7 @@ user_pref("extensions.quarantinedDomains.enabled", true); // [DEFAULT: true]
    [5] https://firefox-source-docs.mozilla.org/toolkit/components/glean/user/ohttp.html
    [6] https://blog.mozilla.org/en/tag/oblivious-http/
 ***/
+user_pref("_user.js.parrot", "8500 syntax error: the parrot's off the twig!");
 /* 8500: disable new data submission [FF41+]
  * If disabled, no policy is shown or upload takes place, ever
  * [1] https://bugzilla.mozilla.org/1195552 ***/
@@ -1152,6 +1241,7 @@ user_pref("toolkit.coverage.opt-out", true); // [FF64+] [HIDDEN PREF]
 user_pref("toolkit.coverage.endpoint.base", "");
 
 /*** [SECTION 9000]: NON-PROJECT RELATED ***/
+user_pref("_user.js.parrot", "9000 syntax error: the parrot's cashed in 'is chips!");
 /* 9001: disable welcome notices ***/
 user_pref("browser.startup.homepage_override.mstone", "ignore"); // [HIDDEN PREF]
 /* 9002: disable General>Browsing>Recommend extensions/features as you browse [FF67+] ***/
@@ -1179,13 +1269,11 @@ user_pref("browser.shopping.experience2023.enabled", false); // [DEFAULT: false]
 user_pref("browser.urlbar.pocket.featureGate", false); // [FF116+] [DEFAULT: false]
 // ***/
 
-
+/* END: internal custom pref to test for syntax errors ***/
+user_pref("_user.js.parrot", "SUCCESS: No no he's not dead, he's, he's restin'!");
 
 user_pref("media.av1.enabled", false); // Disable AV1.
 user_pref("media.mediasource.vp9.enabled", false); // Disable VP9.
 user_pref("media.mediasource.webm.enabled", false); // Disable WebM (VP8/VP9).
 user_pref("media.wmf.hevc.enabled", false); // Disable H.265 (Windows).
 user_pref("media.mediasource.hevc.enabled", false); // Disable H.265 (MediaSource).
-
-/* END: internal custom pref to test for syntax errors ***/
-user_pref("_user.js.parrot", "SUCCESS: No no he's not dead, he's, he's restin'!");
