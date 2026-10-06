@@ -5,6 +5,7 @@ import time
 import sys
 import os
 import re
+import platform
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -13,13 +14,12 @@ VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".ts"}
 THRESHOLD = 720
 COOLDOWN_SECONDS = 60
 CPU_THREADS = 2  # Limit to 2 threads for ~50% CPU usage on i5-4570T
+IS_WINDOWS = platform.system() == "Windows"
 
 
 def set_terminal_title(title):
     try:
-        import platform
-
-        if platform.system() == "Windows":
+        if IS_WINDOWS:
             subprocess.run(["title", title], shell=True)
         else:
             sys.stdout.write(f"\x1b]2;{title}\x07")
@@ -212,43 +212,73 @@ def process_videos(root_dir):
         temp_dst = dst.with_suffix(".tmp.mp4")
 
         if is_transcode:
-            filters = ["format=nv12"]
-            if downscale:
-                s_filter = (
-                    f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
-                )
-                filters.append(s_filter)
-
             audio_args = (
                 ["-c:a", "aac", "-b:a", "128k"] if transcode_audio else ["-c:a", "copy"]
             )
             if a_codec == "none":
                 audio_args = ["-an"]
 
-            command = (
-                [
+            # Platform-specific hardware encoding parameters
+            if IS_WINDOWS:
+                # Windows: Intel Quick Sync Video (QSV)
+                filters = []
+                if downscale:
+                    filters.append(
+                        f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
+                    )
+
+                command = [
                     "ffmpeg",
                     "-y",
-                    "-vaapi_device",
-                    "/dev/dri/renderD128",
                     "-threads",
                     str(CPU_THREADS),
                     "-i",
                     str(src),
-                    "-vf",
-                    ",".join(filters) + ",hwupload",
-                    "-c:v",
-                    "h264_vaapi",
-                    "-qp",
-                    "23",
                 ]
-                + audio_args
-                + [
+                if filters:
+                    command += ["-vf", ",".join(filters)]
+                command += [
+                    "-c:v",
+                    "h264_qsv",
+                    "-global_quality",
+                    "23",
+                ] + audio_args + [
                     "-movflags",
                     "+faststart",
                     str(temp_dst),
                 ]
-            )
+            else:
+                # Linux: VA-API
+                filters = ["format=nv12"]
+                if downscale:
+                    filters.append(
+                        f"scale=-2:{THRESHOLD}" if w >= h else f"scale={THRESHOLD}:-2"
+                    )
+
+                command = (
+                    [
+                        "ffmpeg",
+                        "-y",
+                        "-vaapi_device",
+                        "/dev/dri/renderD128",
+                        "-threads",
+                        str(CPU_THREADS),
+                        "-i",
+                        str(src),
+                        "-vf",
+                        ",".join(filters) + ",hwupload",
+                        "-c:v",
+                        "h264_vaapi",
+                        "-qp",
+                        "23",
+                    ]
+                    + audio_args
+                    + [
+                        "-movflags",
+                        "+faststart",
+                        str(temp_dst),
+                    ]
+                )
         else:
             command = [
                 "ffmpeg",
