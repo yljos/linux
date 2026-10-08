@@ -1,3 +1,9 @@
+# /// script
+# dependencies = [
+#   "python-dotenv",
+# ]
+# ///
+
 import os
 import json
 import subprocess
