@@ -1,3 +1,8 @@
+# /// script
+# dependencies = [
+#   "requests",
+# ]
+# ///
 import time
 import subprocess
 import requests
