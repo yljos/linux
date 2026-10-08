@@ -3,42 +3,44 @@
 #   "requests",
 # ]
 # ///
-import time
-import subprocess
-import requests
+
 import datetime
+import subprocess
+import time
+import requests
 
 # Core configuration
 URL = "http://10.0.0.21:80/shutdown"
-WAIT_SECONDS = 1 * 60  # Check interval: 1 minutes
+WAIT_SECONDS = 1 * 60  # Check interval: 1 minute
+
+
+def log(msg: str):
+    # Standard timestamped logging
+    now = f"{datetime.datetime.now():%Y-%m-%d %H:%M:%S}"
+    print(f"[{now}] {msg}")
 
 
 def main():
-    print(f"[{datetime.datetime.now()}] Service started.")
-    
-    # Initial delay before entering the loop
+    log("Service started.")
     time.sleep(WAIT_SECONDS)
 
-    while True:
-        try:
-            # Log every check attempt
-            print(f"[{datetime.datetime.now()}] Checking URL: {URL}")
-            
-            # Try to fetch remote signal
-            response = requests.get(URL, timeout=5)
+    # Reuse TCP connection session
+    with requests.Session() as session:
+        while True:
+            try:
+                log(f"Checking URL: {URL}")
+                response = session.get(URL, timeout=5)
 
-            # Trigger shutdown if successful and content contains "W"
-            if response.status_code == 200 and "W" in response.text:
-                print(f"[{datetime.datetime.now()}] Signal received. Shutting down...")
-                subprocess.run(["shutdown", "/s", "/f", "/t", "0"], check=True)
-                break  # Exit loop after successful shutdown command
+                if response.status_code == 200 and "W" in response.text:
+                    log("Signal received. Shutting down...")
+                    subprocess.run(["shutdown", "/s", "/f", "/t", "0"], check=True)
+                    break
 
-        except Exception as e:
-            # Log the error
-            print(f"[{datetime.datetime.now()}] Error: {e}")
+            except requests.RequestException as e:
+                # Log network/HTTP errors only
+                log(f"Request error: {e}")
 
-        # Wait before the next check
-        time.sleep(WAIT_SECONDS)
+            time.sleep(WAIT_SECONDS)
 
 
 if __name__ == "__main__":
