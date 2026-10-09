@@ -38,28 +38,5 @@ if ! pgrep -u "$USER" -x ssh-agent >/dev/null; then
     eval "$(ssh-agent -s -a "$SSH_AUTH_SOCK")" >/dev/null
 fi
 
-# Basic system aliases
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias c="clear"
-alias ..='cd ..'
-alias vi='vim'
-
-alias rsyncdir="rsync -avzh --delete"
-
-# Pipewire volume control
-alias volup="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
-alias voldown="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-
-# User script shortcuts
-alias win="/bin/sh $HOME/.config/win.sh"
-alias hiwin="/bin/sh $HOME/.config/wake.sh"
-alias x="startx"
-alias np="/bin/sh $HOME/.config/wallpaper.sh"
-
-# NFS4 mount function
-mount-data() {
-    if ! mountpoint -q /data; then
-        doas mount -t nfs4 10.0.0.21:/data /data
-    fi
-}
+# Source external aliases file if it exists
+[ -f "$HOME/.aliases" ] && . "$HOME/.aliases"
