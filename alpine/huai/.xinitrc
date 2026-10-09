@@ -1,6 +1,6 @@
 
 # Disable screen saver and DPMS blanking
-xset s off 
+xset s off -dpms
 
 # Start PipeWire core daemon
 pipewire &

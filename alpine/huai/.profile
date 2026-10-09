@@ -1,12 +1,3 @@
-# Ensure interactive child shells source this profile for aliases
-export ENV="$HOME/.profile"
-
-# Return early if running non-interactively
-case "$-" in
-    *i*) ;;
-    *) return ;;
-esac
-
 # Default applications and locale
 export LANG=en_US.UTF-8
 export VISUAL=vim
@@ -15,11 +6,26 @@ export EDITOR=vim
 # Path settings
 export PATH="$HOME/.local/bin:$PATH"
 
-# Prompt formatting (ash compatible ANSI color escapes)
-export PS1='[1;33m\h[0m [1;32m\u[0m[1;35m:\w\$[0m '
-
 # File creation mask
 umask 022
+
+# Ensure runtime directory exists for PipeWire sockets (available in non-interactive sessions)
+if [ -z "$XDG_RUNTIME_DIR" ]; then
+    export XDG_RUNTIME_DIR="/tmp/user-$(id -u)"
+    [ ! -d "$XDG_RUNTIME_DIR" ] && mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+fi
+
+# Ensure interactive child shells source this profile for aliases
+export ENV="$HOME/.profile"
+
+# Return early if running non-interactively (aliases, prompt, and tty setup below)
+case "$-" in
+    *i*) ;;
+    *) return ;;
+esac
+
+# Prompt formatting (ash compatible ANSI color escapes)
+export PS1='[1;33m\h[0m [1;32m\u[0m[1;35m:\w\$[0m '
 
 # GPG configuration
 if [ -t 0 ]; then
@@ -47,11 +53,11 @@ alias rsyncdir="rsync -avzh --delete"
 alias volup="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
 alias voldown="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
 
-# User script shortcuts (executed with /bin/sh)
-alias win="/bin/sh /home/huai/.config/win.sh"
-alias hiwin="/bin/sh /home/huai/.config/wake.sh"
+# User script shortcuts
+alias win="/bin/sh $HOME/.config/win.sh"
+alias hiwin="/bin/sh $HOME/.config/wake.sh"
 alias x="startx"
-alias np="/bin/sh /home/huai/.config/wallpaper.sh"
+alias np="/bin/sh $HOME/.config/wallpaper.sh"
 
 # NFS4 mount function
 mount-data() {
