@@ -56,6 +56,6 @@ alias np="/bin/sh /home/huai/.config/wallpaper.sh"
 # NFS4 mount function
 mount-data() {
     if ! mountpoint -q /data; then
-        sudo mount -t nfs4 10.0.0.21:/data /data
+        doas mount -t nfs4 10.0.0.21:/data /data
     fi
 }
