@@ -1,6 +1,4 @@
 
 xset s off
-pipewire &
-wireplumber &
-pipewire-pulse &
+gentoo-pipewire-launcher &
 exec dwm
