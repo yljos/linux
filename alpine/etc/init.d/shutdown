@@ -1,4 +1,3 @@
-# OpenRC service script for remote shutdown listener
 #!/sbin/openrc-run
 
 name="shutdown"
