@@ -92,7 +92,9 @@ def restrict_paths():
 
 @app.route("/<req_path>")
 def process_source(req_path):
-    path = BASE_DIR / ACTUAL_SOURCE
+    # Use path from URL if 'f' parameter is present, otherwise fallback to ACTUAL_SOURCE
+    source_name = req_path if "f" in request.args else ACTUAL_SOURCE
+    path = BASE_DIR / source_name
 
     if not path.is_file():
         abort(404)
@@ -108,7 +110,7 @@ def process_source(req_path):
     if ENABLE_SINGBOX and any(k in ua for k in ["SFA", "sing-box"]):
         sb_module = importlib.import_module("sing-box")
         return sb_module.handle_request(
-            ACTUAL_SOURCE,
+            source_name,
             url,
             ua,
             is_force_refresh,
@@ -124,7 +126,7 @@ def process_source(req_path):
     if ENABLE_CLASH and ("Clash" in ua or "clash" in ua.lower()):
         clash_module = importlib.import_module("clash")
         return clash_module.handle_request(
-            ACTUAL_SOURCE,
+            source_name,
             url,
             ua,
             is_force_refresh,
