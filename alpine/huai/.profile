@@ -15,8 +15,6 @@ if [ -z "$XDG_RUNTIME_DIR" ]; then
     [ ! -d "$XDG_RUNTIME_DIR" ] && mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
 fi
 
-# Ensure interactive child shells source this profile for aliases
-export ENV="$HOME/.profile"
 
 # Return early if running non-interactively (aliases, prompt, and tty setup below)
 case "$-" in
