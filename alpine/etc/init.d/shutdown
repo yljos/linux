@@ -1,0 +1,14 @@
+# OpenRC service script for remote shutdown listener
+#!/sbin/openrc-run
+
+name="shutdown"
+description="Remote HTTP Shutdown Listener Service"
+
+command="/usr/local/shutdown.sh"
+command_background="yes"
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    # Ensure network interfaces are ready before starting
+    need net
+}
