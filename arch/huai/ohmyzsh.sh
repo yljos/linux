@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Define color variables
 GREEN='\033[0;32m'  # Success messages
 YELLOW='\033[1;33m' # Warnings

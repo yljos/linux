@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # --- Load script lock library ---
 source "$HOME/.config/script_lock.sh" 2>/dev/null

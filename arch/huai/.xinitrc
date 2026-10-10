@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # 1. Instant execution of system-level background processes
 numlockx &

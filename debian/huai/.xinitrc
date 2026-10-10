@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # 1. Initialize D-Bus session early so all background processes can use it
 # eval "$(dbus-launch --sh-syntax --exit-with-session)"

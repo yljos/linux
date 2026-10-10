@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 if ! command -v rsync &>/dev/null; then
 	apt-get update && apt-get install -y rsync
 fi

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 git config --global core.editor "vim"
 git config --global user.signingkey 4005DCF7C751DCD3257FBD13D74AA1C746C47427
