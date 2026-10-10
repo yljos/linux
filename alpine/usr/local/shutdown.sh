@@ -7,24 +7,18 @@ INTERVAL=60 # Loop interval in seconds
 sleep "$INTERVAL"
 
 while true; do
-	# Fetch remote file content with optimized timeout
-	CONTENT=$(curl -s --connect-timeout 1 --max-time 2 "$SHUTDOWN_FILE")
+    # Fetch content; -f fails silently on HTTP errors (e.g., 404/500)
+    CONTENT=$(curl -fs --connect-timeout 1 --max-time 2 "$SHUTDOWN_FILE")
 
-	# Empty content or curl failed -> wait for next round
-	if [ -z "$CONTENT" ]; then
-		sleep "$INTERVAL"
-		continue
-	fi
+    # Check for trigger character
+    case "$CONTENT" in
+        *A*)
+            sleep 60
+            poweroff
+            exit 0
+            ;;
+    esac
 
-	# If content contains 'A', execute shutdown
-	case "$CONTENT" in
-		*A*)
-			sleep 60
-			poweroff # Alpine OpenRC/BusyBox shutdown command
-			exit 0
-			;;
-	esac
-
-	# Wait before next check
-	sleep "$INTERVAL"
+    # Wait before next check
+    sleep "$INTERVAL"
 done
