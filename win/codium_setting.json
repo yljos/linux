@@ -18,7 +18,7 @@
         "MSYS2 UCRT64": {
             "path": "C:\\msys64\\usr\\bin\\sh.exe",
             "args": [
-                "--login",
+                "--l",
                 "-i"
             ],
             "env": {
