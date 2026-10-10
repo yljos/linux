@@ -16,9 +16,8 @@
     "security.workspace.trust.untrustedFiles": "open",
     "terminal.integrated.profiles.windows": {
         "MSYS2 UCRT64": {
-            "path": "C:\\msys64\\usr\\bin\\sh.exe",
+            "path": "C:\\msys64\\usr\\bin\\dash.exe",
             "args": [
-                "-l",
                 "-i"
             ],
             "env": {
