@@ -8,7 +8,7 @@ from pathlib import Path
 from flask import Flask, abort, request
 
 # ================= Config =================
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
 
 ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc228ed"
@@ -23,8 +23,16 @@ CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
 CUSTOM_SINGBOX_NODE = BASE_DIR / "node.json"
 TARGET_GROUPS = ["Google"]
 
-# RENAME_MAP = {"香港": "HK", "美国": "US", "新加坡": "SG", "日本": "JP", "家宽": "ISP"}
-RENAME_MAP = {"香港": "HK", "美国": "US", "新加坡": "SG", "日本": "JP"}
+RENAME_MAP = {
+    "United States": "US",
+    "Hong Kong": "HK",
+    "Singapore": "SG",
+    "Japan": "JP",
+    "香港": "HK",
+    "美国": "US",
+    "新加坡": "SG",
+    "日本": "JP",
+}
 
 SHARED_KEYWORDS = [
     "US",
@@ -40,6 +48,7 @@ SHARED_KEYWORDS = [
     "新加坡",
     "日本",
 ]
+
 SHARED_EXCLUDE_KEYWORDS = [
     "官网",
     "流量",
@@ -48,9 +57,9 @@ SHARED_EXCLUDE_KEYWORDS = [
     "Australia",
     "到期",
     "重置",
+    "家宽",
     "ISP",
     "isp",
-    "家宽",
 ]
 
 ENABLE_CLASH = True
@@ -74,7 +83,11 @@ def clean_node_name(name: str) -> str:
     for k, v in RENAME_MAP.items():
         name = name.replace(k, v)
     name = re.sub(r"[^\x00-\x7F]+", "", name)
-    return re.sub(r"\s+", " ", name).strip()
+    # Replace separators and surrounding whitespace with a single hyphen
+    name = re.sub(r"\s*\|\s*", "-", name)
+    # Collapse remaining whitespace into a single hyphen
+    name = re.sub(r"\s+", "-", name)
+    return name.strip("-")
 
 
 # ================= Routing & Dispatch =================
