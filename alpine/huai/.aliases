@@ -12,7 +12,7 @@ alias voldown="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
 # NFS4 mount function
 mount-data() {
     if ! mountpoint -q /data; then
-        sudo mount -t nfs4 10.0.0.21:/data /data
+        doas mount -t nfs4 10.0.0.21:/data /data
     fi
 }
 
