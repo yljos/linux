@@ -48,7 +48,7 @@
     {"type": "urltest", "tag": "HK", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*(HK).*$"]}]},
     {"type": "urltest", "tag": "SG", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*(SG).*$"]}]},
     {"type": "urltest", "tag": "JP", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*(JP).*$"]}]},
-    {"type": "urltest", "tag": "US", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^.*(US).*$"]}]}
+    {"type": "urltest", "tag": "US", "outbounds": ["{all}"], "url": "https://www.gstatic.com/generate_204", "interval": "30s", "tolerance": 300, "filter": [{"action": "match", "regex": ["(?i)^(?!.*US-g).*US.*"]}]}
   ],
   "route": {
     "rules": [
