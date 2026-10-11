@@ -23,7 +23,9 @@ CUSTOM_CLASH_NODE = BASE_DIR / "node.yaml"
 CUSTOM_SINGBOX_NODE = BASE_DIR / "node.json"
 TARGET_GROUPS = ["Google"]
 
-RENAME_MAP = {"香港": "HK", "美国": "US", "新加坡": "SG", "日本": "JP", "家宽": "ISP"}
+# RENAME_MAP = {"香港": "HK", "美国": "US", "新加坡": "SG", "日本": "JP", "家宽": "ISP"}
+RENAME_MAP = {"香港": "HK", "美国": "US", "新加坡": "SG", "日本": "JP"}
+
 SHARED_KEYWORDS = [
     "US",
     "HK",
@@ -46,10 +48,9 @@ SHARED_EXCLUDE_KEYWORDS = [
     "Australia",
     "到期",
     "重置",
-    "HK2-HY2",
-    "HK3-HY2",
-    "HK4-HY2",
-    "HK5-HY2",
+    "ISP",
+    "isp",
+    "家宽",
 ]
 
 ENABLE_CLASH = True
