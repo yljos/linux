@@ -28,7 +28,7 @@ export PS1='[1;33m\h[0m [1;32m\u[0m[1;35m:\w\$[0m '
 # GPG configuration
 if [ -t 0 ]; then
     export GPG_TTY=$(tty)
-    gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
+    gpg-connect-agent "OPTION ttytype=$TERM" "OPTION ttyname=$GPG_TTY" updatestartuptty /bye >/dev/null 2>&1
 fi
 
 # SSH agent setup
