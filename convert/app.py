@@ -62,8 +62,8 @@ SHARED_EXCLUDE_KEYWORDS = [
     "isp",
 ]
 
-ENABLE_CLASH = True
-ENABLE_SINGBOX = True
+ENABLE_CLASH = 1
+ENABLE_SINGBOX = 0
 
 app = Flask(__name__)
 
