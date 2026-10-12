@@ -10,5 +10,7 @@ sleep 1
 wireplumber &
 pipewire-pulse &
 
+"$HOME/.config/status.sh" &
+
 # Execute dwm window manager
 exec dwm
