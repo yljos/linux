@@ -4,8 +4,14 @@ export GPG_TTY=$(tty)
 # export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 
 if [ -f ~/.gnupg/gpg-agent.conf ]; then
-    gpgconf --launch gpg-agent  
+    gpgconf --launch gpg-agent
 fi
+
+# Start ssh-agent if not running
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    eval "$(ssh-agent -s)" > /dev/null
+fi
+
 export HISTCONTROL=ignoreboth:erasedups
 shopt -s histappend 
 export LANG=en_US.UTF-8
