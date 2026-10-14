@@ -1,5 +1,5 @@
 {
-  "tag": "GCP-outbound",
+  "tag": "US-G",
   "type": "shadowsocks",
   "server": "你的落地机IP或域名",
   "detour": "Relay",

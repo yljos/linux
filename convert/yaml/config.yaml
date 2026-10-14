@@ -59,7 +59,7 @@ proxies: []
 proxy-groups:
   - {type: select, name: M, proxies: [JP, SG, US, HK]}
   - {type: select, name: Default, proxies: [REJECT, DIRECT, M]}
-  - {type: select, name: Google, proxies: [US, JP, SG, HK, US-g]}
+  - {type: select, name: Google, proxies: [US, JP, SG, HK, US-G]}
   - {type: fallback, name: Relay, include-all-proxies: true, filter: "(?i).*(SG|JP|US|HK).*", url: "http://www.gstatic.com/generate_204", interval: 30}
   - {type: select, name: OpenAi, proxies: [JP, SG, US, HK]}
   - {type: select, name: Telegram, proxies: [JP, SG, US, HK]}
@@ -74,7 +74,7 @@ proxy-groups:
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: HK, filter: "(?i)^(?=.*(HK))(?!.*(UDP|HY2)).*$"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: JP, filter: "(?i).*(JP).*"}
   - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: SG, filter: "(?i).*(SG).*"}
-  - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: US, filter: "(?i)^(?!.*US-g).*US.*"}
+  - {type: url-test, url: "https://www.gstatic.com/generate_204", interval: 30, tolerance: 300, timeout: 3000, max-failed-times: 3, include-all-proxies: true, hidden: true, name: US, filter: "(?i)^(?!.*US-G).*US.*"}
   - {type: load-balance, url: "https://www.gstatic.com/generate_204", interval: 30, timeout: 3000, max-failed-times: 3, include-all-proxies: true, strategy: round-robin, hidden: true, name: SG_load-balance, filter: "(?i).*(SG).*"}
   - {type: load-balance, url: "https://www.gstatic.com/generate_204", interval: 30, timeout: 3000, max-failed-times: 3, include-all-proxies: true, strategy: round-robin, hidden: true, name: HK_load-balance, filter: "(?i).*(HK).*"}
 
@@ -116,7 +116,6 @@ rule-providers:
   twitter-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.346211.xyz/twitter-ip.mrs"}
   wechat-ip: {proxy: M, interval: 86400, type: http, format: mrs, behavior: ipcidr, url: "https://rule.346211.xyz/wechat-ip.mrs"}
   youtube-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/youtube-site.mrs"}
-  f-droid-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/f-droid-site.mrs"}
   tencent-site: {proxy: M, interval: 86400, type: http, format: mrs, behavior: domain, url: "https://rule.346211.xyz/tencent-site.mrs"}
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
