@@ -125,6 +125,7 @@ rules:
   - RULE-SET,ad-ip,AD
   - RULE-SET,huawei-site,REJECT-DROP
   - RULE-SET,huawei-ip,REJECT-DROP
+  - SRC-IP-CIDR,10.0.0.20/32,REJECT-DROP
   - RULE-SET,googlefcm-site,DIRECT
   - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
   - DOMAIN-KEYWORD,msftncsi.com,Microsoft
