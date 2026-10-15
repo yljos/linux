@@ -20,3 +20,4 @@ alias win="/usr/bin/bash /home/huai/.config/win.sh"
 alias hiwin="/usr/bin/bash /home/huai/.config/wake.sh"
 alias x="startx"
 alias np="/usr/bin/bash /home/huai/.config/wallpaper.sh"
+alias key='ssh-add "$HOME/.ssh/id_ed25519"'

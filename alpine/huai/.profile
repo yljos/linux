@@ -38,8 +38,5 @@ if ! pgrep -u "$USER" -x ssh-agent >/dev/null; then
     eval "$(ssh-agent -s -a "$SSH_AUTH_SOCK")" >/dev/null
 fi
 
-# Add default key to agent if not already present
-ssh-add -l >/dev/null 2>&1 || ssh-add "$HOME/.ssh/id_ed25519"
-
 # Source external aliases file if it exists
 [ -f "$HOME/.aliases" ] && . "$HOME/.aliases"

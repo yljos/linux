@@ -18,8 +18,8 @@ if ! ssh-add -l > /dev/null 2>&1; then
     fi
 fi
 
-# Prompt passphrase only once when agent has no keys
-ssh-add -l > /dev/null 2>&1 || ssh-add ~/.ssh/id_ed25519
+alias key='ssh-add "$HOME/.ssh/id_ed25519"'
+
 
 export HISTCONTROL=ignoreboth:erasedups
 shopt -s histappend 
