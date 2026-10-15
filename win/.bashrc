@@ -18,7 +18,7 @@ if ! ssh-add -l > /dev/null 2>&1; then
     fi
 fi
 
-alias key='ssh-add "$HOME/.ssh/id_ed25519"'
+alias key='ssh-add -l >/dev/null 2>&1 || ssh-add "$HOME/.ssh/id_ed25519"'
 
 
 export HISTCONTROL=ignoreboth:erasedups
