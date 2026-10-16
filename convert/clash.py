@@ -174,6 +174,10 @@ def process_yaml_content_clash(
                 if isinstance(m_data, dict):
                     template_data.update(m_data)
 
+    # Remove mixed-port if tproxy-port exists
+    if "tproxy-port" in template_data:
+        template_data.pop("mixed-port", None)
+
     proxies_orig = input_data.get("proxies", [])
     filtered_names, _ = filter_node_names_clash(proxies_orig, shared_kw, shared_ex_kw)
 
