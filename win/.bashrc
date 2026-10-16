@@ -12,10 +12,8 @@ export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
 
 # Check if socket is valid, start agent if not
 if ! ssh-add -l > /dev/null 2>&1; then
-    if [ ! -S "$SSH_AUTH_SOCK" ] || ! pgrep -u "$USER" ssh-agent > /dev/null; then
         rm -f "$SSH_AUTH_SOCK"
         eval "$(ssh-agent -a "$SSH_AUTH_SOCK")" > /dev/null
-    fi
 fi
 
 alias key='ssh-add -l >/dev/null 2>&1 || ssh-add "$HOME/.ssh/id_ed25519"'
