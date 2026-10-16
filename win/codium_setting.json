@@ -15,17 +15,15 @@
     "diffEditor.renderSideBySide": false,
     "security.workspace.trust.untrustedFiles": "open",
     "terminal.integrated.profiles.windows": {
-        "MSYS2 UCRT64": {
-            "path": "C:\\msys64\\usr\\bin\\bash.exe",
-            "args": [
-                "-i"
-            ],
-            "env": {
-                "MSYSTEM": "UCRT64",
-                "CHERE_INVOKING": "1"
-            }
+        "Git Bash": {
+            "source": "Git Bash"
         }
     },
-    "terminal.integrated.defaultProfile.windows": "MSYS2 UCRT64",
-    "git.path": "C:\\msys64\\ucrt64\\bin\\git.exe"
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+    "git.path": "C:\\Program Files\\Git\\bin\\git.exe",
+    "explorer.confirmDelete": false,
+    "redhat.telemetry.enabled": false,
+    "[yaml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }
