@@ -32,7 +32,7 @@ start() {
     # Run detached container with port mapping and volume mount
     /usr/bin/podman run -d \
         --name "${CONTAINER_NAME}" \
-        -p 5008:5008 \
+        --network host \
         -v "${WWW_DIR}:/data/www:z" \
         "${IMAGE}" >/dev/null
 
