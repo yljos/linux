@@ -1,0 +1,61 @@
+#!/sbin/openrc-run
+
+# Service metadata
+name="home-assistant"
+description="Home Assistant Core via Podman"
+
+# Container configuration
+CONTAINER_NAME="ha"
+CONFIG_DIR="/data/appdata/ha"
+IMAGE="ghcr.io/home-assistant/home-assistant:stable"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    # Ensure config directory exists
+    if [ ! -d "${CONFIG_DIR}" ]; then
+        ebegin "Creating configuration directory ${CONFIG_DIR}"
+        mkdir -p "${CONFIG_DIR}"
+        eend $?
+    fi
+}
+
+start() {
+    ebegin "Starting ${name}"
+
+    # Remove existing container instance if present
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    # Run detached container with SELinux/Z-flag and mapped ports
+    /usr/bin/podman run -d \
+        --name "${CONTAINER_NAME}" \
+        -p 8123:8123 \
+        -v "${CONFIG_DIR}:/config:Z" \
+        "${IMAGE}" >/dev/null
+
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+
+    # Gracefully stop and remove container
+    /usr/bin/podman stop -t 30 "${CONTAINER_NAME}" >/dev/null 2>&1
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    eend $?
+}
+
+status() {
+    # Check container running state via podman inspect
+    if [ "$(/usr/bin/podman inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = "true" ]; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}

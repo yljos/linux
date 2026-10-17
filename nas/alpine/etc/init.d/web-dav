@@ -1,0 +1,70 @@
+#!/sbin/openrc-run
+
+# Service metadata
+name="webdav"
+description="WebDAV Server via Podman"
+
+# Container configuration
+CONTAINER_NAME="webdav"
+CONFIG_FILE="/data/appdata/webdav/config.yaml"
+DATA_DIR="/data/www/webdav"
+IMAGE="docker.io/hacdias/webdav:latest"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    # Verify configuration file exists
+    if [ ! -f "${CONFIG_FILE}" ]; then
+        eerror "Configuration file ${CONFIG_FILE} not found!"
+        return 1
+    fi
+
+    # Ensure storage directory exists
+    if [ ! -d "${DATA_DIR}" ]; then
+        ebegin "Creating WebDAV storage directory ${DATA_DIR}"
+        mkdir -p "${DATA_DIR}"
+        eend $?
+    fi
+}
+
+start() {
+    ebegin "Starting ${name}"
+
+    # Remove existing container instance if present
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    # Run detached container with config and storage volumes
+    /usr/bin/podman run -d \
+        --name "${CONTAINER_NAME}" \
+        -e WEBDAV_CONFIG=/config.yaml \
+        -p 6065:6065 \
+        -v "${DATA_DIR}:/srv:Z" \
+        -v "${CONFIG_FILE}:/config.yaml:Z" \
+        "${IMAGE}" >/dev/null
+
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+
+    # Stop and delete container
+    /usr/bin/podman stop -t 10 "${CONTAINER_NAME}" >/dev/null 2>&1
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    eend $?
+}
+
+status() {
+    # Check container running state via podman inspect
+    if [ "$(/usr/bin/podman inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = "true" ]; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}

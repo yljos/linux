@@ -1,0 +1,61 @@
+#!/sbin/openrc-run
+
+# Service metadata
+name="shutdown"
+description="Remote Shutdown Listener Service via Podman"
+
+# Container configuration
+CONTAINER_NAME="shutdown"
+WWW_DIR="/data/www"
+IMAGE="localhost/shutdown:latest"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    # Ensure www directory exists
+    if [ ! -d "${WWW_DIR}" ]; then
+        ebegin "Creating directory ${WWW_DIR}"
+        mkdir -p "${WWW_DIR}"
+        eend $?
+    fi
+}
+
+start() {
+    ebegin "Starting ${name}"
+
+    # Remove existing container instance if present
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    # Run detached container with port mapping and volume mount
+    /usr/bin/podman run -d \
+        --name "${CONTAINER_NAME}" \
+        -p 5008:5008 \
+        -v "${WWW_DIR}:/data/www:z" \
+        "${IMAGE}" >/dev/null
+
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+
+    # Stop and delete container
+    /usr/bin/podman stop -t 10 "${CONTAINER_NAME}" >/dev/null 2>&1
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    eend $?
+}
+
+status() {
+    # Check container running state via podman inspect
+    if [ "$(/usr/bin/podman inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = "true" ]; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}

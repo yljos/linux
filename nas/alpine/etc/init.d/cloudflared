@@ -1,0 +1,61 @@
+#!/sbin/openrc-run
+
+# Service metadata
+name="cloudflared"
+description="Cloudflare Tunnel Client via Podman"
+
+# Container configuration
+CONTAINER_NAME="cloudflared"
+ENV_FILE="/data/appdata/cloudflared/token.env"
+IMAGE="docker.io/cloudflare/cloudflared:latest"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    # Verify environment file exists
+    if [ ! -f "${ENV_FILE}" ]; then
+        eerror "Environment file ${ENV_FILE} not found!"
+        return 1
+    fi
+}
+
+start() {
+    ebegin "Starting ${name}"
+
+    # Remove existing container instance if present
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    # Run detached container
+    /usr/bin/podman run -d \
+        --name "${CONTAINER_NAME}" \
+        --network=host \
+        --env-file "${ENV_FILE}" \
+        "${IMAGE}" \
+        tunnel --no-autoupdate --protocol http2 run >/dev/null
+
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+
+    # Stop and delete container
+    /usr/bin/podman stop -t 10 "${CONTAINER_NAME}" >/dev/null 2>&1
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    eend $?
+}
+
+status() {
+    # Check container running state via podman inspect
+    if [ "$(/usr/bin/podman inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = "true" ]; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}

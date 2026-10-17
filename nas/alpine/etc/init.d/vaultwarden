@@ -1,0 +1,61 @@
+#!/sbin/openrc-run
+
+# Service metadata
+name="vaultwarden"
+description="Vaultwarden Server via Podman"
+
+# Container configuration
+CONTAINER_NAME="pw"
+DATA_DIR="/data/appdata/vaultwarden"
+IMAGE="docker.io/vaultwarden/server:latest"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    # Ensure data directory exists
+    if [ ! -d "${DATA_DIR}" ]; then
+        ebegin "Creating data directory ${DATA_DIR}"
+        mkdir -p "${DATA_DIR}"
+        eend $?
+    fi
+}
+
+start() {
+    ebegin "Starting ${name}"
+
+    # Remove existing container instance if present
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    # Run detached container with SELinux flag and port mapping
+    /usr/bin/podman run -d \
+        --name "${CONTAINER_NAME}" \
+        -p 8181:80 \
+        -v "${DATA_DIR}:/data:Z" \
+        "${IMAGE}" >/dev/null
+
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+
+    # Stop and delete container
+    /usr/bin/podman stop -t 15 "${CONTAINER_NAME}" >/dev/null 2>&1
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    eend $?
+}
+
+status() {
+    # Check container running state via podman inspect
+    if [ "$(/usr/bin/podman inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = "true" ]; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}

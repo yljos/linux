@@ -1,0 +1,69 @@
+#!/sbin/openrc-run
+
+# Service metadata
+name="kavita"
+description="Kavita Digital Library via Podman"
+
+# Container configuration
+CONTAINER_NAME="kavita"
+CONFIG_DIR="/data/appdata/kavita"
+BOOKS_DIR="/data/books"
+IMAGE="docker.io/jvmilazz0/kavita:latest"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    # Ensure config directory exists
+    if [ ! -d "${CONFIG_DIR}" ]; then
+        ebegin "Creating configuration directory ${CONFIG_DIR}"
+        mkdir -p "${CONFIG_DIR}"
+        eend $?
+    fi
+
+    # Check books directory exists
+    if [ ! -d "${BOOKS_DIR}" ]; then
+        eerror "Books directory ${BOOKS_DIR} not found!"
+        return 1
+    fi
+}
+
+start() {
+    ebegin "Starting ${name}"
+
+    # Remove existing container instance if present
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    # Run detached container with read-only books mount and SELinux flags
+    /usr/bin/podman run -d \
+        --name "${CONTAINER_NAME}" \
+        -p 5000:5000 \
+        -v "${CONFIG_DIR}:/kavita/config:Z" \
+        -v "${BOOKS_DIR}:/books:ro,z" \
+        "${IMAGE}" >/dev/null
+
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+
+    # Stop and delete container
+    /usr/bin/podman stop -t 15 "${CONTAINER_NAME}" >/dev/null 2>&1
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    eend $?
+}
+
+status() {
+    # Check container running state via podman inspect
+    if [ "$(/usr/bin/podman inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = "true" ]; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}

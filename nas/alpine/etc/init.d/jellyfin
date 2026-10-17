@@ -1,0 +1,68 @@
+#!/sbin/openrc-run
+
+# Service metadata
+name="jellyfin"
+description="Jellyfin Media Server via Podman"
+
+# Container configuration
+CONTAINER_NAME="jellyfin"
+CONFIG_DIR="/data/appdata/jellyfin"
+MEDIA_DIR="/data/media"
+IMAGE="lscr.io/linuxserver/jellyfin:10.8.13"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    # Verify directories exist
+    if [ ! -d "${CONFIG_DIR}" ]; then
+        ebegin "Creating configuration directory ${CONFIG_DIR}"
+        mkdir -p "${CONFIG_DIR}"
+        eend $?
+    fi
+
+    if [ ! -d "${MEDIA_DIR}" ]; then
+        eerror "Media directory ${MEDIA_DIR} not found!"
+        return 1
+    fi
+}
+
+start() {
+    ebegin "Starting ${name}"
+
+    # Remove existing container instance if present
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    # Run detached container with host networking and volume mounts
+    /usr/bin/podman run -d \
+        --name "${CONTAINER_NAME}" \
+        --net=host \
+        -v "${CONFIG_DIR}:/config:Z" \
+        -v "${MEDIA_DIR}:/media:z" \
+        "${IMAGE}" >/dev/null
+
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+
+    # Stop and delete container
+    /usr/bin/podman stop -t 15 "${CONTAINER_NAME}" >/dev/null 2>&1
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    eend $?
+}
+
+status() {
+    # Check container running state via podman inspect
+    if [ "$(/usr/bin/podman inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = "true" ]; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}
