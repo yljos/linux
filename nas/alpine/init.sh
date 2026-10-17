@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Check and install rsync if not found
+if ! command -v rsync >/dev/null 2>&1; then
+    apk add --no-cache rsync
+fi
+
 # Synchronize root home files
 rsync -r root/ /root/
 
