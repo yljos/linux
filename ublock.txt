@@ -38,8 +38,36 @@ bilibili.com##.adblock-tips
 
 bilibili.com##.charge-btn-loaded.new-charge-btn.default-btn
 
-! Outlook 屏蔽规则
+! Outlook
 outlook.live.com##div[id^="MainModule"] div:last-child.GssDD
 
 youtube.com##[id^="neat"]
 bilibili.com##[id^="neat"]
+
+rmdown.com###foo1ter > li
+! Block JD marketing CDN and tracking endpoints
+||img30.360buyimg.com/img/jfs/t1/*$image,domain=jd.com
+||storage.360buyimg.com/*/popup*.js$script,domain=jd.com
+||storage.360buyimg.com/*/ad*.js$script,domain=jd.com
+||wl.jd.com^$script,domain=jd.com
+||mercury.jd.com^$script,domain=jd.com
+
+! Hide all floating widgets, countdowns, and marketing layers
+jd.com##.j-float
+jd.com##.j_float
+jd.com##.mod_float
+jd.com##div[class*="countdown"]
+jd.com##div[id*="countdown"]
+jd.com##div[class*="timer"]
+jd.com##div[class*="floor-banner"]
+jd.com##div[id*="popup"]
+jd.com##div[class*="dialog-countdown"]
+jd.com##div[style*="fixed"]:not(#J_header):not([class*="nav"])
+
+! Clean up home page & search distractions (keep search bar & list functional)
+jd.com##.fs_col1
+jd.com##.fs_col3
+jd.com###J_seckill
+jd.com###J_core
+jd.com##.slider_list
+jd.com##.focus_slider
