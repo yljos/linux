@@ -25,17 +25,17 @@ set interfaces pppoe pppoe0 authentication password 'YOUR_PASSWORD'
 configure
 ```
 
-### 2.3 LAN Interface
+### 2.3 lan Interface
 ```bash
-# Define LAN interface
+# Define lan interface
 set interfaces ethernet eth0 address 10.0.0.1/24
-set interfaces ethernet eth0 description LAN
+set interfaces ethernet eth0 description lan
 ```
 
 ### 2.4 PPPoE Interface Binding
 ```bash
 # Bind PPPoE to physical interface eth1
-set interfaces ethernet eth1 description WAN
+set interfaces ethernet eth1 description wan
 set interfaces pppoe pppoe0 source-interface eth1
 ```
 
@@ -48,20 +48,20 @@ set interfaces pppoe pppoe0 ip adjust-mss clamp-mss-to-pmtu
 
 ## 3. DHCP Server
 ```bash
-# Configure DHCP for LAN
-set service dhcp-server shared-network-name LAN authoritative
-set service dhcp-server shared-network-name LAN option ntp-server 10.0.0.1
-set service dhcp-server shared-network-name LAN option time-zone UTC
-set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 subnet-id 1
-set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 option default-router 10.0.0.1
-set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 option name-server 10.0.0.1
-set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 range 0 start 10.0.0.101
-set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 range 0 stop 10.0.0.200
+# Configure DHCP for lan
+set service dhcp-server shared-network-name lan authoritative
+set service dhcp-server shared-network-name lan option ntp-server 10.0.0.1
+set service dhcp-server shared-network-name lan option time-zone UTC
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 subnet-id 1
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 option default-router 10.0.0.1
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 option name-server 10.0.0.1
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 range 0 start 10.0.0.101
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 range 0 stop 10.0.0.200
 ```
 ```bash
-set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 static-mapping void ip-address 
-set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 static-mapping void mac 
-set service dhcp-server shared-network-name LAN subnet 10.0.0.0/24 ignore-client-id
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 static-mapping void ip-address 
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 static-mapping void mac 
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 ignore-client-id
 
 ```
 
@@ -111,60 +111,60 @@ set nat source rule 100 translation address masquerade
 
 ## 8. Firewall Rulesets
 
-### 8.1 WAN to LAN
+### 8.1 wan to lan
 ```bash
-# Drop unsolicited traffic from WAN
-set firewall ipv4 name WAN-LAN default-action drop
-set firewall ipv4 name WAN-LAN rule 1 action accept
-set firewall ipv4 name WAN-LAN rule 1 state established
-set firewall ipv4 name WAN-LAN rule 1 state related
+# Drop unsolicited traffic from wan
+set firewall ipv4 name wan-lan default-action drop
+set firewall ipv4 name wan-lan rule 1 action accept
+set firewall ipv4 name wan-lan rule 1 state established
+set firewall ipv4 name wan-lan rule 1 state related
 ```
 
-### 8.2 WAN to Local
+### 8.2 wan to local
 ```bash
-# Protect router itself from WAN
-set firewall ipv4 name WAN-LOCAL default-action drop
-set firewall ipv4 name WAN-LOCAL rule 1 action accept
-set firewall ipv4 name WAN-LOCAL rule 1 state established
-set firewall ipv4 name WAN-LOCAL rule 1 state related
+# Protect router itself from wan
+set firewall ipv4 name wan-local default-action drop
+set firewall ipv4 name wan-local rule 1 action accept
+set firewall ipv4 name wan-local rule 1 state established
+set firewall ipv4 name wan-local rule 1 state related
 ```
 
 ### 8.3 Internal Traffic
 ```bash
 # Trust internal network flows
-set firewall ipv4 name LAN-WAN default-action accept
-set firewall ipv4 name LAN-LOCAL default-action accept
-set firewall ipv4 name LOCAL-LAN default-action accept
-set firewall ipv4 name LOCAL-WAN default-action accept
+set firewall ipv4 name lan-wan default-action accept
+set firewall ipv4 name lan-local default-action accept
+set firewall ipv4 name local-lan default-action accept
+set firewall ipv4 name local-wan default-action accept
 ```
 
 ## 9. Firewall Zones
 
-### 9.1 LOCAL Zone
+### 9.1 local Zone
 ```bash
 # Policy for the router itself
-set firewall zone LOCAL local-zone
-set firewall zone LOCAL default-action drop
-set firewall zone LOCAL from LAN firewall name LAN-LOCAL
-set firewall zone LOCAL from WAN firewall name WAN-LOCAL
+set firewall zone local local-zone
+set firewall zone local default-action drop
+set firewall zone local from lan firewall name lan-local
+set firewall zone local from wan firewall name wan-local
 ```
 
-### 9.2 LAN Zone
+### 9.2 lan Zone
 ```bash
-# Policy for LAN interface
-set firewall zone LAN member interface eth0
-set firewall zone LAN default-action drop
-set firewall zone LAN from LOCAL firewall name LOCAL-LAN
-set firewall zone LAN from WAN firewall name WAN-LAN
+# Policy for lan interface
+set firewall zone lan member interface eth0
+set firewall zone lan default-action drop
+set firewall zone lan from local firewall name local-lan
+set firewall zone lan from wan firewall name wan-lan
 ```
 
-### 9.3 WAN Zone
+### 9.3 wan Zone
 ```bash
 # Policy for PPPoE interface
-set firewall zone WAN member interface pppoe0
-set firewall zone WAN default-action drop
-set firewall zone WAN from LAN firewall name LAN-WAN
-set firewall zone WAN from LOCAL firewall name LOCAL-WAN
+set firewall zone wan member interface pppoe0
+set firewall zone wan default-action drop
+set firewall zone wan from lan firewall name lan-wan
+set firewall zone wan from local firewall name local-wan
 ```
 
 ## 10. Containers (TProxy)
