@@ -21,6 +21,8 @@ ExecStart=/usr/bin/podman run \
   -v /root/config/westdata:/app/westdata:z \
   -v /root/config/mojie:/app/mojie:z \
   -v /root/config/cache:/app/cache:z \
+  -v /root/config/node.yaml:/app/node.yaml:z \
+  -v /root/config/node.json:/app/node.json:z \
   localhost/convert:latest
 
 [Install]
