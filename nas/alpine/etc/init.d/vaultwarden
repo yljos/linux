@@ -32,6 +32,7 @@ start() {
     # Run detached container with SELinux flag and port mapping
     /usr/bin/podman run -d \
         --name "${CONTAINER_NAME}" \
+        -e HIBP_API_KEY="" \
         -p 8181:80 \
         -v "${DATA_DIR}:/data:Z" \
         "${IMAGE}" >/dev/null
