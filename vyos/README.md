@@ -88,7 +88,7 @@ set service dns forwarding listen-address 127.0.0.1
 # SSH Access and Public Key
 set service ssh listen-address 10.0.0.1
 set system login user vyos authentication public-keys admin type ssh-ed25519
-set system login user vyos authentication public-keys admin key AAAAC3NzaC1lZDI1NTE5AAAAIJiWQNpWDw/+0lhI1KeGL1MI0MiHhQ2HYe/qhjmddGni
+set system login user vyos authentication public-keys admin key AAAAC3NzaC1lZDI1NTE5AAAAINM0X4WA7BeuGIYKJMjQ/WbewIFlS0140P66A8Ntbsex
 ```
 
 ## 6. NTP & Timezone
