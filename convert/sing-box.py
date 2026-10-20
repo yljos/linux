@@ -283,7 +283,6 @@ def handle_request(
     ua,
     is_force_refresh,
     cache_dir,
-    cache_expire,
     shared_kw,
     shared_ex_kw,
     clean_fn,

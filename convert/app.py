@@ -15,7 +15,6 @@ ACCESS_KEY_SHA256 = "51ef50ce29aa4cf089b9b076cb06e30445090b323f0882f1251c18a06fc
 BASE_DIR = Path(__file__).resolve().parent
 CACHE_DIR = BASE_DIR / "cache"
 CACHE_DIR.mkdir(exist_ok=True)
-CACHE_EXPIRE_SECONDS = 86400
 
 ACTUAL_SOURCE = "westdata"
 
@@ -129,7 +128,6 @@ def process_source(req_path):
             ua,
             is_force_refresh,
             CACHE_DIR,
-            CACHE_EXPIRE_SECONDS,
             SHARED_KEYWORDS,
             SHARED_EXCLUDE_KEYWORDS,
             clean_node_name,
@@ -145,7 +143,6 @@ def process_source(req_path):
             ua,
             is_force_refresh,
             CACHE_DIR,
-            CACHE_EXPIRE_SECONDS,
             SHARED_KEYWORDS,
             SHARED_EXCLUDE_KEYWORDS,
             clean_node_name,

@@ -1,14 +1,12 @@
 import io
 import logging
-import os
-import time
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 from urllib.parse import unquote
 
 import requests
 import yaml
-from flask import send_file, abort
+from flask import abort, send_file
 
 logger = logging.getLogger(__name__)
 
@@ -87,23 +85,22 @@ def process_proxy_config_clash(proxy: Dict[str, Any], up_pref: str, down_pref: s
 
 
 def fetch_remote_yaml(
-    url: str, source_name: str, force_refresh: bool, cache_dir: Path, cache_expire: int
+    url: str, source_name: str, force_refresh: bool, cache_dir: Path
 ) -> Tuple[str, str]:
     # Cache raw YAML content and userinfo
     cache_file = cache_dir / f"{source_name}.yaml"
     info_file = cache_dir / f"{source_name}.info"
 
-    # Check cache
+    # Return local cache directly if not forcing refresh
     if not force_refresh and cache_file.exists():
         try:
-            if time.time() - os.path.getmtime(cache_file) < cache_expire:
-                with open(cache_file, "r", encoding="utf-8") as f:
-                    raw_yaml = f.read()
-                userinfo = ""
-                if info_file.exists():
-                    with open(info_file, "r", encoding="utf-8") as f:
-                        userinfo = f.read().strip()
-                return raw_yaml, userinfo
+            with open(cache_file, "r", encoding="utf-8") as f:
+                raw_yaml = f.read()
+            userinfo = ""
+            if info_file.exists():
+                with open(info_file, "r", encoding="utf-8") as f:
+                    userinfo = f.read().strip()
+            return raw_yaml, userinfo
         except Exception:
             pass
 
@@ -298,7 +295,6 @@ def handle_request(
     ua,
     is_force_refresh,
     cache_dir,
-    cache_expire,
     shared_kw,
     shared_ex_kw,
     clean_fn,
@@ -326,7 +322,7 @@ def handle_request(
     try:
         # Extract dynamic header from fetch_remote_yaml
         remote_yaml_text, userinfo_header = fetch_remote_yaml(
-            unquote(url), source, is_force_refresh, cache_dir, cache_expire
+            unquote(url), source, is_force_refresh, cache_dir
         )
 
         # Process the configuration with mixins and node filtering
