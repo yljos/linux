@@ -121,7 +121,6 @@ rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
   - DST-PORT,53,dns-out
   - DST-PORT,853,REJECT
-  - SRC-IP-CIDR,10.0.0.20/32,REJECT-DROP
   - RULE-SET,ad-site,AD
   - RULE-SET,ad-ip,AD
   - RULE-SET,huawei-site,REJECT-DROP

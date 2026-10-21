@@ -81,6 +81,7 @@ set service dns forwarding system
 # Listen on loopback only (ensures port 53 is free for sing-box on 10.0.0.1)
 delete service dns forwarding listen-address 10.0.0.1
 set service dns forwarding listen-address 127.0.0.1
+delete service dns forwarding
 ```
 
 ## 5. SSH Service
