@@ -14,6 +14,26 @@ dns:
     - "+.googleapis.cn"
     - "rule-set:googlefcm-site"
     - "rule-set:cloudflare-site"
+  use-hosts: true
+  default-nameserver: [223.5.5.5#DIRECT]
+  proxy-server-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
+  nameserver: ["https://cloudflare-dns.com/dns-query#M"]
+  direct-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
+  nameserver-policy:
+    "rule-set:microsoft-site": "https://cloudflare-dns.com/dns-query#Microsoft"
+    "rule-set:cloudflare-site": "https://cloudflare-dns.com/dns-query#M"
+    "rule-set:openai-site": "https://cloudflare-dns.com/dns-query#OpenAi"
+    "rule-set:github-site": "https://cloudflare-dns.com/dns-query#GitHub"
+    "rule-set:telegram-site": "https://cloudflare-dns.com/dns-query#Telegram"
+    "rule-set:twitter-site": "https://cloudflare-dns.com/dns-query#Twitter"
+    "rule-set:tiktok-site": "https://cloudflare-dns.com/dns-query#TikTok"
+    "rule-set:youtube-site": "https://dns.google/dns-query#Google"
+    "rule-set:googlefcm-site": "https://dns.google/dns-query#Google"
+    "rule-set:google-site": "https://dns.google/dns-query#Google"
+    "rule-set:speedtest-site": "https://cloudflare-dns.com/dns-query#M"
+    "rule-set:steam-site": "https://cloudflare-dns.com/dns-query#Steam"
+    "rule-set:huawei-site": "rcode://refused"
+    "rule-set:codeberg-site": "https://cloudflare-dns.com/dns-query#GitHub"
 tun:
   enable: true
   device: clash
