@@ -7,7 +7,7 @@ TABLE_ID=100
 LAN_IF="eth0"
 
 # Source IP blacklist (These devices bypass the proxy)
-SOURCE_BLACKLIST="{ 10.0.0.99 }"
+SOURCE_BLACKLIST="{ 10.0.0.88 }"
 
 # Check root privileges
 if [ "$(id -u)" -ne 0 ]; then
