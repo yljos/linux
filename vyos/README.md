@@ -55,8 +55,8 @@ set service dhcp-server shared-network-name lan option time-zone UTC
 set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 subnet-id 1
 set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 option default-router 10.0.0.1
 set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 option name-server 10.0.0.1
-set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 range 0 start 10.0.0.10
-set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 range 0 stop 10.0.0.30
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 range 0 start 10.0.0.26
+set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 range 0 stop 10.0.0.35
 ```
 ```bash
 set service dhcp-server shared-network-name lan subnet 10.0.0.0/24 static-mapping void ip-address 
