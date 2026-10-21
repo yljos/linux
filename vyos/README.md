@@ -208,12 +208,18 @@ exit
 ```bash
 # In case of automatic pull failure
 podman pull docker.io/metacubex/mihomo:latest
+podman pull ghcr.io/sagernet/sing-box:latest
+podman save -o sing-box.tar ghcr.io/sagernet/sing-box:latest
 podman save -o mihomo.tar metacubex/mihomo:latest
 mv mihomo.tar /data/www
+mv sing-box.tar /data/www
 ```
 ```bash
 scp mihomo.tar vyos:/tmp/
+scp sing-box.tar vyos:/tmp/
 ```
 ```bash
 sudo podman load -i /tmp/mihomo.tar
+sudo podman load -i /tmp/sing-box.tar
+
 ```
