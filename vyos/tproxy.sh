@@ -53,8 +53,7 @@ nft add rule ip mihomo prerouting iifname "$LAN_IF" tcp dport 853 reject with tc
 nft add rule ip mihomo prerouting iifname "$LAN_IF" ip daddr 10.0.0.1 meta l4proto { tcp, udp } th dport 53 return
 
 # 5. Optional: Redirect foreign DNS queries to local gateway (Avoid hardcoded client DNS leaking)
-nft add rule ip mihomo prerouting iifname "$LAN_IF" meta l4proto { tcp, udp } th dport 53 redirect to :53
-
+nft add rule ip mihomo prerouting iifname $LAN_IF meta l4proto { tcp, udp } th dport 53 meta mark set $PROXY_FWMARK
 # 6. Destination Bypass: Skip direct local and private networks
 nft add rule ip mihomo prerouting ip daddr { 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4, 255.255.255.255 } return
 
