@@ -1,4 +1,5 @@
 tproxy-port: 7893
+routing-mark: 666
 external-controller: 10.0.0.1:9090
 external-ui-url: https://www.346211.xyz/dist_openwrt.zip
 dns:
