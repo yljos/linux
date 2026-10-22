@@ -126,8 +126,8 @@ rules:
   - RULE-SET,huawei-site,REJECT-DROP
   - RULE-SET,huawei-ip,REJECT-DROP
   - RULE-SET,googlefcm-site,DIRECT
-  - DOMAIN-KEYWORD,msftconnecttest.com,Microsoft
-  - DOMAIN-KEYWORD,msftncsi.com,Microsoft
+  - DOMAIN-KEYWORD,msftconnecttest.com,DIRECT
+  - DOMAIN-KEYWORD,msftncsi.com,DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(DOMAIN-KEYWORD,googleapis)),Youtube
   - AND,((SRC-IP-CIDR,10.0.0.21/32),(RULE-SET,cloudflare-site)),DIRECT
   - AND,((SRC-IP-CIDR,10.0.0.7/32),(RULE-SET,youtube-site)),Youtube
