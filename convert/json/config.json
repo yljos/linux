@@ -56,9 +56,9 @@
     "rules": [
       {"ip_cidr": "223.5.5.5", "outbound": "D"},
       {"type": "logical", "mode": "and", "rules": [{"network": "udp"}, {"port": 443}], "action": "reject", "no_drop": true},
+      {"action": "sniff", "timeout": "300ms"},
       {"inbound": ["dns-in"], "action": "hijack-dns"},
       {"port": 53, "action": "hijack-dns"},
-      {"action": "sniff", "timeout": "300ms"},
       {"protocol": "dns", "action": "hijack-dns"},
       {"rule_set": "ad-site", "action": "reject"},
       {"rule_set": "ad-ip", "action": "reject"},
