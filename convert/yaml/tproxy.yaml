@@ -5,7 +5,7 @@ external-ui-url: https://www.346211.xyz/dist_openwrt.zip
 dns:
   enable: true
   prefer-h3: false
-  listen: 0.0.0.0:1053
+  listen: 0.0.0.0:53
   ipv6: false
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
