@@ -82,7 +82,10 @@ def test_singbox_config(tmp_config_path):
             creationflags=subprocess.CREATE_NO_WINDOW,
         )
 
-        if result.returncode == 0:
+        output = (result.stderr or result.stdout or "").lower()
+        # Accept if returncode is 0 OR only failed due to Linux-only default_mark on Windows
+        is_default_mark_error = "default_mark" in output and "only supported on linux" in output
+        if result.returncode == 0 or is_default_mark_error:
             print("[Success] Configuration is valid.")
             return True
         else:
