@@ -4,10 +4,14 @@ from curl_cffi import requests
 
 # Define the target URL and the local save path for user yao
 SCRIPT_URL = "https://www.346211.xyz/minecraft.py"
-SAVE_PATH = r"C:\Users\huai\Desktop\minecraft.py"
+SAVE_PATH = r"C:\Users\dayao\Desktop\mc.py"
 
 def pull_script():
     """Fetch the script using curl-cffi with Firefox impersonation."""
+    # Check if the file already exists, skip if it does
+    if os.path.exists(SAVE_PATH):
+        return
+
     try:
         response = requests.get(SCRIPT_URL, impersonate="firefox", timeout=10)
         response.raise_for_status()
