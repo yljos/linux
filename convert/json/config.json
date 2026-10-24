@@ -37,7 +37,7 @@
     {"type": "block", "tag": "R"},
     {"type": "selector", "tag": "Default", "outbounds": ["M", "R", "D"], "default": "R"},
     {"type": "selector", "tag": "M", "outbounds": ["SG", "JP", "US", "HK"], "default": "JP"},
-    {"type": "selector", "tag": "Youtube", "outbounds": ["JP", "US", "SG", "HK"], "default": "US"},
+    {"type": "selector", "tag": "Youtube", "outbounds": ["{all}"], "filter": [{"action": "match", "regex": ["(?i)^(?!.*US-G).*US.*"]}]},
     {"type": "selector", "tag": "Google", "outbounds": ["JP", "US", "SG", "US-G"], "default": "US-G"},
     {"type": "selector", "tag": "OpenAi", "outbounds": ["JP", "US", "SG", "HK"], "default": "JP"},
     {"type": "selector", "tag": "Relay", "outbounds": ["JP", "US", "SG", "HK"], "default": "JP"},
