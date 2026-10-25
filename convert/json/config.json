@@ -5,18 +5,18 @@
   "services": [
     {
       "type": "api",
-
       "secret": "",
+      "listen": "127.0.0.1",
+      "listen_port": 9090,
       "access_control_allow_origin": [],
       "access_control_allow_private_network": false,
       "dashboard": {
         "enabled": true,
-        "path": "",
+        "path": "dashboard",
         "download_url": "https://www.346211.xyz/sing-box-dashboard-gh-pages.zip",
-        "http_client": "",
-        "update_interval": "0d"
-      },
-      "tls": {}
+        "http_client": "proxy-client",
+        "update_interval": "365d"
+      }
     }
   ],
   "dns": {
