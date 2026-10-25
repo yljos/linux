@@ -1,21 +1,5 @@
 {
-  "services": [
-    {
-      "type": "api",
-      "secret": "",
-      "listen": "10.0.0.1",
-      "listen_port": 9090,
-      "access_control_allow_origin": [],
-      "access_control_allow_private_network": false,
-      "dashboard": {
-        "enabled": true,
-        "path": "dashboard",
-        "download_url": "https://www.346211.xyz/sing-box-dashboard-gh-pages.zip",
-        "http_client": "proxy-client",
-        "update_interval": "365d"
-      }
-    }
-  ],
+
   "inbounds": [
     {
       "type": "tproxy",
@@ -38,7 +22,7 @@
       "store_dns": true
     },
     "clash_api": {
-      "external_controller": "10.0.0.1:9091",
+      "external_controller": "10.0.0.1:9090",
       "external_ui": "ui",
       "external_ui_download_url": "https://www.346211.xyz/dist_openwrt.zip",
       "external_ui_download_detour": "D",
