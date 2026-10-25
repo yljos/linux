@@ -14,7 +14,7 @@
         "path": "",
         "download_url": "https://www.346211.xyz/sing-box-dashboard-gh-pages.zip",
         "http_client": "",
-        "update_interval": "99999999d"
+        "update_interval": "0d"
       },
       "tls": {}
     }
