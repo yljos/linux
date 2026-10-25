@@ -2,6 +2,23 @@
   "$schema": "schema.json",
   "log": {"level": "error", "timestamp": true},
   "http_clients": [{"tag": "proxy-client", "detour": "D"}],
+  "services": [
+    {
+      "type": "api",
+
+      "secret": "",
+      "access_control_allow_origin": [],
+      "access_control_allow_private_network": false,
+      "dashboard": {
+        "enabled": true,
+        "path": "",
+        "download_url": "https://www.346211.xyz/sing-box-dashboard-gh-pages.zip",
+        "http_client": "",
+        "update_interval": "99999999d"
+      },
+      "tls": {}
+    }
+  ],
   "dns": {
     "strategy": "ipv4_only",
     "servers": [
@@ -120,6 +137,6 @@
   },
   "experimental": {
     "cache_file": {"enabled": true, "path": "cache.db", "store_dns": true},
-    "clash_api": {"external_controller": "127.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://www.346211.xyz/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}
+    "clash_api": {"external_controller": "127.0.0.1:9091", "external_ui": "ui", "external_ui_download_url": "https://www.346211.xyz/dist.zip", "external_ui_download_detour": "D", "default_mode": "rule"}
   }
 }
