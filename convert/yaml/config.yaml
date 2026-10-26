@@ -60,7 +60,7 @@ proxy-groups:
   - {type: select, name: M, proxies: [JP, SG, US, HK]}
   - {type: select, name: Default, proxies: [REJECT, DIRECT, M]}
   - {type: select, name: Google, proxies: [US, JP, SG, HK, US-G]}
-  - {type: fallback, name: Relay, include-all-proxies: true, filter: "(?i).*(JP).*", url: "http://www.gstatic.com/generate_204", interval: 30}
+  - {type: fallback, name: Relay, include-all-proxies: true, filter: "(?i).*(JP|SG|US|HK).*", url: "http://www.gstatic.com/generate_204", interval: 30}
   - {type: select, name: OpenAi, proxies: [JP, SG, US, HK]}
   - {type: select, name: Telegram, proxies: [JP, SG, US, HK]}
   - {type: select, name: Steam, proxies: [DIRECT, JP, SG, US, HK]}
