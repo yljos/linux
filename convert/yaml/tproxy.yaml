@@ -2,6 +2,14 @@ tproxy-port: 7893
 routing-mark: 666
 external-controller: 10.0.0.1:9090
 external-ui-url: https://www.346211.xyz/dist_openwrt.zip
+hosts:
+    "emby.lan": 10.0.0.21
+    "book.lan": 10.0.0.21
+    "www.lan": 10.0.0.21
+    "jellyfin.lan": 10.0.0.21
+    "pve.lan": 10.0.0.88
+    "p.lan": 10.0.0.21
+    "ha.lan": 10.0.0.21
 dns:
   enable: true
   prefer-h3: false
@@ -20,8 +28,6 @@ dns:
     - "rule-set:googlefcm-site"
     - "rule-set:cloudflare-site"
   use-hosts: true
-  hosts:
-    - "emby.lan": 10.0.0.21
   default-nameserver: [223.5.5.5#DIRECT]
   proxy-server-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
   nameserver: ["https://cloudflare-dns.com/dns-query#M"]
