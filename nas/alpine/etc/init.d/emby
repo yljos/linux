@@ -1,14 +1,14 @@
 #!/sbin/openrc-run
 
 # Service metadata
-name="jellyfin"
-description="Jellyfin Media Server via Podman"
+name="emby"
+description="Emby Media Server via Podman"
 
 # Container configuration
-CONTAINER_NAME="jellyfin"
-CONFIG_DIR="/data/appdata/jellyfin"
+CONTAINER_NAME="emby"
+CONFIG_DIR="/data/appdata/emby"
 MEDIA_DIR="/data/media"
-IMAGE="lscr.io/linuxserver/jellyfin:10.8.13"
+IMAGE="lscr.io/linuxserver/emby:latest"
 
 depend() {
     need net
