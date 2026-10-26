@@ -10,7 +10,7 @@ import time
 import requests
 
 # Core configuration
-URL = "http://10.0.0.21:80/shutdown"
+URL = "http://www.lan/shutdown"
 WAIT_SECONDS = 1 * 60  # Check interval: 1 minute
 
 

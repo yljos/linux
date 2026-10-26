@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SHUTDOWN_FILE="http://10.0.0.21/shutdown"
+SHUTDOWN_FILE="http://www.lan/shutdown"
 INTERVAL=60 # Loop interval in seconds
 
 # Initial delay before entering the loop
