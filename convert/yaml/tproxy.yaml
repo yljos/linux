@@ -12,6 +12,7 @@ dns:
   fake-ip-filter-mode: blacklist
   fake-ip-filter:
     - localhost.ptlogin2.qq.com
+    - "+.lan"
     - "+.msftconnecttest.com"
     - "+.msftncsi.com"
     - "+.googleapis.com"
@@ -19,13 +20,15 @@ dns:
     - "rule-set:googlefcm-site"
     - "rule-set:cloudflare-site"
   use-hosts: true
+  hosts:
+    - "emby.lan": 10.0.0.21
   default-nameserver: [223.5.5.5#DIRECT]
   proxy-server-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
   nameserver: ["https://cloudflare-dns.com/dns-query#M"]
   direct-nameserver: ["https://dns.alidns.com/dns-query#DIRECT"]
   nameserver-policy:
-    '+.msftconnecttest.com': 'https://dns.alidns.com/dns-query#DIRECT'
-    '+.msftncsi.com': 'https://dns.alidns.com/dns-query#DIRECT'
+    "+.msftconnecttest.com": "https://dns.alidns.com/dns-query#DIRECT"
+    "+.msftncsi.com": "https://dns.alidns.com/dns-query#DIRECT"
     "rule-set:microsoft-site": "https://cloudflare-dns.com/dns-query#Microsoft"
     "rule-set:cloudflare-site": "https://cloudflare-dns.com/dns-query#M"
     "rule-set:openai-site": "https://cloudflare-dns.com/dns-query#OpenAi"
