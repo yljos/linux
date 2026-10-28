@@ -7,8 +7,12 @@ INTERVAL=60 # Loop interval in seconds
 sleep "$INTERVAL"
 
 while true; do
-    # Check if target file exists; -f returns non-zero on HTTP errors (e.g., 404/500)
-    if curl -fs --connect-timeout 1 --max-time 2 "$SHUTDOWN_FILE" > /dev/null 2>&1; then
+    # Fetch HTTP status code only
+    STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 1 --max-time 2 "$SHUTDOWN_FILE")
+
+    # 200: file exists (trigger shutdown)
+    # 204: file absent (continue polling)
+    if [ "$STATUS" = "200" ]; then
         sleep 60
         poweroff
         exit 0
