@@ -28,10 +28,11 @@ def main():
     with requests.Session() as session:
         while True:
             try:
-                log(f"Checking URL: {URL}")
                 response = session.get(URL, timeout=5)
+                log(f"Checking URL: {URL} -> Status: {response.status_code}")
 
-                # Shutdown immediately if file exists (HTTP 200)
+                # 200: file exists (trigger shutdown)
+                # 204: file absent (continue polling)
                 if response.status_code == 200:
                     log("Signal received. Shutting down...")
                     subprocess.run(["shutdown", "/s", "/f", "/t", "0"], check=True)
