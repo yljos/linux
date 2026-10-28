@@ -10,7 +10,7 @@ import time
 import requests
 
 # Core configuration
-URL = "http://www.lan/shutdown"
+URL = "http://www.lan/w"
 WAIT_SECONDS = 1 * 60  # Check interval: 1 minute
 
 
@@ -31,7 +31,8 @@ def main():
                 log(f"Checking URL: {URL}")
                 response = session.get(URL, timeout=5)
 
-                if response.status_code == 200 and "W" in response.text:
+                # Shutdown immediately if file exists (HTTP 200)
+                if response.status_code == 200:
                     log("Signal received. Shutting down...")
                     subprocess.run(["shutdown", "/s", "/f", "/t", "0"], check=True)
                     break
