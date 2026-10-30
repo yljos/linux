@@ -18,7 +18,7 @@ user_pref("_user.js.parrot", "0100 syntax error: the parrot's dead!");
  * 0=blank, 1=home, 2=last visited page, 3=resume previous session ***/
 user_pref("browser.startup.page", 1);
 /* 0103: set HOME+NEWWINDOW page ***/
-user_pref("browser.startup.homepage", "http://10.0.0.21");
+user_pref("browser.startup.homepage", "http://www.lan");
 /* 0104: set NEWTAB page ***/
 user_pref("browser.newtabpage.enabled", false);
 /* 0105: disable sponsored content on Firefox Home (Activity Stream) ***/
