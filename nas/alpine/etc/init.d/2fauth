@@ -49,6 +49,7 @@ start() {
         -e "APP_URL=http://localhost:${PORT}" \
         -e "DB_CONNECTION=sqlite" \
         -e "DB_DATABASE=/2fauth/database.sqlite" \
+        -e "IS_REGISTRATION_ENABLED=false" \
         -v "${DATA_DIR}:/2fauth:Z" \
         "${IMAGE}" >/dev/null
 
