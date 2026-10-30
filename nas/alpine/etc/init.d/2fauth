@@ -22,18 +22,33 @@ start_pre() {
         mkdir -p "${DATA_DIR}"
         eend $?
     fi
+
+    # Ensure APP_KEY exists and persist to keyfile
+    if [ ! -f "${DATA_DIR}/app.key" ]; then
+        ebegin "Generating APP_KEY"
+        printf "base64:%s" "$(head -c 32 /dev/urandom | base64)" > "${DATA_DIR}/app.key"
+        chmod 600 "${DATA_DIR}/app.key"
+        eend $?
+    fi
 }
 
 start() {
     ebegin "Starting ${name}"
 
+    APP_KEY="$(cat "${DATA_DIR}/app.key")"
+
     # Remove existing container instance if present
     /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
 
-    # Run detached container with SQLite database storage
+    # Run detached container matching official configuration
     /usr/bin/podman run -d \
         --name "${CONTAINER_NAME}" \
         -p "${PORT}:8000" \
+        -e "APP_ENV=production" \
+        -e "APP_KEY=${APP_KEY}" \
+        -e "APP_URL=http://localhost:${PORT}" \
+        -e "DB_CONNECTION=sqlite" \
+        -e "DB_DATABASE=/2fauth/database.sqlite" \
         -v "${DATA_DIR}:/2fauth:Z" \
         "${IMAGE}" >/dev/null
 
