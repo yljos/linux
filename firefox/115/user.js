@@ -534,5 +534,16 @@ user_pref("media.webm.enabled", false); // Disable WebM container
 user_pref("media.wmf.vp9.enabled", false); // Disable Windows Media Foundation VP9 decoder
 user_pref("media.wmf.hevc.enabled", false); // Disable H.265 (Windows)
 
+
+// Disable keyword search from URL bar completely
+user_pref("keyword.enabled", false);
+
+// Disable search suggestions in URL bar
+user_pref("browser.urlbar.suggest.searches", false);
+
+// Disable trending, sponsored, and remote suggestions
+user_pref("browser.urlbar.trending.featureGate", false);
+user_pref("browser.urlbar.quicksuggest.enabled", false);
+
 /* END: internal custom pref to test for syntax errors ***/
 user_pref("_user.js.parrot", "SUCCESS: No no he's not dead, he's, he's restin'!");
