@@ -1,0 +1,62 @@
+#!/sbin/openrc-run
+
+# Service metadata
+name="2fauth"
+description="2FAuth 2FA Manager via Podman"
+
+# Container configuration
+CONTAINER_NAME="2fauth"
+DATA_DIR="/data/appdata/2fauth"
+IMAGE="docker.io/2fauth/2fauth:latest"
+PORT="8000"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    # Ensure data directory exists
+    if [ ! -d "${DATA_DIR}" ]; then
+        ebegin "Creating data directory ${DATA_DIR}"
+        mkdir -p "${DATA_DIR}"
+        eend $?
+    fi
+}
+
+start() {
+    ebegin "Starting ${name}"
+
+    # Remove existing container instance if present
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    # Run detached container with SQLite database storage
+    /usr/bin/podman run -d \
+        --name "${CONTAINER_NAME}" \
+        -p "${PORT}:8000" \
+        -v "${DATA_DIR}:/2fauth:Z" \
+        "${IMAGE}" >/dev/null
+
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+
+    # Gracefully stop and remove container
+    /usr/bin/podman stop -t 15 "${CONTAINER_NAME}" >/dev/null 2>&1
+    /usr/bin/podman rm -f "${CONTAINER_NAME}" >/dev/null 2>&1
+
+    eend $?
+}
+
+status() {
+    # Check container running state via podman inspect
+    if [ "$(/usr/bin/podman inspect -f '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" = "true" ]; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}
